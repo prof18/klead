@@ -12,6 +12,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - MVP relaxed allowlist: 16
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
+- Strict whole-corpus Markdown parity: deferred as a documented known difference
 
 ## Active Strict Fixtures
 

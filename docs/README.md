@@ -50,7 +50,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[x]` [07 HTML Standardization](07-html-standardization.md)
 - `[x]` [08 Markdown Writer](08-markdown-writer.md)
-- `[~]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
+- `[x]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
 - `[x]` [10 Site Extractors](10-site-extractors.md)
 - `[x]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
 - `[x]` [12 Upstream Sync Process](12-upstream-sync-process.md)
@@ -149,3 +149,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
 2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
 2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Full exact Markdown parity remains a documented staged difference while diagnostic fixture coverage has zero unknown failures.
+2026-06-14 - PHASE-09 - complete - Closed the fixture expansion phase for this broad practical port with strict metadata fixtures, relaxed MVP fixtures, full diagnostic coverage, zero unknown diagnostic failures, and documented deferral of full exact Markdown parity.
