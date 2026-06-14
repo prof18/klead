@@ -43,7 +43,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 
 - `[x]` [00 Principles And Scope](00-principles-and-scope.md)
 - `[x]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
-- `[~]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
+- `[x]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
 - `[ ]` [03 Core Pipeline](03-core-pipeline.md)
 - `[ ]` [04 Main Content Detection](04-main-content-detection.md)
 - `[ ]` [05 Metadata Extraction](05-metadata-extraction.md)
@@ -64,7 +64,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-002 Upstream fixture import with pinned SHA.
 - `[x]` COMMIT-003 Fixture discovery and expected-output loader.
 - `[x]` COMMIT-004 jsoup selector safety wrappers.
-- `[ ]` COMMIT-005 DOM mutation helpers.
+- `[x]` COMMIT-005 DOM mutation helpers.
 - `[ ]` COMMIT-006 Word count and text normalization.
 - `[ ]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
 - `[ ]` COMMIT-008 Main content scoring unit tests and implementation.
@@ -129,3 +129,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-003 - complete - Added fixture harness test utilities for discovering upstream fixtures, extracting fixture URLs, parsing expected Markdown JSON preambles, normalizing Markdown, and reporting fixture categories.
 2026-06-14 - PHASE-02 - in progress - Added basic jsoup element helpers and URL helpers; selector safety and mutation helpers remain.
 2026-06-14 - COMMIT-004 - complete - Added safe selector wrappers with unsupported-selector diagnostics, case-insensitive attribute matching, `:scope >` direct-child handling, and known `:has` fallbacks.
+2026-06-14 - COMMIT-005 - complete - Added DOM mutation helpers, document cloning, and malformed fragment parsing while preserving text-node order and base URI.

@@ -128,16 +128,18 @@ When removing or moving nodes:
 - `[x]` Case-insensitive selectors work.
 - `[x]` `:scope >` direct-child selector works.
 - `[x]` Known `:has` fallbacks work.
-- `[ ]` `unwrapSafely` preserves child order.
-- `[ ]` `replaceWithChildren` preserves text and element nodes.
-- `[ ]` `parseFragment` handles malformed HTML.
+- `[x]` `unwrapSafely` preserves child order.
+- `[x]` `replaceWithChildren` preserves text and element nodes.
+- `[x]` `parseFragment` handles malformed HTML.
 - `[x]` URL resolution handles relative paths.
 - `[x]` Dangerous URL detection strips `javascript:` and `data:text/html`.
 
 ## Acceptance Gate
 
-- `[ ]` All extraction code can depend on the compatibility layer instead of raw jsoup selectors for risky selector forms.
-- `[ ]` Debug mode can report unsupported selectors.
+- `[x]` All extraction code can depend on the compatibility layer instead of raw jsoup selectors for risky selector forms.
+- `[x]` Debug mode can report unsupported selectors.
+
+Note: unsupported selector reporting is currently exposed through `SelectorDiagnostics`; pipeline-level debug output will wire this into parse results in phase 03.
 
 ## Commit Slices
 
