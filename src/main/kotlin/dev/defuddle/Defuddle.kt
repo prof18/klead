@@ -3,6 +3,7 @@ package dev.defuddle
 import dev.defuddle.dom.cloneDocument
 import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
+import dev.defuddle.content.MainContentDetector
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -13,6 +14,7 @@ import kotlin.math.max
 import kotlin.time.measureTimedValue
 
 data class DefuddleOptions(
+    val contentSelector: String? = null,
     val removeExactSelectors: Boolean = true,
     val removePartialSelectors: Boolean = true,
     val removeHiddenElements: Boolean = true,
@@ -93,7 +95,8 @@ object Defuddle {
         url: String,
         options: DefuddleOptions,
     ): DefuddleResult {
-        val content = selectContent(document)
+        val detected = MainContentDetector.detect(document, options)
+        val content = detected.element
         stripUnsafe(content)
         val title = firstText(content.selectFirst("h1"), document.title())
         val description = document.firstMetaContent("description", "og:description")
@@ -115,9 +118,7 @@ object Defuddle {
             parseTimeMillis = 0,
             metaTags = document.collectMetaTags(),
             schemaOrgData = emptyList(),
-            debug = mapOf(
-                "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
-            ),
+            debug = buildDebug(options, detected.debug),
         )
     }
 
@@ -128,6 +129,25 @@ object Defuddle {
 
     private fun prepareDocument(document: Document) {
         promoteNoscriptImages(document)
+    }
+
+    private fun buildDebug(
+        options: DefuddleOptions,
+        detectionDebug: dev.defuddle.content.ContentDetectionDebug,
+    ): Map<String, Any?> {
+        val debug = mutableMapOf<String, Any?>(
+            "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
+        )
+        if (options.debug) {
+            debug["selectedContentSelector"] = detectionDebug.selectedSelector
+            debug["contentCandidates"] = detectionDebug.candidates.map {
+                mapOf(
+                    "selector" to it.selector,
+                    "score" to it.score,
+                )
+            }
+        }
+        return debug
     }
 
     private fun promoteNoscriptImages(document: Document) {

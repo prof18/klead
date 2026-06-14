@@ -98,4 +98,33 @@ class DefuddleApiTest {
         assertNotNull(result.schemaOrgData)
         assertNotNull(result.debug)
     }
+
+    @Test
+    fun `content selector override is used by public parser`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <html><body>
+                  <article><p>Default article should lose.</p></article>
+                  <section id="manual"><p>Manual content should win.</p></section>
+                </body></html>
+            """.trimIndent(),
+            url = "https://example.com/manual",
+            options = DefuddleOptions(contentSelector = "#manual"),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Manual content should win."))
+        assertFalse(result.contentMarkdown.contains("Default article should lose."))
+    }
+
+    @Test
+    fun `debug mode reports selected content selector`() {
+        val result = Defuddle.parseHtml(
+            html = "<html><body><article><p>Debug article.</p></article></body></html>",
+            url = "https://example.com/debug",
+            options = DefuddleOptions(debug = true),
+        )
+
+        assertEquals("article", result.debug["selectedContentSelector"])
+        assertNotNull(result.debug["contentCandidates"])
+    }
 }

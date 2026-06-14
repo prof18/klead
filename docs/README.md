@@ -68,7 +68,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[ ]` COMMIT-006 Word count and text normalization.
 - `[ ]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
 - `[x]` COMMIT-008 Main content scoring unit tests and implementation.
-- `[ ]` COMMIT-009 Main content selection over entry-point selectors.
+- `[x]` COMMIT-009 Main content selection over entry-point selectors.
 - `[ ]` COMMIT-010 Hidden element removal.
 - `[ ]` COMMIT-011 Exact selector removal.
 - `[ ]` COMMIT-012 Partial selector removal.
@@ -134,3 +134,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-03 - in progress - Added document preparation for noscript image fallback promotion, unsafe element/attribute stripping, and opt-in profile timing debug output.
 2026-06-14 - PHASE-03 - complete - Added clone-based internal parse retries for short content: without partial selectors, without hidden-element removal, and index-page retry options.
 2026-06-14 - COMMIT-008 - complete - Added content scoring with word, paragraph, comma, link-density, image-density, content-hint, date, author, footnote, and nested-table factors.
+2026-06-14 - COMMIT-009 - complete - Added ordered entry-point main content detection, contentSelector override, listing-container safeguard, and debug candidate reporting.

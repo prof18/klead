@@ -87,15 +87,15 @@ When debug is enabled, include:
 
 ## TDD Checklist
 
-- `[ ]` `contentSelector` override wins.
-- `[ ]` `article` beats `body`.
-- `[ ]` child `article` can beat parent `main`.
-- `[ ]` multiple article cards keep parent listing container.
-- `[ ]` body fallback works.
+- `[x]` `contentSelector` override wins.
+- `[x]` `article` beats `body`.
+- `[x]` child `article` can beat parent `main`.
+- `[x]` multiple article cards keep parent listing container.
+- `[x]` body fallback works.
 - `[ ]` table-based layout selects main cell.
 - `[ ]` peripheral table does not steal content.
 - `[ ]` schema text can refine body selection.
-- `[ ]` debug selector is stable enough for diagnostics.
+- `[x]` debug selector is stable enough for diagnostics.
 
 ## Acceptance Gate
 
