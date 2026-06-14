@@ -45,7 +45,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
 - `[x]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
 - `[x]` [03 Core Pipeline](03-core-pipeline.md)
-- `[~]` [04 Main Content Detection](04-main-content-detection.md)
+- `[x]` [04 Main Content Detection](04-main-content-detection.md)
 - `[ ]` [05 Metadata Extraction](05-metadata-extraction.md)
 - `[ ]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[ ]` [07 HTML Standardization](07-html-standardization.md)
@@ -135,3 +135,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-03 - complete - Added clone-based internal parse retries for short content: without partial selectors, without hidden-element removal, and index-page retry options.
 2026-06-14 - COMMIT-008 - complete - Added content scoring with word, paragraph, comma, link-density, image-density, content-hint, date, author, footnote, and nested-table factors.
 2026-06-14 - COMMIT-009 - complete - Added ordered entry-point main content detection, contentSelector override, listing-container safeguard, and debug candidate reporting.
+2026-06-14 - PHASE-04 - complete - Added table-layout main-cell detection, peripheral table safeguards, and schema-text body refinement in the main content detector.

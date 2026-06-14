@@ -92,14 +92,14 @@ When debug is enabled, include:
 - `[x]` child `article` can beat parent `main`.
 - `[x]` multiple article cards keep parent listing container.
 - `[x]` body fallback works.
-- `[ ]` table-based layout selects main cell.
-- `[ ]` peripheral table does not steal content.
-- `[ ]` schema text can refine body selection.
+- `[x]` table-based layout selects main cell.
+- `[x]` peripheral table does not steal content.
+- `[x]` schema text can refine body selection.
 - `[x]` debug selector is stable enough for diagnostics.
 
 ## Acceptance Gate
 
-- `[ ]` Main content detection passes focused fixtures for article, main, body fallback, listing, and table layout.
+- `[x]` Main content detection passes focused fixtures for article, main, body fallback, listing, and table layout.
 
 ## Commit Slices
 

@@ -95,4 +95,68 @@ class MainContentDetectorTest {
         assertTrue(detected.debug.candidates.any { it.selector == "article" })
         assertTrue(detected.debug.candidates.all { it.score >= 0.0 })
     }
+
+    @Test
+    fun `table based layout selects main cell`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <table width="900" align="center">
+                    <tr>
+                      <td width="20%">Navigation</td>
+                      <td id="main-cell" width="60%">
+                        <p>This old layout cell contains the main article text with enough readable words to be selected.</p>
+                        <p>Another paragraph makes the center cell clearly more useful than the sidebars.</p>
+                      </td>
+                      <td width="20%">Related</td>
+                    </tr>
+                  </table>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("main-cell", detected.element.id())
+        assertEquals("table-layout td", detected.selectedSelector)
+    }
+
+    @Test
+    fun `peripheral table does not steal content`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <table width="900" align="center"><tr><td>Tiny table</td></tr></table>
+                  <section>
+                    <p>Loose body content has enough words to remain selected when the only table is peripheral.</p>
+                    <p>The table should not steal the page just because it has a layout-looking width.</p>
+                  </section>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("body", detected.element.tagName())
+    }
+
+    @Test
+    fun `schema text can refine body selection`() {
+        val detected = MainContentDetector.detect(
+            document = Jsoup.parse(
+                """
+                <body>
+                  <header>Site chrome</header>
+                  <section id="schema-match">
+                    <p>Schema text points to this exact article body and should refine the broad body fallback.</p>
+                  </section>
+                </body>
+                """.trimIndent(),
+            ),
+            schemaText = "Schema text points to this exact article body",
+        )
+
+        assertEquals("schema-match", detected.element.id())
+        assertEquals("schema-text", detected.selectedSelector)
+    }
 }

@@ -44,6 +44,7 @@ object MainContentDetector {
     fun detect(
         document: Document,
         options: DefuddleOptions = DefuddleOptions(),
+        schemaText: String? = null,
     ): DetectedContent {
         options.contentSelector?.takeIf { it.isNotBlank() }?.let { selector ->
             document.selectFirstSafe(selector)?.let { element ->
@@ -67,7 +68,13 @@ object MainContentDetector {
         }
 
         val sorted = candidates.sortedByDescending { it.score }
-        val selected = refineListingParent(sorted.first(), sorted)
+        var selected = refineListingParent(sorted.first(), sorted)
+        if (selected.element.tagName() == "body") {
+            detectTableLayout(selected.element)?.let { selected = it }
+        }
+        if (selected.element.tagName() == "body") {
+            refineWithSchemaText(document, schemaText)?.let { selected = it }
+        }
         return detected(
             element = selected.element,
             selector = selected.selector,
@@ -93,6 +100,57 @@ object MainContentDetector {
                 candidate.element.children().any { it === selected.element }
         }
         return parentCandidate ?: selected
+    }
+
+    private fun detectTableLayout(body: Element): Candidate? {
+        val bodyWords = ContentScorer.scoreElement(body).wordCount
+        if (bodyWords < 15) return null
+
+        return body.select("table")
+            .filter(::looksLikeLayoutTable)
+            .flatMap { table -> table.select("td").map { table to it } }
+            .map { (_, cell) ->
+                val score = ContentScorer.scoreElement(cell)
+                cell to score
+            }
+            .filter { (_, score) ->
+                score.wordCount >= 15 && score.wordCount >= bodyWords * 0.35
+            }
+            .maxByOrNull { (_, score) -> score.total }
+            ?.let { (cell, score) ->
+                Candidate(
+                    element = cell,
+                    selector = "table-layout td",
+                    score = score.total,
+                )
+            }
+    }
+
+    private fun looksLikeLayoutTable(table: Element): Boolean {
+        val width = table.attr("width").filter { it.isDigit() }.toIntOrNull()
+        val hints = "${table.id()} ${table.className()}".lowercase()
+        return (width != null && width >= 600) ||
+            table.attr("align").equals("center", ignoreCase = true) ||
+            "content" in hints ||
+            "article" in hints
+    }
+
+    private fun refineWithSchemaText(
+        document: Document,
+        schemaText: String?,
+    ): Candidate? {
+        val needle = schemaText?.trim()?.takeIf { it.length >= 20 } ?: return null
+        return document.body()
+            ?.select("article, main, section, div")
+            ?.filter { it.text().contains(needle, ignoreCase = false) }
+            ?.minByOrNull { ContentScorer.scoreElement(it).wordCount }
+            ?.let { element ->
+                Candidate(
+                    element = element,
+                    selector = "schema-text",
+                    score = ContentScorer.scoreElement(element).total,
+                )
+            }
     }
 
     private fun detected(
