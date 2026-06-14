@@ -46,7 +46,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
 - `[x]` [03 Core Pipeline](03-core-pipeline.md)
 - `[x]` [04 Main Content Detection](04-main-content-detection.md)
-- `[ ]` [05 Metadata Extraction](05-metadata-extraction.md)
+- `[~]` [05 Metadata Extraction](05-metadata-extraction.md)
 - `[ ]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[ ]` [07 HTML Standardization](07-html-standardization.md)
 - `[ ]` [08 Markdown Writer](08-markdown-writer.md)
@@ -85,7 +85,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[ ]` COMMIT-023 Image standardization.
 - `[ ]` COMMIT-024 Code block standardization.
 - `[ ]` COMMIT-025 Metadata completeness.
-- `[ ]` COMMIT-026 Schema.org fallback.
+- `[~]` COMMIT-026 Schema.org fallback.
 - `[ ]` COMMIT-027 Fixture allowlist expansion by one category.
 - `[ ]` COMMIT-028 One static site extractor.
 - `[ ]` COMMIT-029 One async/network extractor with injected HTTP client.
@@ -136,3 +136,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-008 - complete - Added content scoring with word, paragraph, comma, link-density, image-density, content-hint, date, author, footnote, and nested-table factors.
 2026-06-14 - COMMIT-009 - complete - Added ordered entry-point main content detection, contentSelector override, listing-container safeguard, and debug candidate reporting.
 2026-06-14 - PHASE-04 - complete - Added table-layout main-cell detection, peripheral table safeguards, and schema-text body refinement in the main content detector.
+2026-06-14 - PHASE-05 - in progress - Added structured meta tag collection and JSON-LD schema.org extraction with arrays, `@graph`, nested fields, and invalid JSON diagnostics.

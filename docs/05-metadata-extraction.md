@@ -141,8 +141,8 @@ Sources:
 - `[ ]` h1 sibling date extracts published date.
 - `[ ]` canonical URL determines domain.
 - `[ ]` relative favicon resolves absolute.
-- `[ ]` JSON-LD invalid syntax is ignored safely.
-- `[ ]` `@graph` schema fields are found.
+- `[x]` JSON-LD invalid syntax is ignored safely.
+- `[x]` `@graph` schema fields are found.
 
 ## Acceptance Gate
 
@@ -157,4 +157,3 @@ Sources:
 - Author extraction.
 - Date extraction.
 - Description/image/favicon/language extraction.
-

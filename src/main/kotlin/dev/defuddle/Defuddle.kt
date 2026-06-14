@@ -4,6 +4,8 @@ import dev.defuddle.dom.cloneDocument
 import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
 import dev.defuddle.content.MainContentDetector
+import dev.defuddle.metadata.MetaTagItem
+import dev.defuddle.metadata.MetadataExtractor
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -43,8 +45,8 @@ data class DefuddleResult(
     val site: String?,
     val wordCount: Int,
     val parseTimeMillis: Long,
-    val metaTags: Map<String, String>,
-    val schemaOrgData: List<Map<String, String>>,
+    val metaTags: List<MetaTagItem>,
+    val schemaOrgData: List<Map<String, Any?>>,
     val debug: Map<String, Any?>,
 )
 
@@ -95,6 +97,8 @@ object Defuddle {
         url: String,
         options: DefuddleOptions,
     ): DefuddleResult {
+        val metaTags = MetadataExtractor.collectMetaTags(document)
+        val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
         val detected = MainContentDetector.detect(document, options)
         val content = detected.element
         stripUnsafe(content)
@@ -116,9 +120,9 @@ object Defuddle {
             site = document.firstMetaContent("og:site_name", "application-name"),
             wordCount = countBodyWords(content),
             parseTimeMillis = 0,
-            metaTags = document.collectMetaTags(),
-            schemaOrgData = emptyList(),
-            debug = buildDebug(options, detected.debug),
+            metaTags = metaTags,
+            schemaOrgData = schemaOrg.items,
+            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics),
         )
     }
 
@@ -134,6 +138,7 @@ object Defuddle {
     private fun buildDebug(
         options: DefuddleOptions,
         detectionDebug: dev.defuddle.content.ContentDetectionDebug,
+        schemaDiagnostics: List<String>,
     ): Map<String, Any?> {
         val debug = mutableMapOf<String, Any?>(
             "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
@@ -145,6 +150,9 @@ object Defuddle {
                     "selector" to it.selector,
                     "score" to it.score,
                 )
+            }
+            if (schemaDiagnostics.isNotEmpty()) {
+                debug["schemaDiagnostics"] = schemaDiagnostics
             }
         }
         return debug
