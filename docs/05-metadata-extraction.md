@@ -146,7 +146,7 @@ Sources:
 
 ## Acceptance Gate
 
-- `[ ]` Metadata fixture subset passes strict expected fields.
+- `[x]` Metadata fixture subset passes strict expected fields.
 - `[x]` Metadata extractor has focused unit tests independent of full parser.
 
 ## Commit Slices

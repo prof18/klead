@@ -78,7 +78,7 @@ class PageMetadataExtractorTest {
         )
 
         assertEquals("Alan Turing", metadata.author)
-        assertEquals("January 2, 2024", metadata.published)
+        assertEquals("2024-01-02T00:00:00+00:00", metadata.published)
     }
 
     @Test

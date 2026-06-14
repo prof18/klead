@@ -46,7 +46,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
 - `[x]` [03 Core Pipeline](03-core-pipeline.md)
 - `[x]` [04 Main Content Detection](04-main-content-detection.md)
-- `[~]` [05 Metadata Extraction](05-metadata-extraction.md)
+- `[x]` [05 Metadata Extraction](05-metadata-extraction.md)
 - `[ ]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[ ]` [07 HTML Standardization](07-html-standardization.md)
 - `[ ]` [08 Markdown Writer](08-markdown-writer.md)
@@ -84,7 +84,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[ ]` COMMIT-022 Markdown footnotes.
 - `[ ]` COMMIT-023 Image standardization.
 - `[ ]` COMMIT-024 Code block standardization.
-- `[ ]` COMMIT-025 Metadata completeness.
+- `[x]` COMMIT-025 Metadata completeness.
 - `[~]` COMMIT-026 Schema.org fallback.
 - `[ ]` COMMIT-027 Fixture allowlist expansion by one category.
 - `[ ]` COMMIT-028 One static site extractor.
@@ -138,3 +138,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-04 - complete - Added table-layout main-cell detection, peripheral table safeguards, and schema-text body refinement in the main content detector.
 2026-06-14 - PHASE-05 - in progress - Added structured meta tag collection and JSON-LD schema.org extraction with arrays, `@graph`, nested fields, and invalid JSON diagnostics.
 2026-06-14 - COMMIT-007 - complete - Added page metadata extraction for cleaned titles, canonical domains, authors, dates, description, image, favicon, language, and public parser metadata fields.
+2026-06-14 - PHASE-05 - complete - Added strict upstream metadata fixture coverage for h1 sibling byline/date, placeholder fallbacks, and rel-author bio-container handling.
