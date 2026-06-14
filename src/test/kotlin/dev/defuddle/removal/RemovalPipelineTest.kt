@@ -4,6 +4,7 @@ import dev.defuddle.Defuddle
 import dev.defuddle.DefuddleOptions
 import org.jsoup.Jsoup
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -153,5 +154,42 @@ class RemovalPipelineTest {
 
         assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
         assertFalse(result.contentMarkdown.contains("Subscribe to our newsletter"))
+    }
+
+    @Test
+    fun `duplicate images are removed after first occurrence`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>Article prose has enough words to keep the default cleaned parse result. It describes the image context clearly and avoids short retry paths with stable text.</p>
+                  <img src="/image.png" alt="First">
+                  <img src="/image.png" alt="Duplicate">
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/images",
+        )
+
+        assertTrue(result.contentHtml.contains("""alt="First""""))
+        assertFalse(result.contentHtml.contains("""alt="Duplicate""""))
+    }
+
+    @Test
+    fun `cover image duplicating metadata image is removed`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <html><head>
+                  <meta property="og:image" content="https://example.com/cover.png">
+                </head><body>
+                  <article>
+                    <img src="/cover.png" alt="Cover">
+                    <p>Article prose has enough words to keep the default cleaned parse result. It describes the article content clearly and avoids short retry paths with stable text.</p>
+                  </article>
+                </body></html>
+            """.trimIndent(),
+            url = "https://example.com/article",
+        )
+
+        assertEquals("https://example.com/cover.png", result.image)
+        assertFalse(result.contentHtml.contains("""alt="Cover""""))
     }
 }

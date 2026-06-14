@@ -47,7 +47,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [03 Core Pipeline](03-core-pipeline.md)
 - `[x]` [04 Main Content Detection](04-main-content-detection.md)
 - `[x]` [05 Metadata Extraction](05-metadata-extraction.md)
-- `[~]` [06 Removal Pipeline](06-removal-pipeline.md)
+- `[x]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[ ]` [07 HTML Standardization](07-html-standardization.md)
 - `[ ]` [08 Markdown Writer](08-markdown-writer.md)
 - `[ ]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
@@ -141,3 +141,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-05 - complete - Added strict upstream metadata fixture coverage for h1 sibling byline/date, placeholder fallbacks, and rel-author bio-container handling.
 2026-06-14 - COMMIT-010 - complete - Added hidden element removal with math-wrapper preservation and debug removal records.
 2026-06-14 - COMMIT-011..013 - complete - Added exact selector removal, partial selector removal with code/footnote/callout protections, low-scoring link-heavy block removal, and a trailing subscribe content pattern.
+2026-06-14 - PHASE-06 - complete - Added duplicate image removal, metadata cover-image removal, and relaxed upstream hidden fixture coverage for removal false-positive checks.

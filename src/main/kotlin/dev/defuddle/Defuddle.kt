@@ -105,7 +105,6 @@ object Defuddle {
         val content = detected.element
         val removals = mutableListOf<RemovalRecord>()
         stripUnsafe(content)
-        RemovalPipeline.apply(content, options, removals)
         val metadata = PageMetadataExtractor.extract(
             document = document,
             sourceUrl = url,
@@ -113,6 +112,7 @@ object Defuddle {
             metaTags = metaTags,
             schemaOrg = schemaOrg,
         )
+        RemovalPipeline.apply(content, options, removals, metadata.image)
         val markdown = if (options.markdown) MarkdownWriter.write(content) else ""
 
         return DefuddleResult(

@@ -143,11 +143,13 @@ When debug is enabled, record:
 - `[x]` Content patterns remove trailing subscribe blocks.
 - `[x]` Content patterns preserve legitimate final article paragraphs.
 - `[x]` Debug records identify removals.
+- `[x]` Duplicate images are removed after first occurrence.
+- `[x]` Cover image duplicating metadata image is removed.
 
 ## Acceptance Gate
 
-- `[ ]` Removal fixture subset has no major false positives.
-- `[ ]` Debug output is useful enough to inspect failed fixtures.
+- `[x]` Removal fixture subset has no major false positives.
+- `[x]` Debug output is useful enough to inspect failed fixtures.
 
 ## Commit Slices
 

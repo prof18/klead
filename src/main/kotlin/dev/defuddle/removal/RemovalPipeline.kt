@@ -17,6 +17,7 @@ object RemovalPipeline {
         content: Element,
         options: DefuddleOptions,
         debug: MutableList<RemovalRecord>,
+        metadataImage: String? = null,
     ) {
         if (options.removeHiddenElements) {
             removeHiddenElements(content, debug)
@@ -33,6 +34,8 @@ object RemovalPipeline {
         if (options.removeContentPatterns) {
             removeContentPatterns(content, debug)
         }
+        deduplicateImages(content, debug)
+        removeCoverImage(content, metadataImage, debug)
     }
 
     private fun removeHiddenElements(
@@ -138,6 +141,33 @@ object RemovalPipeline {
         }
     }
 
+    private fun deduplicateImages(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        val seen = mutableSetOf<String>()
+        for (image in content.select("img[src]").toList()) {
+            val key = image.imageKey() ?: continue
+            if (!seen.add(key)) {
+                recordAndRemove(image, debug, "deduplicateImages", "img[src]", "duplicate image")
+            }
+        }
+    }
+
+    private fun removeCoverImage(
+        content: Element,
+        metadataImage: String?,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        val coverKey = metadataImage?.trim()?.takeIf { it.isNotBlank() } ?: return
+        for (image in content.select("img[src]").toList()) {
+            val key = image.imageKey() ?: continue
+            if (key == coverKey) {
+                recordAndRemove(image, debug, "removeCoverImage", "img[src]", "duplicates metadata image")
+            }
+        }
+    }
+
     private fun isProtected(element: Element): Boolean {
         val hints = partialHaystack(element)
         return element.`is`("pre, code, figure, picture, table, math, blockquote") ||
@@ -178,6 +208,9 @@ object RemovalPipeline {
         )
         element.removeSafely()
     }
+
+    private fun Element.imageKey(): String? =
+        absUrl("src").ifBlank { attr("src").trim() }.ifBlank { null }
 
     private val EXACT_SELECTORS = listOf(
         "nav",
