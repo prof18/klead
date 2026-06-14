@@ -98,10 +98,10 @@ After parse internals, strip:
 - `[ ]` Retry without partial selectors triggers under 200 words.
 - `[ ]` Hidden retry triggers under 50 words.
 - `[ ]` Index-page retry triggers under 50 words.
-- `[ ]` `srcSet` normalizes to `srcset`.
-- `[ ]` noscript image fallback promotes real image.
-- `[ ]` unsafe elements and attributes are stripped after schema extraction.
-- `[ ]` profile timings are present only when requested.
+- `[x]` `srcSet` normalizes to `srcset`.
+- `[x]` noscript image fallback promotes real image.
+- `[x]` unsafe elements and attributes are stripped after schema extraction.
+- `[x]` profile timings are present only when requested.
 
 ## Acceptance Gate
 

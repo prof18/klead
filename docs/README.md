@@ -131,3 +131,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-004 - complete - Added safe selector wrappers with unsupported-selector diagnostics, case-insensitive attribute matching, `:scope >` direct-child handling, and known `:has` fallbacks.
 2026-06-14 - COMMIT-005 - complete - Added DOM mutation helpers, document cloning, and malformed fragment parsing while preserving text-node order and base URI.
 2026-06-14 - PHASE-03 - in progress - Added Defuddle-compatible option defaults and verified Markdown can be disabled while cleaned HTML remains available.
+2026-06-14 - PHASE-03 - in progress - Added document preparation for noscript image fallback promotion, unsafe element/attribute stripping, and opt-in profile timing debug output.

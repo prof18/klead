@@ -1,5 +1,7 @@
 package dev.defuddle
 
+import dev.defuddle.dom.isDangerousUrl
+import dev.defuddle.dom.parseFragment
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -52,9 +54,10 @@ object Defuddle {
         val timed = measureTimedValue {
             val document = Jsoup.parse(html, url)
             document.outputSettings().prettyPrint(false)
-            document.select("script, style, noscript").remove()
+            prepareDocument(document)
 
             val content = selectContent(document)
+            stripUnsafe(content)
             val title = firstText(content.selectFirst("h1"), document.title())
             val description = document.firstMetaContent("description", "og:description")
             val markdown = if (options.markdown) MarkdownWriter.write(content) else ""
@@ -81,7 +84,15 @@ object Defuddle {
             )
         }
 
-        return timed.value.copy(parseTimeMillis = max(0, timed.duration.inWholeMilliseconds))
+        val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
+        val debug = timed.value.debug.toMutableMap()
+        if (options.profile) {
+            debug["profileTimings"] = mapOf("parseHtml" to parseTimeMillis)
+        }
+        return timed.value.copy(
+            parseTimeMillis = parseTimeMillis,
+            debug = debug,
+        )
     }
 
     private fun selectContent(document: Document): Element =
@@ -94,6 +105,44 @@ object Defuddle {
         element: Element?,
         fallback: String,
     ): String? = element?.text()?.ifBlank { null } ?: fallback.ifBlank { null }
+
+    private fun prepareDocument(document: Document) {
+        promoteNoscriptImages(document)
+    }
+
+    private fun promoteNoscriptImages(document: Document) {
+        for (noscript in document.select("noscript").toList()) {
+            val fragmentNodes = parseFragment(noscript.html(), document.baseUri())
+            val fragmentRoot = Element("fragment")
+            fragmentNodes.forEach { fragmentRoot.appendChild(it) }
+            val promotedImages = fragmentRoot.select("img[src]").filterNot { image ->
+                isDangerousUrl(image.attr("src"))
+            }
+            for (image in promotedImages) {
+                noscript.before(image.clone())
+            }
+        }
+    }
+
+    private fun stripUnsafe(content: Element) {
+        content.select("script").filterNot { script ->
+            script.attr("type").contains("math/tex", ignoreCase = true)
+        }.forEach { it.remove() }
+        content.select("style, noscript, frame, frameset, iframe, object, embed, applet, base").remove()
+
+        for (element in content.select("*")) {
+            for (attribute in element.attributes().asList()) {
+                val key = attribute.key.lowercase()
+                val value = attribute.value
+                val shouldRemove = key.startsWith("on") ||
+                    key == "srcdoc" ||
+                    (key in DANGEROUS_URL_ATTRIBUTES && isDangerousUrl(value))
+                if (shouldRemove) {
+                    element.removeAttr(attribute.key)
+                }
+            }
+        }
+    }
 
     private fun Document.firstMetaContent(vararg names: String): String? {
         for (name in names) {
@@ -130,6 +179,8 @@ object Defuddle {
     }
 
     private val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
+
+    private val DANGEROUS_URL_ATTRIBUTES = setOf("href", "src", "action", "formaction", "xlink:href")
 }
 
 private object MarkdownWriter {
