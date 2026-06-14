@@ -55,16 +55,16 @@ Manual sync is acceptable at first, but document exact commands.
 
 ## TDD Checklist
 
-- `[ ]` Existing pinned SHA is read.
-- `[ ]` New SHA is written.
-- `[ ]` Fixture files copy to the right location.
-- `[ ]` Kotlin-specific expected files are untouched.
-- `[ ]` Sync report lists changed files.
-- `[ ]` Missing upstream directory fails with clear message.
+- `[x]` Existing pinned SHA is read.
+- `[x]` New SHA is written.
+- `[x]` Fixture files copy to the right location.
+- `[x]` Kotlin-specific expected files are untouched.
+- `[x]` Sync report lists changed files.
+- `[x]` Missing upstream directory fails with clear message.
 
 ## Acceptance Gate
 
-- `[ ]` A developer can update upstream fixtures with a repeatable process and reviewable diff.
+- `[x]` A developer can update upstream fixtures with a repeatable process and reviewable diff.
 
 ## Commit Slices
 
@@ -72,4 +72,3 @@ Manual sync is acceptable at first, but document exact commands.
 - Manual sync docs.
 - Automated sync task.
 - Sync report generation.
-

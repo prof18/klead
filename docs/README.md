@@ -53,7 +53,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[~]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
 - `[x]` [10 Site Extractors](10-site-extractors.md)
 - `[x]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
-- `[ ]` [12 Upstream Sync Process](12-upstream-sync-process.md)
+- `[x]` [12 Upstream Sync Process](12-upstream-sync-process.md)
 - `[ ]` [13 Release Gate And Docs](13-release-gate-and-docs.md)
 
 ## Suggested Commit Slices
@@ -147,3 +147,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-09 - in progress - Added full-corpus diagnostic fixture runner with zero unknown classifications, MVP relaxed allowlist, and documented fixture coverage report.
 2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, result variables, disable list, and injected HTTP client hook for network-backed extractors.
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
+2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
