@@ -33,7 +33,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` SCOPE-005 No GraalJS.
 - `[x]` SCOPE-006 No browser DOM dependency.
 - `[x]` SCOPE-007 No flexmark HTML-to-Markdown conversion in the core pipeline.
-- `[ ]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
+- `[~]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
 - `[x]` SCOPE-009 Use TDD for every ported behavior.
 - `[x]` SCOPE-010 Compose rendering is out of scope.
 - `[ ]` SCOPE-011 Port the major Defuddle feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
@@ -61,7 +61,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 These are examples. Commit whenever a unit of behavior is complete and tested.
 
 - `[x]` COMMIT-001 Initial Gradle/Kotlin scaffold and empty API.
-- `[ ]` COMMIT-002 Upstream fixture import with pinned SHA.
+- `[x]` COMMIT-002 Upstream fixture import with pinned SHA.
 - `[ ]` COMMIT-003 Fixture discovery and expected-output loader.
 - `[ ]` COMMIT-004 jsoup selector safety wrappers.
 - `[ ]` COMMIT-005 DOM mutation helpers.
@@ -125,3 +125,4 @@ YYYY-MM-DD - STEP-ID - status - note
 
 2026-06-14 - SCOPE-001..007 - complete - Added Kotlin/JVM scaffold and jsoup-backed static HTML API with Markdown as the primary output and cleaned HTML as secondary output; no WebView, GraalJS, browser DOM, or flexmark conversion is used.
 2026-06-14 - PHASE-00 - complete - Initial public contract tests cover empty HTML, minimal article Markdown, cleaned HTML debug output, and unsupported browser/CSS behavior documentation.
+2026-06-14 - COMMIT-002 - complete - Vendored upstream Defuddle fixtures from kepano/defuddle at 9db72600a0cfc568eafb31e85ef68ba16add072e: 190 HTML fixtures, 190 expected Markdown files, 3 expected HTML files, and upstream license.

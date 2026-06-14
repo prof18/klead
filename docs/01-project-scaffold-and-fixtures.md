@@ -68,6 +68,14 @@ Do not modify upstream fixture content. Kotlin-specific expected output belongs 
 src/test/resources/kotlin-expected/
 ```
 
+Imported upstream corpus:
+
+- SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
+- HTML fixtures: 190
+- Expected Markdown files: 190
+- Expected HTML files: 3
+- License: `src/test/resources/defuddle-license.txt`
+
 ## Fixture Harness
 
 Implement:
