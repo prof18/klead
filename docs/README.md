@@ -43,7 +43,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 
 - `[x]` [00 Principles And Scope](00-principles-and-scope.md)
 - `[x]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
-- `[ ]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
+- `[~]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
 - `[ ]` [03 Core Pipeline](03-core-pipeline.md)
 - `[ ]` [04 Main Content Detection](04-main-content-detection.md)
 - `[ ]` [05 Metadata Extraction](05-metadata-extraction.md)
@@ -127,3 +127,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-00 - complete - Initial public contract tests cover empty HTML, minimal article Markdown, cleaned HTML debug output, and unsupported browser/CSS behavior documentation.
 2026-06-14 - COMMIT-002 - complete - Vendored upstream Defuddle fixtures from kepano/defuddle at 9db72600a0cfc568eafb31e85ef68ba16add072e: 190 HTML fixtures, 190 expected Markdown files, 3 expected HTML files, and upstream license.
 2026-06-14 - COMMIT-003 - complete - Added fixture harness test utilities for discovering upstream fixtures, extracting fixture URLs, parsing expected Markdown JSON preambles, normalizing Markdown, and reporting fixture categories.
+2026-06-14 - PHASE-02 - in progress - Added basic jsoup element helpers and URL helpers; selector safety and mutation helpers remain.

@@ -131,8 +131,8 @@ When removing or moving nodes:
 - `[ ]` `unwrapSafely` preserves child order.
 - `[ ]` `replaceWithChildren` preserves text and element nodes.
 - `[ ]` `parseFragment` handles malformed HTML.
-- `[ ]` URL resolution handles relative paths.
-- `[ ]` Dangerous URL detection strips `javascript:` and `data:text/html`.
+- `[x]` URL resolution handles relative paths.
+- `[x]` Dangerous URL detection strips `javascript:` and `data:text/html`.
 
 ## Acceptance Gate
 
@@ -147,4 +147,3 @@ When removing or moving nodes:
 - `:scope` support.
 - `:has` known fallback support.
 - DOM mutation helpers.
-
