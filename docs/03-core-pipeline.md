@@ -94,7 +94,7 @@ After parse internals, strip:
 
 - `[ ]` Minimal HTML returns a result object.
 - `[ ]` Empty HTML returns empty content without crash.
-- `[ ]` Options default correctly.
+- `[x]` Options default correctly.
 - `[ ]` Retry without partial selectors triggers under 200 words.
 - `[ ]` Hidden retry triggers under 50 words.
 - `[ ]` Index-page retry triggers under 50 words.
@@ -117,4 +117,3 @@ After parse internals, strip:
 - Document preparation.
 - Unsafe stripping.
 - Minimal content serialization and word count.
-

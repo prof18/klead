@@ -10,7 +10,18 @@ import kotlin.math.max
 import kotlin.time.measureTimedValue
 
 data class DefuddleOptions(
+    val removeExactSelectors: Boolean = true,
+    val removePartialSelectors: Boolean = true,
+    val removeHiddenElements: Boolean = true,
+    val removeLowScoring: Boolean = true,
+    val removeSmallImages: Boolean = true,
+    val removeImages: Boolean = false,
+    val removeContentPatterns: Boolean = true,
+    val standardize: Boolean = true,
     val markdown: Boolean = true,
+    val separateMarkdown: Boolean = true,
+    val debug: Boolean = false,
+    val profile: Boolean = false,
 )
 
 data class DefuddleResult(
@@ -29,7 +40,7 @@ data class DefuddleResult(
     val parseTimeMillis: Long,
     val metaTags: Map<String, String>,
     val schemaOrgData: List<Map<String, String>>,
-    val debug: Map<String, String>,
+    val debug: Map<String, Any?>,
 )
 
 object Defuddle {
