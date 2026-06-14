@@ -66,17 +66,17 @@ If extractor returns a content selector, run the normal pipeline against that co
 
 ## TDD Checklist
 
-- `[ ]` Registry priority is deterministic.
-- `[ ]` Disabled extractors are skipped.
-- `[ ]` Static extractor can return content selector.
-- `[ ]` Static extractor can return direct content.
-- `[ ]` Extractor variables appear in result.
-- `[ ]` Extractor output still goes through Markdown writer.
-- `[ ]` Network extractors use injected HTTP clients and are controlled by options.
+- `[x]` Registry priority is deterministic.
+- `[x]` Disabled extractors are skipped.
+- `[x]` Static extractor can return content selector.
+- `[x]` Static extractor can return direct content.
+- `[x]` Extractor variables appear in result.
+- `[x]` Extractor output still goes through Markdown writer.
+- `[x]` Network extractors use injected HTTP clients and are controlled by options.
 
 ## Acceptance Gate
 
-- `[ ]` Enabled extractors improve fixture results without bypassing cleanup and Markdown rules unexpectedly.
+- `[x]` Enabled extractors improve fixture results without bypassing cleanup and Markdown rules unexpectedly.
 
 ## Commit Slices
 

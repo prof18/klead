@@ -1,0 +1,133 @@
+package dev.defuddle.extractors
+
+import dev.defuddle.Defuddle
+import dev.defuddle.DefuddleOptions
+import org.jsoup.Jsoup
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class ExtractorRegistryTest {
+    @Test
+    fun `registry priority is deterministic`() {
+        val document = Jsoup.parse("<main></main>", "https://example.com")
+        val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
+
+        val result = registry.extract(document, "https://example.com", ExtractorContext())
+
+        assertEquals("first", result?.name)
+    }
+
+    @Test
+    fun `disabled extractors are skipped`() {
+        val document = Jsoup.parse("<main></main>", "https://example.com")
+        val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
+
+        val result = registry.extract(
+            document = document,
+            url = "https://example.com",
+            context = ExtractorContext(disabledExtractors = setOf("first")),
+        )
+
+        assertEquals("second", result?.name)
+    }
+
+    @Test
+    fun `static extractor can return content selector`() {
+        val document = Jsoup.parse(
+            """<html><body><div id="mw-content-text"><p>Wikipedia article text.</p></div></body></html>""",
+            "https://en.wikipedia.org/wiki/Test",
+        )
+
+        val result = WikipediaExtractor.extract(document, "https://en.wikipedia.org/wiki/Test", ExtractorContext())
+
+        assertEquals("#mw-content-text", result.contentSelector)
+        assertEquals("Wikipedia", result.metadata.site)
+    }
+
+    @Test
+    fun `direct content extractor goes through markdown writer and variables appear in result`() {
+        val result = Defuddle.parseHtml(
+            html = "<html><body><p>Ignored generic content.</p></body></html>",
+            url = "https://direct.example/article",
+            options = DefuddleOptions(
+                extractors = listOf(
+                    object : Extractor {
+                        override val name = "direct-test"
+
+                        override fun canExtract(document: org.jsoup.nodes.Document, url: String) =
+                            url.contains("direct.example")
+
+                        override fun extract(
+                            document: org.jsoup.nodes.Document,
+                            url: String,
+                            context: ExtractorContext,
+                        ) = ExtractorResult(
+                            contentHtml = "<article><h2>Direct Title</h2><p>Direct <strong>content</strong>.</p></article>",
+                            variables = mapOf("source" to "fixture"),
+                        )
+                    },
+                ),
+            ),
+        )
+
+        assertEquals("direct-test", result.extractor)
+        assertEquals("fixture", result.variables["source"])
+        assertTrue(result.contentMarkdown.contains("## Direct Title"))
+        assertTrue(result.contentMarkdown.contains("Direct **content**."))
+        assertFalse(result.contentMarkdown.contains("Ignored generic content."))
+    }
+
+    @Test
+    fun `network extractors use injected HTTP clients`() {
+        val calls = mutableListOf<String>()
+        val client = object : DefuddleHttpClient {
+            override fun get(url: String): String {
+                calls += url
+                return "<article><p>Fetched transcript.</p></article>"
+            }
+        }
+        val result = Defuddle.parseHtml(
+            html = "<html><body></body></html>",
+            url = "https://network.example/watch/1",
+            options = DefuddleOptions(
+                httpClient = client,
+                extractors = listOf(
+                    object : Extractor {
+                        override val name = "network-test"
+
+                        override fun canExtract(document: org.jsoup.nodes.Document, url: String) =
+                            url.contains("network.example")
+
+                        override fun extract(
+                            document: org.jsoup.nodes.Document,
+                            url: String,
+                            context: ExtractorContext,
+                        ): ExtractorResult {
+                            val html = context.httpClient?.get("$url/transcript").orEmpty()
+                            return ExtractorResult(contentHtml = html)
+                        }
+                    },
+                ),
+            ),
+        )
+
+        assertEquals(listOf("https://network.example/watch/1/transcript"), calls)
+        assertEquals("network-test", result.extractor)
+        assertTrue(result.contentMarkdown.contains("Fetched transcript."))
+    }
+
+    private fun namedExtractor(name: String): Extractor =
+        object : Extractor {
+            override val name = name
+
+            override fun canExtract(document: org.jsoup.nodes.Document, url: String) = true
+
+            override fun extract(
+                document: org.jsoup.nodes.Document,
+                url: String,
+                context: ExtractorContext,
+            ) = ExtractorResult(variables = mapOf("name" to name))
+        }
+}

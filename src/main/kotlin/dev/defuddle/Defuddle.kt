@@ -3,6 +3,12 @@ package dev.defuddle
 import dev.defuddle.dom.cloneDocument
 import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
+import dev.defuddle.extractors.AppliedExtractor
+import dev.defuddle.extractors.DefaultExtractors
+import dev.defuddle.extractors.DefuddleHttpClient
+import dev.defuddle.extractors.Extractor
+import dev.defuddle.extractors.ExtractorContext
+import dev.defuddle.extractors.ExtractorRegistry
 import dev.defuddle.markdown.DefuddleMarkdownWriter
 import dev.defuddle.content.MainContentDetector
 import dev.defuddle.metadata.MetaTagItem
@@ -14,13 +20,14 @@ import dev.defuddle.standardize.HtmlStandardizer
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
 import kotlin.math.max
 import kotlin.time.measureTimedValue
 
 data class DefuddleOptions(
     val contentSelector: String? = null,
+    val extractors: List<Extractor> = DefaultExtractors.all,
+    val disabledExtractors: Set<String> = emptySet(),
+    val httpClient: DefuddleHttpClient? = null,
     val removeExactSelectors: Boolean = true,
     val removePartialSelectors: Boolean = true,
     val removeHiddenElements: Boolean = true,
@@ -51,6 +58,8 @@ data class DefuddleResult(
     val parseTimeMillis: Long,
     val metaTags: List<MetaTagItem>,
     val schemaOrgData: List<Map<String, Any?>>,
+    val extractor: String?,
+    val variables: Map<String, String>,
     val debug: Map<String, Any?>,
 )
 
@@ -64,12 +73,28 @@ object Defuddle {
             val document = Jsoup.parse(html, url)
             document.outputSettings().prettyPrint(false)
             prepareDocument(document)
+            val appliedExtractor = ExtractorRegistry(options.extractors).extract(
+                document = document,
+                url = url,
+                context = ExtractorContext(
+                    httpClient = options.httpClient,
+                    disabledExtractors = options.disabledExtractors,
+                ),
+            )
+            val parseDocument = appliedExtractor?.result?.contentHtml
+                ?.let { Jsoup.parseBodyFragment(it, url).also { parsed -> parsed.outputSettings().prettyPrint(false) } }
+                ?: document
+            val effectiveOptions = appliedExtractor?.result?.contentSelector
+                ?.takeIf { options.contentSelector == null }
+                ?.let { options.copy(contentSelector = it) }
+                ?: options
 
-            RetryController.run(options) { attemptOptions ->
+            RetryController.run(effectiveOptions) { attemptOptions ->
                 val result = parseInternal(
-                    document = document.cloneDocument(),
+                    document = parseDocument.cloneDocument(),
                     url = url,
                     options = attemptOptions,
+                    appliedExtractor = appliedExtractor,
                 )
                 RetryCandidate(
                     value = result,
@@ -100,6 +125,7 @@ object Defuddle {
         document: Document,
         url: String,
         options: DefuddleOptions,
+        appliedExtractor: AppliedExtractor?,
     ): DefuddleResult {
         val metaTags = MetadataExtractor.collectMetaTags(document)
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
@@ -136,7 +162,20 @@ object Defuddle {
             parseTimeMillis = 0,
             metaTags = metaTags,
             schemaOrgData = schemaOrg.items,
+            extractor = appliedExtractor?.name,
+            variables = appliedExtractor?.result?.variables.orEmpty(),
             debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals),
+        ).withExtractorMetadata(appliedExtractor)
+    }
+
+    private fun DefuddleResult.withExtractorMetadata(appliedExtractor: AppliedExtractor?): DefuddleResult {
+        val metadata = appliedExtractor?.result?.metadata ?: return this
+        return copy(
+            title = metadata.title ?: title,
+            description = metadata.description ?: description,
+            published = metadata.published ?: published,
+            author = metadata.author ?: author,
+            site = metadata.site ?: site,
         )
     }
 
