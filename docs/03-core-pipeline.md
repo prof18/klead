@@ -92,12 +92,12 @@ After parse internals, strip:
 
 ## TDD Checklist
 
-- `[ ]` Minimal HTML returns a result object.
-- `[ ]` Empty HTML returns empty content without crash.
+- `[x]` Minimal HTML returns a result object.
+- `[x]` Empty HTML returns empty content without crash.
 - `[x]` Options default correctly.
-- `[ ]` Retry without partial selectors triggers under 200 words.
-- `[ ]` Hidden retry triggers under 50 words.
-- `[ ]` Index-page retry triggers under 50 words.
+- `[x]` Retry without partial selectors triggers under 200 words.
+- `[x]` Hidden retry triggers under 50 words.
+- `[x]` Index-page retry triggers under 50 words.
 - `[x]` `srcSet` normalizes to `srcset`.
 - `[x]` noscript image fallback promotes real image.
 - `[x]` unsafe elements and attributes are stripped after schema extraction.
@@ -105,9 +105,9 @@ After parse internals, strip:
 
 ## Acceptance Gate
 
-- `[ ]` A simple article fixture returns non-empty `contentHtml`.
-- `[ ]` `contentMarkdown` can be empty or primitive at this phase, but the field exists when requested.
-- `[ ]` Retry behavior has unit coverage.
+- `[x]` A simple article fixture returns non-empty `contentHtml`.
+- `[x]` `contentMarkdown` can be empty or primitive at this phase, but the field exists when requested.
+- `[x]` Retry behavior has unit coverage.
 
 ## Commit Slices
 

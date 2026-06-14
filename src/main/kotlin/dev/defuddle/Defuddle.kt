@@ -1,5 +1,6 @@
 package dev.defuddle
 
+import dev.defuddle.dom.cloneDocument
 import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
 import org.jsoup.Jsoup
@@ -56,32 +57,18 @@ object Defuddle {
             document.outputSettings().prettyPrint(false)
             prepareDocument(document)
 
-            val content = selectContent(document)
-            stripUnsafe(content)
-            val title = firstText(content.selectFirst("h1"), document.title())
-            val description = document.firstMetaContent("description", "og:description")
-            val markdown = if (options.markdown) MarkdownWriter.write(content) else ""
-
-            DefuddleResult(
-                contentMarkdown = markdown,
-                contentHtml = content.cleanOuterHtml(),
-                title = title,
-                description = description,
-                domain = parseDomain(url),
-                favicon = document.selectFirst("link[rel~=(?i)^(shortcut icon|icon)$]")?.absUrl("href")?.ifBlank { null },
-                image = document.firstMetaContent("og:image", "twitter:image"),
-                language = document.selectFirst("html")?.attr("lang")?.ifBlank { null },
-                published = document.firstMetaContent("article:published_time", "date", "pubdate"),
-                author = document.firstMetaContent("author", "article:author"),
-                site = document.firstMetaContent("og:site_name", "application-name"),
-                wordCount = countBodyWords(content),
-                parseTimeMillis = 0,
-                metaTags = document.collectMetaTags(),
-                schemaOrgData = emptyList(),
-                debug = mapOf(
-                    "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
-                ),
-            )
+            RetryController.run(options) { attemptOptions ->
+                val result = parseInternal(
+                    document = document.cloneDocument(),
+                    url = url,
+                    options = attemptOptions,
+                )
+                RetryCandidate(
+                    value = result,
+                    wordCount = result.wordCount,
+                    options = attemptOptions,
+                )
+            }.value
         }
 
         val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
@@ -100,6 +87,39 @@ object Defuddle {
             ?: document.selectFirst("main")
             ?: document.body()
             ?: Element("body")
+
+    private fun parseInternal(
+        document: Document,
+        url: String,
+        options: DefuddleOptions,
+    ): DefuddleResult {
+        val content = selectContent(document)
+        stripUnsafe(content)
+        val title = firstText(content.selectFirst("h1"), document.title())
+        val description = document.firstMetaContent("description", "og:description")
+        val markdown = if (options.markdown) MarkdownWriter.write(content) else ""
+
+        return DefuddleResult(
+            contentMarkdown = markdown,
+            contentHtml = content.cleanOuterHtml(),
+            title = title,
+            description = description,
+            domain = parseDomain(url),
+            favicon = document.selectFirst("link[rel~=(?i)^(shortcut icon|icon)$]")?.absUrl("href")?.ifBlank { null },
+            image = document.firstMetaContent("og:image", "twitter:image"),
+            language = document.selectFirst("html")?.attr("lang")?.ifBlank { null },
+            published = document.firstMetaContent("article:published_time", "date", "pubdate"),
+            author = document.firstMetaContent("author", "article:author"),
+            site = document.firstMetaContent("og:site_name", "application-name"),
+            wordCount = countBodyWords(content),
+            parseTimeMillis = 0,
+            metaTags = document.collectMetaTags(),
+            schemaOrgData = emptyList(),
+            debug = mapOf(
+                "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
+            ),
+        )
+    }
 
     private fun firstText(
         element: Element?,

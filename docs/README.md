@@ -44,7 +44,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [00 Principles And Scope](00-principles-and-scope.md)
 - `[x]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
 - `[x]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
-- `[~]` [03 Core Pipeline](03-core-pipeline.md)
+- `[x]` [03 Core Pipeline](03-core-pipeline.md)
 - `[ ]` [04 Main Content Detection](04-main-content-detection.md)
 - `[ ]` [05 Metadata Extraction](05-metadata-extraction.md)
 - `[ ]` [06 Removal Pipeline](06-removal-pipeline.md)
@@ -132,3 +132,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-005 - complete - Added DOM mutation helpers, document cloning, and malformed fragment parsing while preserving text-node order and base URI.
 2026-06-14 - PHASE-03 - in progress - Added Defuddle-compatible option defaults and verified Markdown can be disabled while cleaned HTML remains available.
 2026-06-14 - PHASE-03 - in progress - Added document preparation for noscript image fallback promotion, unsafe element/attribute stripping, and opt-in profile timing debug output.
+2026-06-14 - PHASE-03 - complete - Added clone-based internal parse retries for short content: without partial selectors, without hidden-element removal, and index-page retry options.
