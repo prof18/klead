@@ -45,7 +45,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
 - `[x]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
 - `[x]` [03 Core Pipeline](03-core-pipeline.md)
-- `[ ]` [04 Main Content Detection](04-main-content-detection.md)
+- `[~]` [04 Main Content Detection](04-main-content-detection.md)
 - `[ ]` [05 Metadata Extraction](05-metadata-extraction.md)
 - `[ ]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[ ]` [07 HTML Standardization](07-html-standardization.md)
@@ -67,7 +67,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-005 DOM mutation helpers.
 - `[ ]` COMMIT-006 Word count and text normalization.
 - `[ ]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
-- `[ ]` COMMIT-008 Main content scoring unit tests and implementation.
+- `[x]` COMMIT-008 Main content scoring unit tests and implementation.
 - `[ ]` COMMIT-009 Main content selection over entry-point selectors.
 - `[ ]` COMMIT-010 Hidden element removal.
 - `[ ]` COMMIT-011 Exact selector removal.
@@ -133,3 +133,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-03 - in progress - Added Defuddle-compatible option defaults and verified Markdown can be disabled while cleaned HTML remains available.
 2026-06-14 - PHASE-03 - in progress - Added document preparation for noscript image fallback promotion, unsafe element/attribute stripping, and opt-in profile timing debug output.
 2026-06-14 - PHASE-03 - complete - Added clone-based internal parse retries for short content: without partial selectors, without hidden-element removal, and index-page retry options.
+2026-06-14 - COMMIT-008 - complete - Added content scoring with word, paragraph, comma, link-density, image-density, content-hint, date, author, footnote, and nested-table factors.

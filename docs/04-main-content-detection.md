@@ -40,16 +40,16 @@ Keep list order because priority matters.
 
 Port `ContentScorer.scoreElement` with tests for:
 
-- word count
-- paragraph count
-- comma count
-- image density penalty
-- content class/id bonus
-- date signal
-- author signal
-- footnote signal
-- nested table penalty
-- link density multiplier
+- `[x]` word count
+- `[x]` paragraph count
+- `[x]` comma count
+- `[x]` image density penalty
+- `[x]` content class/id bonus
+- `[x]` date signal
+- `[x]` author signal
+- `[x]` footnote signal
+- `[x]` nested table penalty
+- `[x]` link density multiplier
 
 ## Selection Algorithm
 
@@ -109,4 +109,3 @@ When debug is enabled, include:
 - Table layout detection.
 - Schema text refinement.
 - Debug candidate reporting.
-
