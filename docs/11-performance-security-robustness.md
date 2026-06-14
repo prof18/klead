@@ -93,21 +93,21 @@ Document:
 
 ## TDD Checklist
 
-- `[ ]` `javascript:` href stripped.
-- `[ ]` `data:text/html` src stripped.
-- `[ ]` event handler attr stripped.
-- `[ ]` `srcdoc` stripped.
-- `[ ]` malformed HTML does not crash.
-- `[ ]` invalid JSON-LD does not crash.
-- `[ ]` unsupported selector logs debug and continues.
-- `[ ]` benchmark fixtures run.
-- `[ ]` repeated parse smoke test does not leak obvious shared state.
+- `[x]` `javascript:` href stripped.
+- `[x]` `data:text/html` src stripped.
+- `[x]` event handler attr stripped.
+- `[x]` `srcdoc` stripped.
+- `[x]` malformed HTML does not crash.
+- `[x]` invalid JSON-LD does not crash.
+- `[x]` unsupported selector logs debug and continues.
+- `[x]` benchmark fixtures run.
+- `[x]` repeated parse smoke test does not leak obvious shared state.
 
 ## Acceptance Gate
 
-- `[ ]` Security tests pass.
-- `[ ]` Performance report is recorded.
-- `[ ]` Robustness tests pass.
+- `[x]` Security tests pass.
+- `[x]` Performance report is recorded.
+- `[x]` Robustness tests pass.
 
 ## Commit Slices
 

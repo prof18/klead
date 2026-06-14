@@ -52,7 +52,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [08 Markdown Writer](08-markdown-writer.md)
 - `[~]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
 - `[x]` [10 Site Extractors](10-site-extractors.md)
-- `[ ]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
+- `[x]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
 - `[ ]` [12 Upstream Sync Process](12-upstream-sync-process.md)
 - `[ ]` [13 Release Gate And Docs](13-release-gate-and-docs.md)
 
@@ -89,8 +89,8 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-027 Fixture allowlist expansion by one category.
 - `[x]` COMMIT-028 One static site extractor.
 - `[x]` COMMIT-029 One async/network extractor with injected HTTP client.
-- `[ ]` COMMIT-030 Security tests.
-- `[ ]` COMMIT-031 Benchmarks.
+- `[x]` COMMIT-030 Security tests.
+- `[x]` COMMIT-031 Benchmarks.
 - `[ ]` COMMIT-032 Release docs and known differences.
 
 ## Global TDD Rules
@@ -146,3 +146,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-08 - complete - Replaced the primitive private writer with a direct Kotlin Markdown writer for blocks, inline formatting, links, images, lists, blockquotes, fenced code, tables, callouts, footnotes, math preservation, and post-processing.
 2026-06-14 - PHASE-09 - in progress - Added full-corpus diagnostic fixture runner with zero unknown classifications, MVP relaxed allowlist, and documented fixture coverage report.
 2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, result variables, disable list, and injected HTTP client hook for network-backed extractors.
+2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
