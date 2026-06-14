@@ -49,7 +49,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [05 Metadata Extraction](05-metadata-extraction.md)
 - `[x]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[x]` [07 HTML Standardization](07-html-standardization.md)
-- `[ ]` [08 Markdown Writer](08-markdown-writer.md)
+- `[x]` [08 Markdown Writer](08-markdown-writer.md)
 - `[ ]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
 - `[ ]` [10 Site Extractors](10-site-extractors.md)
 - `[ ]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
@@ -75,13 +75,13 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-013 Low-scoring clutter removal.
 - `[ ]` COMMIT-014 Unsafe element/attribute stripping.
 - `[ ]` COMMIT-015 URL resolution.
-- `[ ]` COMMIT-016 Markdown writer skeleton with text/paragraph/headings.
-- `[ ]` COMMIT-017 Markdown links and images.
-- `[ ]` COMMIT-018 Markdown lists and blockquotes.
-- `[ ]` COMMIT-019 Markdown fenced code blocks.
-- `[ ]` COMMIT-020 Markdown tables.
-- `[ ]` COMMIT-021 Markdown callouts.
-- `[ ]` COMMIT-022 Markdown footnotes.
+- `[x]` COMMIT-016 Markdown writer skeleton with text/paragraph/headings.
+- `[x]` COMMIT-017 Markdown links and images.
+- `[x]` COMMIT-018 Markdown lists and blockquotes.
+- `[x]` COMMIT-019 Markdown fenced code blocks.
+- `[x]` COMMIT-020 Markdown tables.
+- `[x]` COMMIT-021 Markdown callouts.
+- `[x]` COMMIT-022 Markdown footnotes.
 - `[x]` COMMIT-023 Image standardization.
 - `[x]` COMMIT-024 Code block standardization.
 - `[x]` COMMIT-025 Metadata completeness.
@@ -143,3 +143,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-011..013 - complete - Added exact selector removal, partial selector removal with code/footnote/callout protections, low-scoring link-heavy block removal, and a trailing subscribe content pattern.
 2026-06-14 - PHASE-06 - complete - Added duplicate image removal, metadata cover-image removal, and relaxed upstream hidden fixture coverage for removal false-positive checks.
 2026-06-14 - PHASE-07 - complete - Added HTML standardization for duplicate headings, code blocks, lazy images, figures, callouts, simple footnotes, tables, math preservation, and empty wrappers.
+2026-06-14 - PHASE-08 - complete - Replaced the primitive private writer with a direct Kotlin Markdown writer for blocks, inline formatting, links, images, lists, blockquotes, fenced code, tables, callouts, footnotes, math preservation, and post-processing.

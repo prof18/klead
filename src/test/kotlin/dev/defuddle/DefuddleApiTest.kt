@@ -52,7 +52,7 @@ class DefuddleApiTest {
             This is the first paragraph.
 
             This is the second paragraph.
-            """.trimIndent(),
+            """.trimIndent() + "\n",
             result.contentMarkdown,
         )
         assertTrue(result.contentHtml.contains("<article>"))

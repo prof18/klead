@@ -3,6 +3,7 @@ package dev.defuddle
 import dev.defuddle.dom.cloneDocument
 import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
+import dev.defuddle.markdown.DefuddleMarkdownWriter
 import dev.defuddle.content.MainContentDetector
 import dev.defuddle.metadata.MetaTagItem
 import dev.defuddle.metadata.MetadataExtractor
@@ -117,7 +118,7 @@ object Defuddle {
         if (options.standardize) {
             HtmlStandardizer.apply(content, metadata.title)
         }
-        val markdown = if (options.markdown) MarkdownWriter.write(content) else ""
+        val markdown = if (options.markdown) DefuddleMarkdownWriter.write(content, url) else ""
 
         return DefuddleResult(
             contentMarkdown = markdown,
@@ -220,37 +221,4 @@ object Defuddle {
     private val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
 
     private val DANGEROUS_URL_ATTRIBUTES = setOf("href", "src", "action", "formaction", "xlink:href")
-}
-
-private object MarkdownWriter {
-    fun write(root: Element): String =
-        root.childNodes()
-            .flatMap(::writeNode)
-            .joinToString("\n\n")
-            .trim()
-
-    private fun writeNode(node: Node): List<String> =
-        when (node) {
-            is TextNode -> node.text().normalizeWhitespace().takeIf { it.isNotBlank() }?.let(::listOf).orEmpty()
-            is Element -> writeElement(node)
-            else -> emptyList()
-        }
-
-    private fun writeElement(element: Element): List<String> =
-        when (element.normalName()) {
-            "h1" -> listOf("# ${element.text().normalizeWhitespace()}").filterNotBlank()
-            "h2" -> listOf("## ${element.text().normalizeWhitespace()}").filterNotBlank()
-            "h3" -> listOf("### ${element.text().normalizeWhitespace()}").filterNotBlank()
-            "h4" -> listOf("#### ${element.text().normalizeWhitespace()}").filterNotBlank()
-            "h5" -> listOf("##### ${element.text().normalizeWhitespace()}").filterNotBlank()
-            "h6" -> listOf("###### ${element.text().normalizeWhitespace()}").filterNotBlank()
-            "p" -> listOf(element.text().normalizeWhitespace()).filterNotBlank()
-            "br" -> listOf("\n")
-            else -> element.childNodes().flatMap(::writeNode)
-        }
-
-    private fun List<String>.filterNotBlank(): List<String> = filter { it.isNotBlank() }
-
-    private fun String.normalizeWhitespace(): String =
-        replace(Regex("""\s+"""), " ").trim()
 }

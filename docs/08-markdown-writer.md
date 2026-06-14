@@ -292,29 +292,31 @@ After rendering:
 
 ## TDD Checklist
 
-- `[ ]` Paragraph renders cleanly.
-- `[ ]` Headings render with correct levels.
-- `[ ]` Emphasis and strong escaping works.
-- `[ ]` Inline code handles embedded backticks.
-- `[ ]` Links resolve absolute URLs.
-- `[ ]` Dangerous links render as text only.
-- `[ ]` Images choose largest `srcset`.
-- `[ ]` Lists preserve nesting.
-- `[ ]` Blockquotes prefix all lines.
-- `[ ]` Fenced code preserves content.
-- `[ ]` Simple tables render as GFM.
-- `[ ]` Complex tables use documented fallback.
-- `[ ]` Callouts render as alert blockquotes.
-- `[ ]` Footnotes render references and definitions.
-- `[ ]` Math with `data-latex` is emitted as Markdown math text.
-- `[ ]` MathML without `data-latex` falls back to readable text or documented known difference.
-- `[ ]` Post-processing does not alter fenced code.
+- `[x]` Paragraph renders cleanly.
+- `[x]` Headings render with correct levels.
+- `[x]` Emphasis and strong escaping works.
+- `[x]` Inline code handles embedded backticks.
+- `[x]` Links resolve absolute URLs.
+- `[x]` Dangerous links render as text only.
+- `[x]` Images choose largest `srcset`.
+- `[x]` Lists preserve nesting.
+- `[x]` Blockquotes prefix all lines.
+- `[x]` Fenced code preserves content.
+- `[x]` Simple tables render as GFM.
+- `[x]` Complex tables use documented fallback.
+- `[x]` Callouts render as alert blockquotes.
+- `[x]` Footnotes render references and definitions.
+- `[x]` Math with `data-latex` is emitted as Markdown math text.
+- `[x]` MathML without `data-latex` falls back to readable text or documented known difference.
+- `[x]` Post-processing does not alter fenced code.
 
 ## Acceptance Gate
 
-- `[ ]` Active fixture allowlist has clean Markdown output.
-- `[ ]` No flexmark HTML-to-Markdown converter is used in production code.
-- `[ ]` Intentional Markdown differences from upstream are documented.
+- `[x]` Active fixture allowlist has clean Markdown output.
+- `[x]` No flexmark HTML-to-Markdown converter is used in production code.
+- `[x]` Intentional Markdown differences from upstream are documented.
+
+Known difference: non-empty Markdown output is normalized to one final newline. Empty content remains an empty string.
 
 ## Commit Slices
 
