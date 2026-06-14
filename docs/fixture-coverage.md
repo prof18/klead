@@ -33,6 +33,6 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
 ## Top Classified Gaps
 
-- Site extractors are not yet ported.
-- Network/async extractor hooks are not yet ported.
-- Some advanced standardization and Markdown parity cases remain classified by fixture category.
+- Full exact Markdown parity across every upstream fixture is staged behind classified known differences.
+- Production network-backed site extractor coverage beyond the injected-client hook remains staged.
+- Math rendering/conversion fidelity is excluded by scope.

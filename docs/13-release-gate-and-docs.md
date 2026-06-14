@@ -32,7 +32,8 @@ val result = Defuddle.parseHtml(
     options = DefuddleOptions(debug = true)
 )
 
-result.debug?.removals?.forEach(::println)
+val removals = result.debug["removals"] as? List<*>
+removals?.forEach(::println)
 ```
 
 Include known limitation notes:
@@ -56,12 +57,11 @@ Track:
 
 ## Release Gate Commands
 
-Use project-specific tasks. Default candidates:
+Use project-specific tasks. Actual project commands:
 
 ```text
 ./gradlew test -q --console=plain
-./gradlew lint -q --console=plain
-./gradlew detekt -q --console=plain
+./gradlew check -q --console=plain
 ```
 
 Only list commands that actually exist. If lint/detekt are not configured, document that.
@@ -75,26 +75,26 @@ Also run:
 
 ## Release Checklist
 
-- `[ ]` API examples compile.
-- `[ ]` Active fixture scope is green, excluding documented math rendering/conversion differences.
-- `[ ]` Diagnostic suite has no unknown failures.
-- `[ ]` Known differences are documented.
-- `[ ]` Security tests pass.
-- `[ ]` Benchmarks recorded.
-- `[ ]` Upstream SHA recorded.
-- `[ ]` No flexmark HTML-to-Markdown dependency in production path.
-- `[ ]` No Compose/WebView/Graal dependency in core module.
-- `[ ]` Site extractor coverage status is documented.
+- `[x]` API examples compile.
+- `[x]` Active fixture scope is green, excluding documented math rendering/conversion differences.
+- `[x]` Diagnostic suite has no unknown failures.
+- `[x]` Known differences are documented.
+- `[x]` Security tests pass.
+- `[x]` Benchmarks recorded.
+- `[x]` Upstream SHA recorded.
+- `[x]` No flexmark HTML-to-Markdown dependency in production path.
+- `[x]` No Compose/WebView/Graal dependency in core module.
+- `[x]` Site extractor coverage status is documented.
 
 ## TDD Checklist
 
-- `[ ]` README example is covered by a test or sample compile check.
-- `[ ]` Known differences fixtures are covered.
-- `[ ]` Release command docs match actual Gradle tasks.
+- `[x]` README example is covered by a test or sample compile check.
+- `[x]` Known differences fixtures are covered by the fixture diagnostics and release docs test.
+- `[x]` Release command docs match actual Gradle tasks.
 
 ## Acceptance Gate
 
-- `[ ]` A new developer can clone, run tests, parse an HTML string, and understand current coverage without extra context.
+- `[x]` A new developer can clone, run tests, parse an HTML string, and understand current coverage without extra context.
 
 ## Commit Slices
 

@@ -25,7 +25,18 @@ tasks.register("docsCheck") {
     description = "Checks that migration documentation exists."
     inputs.files(fileTree("docs") { include("*.md") })
     doLast {
-        check(file("docs/README.md").isFile) { "docs/README.md is required" }
+        val requiredDocs = listOf(
+            "docs/README.md",
+            "docs/fixture-coverage.md",
+            "docs/known-differences.md",
+            "docs/markdown-policy.md",
+            "docs/release-scope.md",
+            "docs/security-policy.md",
+            "docs/upstream-sync.md",
+        )
+        for (doc in requiredDocs) {
+            check(file(doc).isFile) { "$doc is required" }
+        }
     }
 }
 

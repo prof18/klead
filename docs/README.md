@@ -36,7 +36,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
 - `[x]` SCOPE-009 Use TDD for every ported behavior.
 - `[x]` SCOPE-010 Compose rendering is out of scope.
-- `[ ]` SCOPE-011 Port the major Defuddle feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
+- `[x]` SCOPE-011 Port the major Defuddle feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
 - `[x]` SCOPE-012 Math content should be preserved when practical, but MathML/LaTeX conversion and math rendering fidelity are out of scope.
 
 ## Phase Index
@@ -54,7 +54,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [10 Site Extractors](10-site-extractors.md)
 - `[x]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
 - `[x]` [12 Upstream Sync Process](12-upstream-sync-process.md)
-- `[ ]` [13 Release Gate And Docs](13-release-gate-and-docs.md)
+- `[x]` [13 Release Gate And Docs](13-release-gate-and-docs.md)
 
 ## Suggested Commit Slices
 
@@ -91,7 +91,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-029 One async/network extractor with injected HTTP client.
 - `[x]` COMMIT-030 Security tests.
 - `[x]` COMMIT-031 Benchmarks.
-- `[ ]` COMMIT-032 Release docs and known differences.
+- `[x]` COMMIT-032 Release docs and known differences.
 
 ## Global TDD Rules
 
@@ -105,15 +105,15 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 
 ## Global Acceptance Criteria
 
-- `[ ]` DONE-001 The library parses representative static HTML pages.
-- `[ ]` DONE-002 The library extracts metadata and main content.
-- `[ ]` DONE-003 The library outputs clean Markdown without flexmark HTML-to-Markdown.
-- `[ ]` DONE-004 Upstream Defuddle fixtures are pinned and runnable.
-- `[ ]` DONE-005 Major Defuddle feature families are implemented, excluding math rendering/conversion.
-- `[ ]` DONE-006 Fixture failures are green or documented as intentional known differences.
-- `[ ]` DONE-007 Security sanitization tests pass.
-- `[ ]` DONE-008 Performance is acceptable for a desktop JVM app.
-- `[ ]` DONE-009 Docs explain current coverage and known differences.
+- `[x]` DONE-001 The library parses representative static HTML pages.
+- `[x]` DONE-002 The library extracts metadata and main content.
+- `[x]` DONE-003 The library outputs clean Markdown without flexmark HTML-to-Markdown.
+- `[x]` DONE-004 Upstream Defuddle fixtures are pinned and runnable.
+- `[x]` DONE-005 Major Defuddle feature families are implemented, excluding math rendering/conversion.
+- `[x]` DONE-006 Fixture failures are green or documented as intentional known differences.
+- `[x]` DONE-007 Security sanitization tests pass.
+- `[x]` DONE-008 Performance is acceptable for a desktop JVM app.
+- `[x]` DONE-009 Docs explain current coverage and known differences.
 
 ## Progress Notes
 
@@ -148,3 +148,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, result variables, disable list, and injected HTTP client hook for network-backed extractors.
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
 2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
+2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Full exact Markdown parity remains a documented staged difference while diagnostic fixture coverage has zero unknown failures.
