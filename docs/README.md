@@ -33,7 +33,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` SCOPE-005 No GraalJS.
 - `[x]` SCOPE-006 No browser DOM dependency.
 - `[x]` SCOPE-007 No flexmark HTML-to-Markdown conversion in the core pipeline.
-- `[~]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
+- `[x]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
 - `[x]` SCOPE-009 Use TDD for every ported behavior.
 - `[x]` SCOPE-010 Compose rendering is out of scope.
 - `[ ]` SCOPE-011 Port the major Defuddle feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
@@ -50,7 +50,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[x]` [07 HTML Standardization](07-html-standardization.md)
 - `[x]` [08 Markdown Writer](08-markdown-writer.md)
-- `[ ]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
+- `[~]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
 - `[ ]` [10 Site Extractors](10-site-extractors.md)
 - `[ ]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
 - `[ ]` [12 Upstream Sync Process](12-upstream-sync-process.md)
@@ -73,8 +73,8 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-011 Exact selector removal.
 - `[x]` COMMIT-012 Partial selector removal.
 - `[x]` COMMIT-013 Low-scoring clutter removal.
-- `[ ]` COMMIT-014 Unsafe element/attribute stripping.
-- `[ ]` COMMIT-015 URL resolution.
+- `[x]` COMMIT-014 Unsafe element/attribute stripping.
+- `[x]` COMMIT-015 URL resolution.
 - `[x]` COMMIT-016 Markdown writer skeleton with text/paragraph/headings.
 - `[x]` COMMIT-017 Markdown links and images.
 - `[x]` COMMIT-018 Markdown lists and blockquotes.
@@ -86,7 +86,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-024 Code block standardization.
 - `[x]` COMMIT-025 Metadata completeness.
 - `[~]` COMMIT-026 Schema.org fallback.
-- `[ ]` COMMIT-027 Fixture allowlist expansion by one category.
+- `[x]` COMMIT-027 Fixture allowlist expansion by one category.
 - `[ ]` COMMIT-028 One static site extractor.
 - `[ ]` COMMIT-029 One async/network extractor with injected HTTP client.
 - `[ ]` COMMIT-030 Security tests.
@@ -144,3 +144,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-06 - complete - Added duplicate image removal, metadata cover-image removal, and relaxed upstream hidden fixture coverage for removal false-positive checks.
 2026-06-14 - PHASE-07 - complete - Added HTML standardization for duplicate headings, code blocks, lazy images, figures, callouts, simple footnotes, tables, math preservation, and empty wrappers.
 2026-06-14 - PHASE-08 - complete - Replaced the primitive private writer with a direct Kotlin Markdown writer for blocks, inline formatting, links, images, lists, blockquotes, fenced code, tables, callouts, footnotes, math preservation, and post-processing.
+2026-06-14 - PHASE-09 - in progress - Added full-corpus diagnostic fixture runner with zero unknown classifications, MVP relaxed allowlist, and documented fixture coverage report.

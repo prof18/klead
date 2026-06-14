@@ -117,17 +117,19 @@ Generate or maintain a report containing:
 
 ## TDD Checklist
 
-- `[ ]` Fixture category labels are correct.
-- `[ ]` MVP allowlist runs in strict mode.
-- `[ ]` Full fixture set runs in diagnostic mode.
-- `[ ]` Failing fixtures are classified.
+- `[x]` Fixture category labels are correct.
+- `[~]` MVP allowlist runs in strict mode.
+- `[x]` Full fixture set runs in diagnostic mode.
+- `[x]` Failing fixtures are classified.
 - `[ ]` Kotlin expected outputs are loaded only when explicitly allowed.
-- `[ ]` Coverage report is generated or documented.
+- `[x]` Coverage report is generated or documented.
+
+Note: the MVP allowlist currently runs in relaxed mode while exact Markdown parity expands. Strict fixture coverage is active for the metadata subset.
 
 ## Acceptance Gate
 
 - `[ ]` All fixtures outside the explicit math rendering/conversion exception pass strict or accepted-difference tests.
-- `[ ]` Full diagnostic suite has no unknown failures.
+- `[x]` Full diagnostic suite has no unknown failures.
 
 ## Commit Slices
 
