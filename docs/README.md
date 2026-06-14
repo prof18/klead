@@ -47,7 +47,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [03 Core Pipeline](03-core-pipeline.md)
 - `[x]` [04 Main Content Detection](04-main-content-detection.md)
 - `[x]` [05 Metadata Extraction](05-metadata-extraction.md)
-- `[ ]` [06 Removal Pipeline](06-removal-pipeline.md)
+- `[~]` [06 Removal Pipeline](06-removal-pipeline.md)
 - `[ ]` [07 HTML Standardization](07-html-standardization.md)
 - `[ ]` [08 Markdown Writer](08-markdown-writer.md)
 - `[ ]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
@@ -69,7 +69,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
 - `[x]` COMMIT-008 Main content scoring unit tests and implementation.
 - `[x]` COMMIT-009 Main content selection over entry-point selectors.
-- `[ ]` COMMIT-010 Hidden element removal.
+- `[x]` COMMIT-010 Hidden element removal.
 - `[ ]` COMMIT-011 Exact selector removal.
 - `[ ]` COMMIT-012 Partial selector removal.
 - `[ ]` COMMIT-013 Low-scoring clutter removal.
@@ -139,3 +139,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-05 - in progress - Added structured meta tag collection and JSON-LD schema.org extraction with arrays, `@graph`, nested fields, and invalid JSON diagnostics.
 2026-06-14 - COMMIT-007 - complete - Added page metadata extraction for cleaned titles, canonical domains, authors, dates, description, image, favicon, language, and public parser metadata fields.
 2026-06-14 - PHASE-05 - complete - Added strict upstream metadata fixture coverage for h1 sibling byline/date, placeholder fallbacks, and rel-author bio-container handling.
+2026-06-14 - COMMIT-010 - complete - Added hidden element removal with math-wrapper preservation and debug removal records.

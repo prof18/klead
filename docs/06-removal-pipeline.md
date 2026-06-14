@@ -133,8 +133,8 @@ When debug is enabled, record:
 
 ## TDD Checklist
 
-- `[ ]` Hidden inline styles are removed.
-- `[ ]` Math hidden wrappers are preserved.
+- `[x]` Hidden inline styles are removed.
+- `[x]` Math hidden wrappers are preserved.
 - `[ ]` Exact selectors remove obvious nav/footer/ad blocks.
 - `[ ]` Exact selectors preserve footnotes and callouts.
 - `[ ]` Partial selectors do not remove code blocks.
@@ -142,7 +142,7 @@ When debug is enabled, record:
 - `[ ]` Low-scoring preserves prose sections.
 - `[ ]` Content patterns remove trailing subscribe blocks.
 - `[ ]` Content patterns preserve legitimate final article paragraphs.
-- `[ ]` Debug records identify removals.
+- `[x]` Debug records identify removals.
 
 ## Acceptance Gate
 
@@ -158,4 +158,3 @@ When debug is enabled, record:
 - Content pattern group by group.
 - Image dedup/cover removal.
 - Debug removal records.
-

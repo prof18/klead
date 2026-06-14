@@ -7,6 +7,8 @@ import dev.defuddle.content.MainContentDetector
 import dev.defuddle.metadata.MetaTagItem
 import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
+import dev.defuddle.removal.RemovalPipeline
+import dev.defuddle.removal.RemovalRecord
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -101,7 +103,9 @@ object Defuddle {
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
         val detected = MainContentDetector.detect(document, options)
         val content = detected.element
+        val removals = mutableListOf<RemovalRecord>()
         stripUnsafe(content)
+        RemovalPipeline.apply(content, options, removals)
         val metadata = PageMetadataExtractor.extract(
             document = document,
             sourceUrl = url,
@@ -127,7 +131,7 @@ object Defuddle {
             parseTimeMillis = 0,
             metaTags = metaTags,
             schemaOrgData = schemaOrg.items,
-            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics),
+            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals),
         )
     }
 
@@ -139,6 +143,7 @@ object Defuddle {
         options: DefuddleOptions,
         detectionDebug: dev.defuddle.content.ContentDetectionDebug,
         schemaDiagnostics: List<String>,
+        removals: List<RemovalRecord>,
     ): Map<String, Any?> {
         val debug = mutableMapOf<String, Any?>(
             "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
@@ -153,6 +158,9 @@ object Defuddle {
             }
             if (schemaDiagnostics.isNotEmpty()) {
                 debug["schemaDiagnostics"] = schemaDiagnostics
+            }
+            if (removals.isNotEmpty()) {
+                debug["removals"] = removals
             }
         }
         return debug
