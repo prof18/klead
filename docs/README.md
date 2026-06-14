@@ -66,7 +66,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-004 jsoup selector safety wrappers.
 - `[x]` COMMIT-005 DOM mutation helpers.
 - `[ ]` COMMIT-006 Word count and text normalization.
-- `[ ]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
+- `[x]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
 - `[x]` COMMIT-008 Main content scoring unit tests and implementation.
 - `[x]` COMMIT-009 Main content selection over entry-point selectors.
 - `[ ]` COMMIT-010 Hidden element removal.
@@ -137,3 +137,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-009 - complete - Added ordered entry-point main content detection, contentSelector override, listing-container safeguard, and debug candidate reporting.
 2026-06-14 - PHASE-04 - complete - Added table-layout main-cell detection, peripheral table safeguards, and schema-text body refinement in the main content detector.
 2026-06-14 - PHASE-05 - in progress - Added structured meta tag collection and JSON-LD schema.org extraction with arrays, `@graph`, nested fields, and invalid JSON diagnostics.
+2026-06-14 - COMMIT-007 - complete - Added page metadata extraction for cleaned titles, canonical domains, authors, dates, description, image, favicon, language, and public parser metadata fields.

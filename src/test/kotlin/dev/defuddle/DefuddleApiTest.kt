@@ -42,7 +42,7 @@ class DefuddleApiTest {
             url = "https://example.com/articles/readable",
         )
 
-        assertEquals("Readable title", result.title)
+        assertEquals("Document title", result.title)
         assertEquals("A short description", result.description)
         assertEquals("example.com", result.domain)
         assertEquals(

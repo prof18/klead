@@ -6,12 +6,12 @@ import dev.defuddle.dom.parseFragment
 import dev.defuddle.content.MainContentDetector
 import dev.defuddle.metadata.MetaTagItem
 import dev.defuddle.metadata.MetadataExtractor
+import dev.defuddle.metadata.PageMetadataExtractor
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
-import java.net.URI
 import kotlin.math.max
 import kotlin.time.measureTimedValue
 
@@ -102,22 +102,27 @@ object Defuddle {
         val detected = MainContentDetector.detect(document, options)
         val content = detected.element
         stripUnsafe(content)
-        val title = firstText(content.selectFirst("h1"), document.title())
-        val description = document.firstMetaContent("description", "og:description")
+        val metadata = PageMetadataExtractor.extract(
+            document = document,
+            sourceUrl = url,
+            content = content,
+            metaTags = metaTags,
+            schemaOrg = schemaOrg,
+        )
         val markdown = if (options.markdown) MarkdownWriter.write(content) else ""
 
         return DefuddleResult(
             contentMarkdown = markdown,
             contentHtml = content.cleanOuterHtml(),
-            title = title,
-            description = description,
-            domain = parseDomain(url),
-            favicon = document.selectFirst("link[rel~=(?i)^(shortcut icon|icon)$]")?.absUrl("href")?.ifBlank { null },
-            image = document.firstMetaContent("og:image", "twitter:image"),
-            language = document.selectFirst("html")?.attr("lang")?.ifBlank { null },
-            published = document.firstMetaContent("article:published_time", "date", "pubdate"),
-            author = document.firstMetaContent("author", "article:author"),
-            site = document.firstMetaContent("og:site_name", "application-name"),
+            title = metadata.title,
+            description = metadata.description,
+            domain = metadata.domain,
+            favicon = metadata.favicon,
+            image = metadata.image,
+            language = metadata.language,
+            published = metadata.published,
+            author = metadata.author,
+            site = metadata.site,
             wordCount = countBodyWords(content),
             parseTimeMillis = 0,
             metaTags = metaTags,
@@ -125,11 +130,6 @@ object Defuddle {
             debug = buildDebug(options, detected.debug, schemaOrg.diagnostics),
         )
     }
-
-    private fun firstText(
-        element: Element?,
-        fallback: String,
-    ): String? = element?.text()?.ifBlank { null } ?: fallback.ifBlank { null }
 
     private fun prepareDocument(document: Document) {
         promoteNoscriptImages(document)
@@ -192,33 +192,12 @@ object Defuddle {
         }
     }
 
-    private fun Document.firstMetaContent(vararg names: String): String? {
-        for (name in names) {
-            val selector = "meta[name=$name], meta[property=$name]"
-            val content = selectFirst(selector)?.attr("content")?.trim()
-            if (!content.isNullOrBlank()) return content
-        }
-        return null
-    }
-
-    private fun Document.collectMetaTags(): Map<String, String> =
-        select("meta").mapNotNull { meta ->
-            val key = meta.attr("name").ifBlank { meta.attr("property") }.ifBlank { return@mapNotNull null }
-            val value = meta.attr("content").ifBlank { return@mapNotNull null }
-            key to value
-        }.toMap()
-
     private fun Element.cleanOuterHtml(): String =
         if (tagName() == "body" && children().isEmpty() && text().isBlank()) {
             ""
         } else {
             outerHtml().trim()
         }
-
-    private fun parseDomain(url: String): String? =
-        runCatching { URI(url).host?.removePrefix("www.") }
-            .getOrNull()
-            ?.ifBlank { null }
 
     private fun countBodyWords(content: Element): Int {
         val clone = content.clone()

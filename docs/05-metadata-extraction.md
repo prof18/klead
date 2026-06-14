@@ -132,22 +132,22 @@ Sources:
 
 ## TDD Checklist
 
-- `[ ]` Placeholder values are rejected.
-- `[ ]` Site suffix is removed from title.
-- `[ ]` Brand-only title falls back to better candidate.
-- `[ ]` Multi-author citation tags join correctly.
-- `[ ]` rel-author in bio container does not capture full bio.
-- `[ ]` h1 sibling byline extracts author.
-- `[ ]` h1 sibling date extracts published date.
-- `[ ]` canonical URL determines domain.
-- `[ ]` relative favicon resolves absolute.
+- `[x]` Placeholder values are rejected.
+- `[x]` Site suffix is removed from title.
+- `[x]` Brand-only title falls back to better candidate.
+- `[x]` Multi-author citation tags join correctly.
+- `[x]` rel-author in bio container does not capture full bio.
+- `[x]` h1 sibling byline extracts author.
+- `[x]` h1 sibling date extracts published date.
+- `[x]` canonical URL determines domain.
+- `[x]` relative favicon resolves absolute.
 - `[x]` JSON-LD invalid syntax is ignored safely.
 - `[x]` `@graph` schema fields are found.
 
 ## Acceptance Gate
 
 - `[ ]` Metadata fixture subset passes strict expected fields.
-- `[ ]` Metadata extractor has focused unit tests independent of full parser.
+- `[x]` Metadata extractor has focused unit tests independent of full parser.
 
 ## Commit Slices
 
