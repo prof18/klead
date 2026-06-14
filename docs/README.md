@@ -1,0 +1,124 @@
+# Defuddle Kotlin Migration
+
+This folder is the execution plan for building a Kotlin/JVM port of Defuddle that outputs clean Markdown.
+
+The project goal is a broad feature port of Defuddle's extraction behavior, with Markdown generation as the primary output. Compose, WebView, and UI rendering are out of scope for this repository unless a later product decision adds an example app.
+
+## How To Use This Folder
+
+1. Start with the first unchecked item in this README.
+2. Open the linked phase file for implementation details.
+3. Write the test first.
+4. Implement the smallest behavior that passes the test.
+5. Run the targeted test and relevant fixture subset.
+6. Commit when the change is self-contained, even if the phase is not complete.
+7. Update this README and the phase file notes before moving on.
+
+Small commits are preferred. A commit may be smaller than a phase when it completes one coherent behavior, such as "fixture URL parser", "case-insensitive selector wrapper", or "Markdown image rendering".
+
+## Status Legend
+
+- `[ ]` Not started
+- `[~]` In progress
+- `[x]` Complete
+- `[!]` Blocked
+- `[d]` Deferred by explicit decision
+
+## Scope
+
+- `[ ]` SCOPE-001 Kotlin/JVM library accepts static HTML plus URL.
+- `[ ]` SCOPE-002 Library emits clean Markdown as the primary content output.
+- `[ ]` SCOPE-003 Library may also return cleaned HTML for debugging and test comparison.
+- `[ ]` SCOPE-004 No WebView.
+- `[ ]` SCOPE-005 No GraalJS.
+- `[ ]` SCOPE-006 No browser DOM dependency.
+- `[ ]` SCOPE-007 No flexmark HTML-to-Markdown conversion in the core pipeline.
+- `[ ]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
+- `[ ]` SCOPE-009 Use TDD for every ported behavior.
+- `[ ]` SCOPE-010 Compose rendering is out of scope.
+- `[ ]` SCOPE-011 Port the major Defuddle feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
+- `[ ]` SCOPE-012 Math content should be preserved when practical, but MathML/LaTeX conversion and math rendering fidelity are out of scope.
+
+## Phase Index
+
+- `[ ]` [00 Principles And Scope](00-principles-and-scope.md)
+- `[ ]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
+- `[ ]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
+- `[ ]` [03 Core Pipeline](03-core-pipeline.md)
+- `[ ]` [04 Main Content Detection](04-main-content-detection.md)
+- `[ ]` [05 Metadata Extraction](05-metadata-extraction.md)
+- `[ ]` [06 Removal Pipeline](06-removal-pipeline.md)
+- `[ ]` [07 HTML Standardization](07-html-standardization.md)
+- `[ ]` [08 Markdown Writer](08-markdown-writer.md)
+- `[ ]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
+- `[ ]` [10 Site Extractors](10-site-extractors.md)
+- `[ ]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
+- `[ ]` [12 Upstream Sync Process](12-upstream-sync-process.md)
+- `[ ]` [13 Release Gate And Docs](13-release-gate-and-docs.md)
+
+## Suggested Commit Slices
+
+These are examples. Commit whenever a unit of behavior is complete and tested.
+
+- `[ ]` COMMIT-001 Initial Gradle/Kotlin scaffold and empty API.
+- `[ ]` COMMIT-002 Upstream fixture import with pinned SHA.
+- `[ ]` COMMIT-003 Fixture discovery and expected-output loader.
+- `[ ]` COMMIT-004 jsoup selector safety wrappers.
+- `[ ]` COMMIT-005 DOM mutation helpers.
+- `[ ]` COMMIT-006 Word count and text normalization.
+- `[ ]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
+- `[ ]` COMMIT-008 Main content scoring unit tests and implementation.
+- `[ ]` COMMIT-009 Main content selection over entry-point selectors.
+- `[ ]` COMMIT-010 Hidden element removal.
+- `[ ]` COMMIT-011 Exact selector removal.
+- `[ ]` COMMIT-012 Partial selector removal.
+- `[ ]` COMMIT-013 Low-scoring clutter removal.
+- `[ ]` COMMIT-014 Unsafe element/attribute stripping.
+- `[ ]` COMMIT-015 URL resolution.
+- `[ ]` COMMIT-016 Markdown writer skeleton with text/paragraph/headings.
+- `[ ]` COMMIT-017 Markdown links and images.
+- `[ ]` COMMIT-018 Markdown lists and blockquotes.
+- `[ ]` COMMIT-019 Markdown fenced code blocks.
+- `[ ]` COMMIT-020 Markdown tables.
+- `[ ]` COMMIT-021 Markdown callouts.
+- `[ ]` COMMIT-022 Markdown footnotes.
+- `[ ]` COMMIT-023 Image standardization.
+- `[ ]` COMMIT-024 Code block standardization.
+- `[ ]` COMMIT-025 Metadata completeness.
+- `[ ]` COMMIT-026 Schema.org fallback.
+- `[ ]` COMMIT-027 Fixture allowlist expansion by one category.
+- `[ ]` COMMIT-028 One static site extractor.
+- `[ ]` COMMIT-029 One async/network extractor with injected HTTP client.
+- `[ ]` COMMIT-030 Security tests.
+- `[ ]` COMMIT-031 Benchmarks.
+- `[ ]` COMMIT-032 Release docs and known differences.
+
+## Global TDD Rules
+
+- Every behavior starts with a failing test.
+- Prefer narrow unit tests before fixture tests.
+- A fixture failure must be classified before it is ignored.
+- Kotlin-specific expected outputs are allowed only for intentional differences.
+- Do not edit upstream fixture files by hand.
+- Do not update dependency versions and fixture baselines in the same commit.
+- Do not add broad rewrites without a fixture or unit test proving the behavior.
+
+## Global Acceptance Criteria
+
+- `[ ]` DONE-001 The library parses representative static HTML pages.
+- `[ ]` DONE-002 The library extracts metadata and main content.
+- `[ ]` DONE-003 The library outputs clean Markdown without flexmark HTML-to-Markdown.
+- `[ ]` DONE-004 Upstream Defuddle fixtures are pinned and runnable.
+- `[ ]` DONE-005 Major Defuddle feature families are implemented, excluding math rendering/conversion.
+- `[ ]` DONE-006 Fixture failures are green or documented as intentional known differences.
+- `[ ]` DONE-007 Security sanitization tests pass.
+- `[ ]` DONE-008 Performance is acceptable for a desktop JVM app.
+- `[ ]` DONE-009 Docs explain current coverage and known differences.
+
+## Progress Notes
+
+Add notes in this format:
+
+```text
+YYYY-MM-DD - STEP-ID - status - note
+```

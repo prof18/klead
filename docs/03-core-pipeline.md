@@ -1,0 +1,120 @@
+# 03 Core Pipeline
+
+## Goal
+
+Create the high-level parser flow that coordinates preparation, metadata, content selection, removals, standardization, URL resolution, and Markdown generation.
+
+At this phase, most internal steps can be minimal or no-op. The pipeline shape and retry behavior should be in place.
+
+## Pipeline Order
+
+Implement the order explicitly:
+
+1. Parse HTML with jsoup and base URL.
+2. Normalize attributes on original document.
+3. Resolve noscript lazy images on original document.
+4. Run `parseInternal` with default options.
+5. Retry with less aggressive options if content is too short.
+6. Strip unsafe elements and attributes.
+7. Apply schema.org text fallback if it clearly improves content.
+8. Generate Markdown if requested.
+9. Return result.
+
+Internal parse order:
+
+1. Guard broken document.
+2. Merge defaults with options and overrides.
+3. Extract schema.org data.
+4. Collect meta tags.
+5. Extract metadata.
+6. Optionally remove all images.
+7. Clone document.
+8. Find main content.
+9. Apply removal steps.
+10. Apply standardization steps.
+11. Resolve relative URLs.
+12. Deduplicate images.
+13. Serialize content HTML.
+14. Count words.
+15. Build debug/profile result.
+
+## Options
+
+Implement defaults matching Defuddle where practical:
+
+- `removeExactSelectors = true`
+- `removePartialSelectors = true`
+- `removeHiddenElements = true`
+- `removeLowScoring = true`
+- `removeSmallImages = true`
+- `removeImages = false`
+- `removeContentPatterns = true`
+- `standardize = true`
+- `markdown = true`
+- `separateMarkdown = true`
+- `debug = false`
+- `profile = false`
+
+## Retries
+
+Port Defuddle retry behavior:
+
+1. If default result word count is under 200, retry with `removePartialSelectors = false`.
+2. Use retry only if it more than doubles word count.
+3. If result is under 50, retry with `removeHiddenElements = false`.
+4. If still under 50, retry with `removeLowScoring = false`, `removePartialSelectors = false`, `removeContentPatterns = false`.
+
+Tests should not require full extraction implementation. Use fake internal parser hooks or small fixtures to prove retry decisions.
+
+## Document Preparation
+
+Normalize:
+
+- `srcSet` to `srcset`
+- image/source attribute casing
+- noscript lazy image promotion where there is a real image fallback
+
+Do not remove scripts before schema.org extraction.
+
+## Unsafe Stripping
+
+After parse internals, strip:
+
+- non-math scripts
+- style
+- noscript
+- frame/frameset
+- object/embed/applet
+- base
+- event handler attributes
+- `srcdoc`
+- dangerous `href`, `src`, `action`, `formaction`, `xlink:href`
+
+## TDD Checklist
+
+- `[ ]` Minimal HTML returns a result object.
+- `[ ]` Empty HTML returns empty content without crash.
+- `[ ]` Options default correctly.
+- `[ ]` Retry without partial selectors triggers under 200 words.
+- `[ ]` Hidden retry triggers under 50 words.
+- `[ ]` Index-page retry triggers under 50 words.
+- `[ ]` `srcSet` normalizes to `srcset`.
+- `[ ]` noscript image fallback promotes real image.
+- `[ ]` unsafe elements and attributes are stripped after schema extraction.
+- `[ ]` profile timings are present only when requested.
+
+## Acceptance Gate
+
+- `[ ]` A simple article fixture returns non-empty `contentHtml`.
+- `[ ]` `contentMarkdown` can be empty or primitive at this phase, but the field exists when requested.
+- `[ ]` Retry behavior has unit coverage.
+
+## Commit Slices
+
+- Options and result models.
+- Parse entry points.
+- Retry controller.
+- Document preparation.
+- Unsafe stripping.
+- Minimal content serialization and word count.
+
