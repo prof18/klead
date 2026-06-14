@@ -158,16 +158,18 @@ Diagnostic:
 
 - `[x]` Empty project builds.
 - `[x]` Placeholder API test passes.
-- `[ ]` Fixture loader discovers expected number of HTML files.
-- `[ ]` Expected loader parses a representative `.md` expected file.
-- `[ ]` URL frontmatter extraction works.
-- `[ ]` Diagnostic run reports fixture categories.
+- `[x]` Fixture loader discovers expected number of HTML files.
+- `[x]` Expected loader parses a representative `.md` expected file.
+- `[x]` URL frontmatter extraction works.
+- `[x]` Diagnostic run reports fixture categories.
 
 ## Acceptance Gate
 
-- `[ ]` `./gradlew test -q --console=plain` runs.
-- `[ ]` Fixture harness can load upstream inputs and expected outputs.
-- `[ ]` Tests fail because parser is empty, not because resources cannot be loaded.
+- `[x]` `./gradlew test -q --console=plain` runs.
+- `[x]` Fixture harness can load upstream inputs and expected outputs.
+- `[d]` Tests fail because parser is empty, not because resources cannot be loaded.
+
+Decision note: the public API skeleton was implemented before the full fixture harness, so the parser is no longer empty. Fixture parity will be introduced as diagnostic/relaxed parser tests in later phases; current tests prove resource loading and expected-output parsing are not blockers.
 
 ## Commit Slices
 
