@@ -63,7 +63,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-001 Initial Gradle/Kotlin scaffold and empty API.
 - `[x]` COMMIT-002 Upstream fixture import with pinned SHA.
 - `[x]` COMMIT-003 Fixture discovery and expected-output loader.
-- `[ ]` COMMIT-004 jsoup selector safety wrappers.
+- `[x]` COMMIT-004 jsoup selector safety wrappers.
 - `[ ]` COMMIT-005 DOM mutation helpers.
 - `[ ]` COMMIT-006 Word count and text normalization.
 - `[ ]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
@@ -128,3 +128,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-002 - complete - Vendored upstream Defuddle fixtures from kepano/defuddle at 9db72600a0cfc568eafb31e85ef68ba16add072e: 190 HTML fixtures, 190 expected Markdown files, 3 expected HTML files, and upstream license.
 2026-06-14 - COMMIT-003 - complete - Added fixture harness test utilities for discovering upstream fixtures, extracting fixture URLs, parsing expected Markdown JSON preambles, normalizing Markdown, and reporting fixture categories.
 2026-06-14 - PHASE-02 - in progress - Added basic jsoup element helpers and URL helpers; selector safety and mutation helpers remain.
+2026-06-14 - COMMIT-004 - complete - Added safe selector wrappers with unsupported-selector diagnostics, case-insensitive attribute matching, `:scope >` direct-child handling, and known `:has` fallbacks.

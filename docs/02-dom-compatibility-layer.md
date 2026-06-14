@@ -123,11 +123,11 @@ When removing or moving nodes:
 
 ## TDD Checklist
 
-- `[ ]` Selector helper returns elements for standard selectors.
-- `[ ]` Unsupported selector does not crash.
-- `[ ]` Case-insensitive selectors work.
-- `[ ]` `:scope >` direct-child selector works.
-- `[ ]` Known `:has` fallbacks work.
+- `[x]` Selector helper returns elements for standard selectors.
+- `[x]` Unsupported selector does not crash.
+- `[x]` Case-insensitive selectors work.
+- `[x]` `:scope >` direct-child selector works.
+- `[x]` Known `:has` fallbacks work.
 - `[ ]` `unwrapSafely` preserves child order.
 - `[ ]` `replaceWithChildren` preserves text and element nodes.
 - `[ ]` `parseFragment` handles malformed HTML.
