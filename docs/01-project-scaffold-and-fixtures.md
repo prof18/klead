@@ -148,8 +148,8 @@ Diagnostic:
 
 ## TDD Checklist
 
-- `[ ]` Empty project builds.
-- `[ ]` Placeholder API test passes.
+- `[x]` Empty project builds.
+- `[x]` Placeholder API test passes.
 - `[ ]` Fixture loader discovers expected number of HTML files.
 - `[ ]` Expected loader parses a representative `.md` expected file.
 - `[ ]` URL frontmatter extraction works.
@@ -169,4 +169,3 @@ Diagnostic:
 - Fixture loader and URL extraction.
 - Expected output loader.
 - Test mode and normalization helpers.
-

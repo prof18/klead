@@ -26,23 +26,23 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 
 ## Scope
 
-- `[ ]` SCOPE-001 Kotlin/JVM library accepts static HTML plus URL.
-- `[ ]` SCOPE-002 Library emits clean Markdown as the primary content output.
-- `[ ]` SCOPE-003 Library may also return cleaned HTML for debugging and test comparison.
-- `[ ]` SCOPE-004 No WebView.
-- `[ ]` SCOPE-005 No GraalJS.
-- `[ ]` SCOPE-006 No browser DOM dependency.
-- `[ ]` SCOPE-007 No flexmark HTML-to-Markdown conversion in the core pipeline.
+- `[x]` SCOPE-001 Kotlin/JVM library accepts static HTML plus URL.
+- `[x]` SCOPE-002 Library emits clean Markdown as the primary content output.
+- `[x]` SCOPE-003 Library may also return cleaned HTML for debugging and test comparison.
+- `[x]` SCOPE-004 No WebView.
+- `[x]` SCOPE-005 No GraalJS.
+- `[x]` SCOPE-006 No browser DOM dependency.
+- `[x]` SCOPE-007 No flexmark HTML-to-Markdown conversion in the core pipeline.
 - `[ ]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
-- `[ ]` SCOPE-009 Use TDD for every ported behavior.
-- `[ ]` SCOPE-010 Compose rendering is out of scope.
+- `[x]` SCOPE-009 Use TDD for every ported behavior.
+- `[x]` SCOPE-010 Compose rendering is out of scope.
 - `[ ]` SCOPE-011 Port the major Defuddle feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
-- `[ ]` SCOPE-012 Math content should be preserved when practical, but MathML/LaTeX conversion and math rendering fidelity are out of scope.
+- `[x]` SCOPE-012 Math content should be preserved when practical, but MathML/LaTeX conversion and math rendering fidelity are out of scope.
 
 ## Phase Index
 
-- `[ ]` [00 Principles And Scope](00-principles-and-scope.md)
-- `[ ]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
+- `[x]` [00 Principles And Scope](00-principles-and-scope.md)
+- `[~]` [01 Project Scaffold And Fixtures](01-project-scaffold-and-fixtures.md)
 - `[ ]` [02 DOM Compatibility Layer](02-dom-compatibility-layer.md)
 - `[ ]` [03 Core Pipeline](03-core-pipeline.md)
 - `[ ]` [04 Main Content Detection](04-main-content-detection.md)
@@ -60,7 +60,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 
 These are examples. Commit whenever a unit of behavior is complete and tested.
 
-- `[ ]` COMMIT-001 Initial Gradle/Kotlin scaffold and empty API.
+- `[x]` COMMIT-001 Initial Gradle/Kotlin scaffold and empty API.
 - `[ ]` COMMIT-002 Upstream fixture import with pinned SHA.
 - `[ ]` COMMIT-003 Fixture discovery and expected-output loader.
 - `[ ]` COMMIT-004 jsoup selector safety wrappers.
@@ -122,3 +122,6 @@ Add notes in this format:
 ```text
 YYYY-MM-DD - STEP-ID - status - note
 ```
+
+2026-06-14 - SCOPE-001..007 - complete - Added Kotlin/JVM scaffold and jsoup-backed static HTML API with Markdown as the primary output and cleaned HTML as secondary output; no WebView, GraalJS, browser DOM, or flexmark conversion is used.
+2026-06-14 - PHASE-00 - complete - Initial public contract tests cover empty HTML, minimal article Markdown, cleaned HTML debug output, and unsupported browser/CSS behavior documentation.

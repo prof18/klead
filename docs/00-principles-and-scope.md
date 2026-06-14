@@ -95,16 +95,16 @@ Client-rendered pages with no static content remain inherently limited without J
 
 ## TDD Checklist
 
-- `[ ]` Test that public API can parse an empty HTML string without crashing.
-- `[ ]` Test that public API can parse a minimal article and return Markdown.
-- `[ ]` Test that unsupported browser/CSS behavior is documented and does not crash.
-- `[ ]` Test that `contentHtml` remains available even when Markdown is the primary output.
+- `[x]` Test that public API can parse an empty HTML string without crashing.
+- `[x]` Test that public API can parse a minimal article and return Markdown.
+- `[x]` Test that unsupported browser/CSS behavior is documented and does not crash.
+- `[x]` Test that `contentHtml` remains available even when Markdown is the primary output.
 
 ## Acceptance Gate
 
-- `[ ]` Scope is reflected in README and package docs.
-- `[ ]` Compose/WebView/Graal/flexmark HTML-to-Markdown are not listed as core requirements.
-- `[ ]` The only explicit feature-family exclusion is math rendering/conversion.
+- `[x]` Scope is reflected in README and package docs.
+- `[x]` Compose/WebView/Graal/flexmark HTML-to-Markdown are not listed as core requirements.
+- `[x]` The only explicit feature-family exclusion is math rendering/conversion.
 
 ## Commit Slices
 

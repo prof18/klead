@@ -1,0 +1,101 @@
+package dev.defuddle
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+class DefuddleApiTest {
+    @Test
+    fun `empty html parses without crashing`() {
+        val result = Defuddle.parseHtml(
+            html = "",
+            url = "https://example.com/empty",
+        )
+
+        assertEquals("example.com", result.domain)
+        assertEquals("", result.contentMarkdown)
+        assertEquals(0, result.wordCount)
+        assertTrue(result.parseTimeMillis >= 0)
+    }
+
+    @Test
+    fun `minimal article returns markdown as primary content and html as debug output`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <!doctype html>
+                <html>
+                  <head>
+                    <title>Document title</title>
+                    <meta name="description" content="A short description">
+                  </head>
+                  <body>
+                    <article>
+                      <h1>Readable title</h1>
+                      <p>This is the first paragraph.</p>
+                      <p>This is the second paragraph.</p>
+                    </article>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://example.com/articles/readable",
+        )
+
+        assertEquals("Readable title", result.title)
+        assertEquals("A short description", result.description)
+        assertEquals("example.com", result.domain)
+        assertEquals(
+            """
+            # Readable title
+
+            This is the first paragraph.
+
+            This is the second paragraph.
+            """.trimIndent(),
+            result.contentMarkdown,
+        )
+        assertTrue(result.contentHtml.contains("<article>"))
+        assertFalse(result.contentHtml.contains("<script"))
+        assertEquals(10, result.wordCount)
+    }
+
+    @Test
+    fun `unsupported browser css behavior is documented and does not crash`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <html>
+                  <body>
+                    <article>
+                      <style>.article::before { content: "not executed"; }</style>
+                      <p>Visible static text.</p>
+                    </article>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://example.com/css",
+        )
+
+        assertTrue(result.contentMarkdown.contains("Visible static text."))
+        assertFalse(result.contentMarkdown.contains("not executed"))
+        assertEquals(
+            "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
+            result.debug["unsupportedBrowserBehavior"],
+        )
+    }
+
+    @Test
+    fun `result exposes expected contract fields`() {
+        val result = Defuddle.parseHtml(
+            html = "<html><body><p>Body text.</p></body></html>",
+            url = "https://example.com",
+            options = DefuddleOptions(markdown = true),
+        )
+
+        assertNotNull(result.contentMarkdown)
+        assertNotNull(result.contentHtml)
+        assertNotNull(result.metaTags)
+        assertNotNull(result.schemaOrgData)
+        assertNotNull(result.debug)
+    }
+}
