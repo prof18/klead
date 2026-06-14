@@ -2,6 +2,7 @@ package dev.defuddle.removal
 
 import dev.defuddle.DefuddleOptions
 import dev.defuddle.dom.removeSafely
+import dev.defuddle.dom.selectSafe
 import org.jsoup.nodes.Element
 
 data class RemovalRecord(
@@ -19,6 +20,18 @@ object RemovalPipeline {
     ) {
         if (options.removeHiddenElements) {
             removeHiddenElements(content, debug)
+        }
+        if (options.removeExactSelectors) {
+            removeExactSelectors(content, debug)
+        }
+        if (options.removePartialSelectors) {
+            removePartialSelectors(content, debug)
+        }
+        if (options.removeLowScoring) {
+            removeLowScoringBlocks(content, debug)
+        }
+        if (options.removeContentPatterns) {
+            removeContentPatterns(content, debug)
         }
     }
 
@@ -68,4 +81,139 @@ object RemovalPipeline {
             element.className().isNotBlank() -> "${element.tagName()}.${element.classNames().joinToString(".")}"
             else -> element.tagName()
         }
+
+    private fun removeExactSelectors(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (selector in EXACT_SELECTORS) {
+            for (element in content.selectSafe(selector).toList()) {
+                if (isProtected(element)) continue
+                recordAndRemove(element, debug, "removeExactSelectors", selector, "exact clutter selector")
+            }
+        }
+    }
+
+    private fun removePartialSelectors(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (element in content.select("*").toList()) {
+            if (isProtected(element)) continue
+            val haystack = partialHaystack(element)
+            if (PARTIAL_PATTERNS.any { it in haystack }) {
+                recordAndRemove(element, debug, "removePartialSelectors", null, "partial clutter attribute")
+            }
+        }
+    }
+
+    private fun removeLowScoringBlocks(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (element in content.select("section, aside, div, ul, ol").toList()) {
+            if (isProtected(element) || isLikelyProse(element)) continue
+            val text = element.text()
+            val linkText = element.select("a").sumOf { it.text().length }
+            val linkDensity = if (text.isBlank()) 0.0 else linkText.toDouble() / text.length
+            val linkCount = element.select("a").size
+            if (linkCount >= 3 && linkDensity > 0.55) {
+                recordAndRemove(element, debug, "removeLowScoring", null, "link-heavy low scoring block")
+            }
+        }
+    }
+
+    private fun removeContentPatterns(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (element in content.children().toList().asReversed()) {
+            val text = element.text().trim()
+            if (text.isBlank()) continue
+            if (SUBSCRIBE_PATTERN.containsMatchIn(text) && text.length < 180) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing subscribe call to action")
+                continue
+            }
+            break
+        }
+    }
+
+    private fun isProtected(element: Element): Boolean {
+        val hints = partialHaystack(element)
+        return element.`is`("pre, code, figure, picture, table, math, blockquote") ||
+            element.parents().any { it.`is`("pre, code, figure, picture, table, math, blockquote") } ||
+            "footnote" in hints ||
+            "footnotes" in hints ||
+            "callout" in hints ||
+            "admonition" in hints
+    }
+
+    private fun isLikelyProse(element: Element): Boolean {
+        val paragraphs = element.select("p").count { it.text().split(Regex("""\s+""")).size >= 8 }
+        if (paragraphs >= 1) return true
+        val text = element.text()
+        val words = text.split(Regex("""\s+""")).count { it.isNotBlank() }
+        return words >= 35 && text.count { it == '.' || it == ',' } >= 2
+    }
+
+    private fun partialHaystack(element: Element): String {
+        val attrs = element.attributes().asList().joinToString(" ") { attribute ->
+            if (attribute.key.startsWith("data-")) "${attribute.key} ${attribute.value}" else attribute.value
+        }
+        return "${element.id()} ${element.className()} $attrs".lowercase()
+    }
+
+    private fun recordAndRemove(
+        element: Element,
+        debug: MutableList<RemovalRecord>,
+        step: String,
+        selector: String?,
+        reason: String,
+    ) {
+        debug += RemovalRecord(
+            step = step,
+            selector = selector,
+            reason = reason,
+            preview = element.text().take(100),
+        )
+        element.removeSafely()
+    }
+
+    private val EXACT_SELECTORS = listOf(
+        "nav",
+        "footer",
+        "form",
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "[role=navigation]",
+        ".ad",
+        ".ads",
+        ".advertisement",
+        ".comments",
+        ".comment",
+        ".share",
+        ".sharing",
+        ".related",
+        ".related-posts",
+        ".toc",
+        ".table-of-contents",
+    )
+
+    private val PARTIAL_PATTERNS = listOf(
+        "advert",
+        "promo",
+        "related",
+        "share",
+        "sidebar",
+        "sponsor",
+        "subscribe",
+        "newsletter",
+    )
+
+    private val SUBSCRIBE_PATTERN = Regex(
+        """\b(subscribe|newsletter|weekly updates|product announcements)\b""",
+        RegexOption.IGNORE_CASE,
+    )
 }

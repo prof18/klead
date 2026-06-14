@@ -76,4 +76,82 @@ class RemovalPipelineTest {
         assertTrue(removals.any { it.toString().contains("removeHiddenElements") })
         assertTrue(removals.any { it.toString().contains("Hidden debug text") })
     }
+
+    @Test
+    fun `exact selectors remove obvious nav footer and ad blocks but preserve notes`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <nav>Navigation should go</nav>
+                  <p>Main prose stays with enough words to avoid short-page retry and make removal deterministic for this fixture.</p>
+                  <aside class="ad">Advertisement should go</aside>
+                  <section class="footnotes"><p>Footnote should stay.</p></section>
+                  <footer>Footer should go</footer>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/exact",
+        )
+
+        assertFalse(result.contentMarkdown.contains("Navigation should go"))
+        assertFalse(result.contentMarkdown.contains("Advertisement should go"))
+        assertFalse(result.contentMarkdown.contains("Footer should go"))
+        assertTrue(result.contentMarkdown.contains("Footnote should stay."))
+    }
+
+    @Test
+    fun `partial selectors do not remove code blocks`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>Main prose stays with enough words to avoid short-page retry and make removal deterministic for this fixture.</p>
+                  <pre class="related-code"><code>val related = "content"</code></pre>
+                  <section class="related-posts">Related posts should go</section>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/partial",
+        )
+
+        assertTrue(result.contentMarkdown.contains("""val related = "content""""))
+        assertFalse(result.contentMarkdown.contains("Related posts should go"))
+    }
+
+    @Test
+    fun `low scoring removes link heavy related sections and preserves prose`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <section>
+                    <p>This prose section should stay because it has meaningful text, punctuation, and a low link density. It explains the article topic in complete sentences and provides enough substance for the parser to trust the cleaned result.</p>
+                    <p>Another prose paragraph gives the block enough substance to avoid being treated as clutter. It adds stable article length, natural punctuation, and more words so short-page retry paths do not disable the low-scoring removal being tested.</p>
+                  </section>
+                  <section>
+                    <a href="/one">Related one</a>
+                    <a href="/two">Related two</a>
+                    <a href="/three">Related three</a>
+                    <a href="/four">Related four</a>
+                  </section>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/low-score",
+        )
+
+        assertTrue(result.contentMarkdown.contains("This prose section should stay"))
+        assertFalse(result.contentMarkdown.contains("Related one"))
+    }
+
+    @Test
+    fun `content patterns remove trailing subscribe blocks but preserve final prose`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing subscription pattern removal deterministic while preserving the legitimate article ending. One more sentence keeps the cleaned article comfortably above the retry threshold.</p>
+                  <p>Subscribe to our newsletter for weekly updates and product announcements.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/subscribe",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
+        assertFalse(result.contentMarkdown.contains("Subscribe to our newsletter"))
+    }
 }

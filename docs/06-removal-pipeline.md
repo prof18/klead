@@ -135,13 +135,13 @@ When debug is enabled, record:
 
 - `[x]` Hidden inline styles are removed.
 - `[x]` Math hidden wrappers are preserved.
-- `[ ]` Exact selectors remove obvious nav/footer/ad blocks.
-- `[ ]` Exact selectors preserve footnotes and callouts.
-- `[ ]` Partial selectors do not remove code blocks.
-- `[ ]` Low-scoring removes related/link-heavy sections.
-- `[ ]` Low-scoring preserves prose sections.
-- `[ ]` Content patterns remove trailing subscribe blocks.
-- `[ ]` Content patterns preserve legitimate final article paragraphs.
+- `[x]` Exact selectors remove obvious nav/footer/ad blocks.
+- `[x]` Exact selectors preserve footnotes and callouts.
+- `[x]` Partial selectors do not remove code blocks.
+- `[x]` Low-scoring removes related/link-heavy sections.
+- `[x]` Low-scoring preserves prose sections.
+- `[x]` Content patterns remove trailing subscribe blocks.
+- `[x]` Content patterns preserve legitimate final article paragraphs.
 - `[x]` Debug records identify removals.
 
 ## Acceptance Gate

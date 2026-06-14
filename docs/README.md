@@ -70,9 +70,9 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-008 Main content scoring unit tests and implementation.
 - `[x]` COMMIT-009 Main content selection over entry-point selectors.
 - `[x]` COMMIT-010 Hidden element removal.
-- `[ ]` COMMIT-011 Exact selector removal.
-- `[ ]` COMMIT-012 Partial selector removal.
-- `[ ]` COMMIT-013 Low-scoring clutter removal.
+- `[x]` COMMIT-011 Exact selector removal.
+- `[x]` COMMIT-012 Partial selector removal.
+- `[x]` COMMIT-013 Low-scoring clutter removal.
 - `[ ]` COMMIT-014 Unsafe element/attribute stripping.
 - `[ ]` COMMIT-015 URL resolution.
 - `[ ]` COMMIT-016 Markdown writer skeleton with text/paragraph/headings.
@@ -140,3 +140,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-007 - complete - Added page metadata extraction for cleaned titles, canonical domains, authors, dates, description, image, favicon, language, and public parser metadata fields.
 2026-06-14 - PHASE-05 - complete - Added strict upstream metadata fixture coverage for h1 sibling byline/date, placeholder fallbacks, and rel-author bio-container handling.
 2026-06-14 - COMMIT-010 - complete - Added hidden element removal with math-wrapper preservation and debug removal records.
+2026-06-14 - COMMIT-011..013 - complete - Added exact selector removal, partial selector removal with code/footnote/callout protections, low-scoring link-heavy block removal, and a trailing subscribe content pattern.
