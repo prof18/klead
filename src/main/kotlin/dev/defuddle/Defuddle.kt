@@ -9,6 +9,7 @@ import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
 import dev.defuddle.removal.RemovalPipeline
 import dev.defuddle.removal.RemovalRecord
+import dev.defuddle.standardize.HtmlStandardizer
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -113,6 +114,9 @@ object Defuddle {
             schemaOrg = schemaOrg,
         )
         RemovalPipeline.apply(content, options, removals, metadata.image)
+        if (options.standardize) {
+            HtmlStandardizer.apply(content, metadata.title)
+        }
         val markdown = if (options.markdown) MarkdownWriter.write(content) else ""
 
         return DefuddleResult(

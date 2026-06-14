@@ -48,7 +48,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` [04 Main Content Detection](04-main-content-detection.md)
 - `[x]` [05 Metadata Extraction](05-metadata-extraction.md)
 - `[x]` [06 Removal Pipeline](06-removal-pipeline.md)
-- `[ ]` [07 HTML Standardization](07-html-standardization.md)
+- `[x]` [07 HTML Standardization](07-html-standardization.md)
 - `[ ]` [08 Markdown Writer](08-markdown-writer.md)
 - `[ ]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
 - `[ ]` [10 Site Extractors](10-site-extractors.md)
@@ -82,8 +82,8 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[ ]` COMMIT-020 Markdown tables.
 - `[ ]` COMMIT-021 Markdown callouts.
 - `[ ]` COMMIT-022 Markdown footnotes.
-- `[ ]` COMMIT-023 Image standardization.
-- `[ ]` COMMIT-024 Code block standardization.
+- `[x]` COMMIT-023 Image standardization.
+- `[x]` COMMIT-024 Code block standardization.
 - `[x]` COMMIT-025 Metadata completeness.
 - `[~]` COMMIT-026 Schema.org fallback.
 - `[ ]` COMMIT-027 Fixture allowlist expansion by one category.
@@ -142,3 +142,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-010 - complete - Added hidden element removal with math-wrapper preservation and debug removal records.
 2026-06-14 - COMMIT-011..013 - complete - Added exact selector removal, partial selector removal with code/footnote/callout protections, low-scoring link-heavy block removal, and a trailing subscribe content pattern.
 2026-06-14 - PHASE-06 - complete - Added duplicate image removal, metadata cover-image removal, and relaxed upstream hidden fixture coverage for removal false-positive checks.
+2026-06-14 - PHASE-07 - complete - Added HTML standardization for duplicate headings, code blocks, lazy images, figures, callouts, simple footnotes, tables, math preservation, and empty wrappers.

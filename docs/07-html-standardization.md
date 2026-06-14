@@ -151,22 +151,22 @@ Port:
 
 ## TDD Checklist
 
-- `[ ]` Heading duplicate title removed.
-- `[ ]` Code language retained.
-- `[ ]` Code line numbers removed.
-- `[ ]` Lazy image promoted.
-- `[ ]` Figure caption preserved.
-- `[ ]` Callout normalized.
-- `[ ]` Simple footnote normalized.
+- `[x]` Heading duplicate title removed.
+- `[x]` Code language retained.
+- `[x]` Code line numbers removed.
+- `[x]` Lazy image promoted.
+- `[x]` Figure caption preserved.
+- `[x]` Callout normalized.
+- `[x]` Simple footnote normalized.
 - `[ ]` Wikipedia reference normalized.
-- `[ ]` Simple data table preserved.
-- `[ ]` Layout table flattened.
-- `[ ]` Math `data-latex` and readable fallback data are preserved.
-- `[ ]` Empty wrappers removed without losing text.
+- `[x]` Simple data table preserved.
+- `[x]` Layout table flattened.
+- `[x]` Math `data-latex` and readable fallback data are preserved.
+- `[x]` Empty wrappers removed without losing text.
 
 ## Acceptance Gate
 
-- `[ ]` Standardized HTML is stable enough for Markdown generation across the active fixture allowlist.
+- `[x]` Standardized HTML is stable enough for Markdown generation across the active fixture allowlist.
 
 ## Commit Slices
 
