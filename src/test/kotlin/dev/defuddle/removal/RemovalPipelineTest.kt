@@ -1571,6 +1571,62 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes BBC headline byline placeholders and social footer`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <div data-component="headline-block">
+                    <h1>Example title duplicated from metadata</h1>
+                  </div>
+                  <div data-component="byline-block">
+                    <time datetime="2026-06-15T05:21:13.657Z">15 hours ago</time>
+                    <span>Example Reporter</span>
+                    <span>and</span>
+                    <span>Second Reporter, Essex</span>
+                  </div>
+                  <div data-component="image-block">
+                    <figure>
+                      <img class="hide-when-no-script" aria-label="image unavailable" src="https://static.files.example/grey-placeholder.png">
+                      <img src="https://example.com/hero.jpg" alt="Real hero image">
+                      <figcaption>Real hero caption should stay.</figcaption>
+                    </figure>
+                  </div>
+                  <div data-component="text-block">
+                    <p>The actual article body should stay because it contains normal explanatory prose from a reported news story and gives the reader useful context.</p>
+                  </div>
+                  <div data-component="text-block">
+                    <p>The article conclusion should also stay before publisher contact prompts and social follow prompts are removed from the cleaned result.</p>
+                  </div>
+                  <div data-component="text-block">
+                    <p><b>Do you have a story suggestion for Essex? Contact us below.</b></p>
+                  </div>
+                  <div data-component="text-block">
+                    <p><i>Follow Essex news on </i><a href="/sounds">BBC Sounds</a>, <a href="/facebook">Facebook</a>, <a href="/instagram">Instagram</a> and <a href="/x">X</a>.</p>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/bbc-article",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertTrue(result.contentMarkdown.contains("![Real hero image](https://example.com/hero.jpg)"))
+        assertTrue(result.contentMarkdown.contains("Real hero caption should stay."))
+        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("15 hours ago"))
+        assertFalse(result.contentMarkdown.contains("Example Reporter"))
+        assertFalse(result.contentMarkdown.contains("Second Reporter"))
+        assertFalse(result.contentMarkdown.contains("grey-placeholder"))
+        assertFalse(result.contentMarkdown.contains("image unavailable"))
+        assertFalse(result.contentMarkdown.contains("Do you have a story suggestion"))
+        assertFalse(result.contentMarkdown.contains("Follow Essex news on"))
+        assertFalse(result.contentMarkdown.contains("BBC Sounds"))
+        assertFalse(result.contentHtml.contains("""data-component="headline-block""""))
+        assertFalse(result.contentHtml.contains("""data-component="byline-block""""))
+        assertFalse(result.contentHtml.contains("hide-when-no-script"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

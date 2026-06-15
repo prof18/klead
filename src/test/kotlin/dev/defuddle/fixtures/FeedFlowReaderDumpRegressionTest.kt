@@ -877,6 +877,33 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("content__pagination"))
     }
 
+    @Test
+    fun `bbc article dump excludes duplicated headline byline placeholder and social footer`() {
+        val fixtureName = "general--www.bbc.com-news-articles-cnv9367gvp4o"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        assertTrue(lines.first().startsWith("![Amazon MGM Studios"))
+        assertTrue(result.contentMarkdown.contains("Delilah O'Riordan was in a combat training scene"))
+        assertTrue(result.contentMarkdown.contains("A schoolgirl said it was \"great fun\""))
+        assertTrue(result.contentMarkdown.contains("O'Riordan said she was juggling exam revision with filming."))
+        assertFalse(result.contentMarkdown.contains("# 'Idris Elba punched me and it was great fun'"))
+        assertFalse(lines.any { it == "15 hours ago" || it == "Henry Godfrey-Evans" || it == "Lois Worrow" || it == "," })
+        assertFalse(result.contentMarkdown.contains("grey-placeholder.png"))
+        assertFalse(result.contentMarkdown.contains("image unavailable"))
+        assertFalse(result.contentMarkdown.contains("Do you have a story suggestion"))
+        assertFalse(result.contentMarkdown.contains("Follow Essex news on"))
+        assertFalse(result.contentMarkdown.contains("BBC Sounds"))
+        assertFalse(result.contentHtml.contains("""data-component="headline-block""""))
+        assertFalse(result.contentHtml.contains("""data-component="byline-block""""))
+        assertFalse(result.contentHtml.contains("hide-when-no-script"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

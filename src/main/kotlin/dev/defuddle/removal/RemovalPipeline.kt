@@ -175,6 +175,14 @@ object RemovalPipeline {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing comment prompt")
                 continue
             }
+            if (isStorySuggestionBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing story suggestion prompt")
+                continue
+            }
+            if (isLocalNewsFollowBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing local news follow prompt")
+                continue
+            }
             break
         }
     }
@@ -369,6 +377,12 @@ object RemovalPipeline {
                 }
                 isFollowTopicsBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "follow topics prompt")
+                }
+                isStorySuggestionBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "story suggestion prompt")
+                }
+                isLocalNewsFollowBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "local news follow prompt")
                 }
             }
         }
@@ -749,6 +763,19 @@ object RemovalPipeline {
             FOLLOW_TOPICS_STRONG_CONTEXT_PATTERN.containsMatchIn(text)
     }
 
+    private fun isStorySuggestionBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.length > STORY_SUGGESTION_MAX_LENGTH) return false
+        return STORY_SUGGESTION_PATTERN.containsMatchIn(text)
+    }
+
+    private fun isLocalNewsFollowBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.length > LOCAL_NEWS_FOLLOW_MAX_LENGTH) return false
+        if (!LOCAL_NEWS_FOLLOW_PATTERN.containsMatchIn(text)) return false
+        return element.select("a[href]").size >= 2
+    }
+
     private fun recordAndRemove(
         element: Element,
         debug: MutableList<RemovalRecord>,
@@ -835,6 +862,13 @@ object RemovalPipeline {
         """[data-cy="authors-bio-cards"]""",
         """[data-cy="author-bio"]""",
         """[data-cy="author-see-full-bio"]""",
+        """[data-component="headline-block"]""",
+        """[data-component="byline-block"]""",
+        "img.hide-when-no-script",
+        """img[aria-label="image unavailable"]""",
+        """img[src*="grey-placeholder"]""",
+        """p:matches((?i)\bdo\s+you\s+have\s+a\s+story\s+suggestion\b)""",
+        """p:matches((?i)^follow\s+.{1,80}\s+news\s+on\b)""",
         "#author-bio",
         ".copy-tooltip",
         ".copy-tooltiptext",
@@ -1110,8 +1144,21 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val STORY_SUGGESTION_PATTERN = Regex(
+        """\b(do\s+you\s+have\s+a\s+story\s+suggestion|contact\s+us\s+below)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val LOCAL_NEWS_FOLLOW_PATTERN = Regex(
+        """^follow\s+[\p{L}\p{N} .,'’&-]{1,80}\s+news\s+on\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val PROTECTED_EXACT_SELECTOR_OVERRIDES = setOf(
         ".wp-block-post-featured-image__caption",
+        "img.hide-when-no-script",
+        """img[aria-label="image unavailable"]""",
+        """img[src*="grey-placeholder"]""",
     )
 
     private val NON_SUBSTANTIVE_OPENING_TAGS = setOf(
@@ -1217,6 +1264,8 @@ object RemovalPipeline {
     private const val ARTICLE_PACKAGE_MAX_LENGTH = 320
     private const val INLINE_AUTHOR_BIO_MAX_LENGTH = 420
     private const val FOLLOW_TOPICS_MAX_LENGTH = 360
+    private const val STORY_SUGGESTION_MAX_LENGTH = 220
+    private const val LOCAL_NEWS_FOLLOW_MAX_LENGTH = 360
     private const val OPENING_ARTICLE_HEADER_MAX_LENGTH = 700
     private const val OPENING_ARTICLE_HEADER_MAX_PARAGRAPHS = 2
     private const val AUTHOR_FOLLOW_MAX_LENGTH = 220
