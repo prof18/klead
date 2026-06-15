@@ -684,6 +684,38 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove inline Valnet related article cards while preserving surrounding prose`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result instead of invoking short-page retries.</p>
+                  <div class="display-card article article-card small no-badge active-content" data-nosnippet>
+                    <a href="/related-story/"><img src="/related.png" alt="Related story image"></a>
+                    <span data-field="label" class="article-card-label"><label>Related</label></span>
+                    <div class="w-display-card-content regular article-block">
+                      <h5 class="display-card-title"><a href="/related-story/">Related story should go</a></h5>
+                      <p class="display-card-excerpt">A recirculated article excerpt should go.</p>
+                      <div class="w-display-card-extra"><label class="total-info-label">Posts</label><span>1</span></div>
+                      <div class="w-display-card-meta"><span>By </span><a class="article-author" href="/author/example/">Example Author</a></div>
+                    </div>
+                  </div>
+                  <h2>The next real article section should stay</h2>
+                  <p>The article body after the inline card should also stay. It contains natural prose, useful punctuation, and enough words to prove the related module can be removed without truncating the story.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/inline-related-card",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The next real article section should stay"))
+        assertTrue(result.contentMarkdown.contains("The article body after the inline card should also stay"))
+        assertFalse(result.contentMarkdown.contains("Related story should go"))
+        assertFalse(result.contentMarkdown.contains("A recirculated article excerpt should go"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentHtml.contains("article-card-label"))
+    }
+
+    @Test
     fun `exact selectors remove author header and article options chrome while preserving body`() {
         val result = Defuddle.parseHtml(
             html = """

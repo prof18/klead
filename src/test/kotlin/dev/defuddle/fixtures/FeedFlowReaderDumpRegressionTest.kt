@@ -198,6 +198,25 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `androidpolice article dump excludes inline related article cards`() {
+        val fixtureName = "general--www.androidpolice.com-two-week-android-experiment-changed-how-i-interact-with-social-media"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("I experimented with Android's Grayscale feature"))
+        assertTrue(result.contentMarkdown.contains("Grayscale made my phone ugly"))
+        assertTrue(result.contentMarkdown.contains("Two weeks later, the biggest change"))
+        assertFalse(result.contentMarkdown.contains("6 Android tweaks I made to cut clutter from my phone"))
+        assertFalse(result.contentMarkdown.contains("A quick cleanup helped me use my phone more mindfully"))
+        assertFalse(result.contentMarkdown.contains("\nPosts\n"))
+        assertFalse(result.contentMarkdown.contains("Anu Joy"))
+        assertFalse(result.contentHtml.contains("article-card-label"))
+    }
+
+    @Test
     fun `axios article dump excludes source share and read-next chrome`() {
         val fixtureName = "general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

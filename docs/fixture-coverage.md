@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 26
+- FeedFlow reader-dump regression fixtures: 27
 
 ## Active Strict Fixtures
 
@@ -38,6 +38,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.androidcentral.com-phones-honor-phones-honor-magic-v6-review`: verifies that video carousels, affiliate/deal widgets, gallery controls, trailing comment prompts, back-to-top controls, and read-more recirculation modules do not leak into reader Markdown, while no-op-spanned specs tables render as Markdown tables.
 - `general--www.androidcentral.com-phones-samsung-galaxy-galaxy-phones-are-finally-getting-a-feature-android-users-have-wanted-for-y`: verifies that Future-style newsletter, author bio, and popular/latest article slice modules do not leak into reader Markdown.
 - `general--www.androidpolice.com-replaced-samsung-home-screen-with-custom-launcher-never-going-back`: verifies that Valnet-style author header/bio chrome, inline newsletter signup widgets, article tag links, and follow controls do not leak into reader Markdown.
+- `general--www.androidpolice.com-two-week-android-experiment-changed-how-i-interact-with-social-media`: verifies that inline Valnet related article cards do not leak into reader Markdown while the following article section is preserved.
 - `general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable`: verifies that timestamp/byline/share/source-preference/read-next chrome and empty list artifacts do not leak into reader Markdown while prose wrappers with utility-class clutter keywords are preserved.
 - `general--9to5google.com-2026-06-14-google-ads-tease-next-pixel-drop-with-screen-reactions-and-gemini-omni-video`: verifies that 9to5-style related headings, author follow links, preferred-source badges, affiliate disclaimers, and visitor promos do not leak after article prose.
 - `general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier`: verifies that embedded top-comment modules do not leak while adjacent article prose is preserved.

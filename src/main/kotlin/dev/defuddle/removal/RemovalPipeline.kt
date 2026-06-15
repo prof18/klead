@@ -527,6 +527,8 @@ object RemovalPipeline {
         ".l-entry--infos-square > .l-entry__header",
         ".l-entry__byline",
         ".l-entry__byline--small",
+        ".display-card.article-card",
+        "div.article-card[data-nosnippet]",
         ".btn-gpsource-bt-article",
         ".c-story--stack",
         ":scope > article.c-story--stack",
