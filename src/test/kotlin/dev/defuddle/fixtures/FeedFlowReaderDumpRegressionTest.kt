@@ -391,6 +391,34 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `techcrunch article dump excludes opening metadata author card and latest articles`() {
+        val fixtureName = "general--techcrunch.com-2026-06-15-spacexs-biggest-ever-ipo-just-grew-to-85-7-billion-raised"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("SpaceX’s historic IPO just got super-sized"))
+        assertTrue(result.contentMarkdown.contains("Funds will also be used to expand SpaceX’s AI compute infrastructure"))
+        assertTrue(result.contentMarkdown.contains("![Tesla and SpaceX CEO Elon Musk attends"))
+        assertFalse(lines.any { it == "In Brief" || it == "Posted:" || it == "Sean O'Kane" })
+        assertFalse(result.contentMarkdown.contains("7:45 AM PDT · June 15, 2026"))
+        assertFalse(result.contentMarkdown.contains("Image Credits"))
+        assertFalse(result.contentMarkdown.contains("Julia Demaree Nikhinson"))
+        assertFalse(result.contentMarkdown.contains("Sean-OKane.jpeg"))
+        assertFalse(result.contentMarkdown.contains("# SpaceX’s biggest-ever IPO just grew to $85.7 billion raised"))
+        assertFalse(result.contentMarkdown.contains("Get an inside look at what it takes to scale and succeed"))
+        assertFalse(result.contentMarkdown.contains("Latest in Space"))
+        assertFalse(result.contentMarkdown.contains("2 hours ago"))
+        assertFalse(result.contentHtml.contains("article__meta"))
+        assertFalse(result.contentHtml.contains("wp-block-techcrunch-post-authors-list"))
+        assertFalse(result.contentHtml.contains("latest-in-pattern"))
+    }
+
+    @Test
     fun `nine to five linux article dump excludes share strip thumbnail and donation promo`() {
         val fixtureName = "general--9to5linux.com-dietpi-10-5-enables-kms-drm-graphics-system-by-default-for-raspberry-pi-sbcs"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

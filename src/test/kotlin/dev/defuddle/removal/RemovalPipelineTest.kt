@@ -294,6 +294,51 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove TechCrunch article chrome around entry content`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article>
+                    <div class="article__meta">
+                      <span>In Brief</span>
+                      <p>Posted:</p>
+                      <time datetime="2026-06-15T14:45:03+00:00">7:45 AM PDT · June 15, 2026</time>
+                    </div>
+                    <figure class="wp-block-post-featured-image">
+                      <img src="https://example.com/cover.jpg" alt="Cover image">
+                      <figcaption class="wp-block-post-featured-image__caption"><strong>Image Credits:</strong>Example Agency</figcaption>
+                    </figure>
+                    <div class="wp-block-techcrunch-post-authors-list">
+                      <img class="post-authors-list__author-thumb" src="/author.jpg" alt="Example Author">
+                      <a class="post-authors-list__author" href="/author/example">Example Author</a>
+                    </div>
+                    <h1 class="wp-block-post-title">Example title duplicated from metadata</h1>
+                    <div class="entry-content">
+                      <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result instead of invoking short-page retries.</p>
+                      <p>A second paragraph keeps the selected content stable and confirms that body paragraphs survive after TechCrunch article chrome is removed.</p>
+                      <div class="wp-block-techcrunch-event-cta"><p class="rightrail-promo__description">Get an inside look at what it takes to scale and succeed from unrelated event sponsors.</p></div>
+                      <div class="latest-in-pattern"><h2>Latest in Space</h2></div>
+                      <div class="wp-block-query"><a href="/related">Related latest article</a></div>
+                    </div>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/techcrunch-chrome",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.contentMarkdown.contains("In Brief"))
+        assertFalse(result.contentMarkdown.contains("Posted:"))
+        assertFalse(result.contentMarkdown.contains("7:45 AM PDT"))
+        assertFalse(result.contentMarkdown.contains("Image Credits"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentMarkdown.contains("Get an inside look"))
+        assertFalse(result.contentMarkdown.contains("Latest in Space"))
+        assertFalse(result.contentMarkdown.contains("Related latest article"))
+    }
+
+    @Test
     fun `partial selectors do not remove code blocks`() {
         val result = Defuddle.parseHtml(
             html = """

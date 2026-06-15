@@ -19,6 +19,16 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `heading duplicate title normalizes smart apostrophes`() {
+        val article = article("""<article><h1>SpaceX’s biggest-ever IPO</h1><p>Body.</p></article>""")
+
+        HtmlStandardizer.apply(article, title = "SpaceX's biggest-ever IPO")
+
+        assertFalse(article.outerHtml().contains("<h1>SpaceX’s biggest-ever IPO</h1>"))
+        assertTrue(article.text().contains("Body."))
+    }
+
+    @Test
     fun `code language retained and line numbers removed`() {
         val article = article(
             """

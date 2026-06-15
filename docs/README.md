@@ -182,3 +182,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added an AppleInsider FeedFlow reader-dump regression and removed opening article header chrome before article-body prose so category/title/read-time/hero-caption/rumor-score metadata does not leak into reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added an Ars Technica FeedFlow reader-dump regression and removed opening header/deck/byline/comment-count chrome, text-settings controls, and author mini-bio footer content from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added a MacRumors FeedFlow reader-dump regression and removed CSS-module byline/date chrome plus related-roundup linkback footers from reader Markdown.
+2026-06-15 - PHASE-06/08 - complete - Added a TechCrunch FeedFlow reader-dump regression, removed article metadata/author/event/latest-article chrome and featured-image credit captions, and normalized smart quotes when dropping duplicate title headings.

@@ -23,13 +23,25 @@ object HtmlStandardizer {
         title: String?,
     ) {
         val firstHeading = content.selectFirst("h1, h2")
-        if (title != null && firstHeading?.text()?.trim().equals(title.trim(), ignoreCase = true)) {
+        if (title != null && firstHeading?.text()?.isDuplicateTitle(title) == true) {
             firstHeading?.remove()
         }
         content.select("h1, h2, h3, h4, h5, h6").forEach { heading ->
             heading.select("a[href^=#].anchor, a[href^=#].permalink, a[href^=#][aria-hidden=true]").remove()
         }
     }
+
+    private fun String.isDuplicateTitle(title: String): Boolean =
+        comparableTitle() == title.comparableTitle()
+
+    private fun String.comparableTitle(): String =
+        trim()
+            .replace('’', '\'')
+            .replace('‘', '\'')
+            .replace('“', '"')
+            .replace('”', '"')
+            .replace(Regex("""\s+"""), " ")
+            .lowercase()
 
     private fun normalizeCodeBlocks(content: Element) {
         content.select("pre").forEach { pre ->

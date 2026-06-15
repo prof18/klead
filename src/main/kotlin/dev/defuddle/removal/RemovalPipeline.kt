@@ -98,7 +98,7 @@ object RemovalPipeline {
     ) {
         for (selector in EXACT_SELECTORS) {
             for (element in content.selectSafe(selector).toList()) {
-                if (isProtected(element)) continue
+                if (isProtected(element) && selector !in PROTECTED_EXACT_SELECTOR_OVERRIDES) continue
                 recordAndRemove(element, debug, "removeExactSelectors", selector, "exact clutter selector")
             }
         }
@@ -595,6 +595,13 @@ object RemovalPipeline {
         ".l-entry--infos-square > .l-entry__header",
         ".l-entry__byline",
         ".l-entry__byline--small",
+        ".article__meta",
+        ".wp-block-post-featured-image__caption",
+        ".wp-block-techcrunch-post-authors-list",
+        ".wp-block-techcrunch-event-cta",
+        ".rightrail-promo",
+        ".latest-in-pattern",
+        ".wp-block-query",
         ".display-card.article-card",
         "div.article-card[data-nosnippet]",
         ".btn-gpsource-bt-article",
@@ -767,6 +774,10 @@ object RemovalPipeline {
         "ko-fi",
         "kofi",
         "buy me a coffee",
+    )
+
+    private val PROTECTED_EXACT_SELECTOR_OVERRIDES = setOf(
+        ".wp-block-post-featured-image__caption",
     )
 
     private val NON_SUBSTANTIVE_OPENING_TAGS = setOf(
