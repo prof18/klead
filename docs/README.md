@@ -184,3 +184,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a MacRumors FeedFlow reader-dump regression and removed CSS-module byline/date chrome plus related-roundup linkback footers from reader Markdown.
 2026-06-15 - PHASE-06/08 - complete - Added a TechCrunch FeedFlow reader-dump regression, removed article metadata/author/event/latest-article chrome and featured-image credit captions, and normalized smart quotes when dropping duplicate title headings.
 2026-06-15 - PHASE-06 - complete - Added a The Verge FeedFlow reader-dump regression and removed Vox-style lede chrome, package cards, inline author bios, and follow-topics prompts from reader Markdown.
+2026-06-15 - PHASE-06 - complete - Added a Business Insider FeedFlow reader-dump regression and removed post byline/follow, timestamp, related-video recirculation, and back-to-home chrome from reader Markdown.

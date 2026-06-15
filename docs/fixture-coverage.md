@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 32
+- FeedFlow reader-dump regression fixtures: 33
 
 ## Active Strict Fixtures
 
@@ -45,6 +45,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable`: verifies that timestamp/byline/share/source-preference/read-next chrome and empty list artifacts do not leak into reader Markdown while prose wrappers with utility-class clutter keywords are preserved.
 - `general--techcrunch.com-2026-06-15-spacexs-biggest-ever-ipo-just-grew-to-85-7-billion-raised`: verifies that TechCrunch article metadata, featured-image credit captions, author cards, event promos, duplicate smart-quote titles, and latest-article recirculation blocks do not leak into reader Markdown.
 - `general--www.theverge.com-games-949853-roblox-age-verification-demo-nbc`: verifies that The Verge/Vox lede chrome, package cards, inline author bio modules, and follow-topics prompts do not leak before or after article prose.
+- `general--www.businessinsider.com-anthropic-white-house-fable-mythos-5-drama-explained-2026-6`: verifies that Business Insider byline/follow, timestamp, related-video recirculation, and back-to-home chrome do not leak into reader Markdown.
 - `general--9to5google.com-2026-06-14-google-ads-tease-next-pixel-drop-with-screen-reactions-and-gemini-omni-video`: verifies that 9to5-style related headings, author follow links, preferred-source badges, affiliate disclaimers, and visitor promos do not leak after article prose.
 - `general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier`: verifies that embedded top-comment modules do not leak while adjacent article prose is preserved.
 - `general--9to5mac.com-2026-06-13-airpods-pro-3-drop-to-their-best-price-ever-as-apple-announces-new-ios-27-features`: verifies that emphasized affiliate deal link labels are flattened and whitespace-only links do not render as empty Markdown links.

@@ -705,6 +705,29 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("duet--ledes--standard-lede-bottom"))
     }
 
+    @Test
+    fun `businessinsider article dump excludes post chrome and video recirculation`() {
+        val fixtureName = "general--www.businessinsider.com-anthropic-white-house-fable-mythos-5-drama-explained-2026-6"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("is at the center of another showdown"))
+        assertTrue(result.contentMarkdown.contains("What's the drama about?"))
+        assertTrue(result.contentMarkdown.contains("Key questions remain unanswered"))
+        assertFalse(result.contentMarkdown.contains("By\n\nNatalie Musumeci"))
+        assertFalse(result.contentMarkdown.contains("You're currently following this author"))
+        assertFalse(result.contentMarkdown.contains("2026-06-15T17:19:08.464Z"))
+        assertFalse(result.contentMarkdown.contains("Related video"))
+        assertFalse(result.contentMarkdown.contains("What are the real-life consequences of AI?"))
+        assertFalse(result.contentMarkdown.lines().map { it.trim() }.any { it == "HOME" })
+        assertFalse(result.contentHtml.contains("data-component-type=\"post-byline\""))
+        assertFalse(result.contentHtml.contains("data-component-type=\"post-video-recirc\""))
+        assertFalse(result.contentHtml.contains("back-to-home-container"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

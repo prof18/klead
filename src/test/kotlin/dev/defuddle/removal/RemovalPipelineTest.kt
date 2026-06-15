@@ -1206,6 +1206,56 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove Business Insider post chrome while preserving story`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main role="main">
+                  <section class="post-byline subtle" data-component-type="post-byline">
+                    <div class="byline-wrapper as-byline">
+                      <span class="sep">By</span>
+                      <a class="byline-link byline-author-name" href="/author/example-writer">Example Writer</a>
+                      <span class="follow-button rich-tooltip">
+                        <span>You're currently following this author! Want to unfollow? Unsubscribe via the link in your email.</span>
+                      </span>
+                    </div>
+                  </section>
+                  <section id="post-body" class="post-body grid-area-post-body" data-component-type="post-body">
+                    <div class="post-details">
+                      <div class="timestamp label-md" data-component-type="timestamp">
+                        <time class="timestamp js-date-format" data-timestamp="2026-06-15T17:19:08.464Z">2026-06-15T17:19:08.464Z</time>
+                      </div>
+                    </div>
+                    <section class="post-body-content post-story-body-content" data-component-type="post-body-content">
+                      <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when publisher byline, timestamp, related video, and back-home chrome are removed.</p>
+                      <section class="post-video-recirc" data-component-type="post-video-recirc">
+                        <header class="post-video-recirc-header">Related video</header>
+                        <article class="post-video-recirc-article">
+                          <div class="post-video-recirc-title">What are the real-life consequences of AI?</div>
+                        </article>
+                      </section>
+                      <p>The article conclusion should also stay after the inline video recirculation unit is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                    </section>
+                  </section>
+                  <section class="back-to-home-container">
+                    <a class="back-to-home-link" href="/"><span class="back-to-home-text">HOME</span></a>
+                  </section>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/business-insider-post-chrome",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("By"))
+        assertFalse(result.contentMarkdown.contains("Example Writer"))
+        assertFalse(result.contentMarkdown.contains("currently following this author"))
+        assertFalse(result.contentMarkdown.contains("2026-06-15T17:19:08.464Z"))
+        assertFalse(result.contentMarkdown.contains("Related video"))
+        assertFalse(result.contentMarkdown.contains("real-life consequences of AI"))
+        assertFalse(result.contentMarkdown.contains("HOME"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
