@@ -626,7 +626,7 @@ object RemovalPipeline {
     )
 
     private val RECOMMENDATION_HEADING_PATTERN = Regex(
-        """\b(recommended|related|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b""",
+        """\b(recommended|related|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b|^best\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80}\s+(accessories|deals|offers|prices?|discounts?|sales?)$""",
         RegexOption.IGNORE_CASE,
     )
 

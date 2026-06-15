@@ -263,6 +263,22 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `nine to five mac iphone ultra dump excludes orphaned accessory heading`() {
+        val fixtureName = "general--9to5mac.com-2026-06-11-iphone-ultra-is-coming-six-new-features-in-apples-top-tier-model"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("iPhone Ultra pricing and wrap-up"))
+        assertTrue(result.contentMarkdown.contains("Are you interested in buying an iPhone Ultra"))
+        assertFalse(result.contentMarkdown.contains("Best iPhone accessories"))
+        assertFalse(result.contentMarkdown.contains("AirPods Pro 3 (now only $179"))
+        assertFalse(result.contentHtml.contains("Best iPhone accessories"))
+    }
+
+    @Test
     fun `nine to five linux article dump excludes share strip thumbnail and donation promo`() {
         val fixtureName = "general--9to5linux.com-dietpi-10-5-enables-kms-drm-graphics-system-by-default-for-raspberry-pi-sbcs"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
