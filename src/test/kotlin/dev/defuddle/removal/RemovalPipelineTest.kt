@@ -528,6 +528,35 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove embedded top comment module while preserving adjacent prose`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article class="post-content">
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                  <div class="top-comment">
+                    <h2 class="h4 top-comment__heading">Top comment by <a href="#comments">Good_ole_pinocchio</a></h2>
+                    <span class="top_comment__meta">Liked by 11 people</span>
+                    <div class="top-comment__body">
+                      <p>"The only negative? I often find myself lifting my left wrist to check the time"</p>
+                      <p>This is a reader comment and should not be part of the article body.</p>
+                    </div>
+                    <a href="#comments">View all comments</a>
+                  </div>
+                  <p><a href="https://amzn.to/example">At $99</a>, it’s hard to go wrong.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/top-comment",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("[At $99](https://amzn.to/example), it’s hard to go wrong."))
+        assertFalse(result.contentMarkdown.contains("Top comment by"))
+        assertFalse(result.contentMarkdown.contains("Liked by 11 people"))
+        assertFalse(result.contentMarkdown.contains("Good_ole_pinocchio"))
+        assertFalse(result.contentMarkdown.contains("View all comments"))
+    }
+
+    @Test
     fun `exact selectors remove entry footer sidebar and footer recirculation modules`() {
         val result = Defuddle.parseHtml(
             html = """

@@ -459,6 +459,7 @@ object RemovalPipeline {
         ".jwcarousel__hook",
         "[data-component-name*=Comments]",
         "[data-component-name*=comments]",
+        ".top-comment",
         "[data-component-name*=ScrollUp]",
         "[data-component-name*=scroll]",
         "aside[data-mrf-recirculation]",

@@ -225,6 +225,25 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `nine to five google article dump excludes embedded top comment module`() {
+        val fixtureName = "general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("I told myself the Fitbit Air would be a nice addition"))
+        assertTrue(result.contentMarkdown.contains("A wearable that doesn’t feel like a wearable"))
+        assertTrue(result.contentMarkdown.contains("[At $99](https://amzn.to/4gfDdOj), it’s hard to go wrong."))
+        assertFalse(result.contentMarkdown.contains("Top comment by"))
+        assertFalse(result.contentMarkdown.contains("Liked by 11 people"))
+        assertFalse(result.contentMarkdown.contains("Good\\_ole\\_pinocchio"))
+        assertFalse(result.contentMarkdown.contains("View all comments"))
+        assertFalse(result.contentHtml.contains("top-comment"))
+    }
+
+    @Test
     fun `veneziatoday article dump excludes footer recommendations and sidebar modules`() {
         val fixtureName = "general--www.veneziatoday.it-cronaca-contratto-scaduto-sciopero-farmacie-comunali"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
