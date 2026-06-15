@@ -753,6 +753,29 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("Google Add ENT button"))
     }
 
+    @Test
+    fun `entrepreneur article dump excludes related content cards`() {
+        val fixtureName = "general--www.entrepreneur.com-business-news-she-turned-celebrity-gossip-into-a-22-billion-company"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("youngest self-made female billionaire"))
+        assertTrue(result.contentMarkdown.contains("Later that year, she co-founded Kalshi"))
+        assertTrue(result.contentMarkdown.contains("never got to make that bet on Kylie"))
+        assertFalse(lines.any { it == "/" })
+        assertFalse(result.contentMarkdown.contains("Related Content"))
+        assertFalse(result.contentMarkdown.contains("5 Things Companies Get Wrong About Agentic AI"))
+        assertFalse(result.contentMarkdown.contains("Dean Guida"))
+        assertFalse(result.contentMarkdown.contains("Mark Zuckerberg Admits Meta"))
+        assertFalse(result.contentMarkdown.contains("Entrepreneur Store"))
+        assertFalse(result.contentHtml.contains("is-entire-card-clickable"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

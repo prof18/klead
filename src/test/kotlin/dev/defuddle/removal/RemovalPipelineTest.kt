@@ -1302,6 +1302,62 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes related content card runs after story prose`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <div class="page-container tw:border-b">
+                    <span class="tw:mx-3 tw:flex">/</span>
+                  </div>
+                  <article>
+                    <header>
+                      <p>The article deck should stay because it introduces the actual story with useful context and natural punctuation.</p>
+                    </header>
+                    <div class="story-body">
+                      <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when a publisher related-content card run follows the article body.</p>
+                      <p>The article conclusion should also stay after related cards are removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                    </div>
+                  </article>
+                  <div class="tw:mb-2 tw:border-t tw:border-slate-200">
+                    <h2>Related Content</h2>
+                  </div>
+                  <section class="tw:grid tw:sm:grid-cols-2 tw:gap-x-10">
+                    <article class="tw:mb-12 is-entire-card-clickable">
+                      <img src="/agentic-ai.jpg" alt="">
+                      <div>Business Ideas</div>
+                      <h3><a href="/related-one">5 Things Companies Get Wrong About Agentic AI</a></h3>
+                      <div>By <a href="/author/dean-guida">Dean Guida</a></div>
+                    </article>
+                    <article class="tw:mb-12 is-entire-card-clickable">
+                      <img src="/meta.jpg" alt="">
+                      <div>Business News</div>
+                      <h3><a href="/related-two">Mark Zuckerberg Admits Meta Made Mistakes</a></h3>
+                      <div>By <a href="/author/jonathan-small">Jonathan Small</a></div>
+                    </article>
+                  </section>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/related-content-cards",
+            options = DefuddleOptions(
+                contentSelector = "main",
+                removeExactSelectors = false,
+                removePartialSelectors = false,
+                removeLowScoring = false,
+            ),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article deck should stay"))
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.lines().map { it.trim() }.any { it == "/" })
+        assertFalse(result.contentMarkdown.contains("Related Content"))
+        assertFalse(result.contentMarkdown.contains("5 Things Companies Get Wrong About Agentic AI"))
+        assertFalse(result.contentMarkdown.contains("Dean Guida"))
+        assertFalse(result.contentMarkdown.contains("Mark Zuckerberg Admits Meta Made Mistakes"))
+        assertFalse(result.contentHtml.contains("is-entire-card-clickable"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

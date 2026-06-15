@@ -138,6 +138,7 @@ object RemovalPipeline {
         debug: MutableList<RemovalRecord>,
     ) {
         removeOpeningArticleHeaderBlocks(content, debug)
+        removeRecommendationSiblingRuns(content, debug)
         removeNestedArticleFooterBlocks(content, debug)
         for (element in content.children().toList().asReversed()) {
             val text = element.text().trim()
@@ -207,6 +208,74 @@ object RemovalPipeline {
         return candidates
     }
 
+    private fun removeRecommendationSiblingRuns(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (headingBlock in content.select("h1, h2, h3, h4, h5, h6, div, section").toList()) {
+            if (!headingBlock.isAttachedTo(content)) continue
+            if (!isRecommendationSectionHeadingBlock(headingBlock)) continue
+
+            val enclosingBlock = headingBlock.enclosingRecommendationBlock(content)
+            if (enclosingBlock != null) {
+                recordAndRemove(
+                    enclosingBlock,
+                    debug,
+                    "removeContentPatterns",
+                    null,
+                    "recommendation block containing heading",
+                )
+                continue
+            }
+
+            var sibling = headingBlock.nextElementSibling()
+            var removedSibling = false
+            while (sibling != null && isRecommendationSiblingAfterHeading(sibling)) {
+                val next = sibling.nextElementSibling()
+                recordAndRemove(
+                    sibling,
+                    debug,
+                    "removeContentPatterns",
+                    null,
+                    "recommendation card group after heading",
+                )
+                removedSibling = true
+                sibling = next
+            }
+
+            recordAndRemove(
+                headingBlock,
+                debug,
+                "removeContentPatterns",
+                null,
+                if (removedSibling) "recommendation heading with card group" else "orphan recommendation heading",
+            )
+        }
+    }
+
+    private fun Element.isAttachedTo(root: Element): Boolean =
+        this === root || parents().any { it === root }
+
+    private fun Element.enclosingRecommendationBlock(root: Element): Element? {
+        var current = parent()
+        while (current != null && current !== root) {
+            if (
+                current.isAttachedTo(root) &&
+                current.startsWithHeadingBlock(this) &&
+                isTrailingRecommendationBlock(current)
+            ) {
+                return current
+            }
+            current = current.parent()
+        }
+        return null
+    }
+
+    private fun Element.startsWithHeadingBlock(headingBlock: Element): Boolean {
+        val firstChild = children().firstOrNull { it.text().trim().isNotBlank() } ?: return false
+        return firstChild === headingBlock || headingBlock.parents().any { it === firstChild }
+    }
+
     private fun Element.firstSubstantiveChild(): Element? =
         children().firstOrNull { child ->
             child.normalName() !in NON_SUBSTANTIVE_OPENING_TAGS &&
@@ -250,6 +319,12 @@ object RemovalPipeline {
         for (element in content.select("aside, div, p, section, ul, ol").toList()) {
             if (isProtected(element)) continue
             when {
+                isOrphanSeparatorBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "orphan separator block")
+                }
+                isRecommendationSectionHeadingBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "orphan recommendation heading")
+                }
                 isTagListBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer tag list")
                 }
@@ -415,6 +490,43 @@ object RemovalPipeline {
         return linkCount >= RECOMMENDATION_MIN_LINKS ||
             articleCount >= RECOMMENDATION_MIN_ARTICLES ||
             imageCount >= RECOMMENDATION_MIN_IMAGES
+    }
+
+    private fun isRecommendationSectionHeadingBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.isBlank() || text.length > RECOMMENDATION_HEADING_MAX_LENGTH) return false
+        if (!RECOMMENDATION_SECTION_HEADING_PATTERN.matches(text)) return false
+        if (element.normalName().matches(HEADING_TAG_PATTERN)) return true
+
+        val headings = element.select("h1, h2, h3, h4, h5, h6")
+        return headings.size == 1 && headings.first()?.text()?.trim()?.collapseWhitespace() == text
+    }
+
+    private fun isRecommendationSiblingAfterHeading(element: Element): Boolean {
+        if (isProtected(element)) return false
+
+        val text = element.text().trim().collapseWhitespace()
+        if (text.isBlank() || isOrphanSeparatorBlock(element)) return true
+
+        val hints = "${partialHaystack(element)} ${element.select("*").joinToString(" ") { partialHaystack(it) }}"
+        if (RECOMMENDATION_MODULE_HINTS.any { it in hints }) return true
+
+        val articleCount = element.select("article").size + if (element.normalName() == "article") 1 else 0
+        val linkCount = element.select("a[href]").size
+        val imageCount = element.select("img, figure, picture").size
+
+        return (articleCount >= 1 && linkCount >= 1 && imageCount >= 1) ||
+            (articleCount >= RECOMMENDATION_MIN_ARTICLES && linkCount >= articleCount) ||
+            (linkCount >= RECOMMENDATION_MIN_LINKS && imageCount >= 1 && !isLikelyProse(element))
+    }
+
+    private fun isOrphanSeparatorBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text !in ORPHAN_SEPARATOR_TEXTS) return false
+        if (element.select("a, img, figure, picture, table, pre, code, math").isNotEmpty()) return false
+        return element.children().all { child ->
+            child.text().trim().collapseWhitespace().let { it.isBlank() || it in ORPHAN_SEPARATOR_TEXTS }
+        }
     }
 
     private fun isAuthorFollowBlock(element: Element): Boolean {
@@ -810,6 +922,11 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val RECOMMENDATION_SECTION_HEADING_PATTERN = Regex(
+        """^(related\s+content|related\s+articles?|recommended(?:\s+for\s+you)?|what\s+to\s+read\s+next|read\s+more|popular\s+stories|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val AUTHOR_FOLLOW_PATTERN = Regex(
         """^\s*follow\s+[\p{L}\p{N} ._'’-]{1,48}\s*:""",
         RegexOption.IGNORE_CASE,
@@ -953,9 +1070,26 @@ object RemovalPipeline {
         "forums.",
     )
 
+    private val RECOMMENDATION_MODULE_HINTS = listOf(
+        "article-card",
+        "display-card",
+        "is-entire-card-clickable",
+        "read-next",
+        "recommend",
+        "recirc",
+        "related",
+        "river",
+        "what-to-read-next",
+    )
+
+    private val ORPHAN_SEPARATOR_TEXTS = setOf("/", "|")
+
+    private val HEADING_TAG_PATTERN = Regex("""h[1-6]""")
+
     private const val RECOMMENDATION_MIN_LINKS = 2
     private const val RECOMMENDATION_MIN_ARTICLES = 2
     private const val RECOMMENDATION_MIN_IMAGES = 2
+    private const val RECOMMENDATION_HEADING_MAX_LENGTH = 90
     private const val TRAILING_TAG_MIN_LINKS = 1
     private const val TRAILING_TAG_MAX_WORDS = 16
     private const val COMMENT_COUNT_MAX_LINKS = 2
