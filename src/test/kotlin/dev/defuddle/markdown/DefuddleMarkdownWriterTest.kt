@@ -114,8 +114,25 @@ class DefuddleMarkdownWriterTest {
         val simple = render("""<article><table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table></article>""")
         assertEquals("| A | B |\n| --- | --- |\n| 1 | 2 |\n", simple)
 
+        val noOpSpans = render("""<article><table><tr><th colspan="1">A</th><th rowspan="1">B</th></tr><tr><td colspan="1">1</td><td rowspan="1">2</td></tr></table></article>""")
+        assertEquals("| A | B |\n| --- | --- |\n| 1 | 2 |\n", noOpSpans)
+
         val complex = render("""<article><table><tr><td colspan="2">Wide cell</td></tr></table></article>""")
         assertEquals("Wide cell\n", complex)
+    }
+
+    @Test
+    fun `blank headings are skipped`() {
+        val markdown = render(
+            """
+            <article>
+              <h2><svg></svg></h2>
+              <p>Body text.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals("Body text.\n", markdown)
     }
 
     @Test

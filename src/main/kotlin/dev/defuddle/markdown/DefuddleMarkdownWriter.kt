@@ -56,7 +56,8 @@ private class Renderer(
         when (element.normalName()) {
             "h1", "h2", "h3", "h4", "h5", "h6" -> {
                 val level = element.normalName().removePrefix("h").toInt()
-                "${"#".repeat(level)} ${renderInline(element).trim()}"
+                val text = renderInline(element).trim()
+                if (text.isBlank()) "" else "${"#".repeat(level)} $text"
             }
             "p" -> renderInline(element).trim()
             "blockquote" -> blockquote(renderBlocks(element.childNodes(), listDepth))
@@ -193,7 +194,7 @@ private class Renderer(
     }
 
     private fun renderTable(element: Element): String {
-        if (element.selectFirst("table table, [rowspan], [colspan]") != null) {
+        if (element.selectFirst("table table") != null || element.select("th, td").any { it.hasComplexSpan() }) {
             return element.select("tr").joinToString("\n") { row ->
                 row.select("th, td").joinToString(" ") { it.text().trim() }
             }.trim()
@@ -295,6 +296,14 @@ private class Renderer(
 
     private fun String.escapeTableCell(): String =
         replace("|", "\\|").replace("\n", " ").trim()
+
+    private fun Element.hasComplexSpan(): Boolean =
+        hasComplexSpan("rowspan") || hasComplexSpan("colspan")
+
+    private fun Element.hasComplexSpan(name: String): Boolean {
+        if (!hasAttr(name)) return false
+        return attr(name).trim().toIntOrNull() != 1
+    }
 
     private fun String.normalizeFinalNewline(): String =
         replace("\r\n", "\n").replace('\r', '\n').trimEnd('\n') + "\n"

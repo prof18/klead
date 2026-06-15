@@ -117,6 +117,17 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Read more"))
         assertFalse(result.contentMarkdown.contains("Honor 600 review: Flagship feels"))
         assertFalse(result.contentMarkdown.contains("Best Android phones 2026"))
+        assertFalse(result.contentMarkdown.contains("Latest Videos From"))
+        assertFalse(result.contentMarkdown.contains("Today's best Honor Magic V6 deals"))
+        assertFalse(result.contentMarkdown.contains("Honor Magic V6: Price Comparison"))
+        assertFalse(result.contentMarkdown.contains("We check over 250 million products every day for the best prices"))
+        assertFalse(result.contentMarkdown.contains("powered by"))
+        assertFalse(result.contentMarkdown.contains("Swipe to scroll horizontally"))
+        assertFalse(result.contentMarkdown.contains("\nImage\n\n1\n\nof\n\n9\n"))
+        assertFalse(result.contentMarkdown.contains("\nImage\n\n1\n\nof\n\n16\n"))
+        assertTrue(result.contentMarkdown.contains("| Category | Honor Magic V6 |"))
+        assertTrue(result.contentMarkdown.contains("| Outer Display | 6.52-inch 120Hz LTPO OLED"))
+        assertFalse(result.contentMarkdown.contains("\n##\n"))
     }
 
     private fun resourceText(path: String): String {

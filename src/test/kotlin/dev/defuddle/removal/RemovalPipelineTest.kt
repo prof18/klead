@@ -277,6 +277,40 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove embedded video affiliate and gallery chrome while preserving article content`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes embedded widget cleanup deterministic while preserving legitimate article text. Additional sentences keep this fixture comfortably above the retry threshold, so the normal removal pipeline remains the selected result.</p>
+                  <div data-jwp-carousel>
+                    <span>Latest Videos From</span>
+                    <img src="/video-logo.svg" alt="Video logo">
+                  </div>
+                  <aside class="hawk-root" data-widget-type="review">
+                    <div>Today's best Example Phone deals</div>
+                    <div>We check over 250 million products every day for the best prices</div>
+                  </aside>
+                  <div class="table__instruction">Swipe to scroll horizontally</div>
+                  <div class="inline-gallery__count">Image 1 of 9</div>
+                  <div class="inline-gallery__arrows">Previous Next</div>
+                  <p>The article conclusion should also stay after non-article widget chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/embedded-widgets",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Latest Videos From"))
+        assertFalse(result.contentMarkdown.contains("Today's best Example Phone deals"))
+        assertFalse(result.contentMarkdown.contains("250 million products"))
+        assertFalse(result.contentMarkdown.contains("Swipe to scroll horizontally"))
+        assertFalse(result.contentMarkdown.contains("Image 1 of 9"))
+        assertFalse(result.contentMarkdown.contains("Previous Next"))
+        assertFalse(result.contentMarkdown.contains("video-logo.svg"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
