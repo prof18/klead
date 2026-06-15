@@ -171,3 +171,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a Berlino Magazine FeedFlow reader-dump regression and removed Enfold/WordPress cover copyright captions plus entry date/category/author metadata strips from reader Markdown; dump metadata showed Defuddle parse time at 17 ms, so the observed reader delay likely sits outside the library parse path.
 2026-06-15 - PHASE-06 - complete - Added an il Mitte FeedFlow reader-dump regression and removed Jannah/TieLabs WordPress category-chip wrappers from opening article Markdown.
 2026-06-15 - PHASE-06 - complete - Added an il Mitte FeedFlow reader-dump regression and removed inline WordPress/Mailchimp newsletter widgets from article Markdown with generic Mailchimp selectors.
+2026-06-15 - PHASE-06 - complete - Added a VeneziaToday event-page FeedFlow reader-dump regression and removed Citynews event info-square headers plus byline chrome before article prose.

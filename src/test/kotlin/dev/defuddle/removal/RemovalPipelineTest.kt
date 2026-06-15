@@ -679,6 +679,49 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove Citynews event header and byline chrome while preserving body`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article class="l-entry l-entry--infos-square">
+                    <header class="l-entry__header">
+                      <span class="u-label-02">/</span>
+                      <div class="l-grid l-grid--square">
+                        <div class="l-grid__item"><span>Dove</span><a href="/eventi/location/piazza-marconi/">Piazza Marconi</a><p><a href="#map">Piazza Guglielmo Marconi</a></p><span>Vigonovo</span></div>
+                        <div class="l-grid__item"><span>Quando</span><span>Dal <span>18/06/2026</span></span><span>al <span>21/06/2026</span></span><span>ore 21.00</span></div>
+                        <div class="l-grid__item"><span>Prezzo</span><span>Gratis</span></div>
+                        <div class="l-grid__item"><span>Altre informazioni</span></div>
+                      </div>
+                    </header>
+                    <section class="l-entry__byline--small">
+                      <div class="author">
+                        <img alt="Avatar" src="/avatar.png">
+                        <span class="author-name">Redazione</span>
+                      </div>
+                      <time>15 giugno 2026 9:57</time>
+                    </section>
+                    <section class="c-entry l-entry__body">
+                      <p>The actual event article starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when the event metadata grid and byline chrome are removed from the reader output.</p>
+                      <p>The event article conclusion should also stay after the event chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                      <p><strong>Dove:</strong> Piazza Marconi, Vigonovo<br><strong>Quando:</strong> dal 18 al 21 giugno 2026<br><strong>Ingresso:</strong> gratuito</p>
+                    </section>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/event-info-square",
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("The actual event article starts here"))
+        assertTrue(result.contentMarkdown.contains("The event article conclusion should also stay"))
+        assertTrue(result.contentMarkdown.contains("**Dove:** Piazza Marconi, Vigonovo"))
+        assertFalse(lines.any { it == "/" || it == "Dove" || it == "Quando" || it == "Prezzo" || it == "Altre informazioni" })
+        assertFalse(lines.any { it == "Piazza Marconi" || it == "Piazza Guglielmo Marconi" || it == "Redazione" })
+        assertFalse(result.contentMarkdown.contains("15 giugno 2026 9:57"))
+    }
+
+    @Test
     fun `exact selectors remove category chips and author latest posts boxes while preserving story`() {
         val result = Defuddle.parseHtml(
             html = """

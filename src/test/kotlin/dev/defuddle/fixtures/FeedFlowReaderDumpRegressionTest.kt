@@ -226,6 +226,29 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `veneziatoday event dump excludes event header and byline chrome`() {
+        val fixtureName = "general--www.veneziatoday.it-eventi-estate-insieme-a-vigonovo-programma"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("Dal 18 al 21 giugno"))
+        assertTrue(result.contentMarkdown.contains("Programma"))
+        assertTrue(result.contentMarkdown.contains("**Dove:** Piazza Marconi, Vigonovo"))
+        assertTrue(result.contentMarkdown.contains("**Ingresso:** gratuito"))
+        assertFalse(lines.any { it == "/" || it == "Dove" || it == "Quando" || it == "Prezzo" || it == "Altre informazioni" })
+        assertFalse(lines.any { it == "Piazza Marconi" || it == "Piazza Guglielmo Marconi" || it == "Redazione" })
+        assertFalse(result.contentMarkdown.contains("15 giugno 2026 9:57"))
+        assertFalse(result.contentMarkdown.contains("![Avatar]"))
+        assertFalse(result.contentHtml.contains("l-entry__header"))
+        assertFalse(result.contentHtml.contains("l-entry__byline--small"))
+    }
+
+    @Test
     fun `pianetabasket article dump excludes site chrome and latest news modules`() {
         val fixtureName = "general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
