@@ -745,10 +745,15 @@ object RemovalPipeline {
         val descendantHints = element.select("*").joinToString(" ") { partialHaystack(it) }
         val hrefHints = element.select("a[href]").joinToString(" ") { it.attr("href") }.lowercase()
         val hints = "${partialHaystack(element)} $descendantHints $hrefHints"
+        val hasBioAction = text.contains("read full bio", ignoreCase = true)
+        val hasProfileImageAndRole = element.select("img").isNotEmpty() &&
+            AUTHOR_ROLE_LABEL_PATTERN.containsMatchIn(text)
         return "author" in hints ||
             "byline" in hints ||
             "writer" in hints ||
-            "profile" in hints
+            "profile" in hints ||
+            hasBioAction ||
+            hasProfileImageAndRole
     }
 
     private fun isFollowTopicsBlock(element: Element): Boolean {
@@ -886,6 +891,7 @@ object RemovalPipeline {
         ".author-post",
         ".postHead",
         "[class*=headline-byline]",
+        ":scope > div:first-child > header",
         ".content__pagination",
         ".toc-opener",
         ".article-section + .section.light-gray-bg",
@@ -1005,6 +1011,8 @@ object RemovalPipeline {
         ".inline-gallery__count",
         ".inline-gallery__arrows",
         ".image-cont__expand",
+        """img[src*="seamless-keep-scrolling"]""",
+        """img[alt="Mashable Potato"]""",
         ".ad",
         ".ads",
         ".advertisement",
@@ -1138,6 +1146,11 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val AUTHOR_ROLE_LABEL_PATTERN = Regex(
+        """\b(contributor|news\s+writer|staff\s+writer|senior\s+writer|reporter|journalist|editor|reviewer)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val FOLLOW_TOPICS_PATTERN = Regex(
         """\bfollow\s+topics\s+and\s+authors\b|\bpersonalized\s+homepage\s+feed\b|\breceive\s+email\s+updates\b""",
         RegexOption.IGNORE_CASE,
@@ -1266,7 +1279,7 @@ object RemovalPipeline {
     private const val DONATION_WIDGET_MAX_LENGTH = 220
     private const val BYLINE_METADATA_STRIP_MAX_LENGTH = 360
     private const val ARTICLE_PACKAGE_MAX_LENGTH = 320
-    private const val INLINE_AUTHOR_BIO_MAX_LENGTH = 420
+    private const val INLINE_AUTHOR_BIO_MAX_LENGTH = 700
     private const val FOLLOW_TOPICS_MAX_LENGTH = 360
     private const val STORY_SUGGESTION_MAX_LENGTH = 220
     private const val LOCAL_NEWS_FOLLOW_MAX_LENGTH = 360

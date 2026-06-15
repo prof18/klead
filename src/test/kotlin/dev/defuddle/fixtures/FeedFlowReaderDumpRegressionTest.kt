@@ -806,6 +806,35 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `mashable article dump excludes article header author bio and keep scrolling footer`() {
+        val fixtureName = "general--mashable.com-tech-june-15-aiper-scuba-v3-deal"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        assertTrue(lines.first().startsWith("![the Aiper Scuba V3 robot pool cleaner"))
+        assertTrue(result.contentMarkdown.contains("**SAVE $550.02:**"))
+        assertTrue(result.contentMarkdown.contains("It's time to enjoy pool season."))
+        assertTrue(result.contentMarkdown.contains("The Aiper Scuba V3 would like to take over the chore"))
+        assertFalse(lines.any { it == "Home" || it == ">" || it == "Tech" || it == "By" || it == "on" })
+        assertFalse(result.contentMarkdown.contains("# Before Prime Day"))
+        assertFalse(result.contentMarkdown.contains("Enjoy a clean pool everyday with zero scrubbing"))
+        assertFalse(result.contentMarkdown.contains("All products featured here are independently selected"))
+        assertFalse(result.contentMarkdown.contains("Lauren Allain"))
+        assertFalse(result.contentMarkdown.contains("Contributor"))
+        assertFalse(result.contentMarkdown.contains("freelance journalist covering deals at Mashable"))
+        assertFalse(result.contentMarkdown.contains("Read Full Bio"))
+        assertFalse(result.contentMarkdown.contains("June 15, 2026"))
+        assertFalse(result.contentMarkdown.contains("Mashable Potato"))
+        assertFalse(result.contentHtml.contains("Author Bio Flyout"))
+        assertFalse(result.contentHtml.contains("seamless-keep-scrolling"))
+    }
+
+    @Test
     fun `android developers dump excludes copied tooltip byline and pager chrome`() {
         val fixtureName = "general--android-developers.googleblog.com-2026-05-apply-android-xr-developer-catalyst"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
