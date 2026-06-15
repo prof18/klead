@@ -274,6 +274,15 @@ object RemovalPipeline {
                 isDonationWidgetBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "donation widget")
                 }
+                isArticlePackageBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "article package card")
+                }
+                isInlineAuthorBioBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "inline author bio")
+                }
+                isFollowTopicsBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "follow topics prompt")
+                }
             }
         }
     }
@@ -509,6 +518,44 @@ object RemovalPipeline {
             DONATION_WIDGET_HINTS.any { it in hints }
     }
 
+    private fun isArticlePackageBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.length > ARTICLE_PACKAGE_MAX_LENGTH) return false
+        if (!ARTICLE_PACKAGE_PATTERN.containsMatchIn(text)) return false
+
+        val hints = partialHaystack(element)
+        return element.select("a[href]").isNotEmpty() ||
+            "package" in hints ||
+            "series" in hints ||
+            "collection" in hints
+    }
+
+    private fun isInlineAuthorBioBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.length > INLINE_AUTHOR_BIO_MAX_LENGTH) return false
+        if (!INLINE_AUTHOR_BIO_PATTERN.containsMatchIn(text)) return false
+
+        val descendantHints = element.select("*").joinToString(" ") { partialHaystack(it) }
+        val hrefHints = element.select("a[href]").joinToString(" ") { it.attr("href") }.lowercase()
+        val hints = "${partialHaystack(element)} $descendantHints $hrefHints"
+        return "author" in hints ||
+            "byline" in hints ||
+            "writer" in hints ||
+            "profile" in hints
+    }
+
+    private fun isFollowTopicsBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.length > FOLLOW_TOPICS_MAX_LENGTH) return false
+        if (!FOLLOW_TOPICS_PATTERN.containsMatchIn(text)) return false
+
+        val descendantHints = element.select("*").joinToString(" ") { partialHaystack(it) }
+        val hints = "${partialHaystack(element)} $descendantHints"
+        return "follow" in hints ||
+            element.select("ul, ol, li, a[href], button").isNotEmpty() ||
+            FOLLOW_TOPICS_STRONG_CONTEXT_PATTERN.containsMatchIn(text)
+    }
+
     private fun recordAndRemove(
         element: Element,
         debug: MutableList<RemovalRecord>,
@@ -556,6 +603,9 @@ object RemovalPipeline {
     private fun String.dimensionValue(): Int? =
         Regex("""^\s*(\d+)""").find(this)?.groupValues?.getOrNull(1)?.toIntOrNull()
 
+    private fun String.collapseWhitespace(): String =
+        replace(Regex("""\s+"""), " ")
+
     private val EXACT_SELECTORS = listOf(
         "nav",
         "footer",
@@ -601,6 +651,8 @@ object RemovalPipeline {
         ".wp-block-techcrunch-event-cta",
         ".rightrail-promo",
         ".latest-in-pattern",
+        ".duet--article--lede",
+        ".duet--ledes--standard-lede-bottom",
         ".wp-block-query",
         ".display-card.article-card",
         "div.article-card[data-nosnippet]",
@@ -776,6 +828,26 @@ object RemovalPipeline {
         "buy me a coffee",
     )
 
+    private val ARTICLE_PACKAGE_PATTERN = Regex(
+        """^part\s+of\b.+\bsee\s+all\s+updates\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val INLINE_AUTHOR_BIO_PATTERN = Regex(
+        """\bis\s+an?\s+[\p{L}\p{N} .,&'’/-]{0,80}\b(news\s+writer|staff\s+writer|senior\s+writer|reporter|journalist|editor|reviewer)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val FOLLOW_TOPICS_PATTERN = Regex(
+        """\bfollow\s+topics\s+and\s+authors\b|\bpersonalized\s+homepage\s+feed\b|\breceive\s+email\s+updates\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val FOLLOW_TOPICS_STRONG_CONTEXT_PATTERN = Regex(
+        """\bfrom\s+this\s+story\b.+\b(receive\s+email\s+updates|personalized\s+homepage)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val PROTECTED_EXACT_SELECTOR_OVERRIDES = setOf(
         ".wp-block-post-featured-image__caption",
     )
@@ -843,6 +915,9 @@ object RemovalPipeline {
     private const val MOBILE_APP_PROMO_MAX_LENGTH = 180
     private const val NEWSLETTER_SIGNUP_MAX_LENGTH = 700
     private const val DONATION_WIDGET_MAX_LENGTH = 220
+    private const val ARTICLE_PACKAGE_MAX_LENGTH = 320
+    private const val INLINE_AUTHOR_BIO_MAX_LENGTH = 420
+    private const val FOLLOW_TOPICS_MAX_LENGTH = 360
     private const val OPENING_ARTICLE_HEADER_MAX_LENGTH = 700
     private const val OPENING_ARTICLE_HEADER_MAX_PARAGRAPHS = 2
     private const val AUTHOR_FOLLOW_MAX_LENGTH = 220

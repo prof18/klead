@@ -679,6 +679,32 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Quale sarà il roster"))
     }
 
+    @Test
+    fun `theverge article dump excludes lede package author and follow modules`() {
+        val fixtureName = "general--www.theverge.com-games-949853-roblox-age-verification-demo-nbc"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Roblox’s vice president of safety product policy"))
+        assertTrue(result.contentMarkdown.contains("sort players into age brackets"))
+        assertTrue(result.contentMarkdown.contains("drop in daily users"))
+        assertFalse(result.contentMarkdown.contains("Kids weren’t able to fool Roblox’s video selfie age checks"))
+        assertFalse(result.contentMarkdown.contains("Jun 15, 2026, 3:52 PM UTC"))
+        assertFalse(result.contentMarkdown.contains("Cath Virginia / The Verge"))
+        assertFalse(result.contentMarkdown.contains("Part Of"))
+        assertFalse(result.contentMarkdown.contains("Let me see some ID"))
+        assertFalse(result.contentMarkdown.contains("see all updates"))
+        assertFalse(result.contentMarkdown.contains("Stevie Bonifield"))
+        assertFalse(result.contentMarkdown.contains("is a news writer covering all things consumer tech"))
+        assertFalse(result.contentMarkdown.contains("Follow topics and authors"))
+        assertFalse(result.contentMarkdown.contains("personalized homepage"))
+        assertFalse(result.contentHtml.contains("duet--article--lede"))
+        assertFalse(result.contentHtml.contains("duet--ledes--standard-lede-bottom"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

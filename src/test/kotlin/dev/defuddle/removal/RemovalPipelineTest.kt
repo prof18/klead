@@ -1159,6 +1159,53 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes Vox-style article lede package author and follow modules`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <div class="duet--article--lede">
+                    <p>Header summary text should not be part of the reader article.</p>
+                    <p>by Example Writer</p>
+                    <time>Jun 15, 2026, 3:52 PM UTC</time>
+                    <img src="/cover.jpg" alt="Cover image">
+                    <cite>Image: Example Photo Desk / Example Site</cite>
+                  </div>
+                  <div class="duet--layout--entry-body">
+                    <div class="story-package-card">
+                      <a href="/series/age-checks">
+                        <div>Part Of</div>
+                        <div>Let me see some ID: age verification is spreading across the internet</div>
+                        <div>see all updates</div>
+                      </a>
+                    </div>
+                    <div class="writer-summary">
+                      <span id="follow-author-standard_article_details-example">Example Writer</span>
+                      <span>is a news writer covering all things consumer tech.</span>
+                    </div>
+                    <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when The Verge style header, package, author, and follow modules are removed.</p>
+                    <p>The article conclusion should also stay after footer follow modules are removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                    <div class="topic-follow-module">
+                      <strong>Follow topics and authors</strong>
+                      from this story to see more like this in your personalized homepage feed and to receive email updates.
+                      <ul><li>Example Writer</li></ul>
+                    </div>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/vox-style-article",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Header summary text"))
+        assertFalse(result.contentMarkdown.contains("Part Of"))
+        assertFalse(result.contentMarkdown.contains("Let me see some ID"))
+        assertFalse(result.contentMarkdown.contains("Example Writer"))
+        assertFalse(result.contentMarkdown.contains("Follow topics and authors"))
+        assertFalse(result.contentMarkdown.contains("personalized homepage"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
