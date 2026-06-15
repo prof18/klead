@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 17
+- FeedFlow reader-dump regression fixtures: 18
 
 ## Active Strict Fixtures
 
@@ -46,6 +46,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.20percent.berlin-p-500-uber-bvg-nius-raves-podcast`: verifies that Substack captioned images with comma-bearing transformed `srcset` URLs render as Markdown images while Substack discussion/footer chrome is excluded.
 - `general--www.20percent.berlin-p-493-easy-burgeramt-appts-gun-raid`: verifies that Substack discussion, comments, top-posts archive, and ready-for-more footer modules do not leak into reader Markdown.
 - `general--berlinomagazine.com-2026-berlino-progetto-unico-in-europa-case-e-spazi-per-lesbiche-e-persone-queer-nel-cuore-della-citt`: verifies that Enfold/WordPress cover copyright captions and entry metadata strips do not leak before article prose.
+- `general--www.ilmitte.com-2026-06-riforma-sanita-warken-opposizione-germania`: verifies that Jannah/TieLabs WordPress category-chip wrappers do not leak before article prose.
 
 ## Known Differences
 

@@ -141,6 +141,36 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove WordPress category chip wrappers`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main role="main">
+                  <article class="post-content">
+                    <header class="entry-header-outer">
+                      <div class="entry-header">
+                        <span class="post-cat-wrap">
+                          <a class="post-cat tie-cat-1" href="/category/apertura/">Apertura</a>
+                          <a class="post-cat tie-cat-2" href="/category/politica/">Politica</a>
+                          <a class="post-cat tie-cat-3" href="/category/politica-tedesca/">Politica Tedesca</a>
+                        </span>
+                      </div>
+                    </header>
+                    <div class="entry-content">
+                      <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result while category chips are removed from the opening article chrome.</p>
+                    </div>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/category-chips",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertFalse(result.contentMarkdown.contains("Apertura"))
+        assertFalse(result.contentMarkdown.contains("Politica"))
+        assertFalse(result.contentMarkdown.contains("Politica Tedesca"))
+    }
+
+    @Test
     fun `partial selectors do not remove code blocks`() {
         val result = Defuddle.parseHtml(
             html = """

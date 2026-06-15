@@ -478,6 +478,8 @@ object RemovalPipeline {
         ".author-bio-box",
         ".article-options",
         ".article-tags",
+        ".post-cat-wrap",
+        ".post-cat",
         ".post-cats-list",
         ".post-categories",
         ".entry-categories",

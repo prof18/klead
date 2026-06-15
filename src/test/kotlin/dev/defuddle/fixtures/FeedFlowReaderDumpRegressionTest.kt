@@ -358,6 +358,25 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `ilmitte article dump excludes opening category chips`() {
+        val fixtureName = "general--www.ilmitte.com-2026-06-riforma-sanita-warken-opposizione-germania"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("Riforma della sanità in Germania"))
+        assertTrue(result.contentMarkdown.contains("La ministra tedesca della sanità"))
+        assertTrue(result.contentMarkdown.contains("Nina Warken"))
+        assertFalse(lines.any { it == "Apertura" || it == "Politica" || it == "Politica Tedesca" })
+        assertFalse(result.contentHtml.contains("post-cat-wrap"))
+        assertFalse(result.contentHtml.contains("tie-cat-"))
+    }
+
+    @Test
     fun `basketuniverso article dump excludes category chips and author latest posts`() {
         val fixtureName = "general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
