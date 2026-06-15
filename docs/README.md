@@ -159,3 +159,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added an Android Central FeedFlow reader-dump regression and removed trailing comment prompts, back-to-top controls, and read-more recirculation modules from reader Markdown.
 2026-06-15 - PHASE-06/08 - complete - Expanded the Android Central reader-dump regression to remove generic video carousel, affiliate/deal, price-comparison, and gallery-control chrome, and to render no-op-spanned specs tables as Markdown tables instead of flattened text.
 2026-06-15 - PHASE-04/06 - complete - Added a Pianeta Basket FeedFlow reader-dump regression and refined body selection toward semantic `main`/`role=main` containers when noisy navigation and latest-news modules otherwise make the body score higher.
+2026-06-15 - PHASE-06 - complete - Added an Android Police FeedFlow reader-dump regression and removed Valnet-style author header/bio chrome plus article tag/follow controls from reader Markdown.

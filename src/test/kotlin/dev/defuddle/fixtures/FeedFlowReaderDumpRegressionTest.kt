@@ -131,6 +131,28 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `androidpolice article dump excludes author bio and follow footer`() {
+        val fixtureName = "general--www.androidpolice.com-replaced-samsung-home-screen-with-custom-launcher-never-going-back"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("After years of using the Samsung Home screen"))
+        assertTrue(result.contentMarkdown.contains("Niagara Launcher made me rethink"))
+        assertFalse(result.contentMarkdown.contains("I have eight years of experience covering Android"))
+        assertFalse(result.contentMarkdown.contains("My background in tracking Android updates"))
+        assertFalse(result.contentMarkdown.contains("I worked for XDA as a news writer"))
+        assertFalse(result.contentMarkdown.contains("Jun 15, 2026, 6:00"))
+        assertFalse(lines.any { it == "By" || it == "Published" || it == "Follow" || it == "Followed" })
+        assertFalse(result.contentMarkdown.contains("https://www.androidpolice.com/utilities/"))
+        assertFalse(result.contentMarkdown.contains("https://www.androidpolice.com/tag/custom-launcher/"))
+    }
+
+    @Test
     fun `pianetabasket article dump excludes site chrome and latest news modules`() {
         val fixtureName = "general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

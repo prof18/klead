@@ -311,6 +311,53 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove author header and article options chrome while preserving body`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <header>
+                    <img src="/cover.jpg" alt="Article cover">
+                  </header>
+                  <div class="w-article-header-comp">
+                    <div class="w-author" data-nosnippet>
+                      <span>By</span>
+                      <a href="/author">Rahul Naskar</a>
+                    </div>
+                    <div class="meta_txt article-date">Published Jun 15, 2026, 6:00 AM EDT</div>
+                    <div class="with-excerpt" data-nosnippet>
+                      I have eight years of experience covering Android, with a focus on apps, features, and platform updates.
+                    </div>
+                  </div>
+                  <section class="article-body">
+                    <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes author header and article option cleanup deterministic while preserving legitimate article text.</p>
+                    <p>A second paragraph keeps the selected content stable and confirms that body paragraphs survive after surrounding chrome is removed.</p>
+                  </section>
+                  <aside class="article-options" data-nosnippet>
+                    <div class="article-tags">
+                      <a href="/utilities/">Utilities</a>
+                      <a href="/tag/custom-launcher/">Custom Launcher</a>
+                    </div>
+                    <div class="follow-container">Follow</div>
+                    <div class="follow-container">Followed</div>
+                  </aside>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/author-chrome",
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertFalse(lines.any { it == "By" || it == "Follow" || it == "Followed" })
+        assertFalse(result.contentMarkdown.contains("Rahul Naskar"))
+        assertFalse(result.contentMarkdown.contains("Published Jun 15"))
+        assertFalse(result.contentMarkdown.contains("I have eight years of experience covering Android"))
+        assertFalse(result.contentMarkdown.contains("Utilities"))
+        assertFalse(result.contentMarkdown.contains("Custom Launcher"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
