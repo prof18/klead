@@ -187,3 +187,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a Business Insider FeedFlow reader-dump regression and removed post byline/follow, timestamp, related-video recirculation, and back-to-home chrome from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added an Entrepreneur FeedFlow reader-dump regression and removed byline/editor/date strips, Google preferred-source links, comment controls, and listen-to-post prompts from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added an Entrepreneur FeedFlow reader-dump regression and removed orphan separator wrappers plus related-content card runs from broad `main` selections without site-specific URL handling.
+2026-06-15 - PHASE-06 - complete - Added a Fortune FeedFlow reader-dump regression and removed trending bars, article category eyebrows, author bio cards, and loading-skeleton latest/most-popular modules from broad `main` selections.

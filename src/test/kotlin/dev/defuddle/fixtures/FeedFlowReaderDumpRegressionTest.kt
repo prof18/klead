@@ -776,6 +776,35 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("is-entire-card-clickable"))
     }
 
+    @Test
+    fun `fortune article dump excludes trending author and skeleton recirculation modules`() {
+        val fixtureName = "general--fortune.com-2026-06-15-beagle-breeding-farm-wisconsin-protests-closed"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("A Wisconsin beagle breeding farm"))
+        assertTrue(result.contentMarkdown.contains("Ridglan Farms agreed in October"))
+        assertTrue(result.contentMarkdown.contains("violated state veterinary standards"))
+        assertFalse(result.contentMarkdown.contains("Trending"))
+        assertFalse(lines.any { it == "# 1" || it == "# 2" || it == "# 3" })
+        assertFalse(lines.any { it == "North America" || it == "Animals" })
+        assertFalse(result.contentMarkdown.contains("About the Author"))
+        assertFalse(result.contentMarkdown.contains("See full bio"))
+        assertFalse(result.contentMarkdown.contains("Right Arrow Button Icon"))
+        assertFalse(result.contentMarkdown.contains("Latest in North America"))
+        assertFalse(result.contentMarkdown.contains("Most Popular"))
+        assertFalse(result.contentMarkdown.contains("Lorem ipsum dolor sit amet"))
+        assertFalse(result.contentMarkdown.contains("Fortune Editors"))
+        assertFalse(result.contentHtml.contains("""data-cy="trending-top-bar""""))
+        assertFalse(result.contentHtml.contains("""data-cy="authors-bio-cards""""))
+        assertFalse(result.contentHtml.contains("animate-pulse"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

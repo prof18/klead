@@ -1358,6 +1358,73 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes trending author bio and skeleton recirculation modules`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <div class="container-ft">
+                    <div data-cy="trending-top-bar">
+                      <h1>Trending</h1>
+                      <h1>1</h1>
+                      <h1>2</h1>
+                      <h1>3</h1>
+                    </div>
+                  </div>
+                  <div data-cy="article-wrapper">
+                    <span>
+                      <a data-cy="article-section-eyebrow" href="/section/north-america/">North America</a>
+                      <a data-cy="article-tag-eyebrow" href="/tag/animals/">Animals</a>
+                    </span>
+                    <h1 data-cy="article-title">Example title duplicated from metadata</h1>
+                    <article data-cy="article-content" class="article-content">
+                      <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result.</p>
+                      <p>The article conclusion should also stay after publisher top bars, author cards, and skeleton recirculation sections are removed from the broad main selection.</p>
+                    </article>
+                    <div id="author-bio" data-cy="authors-bio-cards">
+                      <span>About the Author</span>
+                      <div data-cy="author-bio">By <a href="/author/ap">The Associated Press</a></div>
+                      <a data-cy="author-see-full-bio" href="/author/ap">See full bio<span>Right Arrow Button Icon</span></a>
+                    </div>
+                  </div>
+                  <div class="container-ft flex flex-col min-h-[1100px]">
+                    <div class="flex flex-col layout-gap-md">
+                      <span>Latest in North America</span>
+                      <div class="animate-pulse bg-helper">Finance</div>
+                      <div class="animate-pulse bg-helper">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</div>
+                      <span class="animate-pulse bg-helper">By Fortune Editors</span>
+                      <span class="animate-pulse bg-helper">October 20, 2025</span>
+                    </div>
+                    <div class="flex flex-col layout-gap-md">
+                      <span>Most Popular</span>
+                      <div class="animate-pulse bg-helper">Finance</div>
+                      <div class="animate-pulse bg-helper">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam</div>
+                      <span class="animate-pulse bg-helper">By Fortune Editors</span>
+                      <span class="animate-pulse bg-helper">October 20, 2025</span>
+                    </div>
+                  </div>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/publisher-chrome",
+            options = DefuddleOptions(contentSelector = "main"),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Trending"))
+        assertFalse(lines.any { it == "# 1" || it == "# 2" || it == "# 3" })
+        assertFalse(lines.any { it == "North America" || it == "Animals" })
+        assertFalse(result.contentMarkdown.contains("About the Author"))
+        assertFalse(result.contentMarkdown.contains("The Associated Press"))
+        assertFalse(result.contentMarkdown.contains("Right Arrow Button Icon"))
+        assertFalse(result.contentMarkdown.contains("Latest in North America"))
+        assertFalse(result.contentMarkdown.contains("Most Popular"))
+        assertFalse(result.contentMarkdown.contains("Lorem ipsum dolor sit amet"))
+        assertFalse(result.contentMarkdown.contains("Fortune Editors"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

@@ -322,6 +322,9 @@ object RemovalPipeline {
                 isOrphanSeparatorBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "orphan separator block")
                 }
+                isSkeletonRecirculationBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "skeleton recirculation block")
+                }
                 isRecommendationSectionHeadingBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "orphan recommendation heading")
                 }
@@ -527,6 +530,26 @@ object RemovalPipeline {
         return element.children().all { child ->
             child.text().trim().collapseWhitespace().let { it.isBlank() || it in ORPHAN_SEPARATOR_TEXTS }
         }
+    }
+
+    private fun isSkeletonRecirculationBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.isBlank() || text.length > SKELETON_RECIRCULATION_MAX_LENGTH) return false
+
+        val loremCount = LOREM_PLACEHOLDER_PATTERN.findAll(text).count()
+        if (loremCount < SKELETON_RECIRCULATION_MIN_PLACEHOLDERS) return false
+
+        val nonPlaceholderProseCount = element.select("p").count { paragraph ->
+            val paragraphText = paragraph.text().trim().collapseWhitespace()
+            paragraphText.wordCount() >= SKELETON_RECIRCULATION_PROSE_WORD_GUARD &&
+                !LOREM_PLACEHOLDER_PATTERN.containsMatchIn(paragraphText)
+        }
+        if (nonPlaceholderProseCount > 0) return false
+        if (element.select("[data-cy=article-content], article.article-content, .article-content").isNotEmpty()) return false
+
+        val hints = "${partialHaystack(element)} ${element.select("*").joinToString(" ") { partialHaystack(it) }}"
+        val hasSkeletonHint = SKELETON_RECIRCULATION_HINTS.any { it in hints }
+        return hasSkeletonHint && SKELETON_RECIRCULATION_HEADING_PATTERN.containsMatchIn(text)
     }
 
     private fun isAuthorFollowBlock(element: Element): Boolean {
@@ -742,6 +765,9 @@ object RemovalPipeline {
     private fun String.collapseWhitespace(): String =
         replace(Regex("""\s+"""), " ")
 
+    private fun String.wordCount(): Int =
+        split(Regex("""\s+""")).count { it.isNotBlank() }
+
     private val EXACT_SELECTORS = listOf(
         "nav",
         "footer",
@@ -769,6 +795,13 @@ object RemovalPipeline {
         ".top-comment",
         "[data-component-name*=ScrollUp]",
         "[data-component-name*=scroll]",
+        """[data-cy="trending-top-bar"]""",
+        """[data-cy="article-section-eyebrow"]""",
+        """[data-cy="article-tag-eyebrow"]""",
+        """[data-cy="authors-bio-cards"]""",
+        """[data-cy="author-bio"]""",
+        """[data-cy="author-see-full-bio"]""",
+        "#author-bio",
         "aside[data-mrf-recirculation]",
         "aside.hawk-root",
         "#audioPlayerArticle",
@@ -924,6 +957,16 @@ object RemovalPipeline {
 
     private val RECOMMENDATION_SECTION_HEADING_PATTERN = Regex(
         """^(related\s+content|related\s+articles?|recommended(?:\s+for\s+you)?|what\s+to\s+read\s+next|read\s+more|popular\s+stories|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val LOREM_PLACEHOLDER_PATTERN = Regex(
+        """\blorem\s+ipsum\s+dolor\s+sit\s+amet\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val SKELETON_RECIRCULATION_HEADING_PATTERN = Regex(
+        """\b(latest\s+in|most\s+popular|popular\s+stories|recommended|related|read\s+more)\b""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -1086,10 +1129,20 @@ object RemovalPipeline {
 
     private val HEADING_TAG_PATTERN = Regex("""h[1-6]""")
 
+    private val SKELETON_RECIRCULATION_HINTS = listOf(
+        "animate-pulse",
+        "bg-helper",
+        "skeleton",
+        "placeholder",
+    )
+
     private const val RECOMMENDATION_MIN_LINKS = 2
     private const val RECOMMENDATION_MIN_ARTICLES = 2
     private const val RECOMMENDATION_MIN_IMAGES = 2
     private const val RECOMMENDATION_HEADING_MAX_LENGTH = 90
+    private const val SKELETON_RECIRCULATION_MAX_LENGTH = 7_000
+    private const val SKELETON_RECIRCULATION_MIN_PLACEHOLDERS = 2
+    private const val SKELETON_RECIRCULATION_PROSE_WORD_GUARD = 8
     private const val TRAILING_TAG_MIN_LINKS = 1
     private const val TRAILING_TAG_MAX_WORDS = 16
     private const val COMMENT_COUNT_MAX_LINKS = 2
