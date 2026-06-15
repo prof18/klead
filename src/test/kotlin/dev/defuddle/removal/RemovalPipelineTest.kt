@@ -308,6 +308,32 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove WordPress Mailchimp newsletter blocks`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes inline Mailchimp cleanup deterministic while preserving legitimate article text.</p>
+                  <div class="wp-block-mailchimp-mailchimp">
+                    <div class="mc_container">
+                      <h2 class="mc_custom_border_hdr">La newsletter del Mitte!</h2>
+                      <div class="mc_subheader">
+                        <h3>Notizie, novità, eventi dalla Germania</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <p>The article conclusion should also stay after the newsletter signup is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/mailchimp-newsletter",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("La newsletter del Mitte"))
+        assertFalse(result.contentMarkdown.contains("Notizie, novità"))
+    }
+
+    @Test
     fun `content patterns remove trailing recommendation blocks`() {
         val result = Defuddle.parseHtml(
             html = """

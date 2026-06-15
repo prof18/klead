@@ -377,6 +377,24 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `ilmitte article dump excludes inline Mailchimp newsletter block`() {
+        val fixtureName = "general--www.ilmitte.com-2026-06-svastica-vegana-al-buffet-di-afd"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Svastica vegana al buffet di AfD"))
+        assertTrue(result.contentMarkdown.contains("Non è la prima volta che il Centro per la Bellezza Politica"))
+        assertTrue(result.contentMarkdown.contains("La reazione di AfD"))
+        assertFalse(result.contentMarkdown.contains("La newsletter del Mitte"))
+        assertFalse(result.contentMarkdown.contains("Notizie, novità, eventi dalla Germania"))
+        assertFalse(result.contentHtml.contains("wp-block-mailchimp-mailchimp"))
+        assertFalse(result.contentHtml.contains("mc_container"))
+    }
+
+    @Test
     fun `basketuniverso article dump excludes category chips and author latest posts`() {
         val fixtureName = "general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
