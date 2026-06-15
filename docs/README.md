@@ -180,3 +180,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added an Android Central FeedFlow reader-dump regression and removed Future-style newsletter, author bio, and popular/latest article slice modules from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added an Android Police FeedFlow reader-dump regression and removed inline Valnet related article cards while preserving the surrounding story sections.
 2026-06-15 - PHASE-06 - complete - Added an AppleInsider FeedFlow reader-dump regression and removed opening article header chrome before article-body prose so category/title/read-time/hero-caption/rumor-score metadata does not leak into reader Markdown.
+2026-06-15 - PHASE-06 - complete - Added an Ars Technica FeedFlow reader-dump regression and removed opening header/deck/byline/comment-count chrome, text-settings controls, and author mini-bio footer content from reader Markdown.

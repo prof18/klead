@@ -220,10 +220,13 @@ object RemovalPipeline {
                 afterHeader = true
                 continue
             }
-            if (afterHeader && child.hasArticleBodyHint()) return true
+            if (afterHeader && child.containsArticleBodyHint()) return true
         }
         return false
     }
+
+    private fun Element.containsArticleBodyHint(): Boolean =
+        hasArticleBodyHint() || select("*").any { it.hasArticleBodyHint() }
 
     private fun Element.hasArticleBodyHint(): Boolean {
         val hints = partialHaystack(this)
@@ -237,8 +240,7 @@ object RemovalPipeline {
 
         val nestedHints = select("*").joinToString(" ") { partialHaystack(it) }
         val hints = "${partialHaystack(this)} $nestedHints"
-        return OPENING_ARTICLE_HEADER_HINTS.any { it in hints } ||
-            (selectFirst("h1") != null && selectFirst("time") != null)
+        return OPENING_ARTICLE_HEADER_HINTS.any { it in hints }
     }
 
     private fun removeNestedArticleFooterBlocks(
@@ -574,6 +576,8 @@ object RemovalPipeline {
         ".jw-carousel",
         ".jwplayer__wrapper",
         ".jwcarousel__hook",
+        ".text-settings-dropdown-story",
+        ".text-settings",
         "[data-component-name*=Comments]",
         "[data-component-name*=comments]",
         ".top-comment",
@@ -615,6 +619,7 @@ object RemovalPipeline {
         ".author-bio",
         ".author-box",
         ".author-profile",
+        ".author-mini-bio",
         ".slice-author-bio",
         ".slice-container-authorBio",
         """[id^="slice-container-authorBio"]""",
@@ -772,6 +777,7 @@ object RemovalPipeline {
     private val OPENING_ARTICLE_BODY_HINTS = listOf(
         "article-body",
         "article-content",
+        "post-content",
         "story-body",
     )
 
@@ -782,6 +788,7 @@ object RemovalPipeline {
         "hero-caption",
         "river-score",
         "rumor-score",
+        "upper-deck",
     )
 
     private val VISUAL_IMAGE_WRAPPER_TAGS = setOf(

@@ -211,6 +211,58 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove publisher header controls and author mini bio around post content`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article class="h-entry">
+                    <header>
+                      <div class="upper-deck"><span>THE FALLOUT BEGINS</span></div>
+                      <h1>Example title duplicated from metadata</h1>
+                      <p>Deck text duplicated from the article description.</p>
+                      <div class="byline">
+                        <a href="/author/example">Example Author</a>
+                        <time datetime="2026-06-12T19:26:47+00:00">Jun 12, 2026 3:26 pm</time>
+                        <a href="#comments">47</a>
+                      </div>
+                    </header>
+                    <div class="text-settings-dropdown-story">
+                      <div class="text-settings">
+                        <span>Story text</span>
+                        <label>Size</label>
+                        <label>Links</label>
+                      </div>
+                    </div>
+                    <div class="layout-wrapper">
+                      <div class="post-content post-content-double">
+                        <p>The actual post content should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result instead of invoking short-page retries.</p>
+                        <p>A second paragraph keeps the selected content stable and confirms that body paragraphs survive after publisher header and reader control chrome is removed.</p>
+                      </div>
+                    </div>
+                    <div class="author-mini-bio">
+                      <img src="/author.jpg" alt="Photo of Example Author">
+                      <p>Example Author is a senior editor and this author biography should not be part of the article.</p>
+                    </div>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/publisher-header-controls",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual post content should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.contentMarkdown.contains("THE FALLOUT BEGINS"))
+        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("Deck text duplicated from the article description"))
+        assertFalse(result.contentMarkdown.contains("Jun 12, 2026"))
+        assertFalse(result.contentMarkdown.contains("Story text"))
+        assertFalse(result.contentMarkdown.contains("Size"))
+        assertFalse(result.contentMarkdown.contains("Links"))
+        assertFalse(result.contentMarkdown.contains("Example Author is a senior editor"))
+        assertFalse(result.contentMarkdown.contains("Photo of Example Author"))
+    }
+
+    @Test
     fun `partial selectors do not remove code blocks`() {
         val result = Defuddle.parseHtml(
             html = """

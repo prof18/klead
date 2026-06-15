@@ -242,6 +242,31 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `arstechnica article dump excludes opening header controls and author bio`() {
+        val fixtureName = "general--arstechnica.com-security-2026-06-peoplesoft-0-day-affecting-hundreds-of-organizations-steals-gigabytes-of-data"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("One of the world’s most active ransomware groups"))
+        assertTrue(result.contentMarkdown.contains("CVE-2026-35273"))
+        assertTrue(result.contentMarkdown.contains("9.8 0-day exploited for 2 weeks"))
+        assertFalse(result.contentMarkdown.contains("THE FALLOUT BEGINS"))
+        assertFalse(result.contentMarkdown.contains("PeopleSoft 0-day affecting hundreds of organizations steals gigabytes of data"))
+        assertFalse(result.contentMarkdown.contains("Vulnerability in the Oracle-owned PeopleSoft software is about as critical as they come"))
+        assertFalse(result.contentMarkdown.contains("Jun 12, 2026 3:26 pm"))
+        assertFalse(lines.any { it == "Dan Goodin" || it == "Story text" || it == "Size" || it == "Links" || it == "47" || it == "|" })
+        assertFalse(result.contentMarkdown.contains("Dan Goodin is Senior Security Editor"))
+        assertFalse(result.contentMarkdown.contains("Photo of Dan Goodin"))
+        assertFalse(result.contentHtml.contains("text-settings-dropdown-story"))
+        assertFalse(result.contentHtml.contains("author-mini-bio"))
+    }
+
+    @Test
     fun `axios article dump excludes source share and read-next chrome`() {
         val fixtureName = "general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
