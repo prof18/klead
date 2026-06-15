@@ -49,6 +49,23 @@ class FeedFlowReaderDumpRegressionTest {
         )
     }
 
+    @Test
+    fun `ilpost article dump excludes trailing tag list`() {
+        val fixtureName = "general--www.ilpost.it-2026-06-15-marius-borg-hoiby-figlio-principessa-ereditaria-norvegia-condannato-stupro"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("Høiby ha 29 anni"))
+        assertTrue(result.contentMarkdown.contains("aveva negato quelle per stupro e violenze domestiche"))
+        assertFalse(lines.any { it == "Tag:" || it.contains("/tag/norvegia/") })
+        assertFalse(result.contentMarkdown.contains("\n-\n"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

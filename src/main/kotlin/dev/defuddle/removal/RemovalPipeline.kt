@@ -148,6 +148,10 @@ object RemovalPipeline {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing recommendation block")
                 continue
             }
+            if (isTrailingTagBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing tag list")
+                continue
+            }
             break
         }
     }
@@ -238,6 +242,18 @@ object RemovalPipeline {
             imageCount >= RECOMMENDATION_MIN_IMAGES
     }
 
+    private fun isTrailingTagBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (!TRAILING_TAG_LABEL_PATTERN.containsMatchIn(text)) return false
+
+        val linkCount = element.select("a").size
+        val tagLinkCount = element.select("""a[href*="/tag/"], a[rel~=tag]""").size
+        val wordCount = text.split(Regex("""\s+""")).count { it.isNotBlank() }
+
+        return tagLinkCount >= TRAILING_TAG_MIN_LINKS ||
+            (linkCount >= TRAILING_TAG_MIN_LINKS && wordCount <= TRAILING_TAG_MAX_WORDS)
+    }
+
     private fun recordAndRemove(
         element: Element,
         debug: MutableList<RemovalRecord>,
@@ -323,8 +339,15 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val TRAILING_TAG_LABEL_PATTERN = Regex(
+        """^\s*(tags?|tagged|etichette?)\s*:""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private const val RECOMMENDATION_MIN_LINKS = 2
     private const val RECOMMENDATION_MIN_ARTICLES = 2
     private const val RECOMMENDATION_MIN_IMAGES = 2
+    private const val TRAILING_TAG_MIN_LINKS = 1
+    private const val TRAILING_TAG_MAX_WORDS = 16
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

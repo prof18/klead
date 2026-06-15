@@ -200,6 +200,29 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove trailing tag lists`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing tag-list pattern removal deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and the tag block is evaluated like a real article footer.</p>
+                  <div class="post-tags">
+                    <span>Tags:</span>
+                    <a href="/tag/kotlin/">Kotlin</a>
+                    <strong>-</strong>
+                    <a href="/tag/jvm/">JVM</a>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/tags",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
+        assertFalse(result.contentMarkdown.contains("Tags:"))
+        assertFalse(result.contentMarkdown.contains("/tag/kotlin/"))
+        assertFalse(result.contentMarkdown.contains("/tag/jvm/"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

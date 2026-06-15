@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 2
+- FeedFlow reader-dump regression fixtures: 3
 
 ## Active Strict Fixtures
 
@@ -31,6 +31,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
 - `general--www.ilpost.it-2026-06-15-ufc-casa-bianca`: verifies that broad body selection, breadcrumbs, and bottom recommendation sections do not leak into reader Markdown.
 - `general--www.ilpost.it-2026-06-15-lisbona-funicolare-gloria-ferme`: verifies that WordPress-style captioned image wrappers keep body images in Markdown.
+- `general--www.ilpost.it-2026-06-15-marius-borg-hoiby-figlio-principessa-ereditaria-norvegia-condannato-stupro`: verifies that trailing article tag lists do not leak into reader Markdown.
 
 ## Known Differences
 
