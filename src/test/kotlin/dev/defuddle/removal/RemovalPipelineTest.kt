@@ -1512,6 +1512,65 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes JetBrains product masthead author chrome and discovery links`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <div class="top-page">
+                    <a href="/kotlin/"><img src="/kotlin.svg" alt="Kotlin logo"><h2>Kotlin</h2></a>
+                    <p>A concise multiplatform language developed by JetBrains</p>
+                  </div>
+                  <section class="article-section">
+                    <div class="content js-toc-content">
+                      <a class="tag" href="/kotlin/category/news/">News</a>
+                      <h1>Example title duplicated from metadata</h1>
+                      <div class="author-post">
+                        <img src="/author.jpg" alt="Example Author">
+                        <a href="/author/example">Example Author</a>
+                        <time datetime="2026-05-21">May 21, 2026</time>
+                      </div>
+                      <p>The actual article body should stay because it contains normal explanatory prose about a language support policy and gives the reader useful context.</p>
+                      <p>The article conclusion should also stay before publisher navigation and discovery blocks are removed from the cleaned result.</p>
+                      <div class="content__pagination">
+                        <a href="/previous">Prev post</a>
+                        <a href="/next">Next post</a>
+                      </div>
+                    </div>
+                    <a class="toc-opener" href="#toc">Open table of contents</a>
+                  </section>
+                  <div class="section light-gray-bg">
+                    <div class="container">
+                      <div class="section__head"><h2>Discover more</h2></div>
+                      <div class="row">
+                        <a class="card img-visible" href="/related-one"><img src="/one.jpg" alt="">Related KotlinConf article</a>
+                        <a class="card img-visible" href="/related-two"><img src="/two.jpg" alt="">Another related article</a>
+                      </div>
+                    </div>
+                  </div>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/jetbrains-post",
+            options = DefuddleOptions(contentSelector = "main"),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Kotlin logo"))
+        assertFalse(result.contentMarkdown.contains("A concise multiplatform language"))
+        assertFalse(result.contentMarkdown.contains("News"))
+        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentMarkdown.contains("Prev post"))
+        assertFalse(result.contentMarkdown.contains("Next post"))
+        assertFalse(result.contentMarkdown.contains("Open table of contents"))
+        assertFalse(result.contentMarkdown.contains("Discover more"))
+        assertFalse(result.contentMarkdown.contains("Related KotlinConf article"))
+        assertFalse(result.contentHtml.contains("top-page"))
+        assertFalse(result.contentHtml.contains("author-post"))
+        assertFalse(result.contentHtml.contains("content__pagination"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

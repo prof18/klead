@@ -190,3 +190,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a Fortune FeedFlow reader-dump regression and removed trending bars, article category eyebrows, author bio cards, and loading-skeleton latest/most-popular modules from broad `main` selections.
 2026-06-15 - PHASE-06 - complete - Added an Android Developers Blog FeedFlow reader-dump regression and removed Blogger copy tooltips, posted-by separators, previous/next pagers, and orphan trailing dividers from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added a CSS-Tricks FeedFlow reader-dump regression and removed duplicated mega article headers containing tags, title, avatar, author, and date before article prose.
+2026-06-15 - PHASE-06 - complete - Added a JetBrains/Kotlin Blog FeedFlow reader-dump regression and removed product mastheads, category/title/author chrome, post pagination, table-of-contents openers, and discovery recirculation sections from reader Markdown.

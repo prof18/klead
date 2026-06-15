@@ -844,6 +844,13 @@ object RemovalPipeline {
         ".adb-detail > hr:last-child",
         ".blog-pager-newer-link",
         ".blog-pager-older-link",
+        ".top-page",
+        ".article-section .content > a.tag",
+        ".article-section .content > h1:first-of-type",
+        ".author-post",
+        ".content__pagination",
+        ".toc-opener",
+        ".article-section + .section.light-gray-bg",
         "aside[data-mrf-recirculation]",
         "aside.hawk-root",
         "#audioPlayerArticle",
@@ -993,12 +1000,12 @@ object RemovalPipeline {
     )
 
     private val RECOMMENDATION_HEADING_PATTERN = Regex(
-        """\b(recommended|related|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b|^best\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80}\s+(accessories|deals|offers|prices?|discounts?|sales?)$""",
+        """\b(recommended|related|discover more|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b|^best\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80}\s+(accessories|deals|offers|prices?|discounts?|sales?)$""",
         RegexOption.IGNORE_CASE,
     )
 
     private val RECOMMENDATION_SECTION_HEADING_PATTERN = Regex(
-        """^(related\s+content|related\s+articles?|recommended(?:\s+for\s+you)?|what\s+to\s+read\s+next|read\s+more|popular\s+stories|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
+        """^(related\s+content|related\s+articles?|recommended(?:\s+for\s+you)?|discover\s+more|what\s+to\s+read\s+next|read\s+more|popular\s+stories|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
         RegexOption.IGNORE_CASE,
     )
 

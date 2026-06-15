@@ -849,6 +849,34 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("""class="tags""""))
     }
 
+    @Test
+    fun `jetbrains blog dump excludes product masthead author chrome and discovery links`() {
+        val fixtureName = "general--blog.jetbrains.com-kotlin-2026-05-security-support-policy-for-the-kotlin-standard-library"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        assertTrue(lines.first().startsWith("Upgrade rhythms vary significantly"))
+        assertTrue(result.contentMarkdown.contains("Which Kotlin versions are supported?"))
+        assertTrue(result.contentMarkdown.contains("How a release line evolves"))
+        assertFalse(result.contentMarkdown.contains("Kotlin logo"))
+        assertFalse(lines.any { it == "Kotlin" || it == "A concise multiplatform language developed by JetBrains" || it == "News" })
+        assertFalse(result.contentMarkdown.contains("# Introducing a Security Support Policy for the Kotlin Standard Library"))
+        assertFalse(result.contentMarkdown.contains("Anton Yalyshev"))
+        assertFalse(result.contentMarkdown.contains("Prev post"))
+        assertFalse(result.contentMarkdown.contains("Next post"))
+        assertFalse(result.contentMarkdown.contains("Official Kotlin Support for Visual Studio Code"))
+        assertFalse(result.contentMarkdown.contains("Discover more"))
+        assertFalse(result.contentMarkdown.contains("KotlinConf’26 Keynote Highlights"))
+        assertFalse(result.contentHtml.contains("top-page"))
+        assertFalse(result.contentHtml.contains("author-post"))
+        assertFalse(result.contentHtml.contains("content__pagination"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")
