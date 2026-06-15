@@ -127,4 +127,37 @@ class DefuddleApiTest {
         assertEquals("article", result.debug["selectedContentSelector"])
         assertNotNull(result.debug["contentCandidates"])
     }
+
+    @Test
+    fun `schema article body refines public parser body fallback`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <html>
+                  <head>
+                    <script type="application/ld+json">
+                      {
+                        "@type": "Article",
+                        "articleBody": "Schema body marker belongs to this exact article body"
+                      }
+                    </script>
+                  </head>
+                  <body>
+                    <header>Site chrome should not be included.</header>
+                    <section id="schema-match">
+                      <p>Schema body marker belongs to this exact article body and should refine the broad body fallback.</p>
+                    </section>
+                    <section>
+                      <p>Unrelated body content should not be included.</p>
+                    </section>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://example.com/schema-body",
+            options = DefuddleOptions(debug = true),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Schema body marker belongs"))
+        assertFalse(result.contentMarkdown.contains("Unrelated body content"))
+        assertEquals("schema-text", result.debug["selectedContentSelector"])
+    }
 }

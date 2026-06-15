@@ -1,6 +1,7 @@
 package dev.defuddle.fixtures
 
 import dev.defuddle.Defuddle
+import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -29,6 +30,30 @@ class FixtureCoverageTest {
         assertFalse(report.failureReasons.containsKey(FixtureFailureReason.UNKNOWN))
         assertTrue(report.categoryCounts.getValue(FixtureCategory.METADATA) > 0)
         assertTrue(report.categoryCounts.getValue(FixtureCategory.MATH) > 0)
+    }
+
+    @Test
+    fun `diagnostic mode classifies output that misses expected fixture text`() {
+        val report = FixtureCoverage.runDiagnostic(
+            listOf(
+                FixtureCase(
+                    name = "synthetic--missing-expected-text",
+                    path = Path.of("synthetic--missing-expected-text.html"),
+                    sourceUrl = "https://example.com/synthetic",
+                    rawHtml = "<article><p>Completely different nonblank article body.</p></article>",
+                    expectedMarkdown = ExpectedResult(
+                        metadata = emptyMap(),
+                        markdownBody = "This expected article body text should be used as the regression probe.",
+                    ),
+                    expectedHtml = null,
+                    categories = setOf(FixtureCategory.GENERAL),
+                ),
+            ),
+        )
+
+        assertEquals(0, report.passedFixtures)
+        assertEquals(1, report.failureReasons.values.sum())
+        assertFalse(report.failureReasons.containsKey(FixtureFailureReason.UNKNOWN))
     }
 }
 
@@ -95,8 +120,6 @@ object FixtureCoverage {
         if (result.contentMarkdown.isBlank() && case.category != FixtureCategory.MATH) {
             return classify(case)
         }
-        if (!relaxed) return null
-
         val expected = case.expectedMarkdown?.markdownBody
         val firstExpectedLine = expected
             ?.lineSequence()

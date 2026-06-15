@@ -65,6 +65,15 @@ class DefuddleMarkdownWriterTest {
     }
 
     @Test
+    fun `fenced code uses a longer fence when code contains backticks`() {
+        val markdown = render("""<article><pre><code>before${"\n"}```${"\n"}after</code></pre></article>""")
+
+        assertTrue(markdown.startsWith("````\n"))
+        assertTrue(markdown.contains("```\n"))
+        assertTrue(markdown.endsWith("\n````\n"))
+    }
+
+    @Test
     fun `simple tables render as GFM and complex tables fall back to text`() {
         val simple = render("""<article><table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table></article>""")
         assertEquals("| A | B |\n| --- | --- |\n| 1 | 2 |\n", simple)

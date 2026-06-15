@@ -129,7 +129,11 @@ object Defuddle {
     ): DefuddleResult {
         val metaTags = MetadataExtractor.collectMetaTags(document)
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
-        val detected = MainContentDetector.detect(document, options)
+        val detected = MainContentDetector.detect(
+            document = document,
+            options = options,
+            schemaText = schemaOrg.contentText(),
+        )
         val content = detected.element
         val removals = mutableListOf<RemovalRecord>()
         stripUnsafe(content)
@@ -178,6 +182,10 @@ object Defuddle {
             site = metadata.site ?: site,
         )
     }
+
+    private fun dev.defuddle.metadata.SchemaOrgResult.contentText(): String? =
+        firstString("articleBody")
+            ?: firstString("text")
 
     private fun prepareDocument(document: Document) {
         promoteNoscriptImages(document)

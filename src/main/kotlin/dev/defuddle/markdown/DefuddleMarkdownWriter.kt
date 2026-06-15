@@ -163,7 +163,8 @@ private class Renderer(
             ?: languageFrom(element)
             ?: ""
         val text = (code?.wholeText() ?: element.wholeText()).normalizeFinalNewline()
-        return "```$language\n$text```"
+        val fence = codeFence(text)
+        return "$fence$language\n$text$fence"
     }
 
     private fun renderFigure(
@@ -252,6 +253,11 @@ private class Renderer(
         val maxTicks = Regex("`+").findAll(text).maxOfOrNull { it.value.length } ?: 0
         val ticks = "`".repeat(maxTicks + 1)
         return if ("`" in text) "$ticks $text $ticks" else "$ticks$text$ticks"
+    }
+
+    private fun codeFence(text: String): String {
+        val maxTicks = Regex("`+").findAll(text).maxOfOrNull { it.value.length } ?: 0
+        return "`".repeat((maxTicks + 1).coerceAtLeast(3))
     }
 
     private fun languageFrom(element: Element?): String? {

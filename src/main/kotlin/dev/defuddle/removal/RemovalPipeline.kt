@@ -34,8 +34,15 @@ object RemovalPipeline {
         if (options.removeContentPatterns) {
             removeContentPatterns(content, debug)
         }
-        deduplicateImages(content, debug)
-        removeCoverImage(content, metadataImage, debug)
+        if (options.removeImages) {
+            removeImages(content, debug)
+        } else {
+            if (options.removeSmallImages) {
+                removeSmallImages(content, debug)
+            }
+            deduplicateImages(content, debug)
+            removeCoverImage(content, metadataImage, debug)
+        }
     }
 
     private fun removeHiddenElements(
@@ -141,6 +148,27 @@ object RemovalPipeline {
         }
     }
 
+    private fun removeImages(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (element in content.select("picture, img").toList()) {
+            if (element.normalName() == "img" && element.parents().any { it.normalName() == "picture" }) continue
+            recordAndRemove(element, debug, "removeImages", element.normalName(), "removeImages option")
+        }
+    }
+
+    private fun removeSmallImages(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (image in content.select("img").toList()) {
+            if (image.isSmallImage()) {
+                recordAndRemove(image, debug, "removeSmallImages", "img", "small image dimensions")
+            }
+        }
+    }
+
     private fun deduplicateImages(
         content: Element,
         debug: MutableList<RemovalRecord>,
@@ -212,6 +240,27 @@ object RemovalPipeline {
     private fun Element.imageKey(): String? =
         absUrl("src").ifBlank { attr("src").trim() }.ifBlank { null }
 
+    private fun Element.isSmallImage(): Boolean {
+        val width = dimension("width")
+        val height = dimension("height")
+        return if (width != null && height != null) {
+            width > 0 && height > 0 && width <= SMALL_IMAGE_MAX_DIMENSION && height <= SMALL_IMAGE_MAX_DIMENSION
+        } else {
+            false
+        }
+    }
+
+    private fun Element.dimension(name: String): Int? =
+        attr(name).dimensionValue()
+            ?: Regex("""$name\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
+                .find(attr("style"))
+                ?.groupValues
+                ?.getOrNull(1)
+                ?.toIntOrNull()
+
+    private fun String.dimensionValue(): Int? =
+        Regex("""^\s*(\d+)""").find(this)?.groupValues?.getOrNull(1)?.toIntOrNull()
+
     private val EXACT_SELECTORS = listOf(
         "nav",
         "footer",
@@ -249,4 +298,6 @@ object RemovalPipeline {
         """\b(subscribe|newsletter|weekly updates|product announcements)\b""",
         RegexOption.IGNORE_CASE,
     )
+
+    private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }
