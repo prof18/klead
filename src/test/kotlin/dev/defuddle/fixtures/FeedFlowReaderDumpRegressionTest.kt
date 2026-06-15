@@ -862,6 +862,34 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `nasa science article dump excludes author details terms and exploration footer`() {
+        val fixtureName = "general--science.nasa.gov-missions-chandra-nasas-chandra-finds-unexpected-fireworks-in-aftermath-of-stellar-explosions"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The aftermath of a supernova"))
+        assertTrue(result.contentMarkdown.contains("The galaxy M83, located about 15 million light-years from Earth"))
+        assertTrue(result.contentMarkdown.contains("NASA's Marshall Space Flight Center in Huntsville, Alabama, manages the Chandra program"))
+        assertFalse(result.contentMarkdown.contains("About the Author"))
+        assertFalse(result.contentMarkdown.contains("## Lee Mohon"))
+        assertFalse(result.contentMarkdown.contains("## Share"))
+        assertFalse(result.contentMarkdown.contains("## Details"))
+        assertFalse(result.contentMarkdown.contains("Last Updated"))
+        assertFalse(result.contentMarkdown.contains("Related Terms"))
+        assertFalse(result.contentMarkdown.contains("Explore More"))
+        assertFalse(result.contentMarkdown.contains("Discover More Topics From NASA"))
+        assertFalse(result.contentMarkdown.contains("NASA’s Chandra Discovers Possible Supernova Remnant"))
+        assertFalse(result.contentMarkdown.contains("Chandra X-ray Observatory is the world's most powerful X-ray telescope"))
+        assertFalse(result.contentHtml.contains("hds-about-the-author"))
+        assertFalse(result.contentHtml.contains("wp-block-nasa-blocks-credits-and-details"))
+        assertFalse(result.contentHtml.contains("hds-related-articles"))
+        assertFalse(result.contentHtml.contains("hds-topic-cards"))
+    }
+
+    @Test
     fun `android developers dump excludes copied tooltip byline and pager chrome`() {
         val fixtureName = "general--android-developers.googleblog.com-2026-05-apply-android-xr-developer-catalyst"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

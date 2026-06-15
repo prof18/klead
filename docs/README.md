@@ -195,3 +195,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a BuzzFeed FeedFlow reader-dump regression and removed BuzzFeed post headers, author/byline bio blocks, and comments wrappers from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added a Mashable FeedFlow reader-dump regression and removed opening article headers, author bio/profile cards, and seamless keep-scrolling placeholder art from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added a Polygon FeedFlow reader-dump regression and removed Valnet-style opening header controls, copy alerts, author avatars, category/tag chips, and duplicate title/dek chrome while preserving the feature image and article body.
+2026-06-15 - PHASE-06 - complete - Added a NASA Science FeedFlow reader-dump regression and removed trailing about-author, share/details, related-terms, related-articles, and topic-card footer modules from reader Markdown.

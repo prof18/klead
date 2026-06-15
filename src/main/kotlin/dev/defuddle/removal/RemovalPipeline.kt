@@ -342,6 +342,15 @@ object RemovalPipeline {
                 isRecommendationSectionHeadingBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "orphan recommendation heading")
                 }
+                isAboutAuthorFooterBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "about-author footer block")
+                }
+                isArticleFooterDetailsBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "article details footer block")
+                }
+                isRelatedTermsBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "related terms footer block")
+                }
                 isTagListBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer tag list")
                 }
@@ -622,6 +631,57 @@ object RemovalPipeline {
 
         return tagLinkCount >= TRAILING_TAG_MIN_LINKS ||
             (linkCount >= TRAILING_TAG_MIN_LINKS && wordCount <= TRAILING_TAG_MAX_WORDS)
+    }
+
+    private fun isAboutAuthorFooterBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.isBlank() || text.length > ABOUT_AUTHOR_FOOTER_MAX_LENGTH) return false
+        if (!ABOUT_AUTHOR_FOOTER_PATTERN.containsMatchIn(text)) return false
+
+        val proseParagraphs = element.select("p").count { paragraph ->
+            paragraph.text().trim().collapseWhitespace().wordCount() >= ABOUT_AUTHOR_PROSE_WORD_GUARD
+        }
+        if (proseParagraphs > 0) return false
+
+        val hints = "${partialHaystack(element)} ${element.select("*").joinToString(" ") { partialHaystack(it) }}"
+        return "author" in hints ||
+            element.select("""a[href*="/author/"], a[rel~=author], img""").isNotEmpty() ||
+            text.wordCount() <= ABOUT_AUTHOR_FOOTER_MAX_WORDS
+    }
+
+    private fun isArticleFooterDetailsBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.isBlank() || text.length > ARTICLE_FOOTER_DETAILS_MAX_LENGTH) return false
+        if (!ARTICLE_FOOTER_DETAILS_PATTERN.containsMatchIn(text)) return false
+
+        val proseParagraphs = element.select("p").count { paragraph ->
+            paragraph.text().trim().collapseWhitespace().wordCount() >= ARTICLE_FOOTER_DETAILS_PROSE_WORD_GUARD
+        }
+        if (proseParagraphs > 0) return false
+
+        val headings = element.select("h1, h2, h3, h4, h5, h6")
+            .map { it.text().trim().collapseWhitespace() }
+        val hasFooterHeading = headings.any { ARTICLE_FOOTER_DETAILS_HEADING_PATTERN.matches(it) }
+        val hints = partialHaystack(element)
+        return hasFooterHeading ||
+            "details" in hints ||
+            "credits" in hints ||
+            "share" in hints
+    }
+
+    private fun isRelatedTermsBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.isBlank() || text.length > RELATED_TERMS_MAX_LENGTH) return false
+        if (!RELATED_TERMS_PATTERN.containsMatchIn(text)) return false
+        if (element.select("p").any { it.text().trim().collapseWhitespace().wordCount() >= RELATED_TERMS_PROSE_WORD_GUARD }) {
+            return false
+        }
+
+        val linkCount = element.select("a[href]").size
+        val hints = partialHaystack(element)
+        return linkCount >= RELATED_TERMS_MIN_LINKS ||
+            "tag" in hints ||
+            "term" in hints
     }
 
     private fun isCommentCountBlock(element: Element): Boolean {
@@ -962,6 +1022,7 @@ object RemovalPipeline {
         ".article-header-title",
         ".thumbuser",
         ".author-bio",
+        """[class*="about-the-author"]""",
         ".author-box",
         ".author-profile",
         ".author-mini-bio",
@@ -987,6 +1048,9 @@ object RemovalPipeline {
         ".author-bio-box",
         ".article-options",
         ".article-tags",
+        """[class*="credits-and-details"]""",
+        """[class*="related-articles"]""",
+        """[class*="topic-cards"]""",
         ".post-cat-wrap",
         ".post-cat",
         ".post-cats-list",
@@ -1056,12 +1120,12 @@ object RemovalPipeline {
     )
 
     private val RECOMMENDATION_HEADING_PATTERN = Regex(
-        """\b(recommended|related|discover more|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b|^best\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80}\s+(accessories|deals|offers|prices?|discounts?|sales?)$""",
+        """\b(recommended|related|related terms|explore more|keep exploring|discover more|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b|^best\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80}\s+(accessories|deals|offers|prices?|discounts?|sales?)$""",
         RegexOption.IGNORE_CASE,
     )
 
     private val RECOMMENDATION_SECTION_HEADING_PATTERN = Regex(
-        """^(related\s+content|related\s+articles?|recommended(?:\s+for\s+you)?|discover\s+more|what\s+to\s+read\s+next|read\s+more|popular\s+stories|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
+        """^(related\s+content|related\s+articles?|related\s+terms|recommended(?:\s+for\s+you)?|explore\s+more|keep\s+exploring|discover\s+more(?:\s+.+)?|what\s+to\s+read\s+next|read\s+more|popular\s+stories|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -1178,6 +1242,26 @@ object RemovalPipeline {
 
     private val LOCAL_NEWS_FOLLOW_PATTERN = Regex(
         """^follow\s+[\p{L}\p{N} .,'’&-]{1,80}\s+news\s+on\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val ABOUT_AUTHOR_FOOTER_PATTERN = Regex(
+        """^about\s+the\s+authors?\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val ARTICLE_FOOTER_DETAILS_PATTERN = Regex(
+        """\b(?:share\b.*\bdetails\b.*\b(?:last\s+updated|editor|contact|location)\b|details\b.*\b(?:last\s+updated|editor|contact|location)\b.*\b(?:editor|contact|location)\b)""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val ARTICLE_FOOTER_DETAILS_HEADING_PATTERN = Regex(
+        """^(share|details|related\s+terms)$""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val RELATED_TERMS_PATTERN = Regex(
+        """^related\s+terms\b""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -1298,5 +1382,13 @@ object RemovalPipeline {
     private const val AUTHOR_FOLLOW_MAX_LENGTH = 220
     private const val POSTED_BY_BYLINE_MAX_LENGTH = 120
     private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
+    private const val ABOUT_AUTHOR_FOOTER_MAX_LENGTH = 900
+    private const val ABOUT_AUTHOR_FOOTER_MAX_WORDS = 80
+    private const val ABOUT_AUTHOR_PROSE_WORD_GUARD = 16
+    private const val ARTICLE_FOOTER_DETAILS_MAX_LENGTH = 1_600
+    private const val ARTICLE_FOOTER_DETAILS_PROSE_WORD_GUARD = 18
+    private const val RELATED_TERMS_MAX_LENGTH = 1_200
+    private const val RELATED_TERMS_PROSE_WORD_GUARD = 14
+    private const val RELATED_TERMS_MIN_LINKS = 2
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }
