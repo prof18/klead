@@ -43,6 +43,32 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `focused article beats body containing recommendations`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <article id="story">
+                    <p>This readable article paragraph contains the actual story with enough natural language, punctuation, and context to be selected as the focused reading surface. It should not lose just because the page body also contains recommendation cards after the story.</p>
+                    <p>The second paragraph keeps the article substantial and realistic. Readers expect this core article prose to remain while unrelated cards, teasers, and listing material below the story stay outside the selected content.</p>
+                  </article>
+                  <section id="recommended">
+                    <h2>Recommended</h2>
+                    <article><h3>First unrelated card</h3><p>A long teaser paragraph adds enough text to make the full body score higher than the article alone.</p></article>
+                    <article><h3>Second unrelated card</h3><p>Another teaser paragraph contributes non-article words that should not make the body selection win.</p></article>
+                    <article><h3>Third unrelated card</h3><p>More unrelated summary text simulates bottom-of-page recommendations from a news site.</p></article>
+                    <article><h3>Fourth unrelated card</h3><p>Extra listing text gives the page body plenty of words while remaining outside the story.</p></article>
+                  </section>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals("article", detected.selectedSelector)
+    }
+
+    @Test
     fun `child article can beat parent main`() {
         val detected = MainContentDetector.detect(
             Jsoup.parse(

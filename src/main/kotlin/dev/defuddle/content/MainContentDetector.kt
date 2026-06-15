@@ -70,6 +70,9 @@ object MainContentDetector {
         val sorted = candidates.sortedByDescending { it.score }
         var selected = refineListingParent(sorted.first(), sorted)
         if (selected.element.tagName() == "body") {
+            refineBodyToFocusedCandidate(selected, sorted)?.let { selected = it }
+        }
+        if (selected.element.tagName() == "body") {
             detectTableLayout(selected.element)?.let { selected = it }
         }
         if (selected.element.tagName() == "body") {
@@ -101,6 +104,24 @@ object MainContentDetector {
         }
         return parentCandidate ?: selected
     }
+
+    private fun refineBodyToFocusedCandidate(
+        selected: Candidate,
+        candidates: List<Candidate>,
+    ): Candidate? {
+        val focusedCandidates = candidates
+            .filter { candidate ->
+                candidate.element !== selected.element &&
+                    candidate.isFocusedContentCandidate() &&
+                    candidate.score >= selected.score * BODY_REFINEMENT_MIN_SCORE_RATIO &&
+                    ContentScorer.scoreElement(candidate.element).wordCount >= BODY_REFINEMENT_MIN_WORDS
+            }
+        return focusedCandidates.firstOrNull { it.selector in ARTICLE_SELECTORS }
+            ?: focusedCandidates.firstOrNull()
+    }
+
+    private fun Candidate.isFocusedContentCandidate(): Boolean =
+        selector in FOCUSED_CONTENT_SELECTORS
 
     private fun detectTableLayout(body: Element): Candidate? {
         val bodyWords = ContentScorer.scoreElement(body).wordCount
@@ -189,4 +210,27 @@ object MainContentDetector {
         }
         return result
     }
+
+    private val ARTICLE_SELECTORS = setOf(
+        "article",
+        """[role="article"]""",
+    )
+
+    private val FOCUSED_CONTENT_SELECTORS = ARTICLE_SELECTORS + setOf(
+        "#post",
+        ".post-content",
+        ".post-body",
+        ".article-content",
+        "#article-content",
+        ".js-article-content",
+        ".entry-content",
+        ".markdown-body",
+        "main",
+        """[role="main"]""",
+        ".article-body",
+        "#content",
+    )
+
+    private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
+    private const val BODY_REFINEMENT_MIN_WORDS = 80
 }

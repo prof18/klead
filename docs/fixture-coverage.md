@@ -1,6 +1,6 @@
 # Fixture Coverage
 
-Last updated: 2026-06-14
+Last updated: 2026-06-15
 
 Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
@@ -13,6 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
+- FeedFlow reader-dump regression fixtures: 1
 
 ## Active Strict Fixtures
 
@@ -25,6 +26,10 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - MVP allowlist from `docs/09-fixture-coverage-expansion.md`
 - `hidden--nodes`
 - `hidden--visibility`
+
+## FeedFlow Reader-Dump Regressions
+
+- `general--www.ilpost.it-2026-06-15-ufc-casa-bianca`: verifies that broad body selection, breadcrumbs, and bottom recommendation sections do not leak into reader Markdown.
 
 ## Known Differences
 

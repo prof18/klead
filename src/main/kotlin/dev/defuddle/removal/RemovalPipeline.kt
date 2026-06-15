@@ -144,6 +144,10 @@ object RemovalPipeline {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing subscribe call to action")
                 continue
             }
+            if (isTrailingRecommendationBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing recommendation block")
+                continue
+            }
             break
         }
     }
@@ -221,6 +225,19 @@ object RemovalPipeline {
         return "${element.id()} ${element.className()} $attrs".lowercase()
     }
 
+    private fun isTrailingRecommendationBlock(element: Element): Boolean {
+        val heading = element.selectFirst("h1, h2, h3, h4, h5, h6")?.text()
+            ?: element.ownText()
+        if (!RECOMMENDATION_HEADING_PATTERN.containsMatchIn(heading.trim())) return false
+
+        val linkCount = element.select("a").size
+        val articleCount = element.select("article").size
+        val imageCount = element.select("img, figure, picture").size
+        return linkCount >= RECOMMENDATION_MIN_LINKS ||
+            articleCount >= RECOMMENDATION_MIN_ARTICLES ||
+            imageCount >= RECOMMENDATION_MIN_IMAGES
+    }
+
     private fun recordAndRemove(
         element: Element,
         debug: MutableList<RemovalRecord>,
@@ -285,7 +302,9 @@ object RemovalPipeline {
 
     private val PARTIAL_PATTERNS = listOf(
         "advert",
+        "breadcrumb",
         "promo",
+        "recommend",
         "related",
         "share",
         "sidebar",
@@ -299,5 +318,13 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val RECOMMENDATION_HEADING_PATTERN = Regex(
+        """\b(recommended|related|more stories|more from|read more|you may also like|consigliati|altre storie)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private const val RECOMMENDATION_MIN_LINKS = 2
+    private const val RECOMMENDATION_MIN_ARTICLES = 2
+    private const val RECOMMENDATION_MIN_IMAGES = 2
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

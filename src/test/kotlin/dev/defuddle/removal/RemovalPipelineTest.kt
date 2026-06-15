@@ -117,6 +117,28 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `breadcrumb wrappers are removed as navigation clutter`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <div class="article-breadcrumbs">
+                    <a href="/world">World</a>
+                    <span>Monday 15 June 2026</span>
+                  </div>
+                  <article>
+                    <p>Main prose stays with enough words to avoid short-page retry and make breadcrumb removal deterministic for this fixture. The text includes useful article context, natural punctuation, and additional words so the cleaned result remains trustworthy.</p>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/breadcrumbs",
+        )
+
+        assertTrue(result.contentMarkdown.contains("Main prose stays"))
+        assertFalse(result.contentMarkdown.contains("World"))
+        assertFalse(result.contentMarkdown.contains("Monday 15 June 2026"))
+    }
+
+    @Test
     fun `low scoring removes link heavy related sections and preserves prose`() {
         val result = Defuddle.parseHtml(
             html = """
@@ -154,6 +176,27 @@ class RemovalPipelineTest {
 
         assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
         assertFalse(result.contentMarkdown.contains("Subscribe to our newsletter"))
+    }
+
+    @Test
+    fun `content patterns remove trailing recommendation blocks`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing recommendation pattern removal deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and the recommendation block is evaluated like a real article footer.</p>
+                  <section>
+                    <h2>Recommended</h2>
+                    <a href="/one">First unrelated story</a>
+                    <a href="/two">Second unrelated story</a>
+                  </section>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/recommendations",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
+        assertFalse(result.contentMarkdown.contains("Recommended"))
+        assertFalse(result.contentMarkdown.contains("First unrelated story"))
     }
 
     @Test
