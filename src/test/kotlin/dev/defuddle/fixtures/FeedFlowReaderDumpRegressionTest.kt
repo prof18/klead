@@ -148,6 +148,28 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `androidcentral article dump excludes future newsletter author and latest article slices`() {
+        val fixtureName = "general--www.androidcentral.com-phones-samsung-galaxy-galaxy-phones-are-finally-getting-a-feature-android-users-have-wanted-for-y"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("One UI 9 is currently in beta"))
+        assertTrue(result.contentMarkdown.contains("Android Central's Take"))
+        assertTrue(result.contentMarkdown.contains("I'm pleased to see Samsung finally implementing this feature"))
+        assertFalse(result.contentMarkdown.contains("Get the latest news from Android Central"))
+        assertFalse(result.contentMarkdown.contains("Jay Bonggolto always keeps a nose for news"))
+        assertFalse(result.contentMarkdown.contains("News Writer & Reviewer"))
+        assertFalse(result.contentMarkdown.contains("LATEST ARTICLES"))
+        assertFalse(result.contentMarkdown.contains("Escaping the loop? Google speaks up"))
+        assertFalse(result.contentHtml.contains("slice-container-authorBio"))
+        assertFalse(result.contentHtml.contains("slice-container-popularBox"))
+        assertFalse(result.contentHtml.contains("slice-container-newsletterForm"))
+    }
+
+    @Test
     fun `androidpolice article dump excludes author bio and follow footer`() {
         val fixtureName = "general--www.androidpolice.com-replaced-samsung-home-screen-with-custom-launcher-never-going-back"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

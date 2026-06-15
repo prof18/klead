@@ -916,6 +916,49 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove future newsletter author bio and popular box slices`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when Future-style newsletter, author bio, and latest-article slices are removed from the reader output.</p>
+                  <p>The article conclusion should also stay after recirculation chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                  <div id="slice-container-newsletterForm-example" class="slice-container slice-container-newsletterForm">
+                    <div class="newsletter-form__wrapper newsletter-form__wrapper--inbodyContent">
+                      <p class="newsletter-form__strapline">Get the latest news from Example, your trusted companion.</p>
+                    </div>
+                  </div>
+                  <div id="slice-container-authorBio-example" class="slice-container slice-author-bio authorBio-example slice-container-authorBio">
+                    <div class="author author__default-layout">
+                      <img src="/author.jpg" alt="Example Author">
+                      <div class="author__name"><a href="/author/example">Example Author</a></div>
+                      <div class="author__role">News Writer &amp; Reviewer</div>
+                      <div class="author__biography"><p>Example Author has written about consumer tech for years.</p></div>
+                    </div>
+                  </div>
+                  <div id="slice-container-popularBox" class="slice-container popular-box-slice popularBox slice-container-popularBox">
+                    <section class="popular-box">
+                      <div class="popular-box__label__tab" role="heading">LATEST ARTICLES</div>
+                      <ol>
+                        <li><a href="/latest-one" data-mrf-recirculation="popular-list">First latest article</a></li>
+                        <li><a href="/latest-two" data-mrf-recirculation="popular-list">Second latest article</a></li>
+                      </ol>
+                    </section>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/future-slices",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Get the latest news from Example"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentMarkdown.contains("News Writer & Reviewer"))
+        assertFalse(result.contentMarkdown.contains("LATEST ARTICLES"))
+        assertFalse(result.contentMarkdown.contains("First latest article"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
