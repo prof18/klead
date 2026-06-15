@@ -156,3 +156,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a FeedFlow reader-dump regression for trailing article tag lists and removed generic trailing `Tag:`/`Tags:` blocks from reader Markdown.
 2026-06-15 - PHASE-08 - complete - Added a FeedFlow reader-dump regression for emphasized links with boundary whitespace and tightened Markdown inline delimiters so starred link text renders cleanly.
 2026-06-15 - PHASE-04/06 - complete - Added a MacRumors FeedFlow reader-dump regression and fixed broad `main` refinement plus article-footer cleanup so tags, comment counts, popular-story modules, and comment modules are excluded from reader Markdown.
+2026-06-15 - PHASE-06 - complete - Added an Android Central FeedFlow reader-dump regression and removed trailing comment prompts, back-to-top controls, and read-more recirculation modules from reader Markdown.

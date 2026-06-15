@@ -246,6 +246,37 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove trailing comment prompt back to top and read more modules`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes trailing comment and recommendation cleanup deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and only footer clutter is removed.</p>
+                  <div class="comments-widget">
+                    <p>You must confirm your public display name before commenting</p>
+                    <p>Please logout and then login again, you will then be prompted to enter your display name.</p>
+                  </div>
+                  <div class="scroll-control"><a href="#">Back To Top</a></div>
+                  <section>
+                    <aside data-mrf-recirculation="article-river-stacked">
+                      <div>Read more</div>
+                      <a href="/one"><img src="/one.jpg" alt="One">First suggested story</a>
+                      <a href="/two"><img src="/two.jpg" alt="Two">Second suggested story</a>
+                    </aside>
+                  </section>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/footer-modules",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
+        assertFalse(result.contentMarkdown.contains("public display name"))
+        assertFalse(result.contentMarkdown.contains("Please logout"))
+        assertFalse(result.contentMarkdown.contains("Back To Top"))
+        assertFalse(result.contentMarkdown.contains("Read more"))
+        assertFalse(result.contentMarkdown.contains("First suggested story"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

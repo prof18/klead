@@ -100,6 +100,25 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Read All Comments"))
     }
 
+    @Test
+    fun `androidcentral article dump excludes trailing comments and read more modules`() {
+        val fixtureName = "general--www.androidcentral.com-phones-honor-phones-honor-magic-v6-review"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("It's hard to imagine foldables getting much better than this."))
+        assertTrue(result.contentMarkdown.contains("Nicholas Sutrich"))
+        assertFalse(result.contentMarkdown.contains("You must confirm your public display name"))
+        assertFalse(result.contentMarkdown.contains("Please logout and then login again"))
+        assertFalse(result.contentMarkdown.contains("Back To Top"))
+        assertFalse(result.contentMarkdown.contains("Read more"))
+        assertFalse(result.contentMarkdown.contains("Honor 600 review: Flagship feels"))
+        assertFalse(result.contentMarkdown.contains("Best Android phones 2026"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

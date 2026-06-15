@@ -157,6 +157,14 @@ object RemovalPipeline {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing comment count")
                 continue
             }
+            if (isBackToTopBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing back-to-top control")
+                continue
+            }
+            if (isCommentPromptBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing comment prompt")
+                continue
+            }
             break
         }
     }
@@ -173,6 +181,12 @@ object RemovalPipeline {
                 }
                 isCommentCountBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment count")
+                }
+                isBackToTopBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "article footer back-to-top control")
+                }
+                isCommentPromptBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment prompt")
                 }
             }
         }
@@ -254,7 +268,13 @@ object RemovalPipeline {
     private fun isTrailingRecommendationBlock(element: Element): Boolean {
         val heading = element.selectFirst("h1, h2, h3, h4, h5, h6")?.text()
             ?: element.ownText()
-        if (!RECOMMENDATION_HEADING_PATTERN.containsMatchIn(heading.trim())) return false
+        val text = element.text().trim()
+        if (
+            !RECOMMENDATION_HEADING_PATTERN.containsMatchIn(heading.trim()) &&
+            !RECOMMENDATION_HEADING_PATTERN.containsMatchIn(text.take(RECOMMENDATION_TEXT_PREFIX_LENGTH))
+        ) {
+            return false
+        }
 
         val linkCount = element.select("a").size
         val articleCount = element.select("article").size
@@ -288,6 +308,27 @@ object RemovalPipeline {
         return COMMENT_LINK_HINTS.any { it in hrefHints } ||
             "comment" in elementHints ||
             "footer" in elementHints
+    }
+
+    private fun isBackToTopBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (!BACK_TO_TOP_PATTERN.matches(text)) return false
+
+        val hrefs = element.select("a[href]").map { it.attr("href").trim().lowercase() }
+        val hints = partialHaystack(element)
+        return hrefs.any { it == "#" || it == "#top" || it.endsWith("#top") } ||
+            "scroll" in hints ||
+            "back-to-top" in hints
+    }
+
+    private fun isCommentPromptBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (!COMMENT_PROMPT_PATTERN.containsMatchIn(text)) return false
+
+        val hints = partialHaystack(element)
+        return "comment" in hints ||
+            "viafoura" in hints ||
+            text.length <= COMMENT_PROMPT_MAX_LENGTH
     }
 
     private fun recordAndRemove(
@@ -340,6 +381,14 @@ object RemovalPipeline {
         "textarea",
         "[role=navigation]",
         "#comments",
+        "#viafoura-comments-container",
+        "#viafoura-comment-wrapper",
+        ".viafoura-twig-component",
+        "[data-component-name*=Comments]",
+        "[data-component-name*=comments]",
+        "[data-component-name*=ScrollUp]",
+        "[data-component-name*=scroll]",
+        "aside[data-mrf-recirculation]",
         ".ad",
         ".ads",
         ".advertisement",
@@ -386,6 +435,16 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val BACK_TO_TOP_PATTERN = Regex(
+        """^back\s+to\s+top$""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val COMMENT_PROMPT_PATTERN = Regex(
+        """\b(commenting|join the conversation|display name before commenting)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val COMMENT_LINK_HINTS = listOf(
         "/thread",
         "/comment",
@@ -399,5 +458,7 @@ object RemovalPipeline {
     private const val TRAILING_TAG_MIN_LINKS = 1
     private const val TRAILING_TAG_MAX_WORDS = 16
     private const val COMMENT_COUNT_MAX_LINKS = 2
+    private const val COMMENT_PROMPT_MAX_LENGTH = 260
+    private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }
