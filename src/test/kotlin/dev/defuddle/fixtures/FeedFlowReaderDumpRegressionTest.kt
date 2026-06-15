@@ -835,6 +835,28 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `mashable deal dump excludes byline flyout and trailing author biography`() {
+        val fixtureName = "general--mashable.com-tech-june-12-bose-ultra-open-earbuds-deal"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("**SAVE $100:**"))
+        assertTrue(result.contentMarkdown.contains("Amazon's slashed the price of most colors"))
+        assertTrue(result.contentMarkdown.contains("open earbuds like the"))
+        assertTrue(result.contentMarkdown.contains("![bose ultra open earbuds against a pink and purple patterned background]"))
+        assertFalse(result.contentMarkdown.contains("Hannah Hoolihan is a freelance writer with Mashable"))
+        assertFalse(result.contentMarkdown.contains("Read Full Bio"))
+        assertFalse(result.contentMarkdown.contains("Mashable Image"))
+        assertFalse(result.contentMarkdown.contains("All products featured here are independently selected"))
+        assertFalse(result.contentMarkdown.contains("Sign up for Mashable's"))
+        assertFalse(result.contentHtml.contains("Author Bio Flyout"))
+        assertFalse(result.contentHtml.contains("fallback-thumbnail"))
+    }
+
+    @Test
     fun `polygon article dump excludes opening header controls author image and categories`() {
         val fixtureName = "general--www.polygon.com-overwatch-season-3-skins-nyan-cat-cafe-ultra-mythic-battle-pass"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

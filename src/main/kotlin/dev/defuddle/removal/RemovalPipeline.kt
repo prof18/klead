@@ -742,6 +742,7 @@ object RemovalPipeline {
     private fun isNewsletterSignupBlock(element: Element): Boolean {
         val text = element.text().trim()
         if (text.isBlank() || text.length > NEWSLETTER_SIGNUP_MAX_LENGTH) return false
+        if (INLINE_NEWSLETTER_PROMO_PATTERN.containsMatchIn(text)) return true
         if (!NEWSLETTER_SIGNUP_PATTERN.containsMatchIn(text)) return false
 
         val hints = partialHaystack(element)
@@ -939,6 +940,9 @@ object RemovalPipeline {
         "#author-bio",
         ".copy-tooltip",
         ".copy-tooltiptext",
+        """[aria-label="Author Bio Flyout"]""",
+        """[role="tooltip"][aria-label*="Author Bio"]""",
+        """div:matchesOwn((?i)^\s*All products featured here are independently selected)""",
         """div.separator:matchesOwn((?i)^\s*posted\s+by\s+)""",
         "#blog-pager",
         ".blog-pager",
@@ -1180,12 +1184,17 @@ object RemovalPipeline {
     )
 
     private val NEWSLETTER_SIGNUP_PATTERN = Regex(
-        """\b(subscribe\s+to\s+(?:our|the|a)\s+newsletter|receive\s+newsletter|newsletter\s+signup|subscribe\s+.*\bnewsletter)\b""",
+        """\b(subscribe\s+to\s+(?:our|the|a)\s+newsletter|receive\s+newsletter|newsletter\s+signup|subscribe\s+.*\bnewsletter|sign\s+up\s+for\s+.{0,80}\bnewsletters?\b)\b""",
         RegexOption.IGNORE_CASE,
     )
 
     private val NEWSLETTER_LEGAL_PATTERN = Regex(
         """\b(marketing\s+emails|terms\s+of\s+use|privacy\s+policy|unsubscribe\s+(?:anytime|any\s+time))\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val INLINE_NEWSLETTER_PROMO_PATTERN = Regex(
+        """\bwant\s+to\s+learn\s+more\s+about\s+getting\s+the\s+best\s+out\s+of\s+your\s+tech\b""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -1216,12 +1225,12 @@ object RemovalPipeline {
     )
 
     private val INLINE_AUTHOR_BIO_PATTERN = Regex(
-        """\bis\s+an?\s+[\p{L}\p{N} .,&'’/-]{0,80}\b(news\s+writer|staff\s+writer|senior\s+writer|reporter|journalist|editor|reviewer)\b""",
+        """\bis\s+an?\s+[\p{L}\p{N} .,&'’/-]{0,80}\b(freelance\s+writer|news\s+writer|staff\s+writer|senior\s+writer|reporter|journalist|editor|reviewer)\b""",
         RegexOption.IGNORE_CASE,
     )
 
     private val AUTHOR_ROLE_LABEL_PATTERN = Regex(
-        """\b(contributor|news\s+writer|staff\s+writer|senior\s+writer|reporter|journalist|editor|reviewer)\b""",
+        """\b(contributor|freelance\s+writer|news\s+writer|staff\s+writer|senior\s+writer|reporter|journalist|editor|reviewer)\b""",
         RegexOption.IGNORE_CASE,
     )
 
