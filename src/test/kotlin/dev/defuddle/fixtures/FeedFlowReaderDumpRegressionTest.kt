@@ -66,6 +66,20 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("\n-\n"))
     }
 
+    @Test
+    fun `ilpost article dump keeps emphasized link delimiters tight`() {
+        val fixtureName = "general--www.ilpost.it-2026-06-15-sorelle-sparite-minturno"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("quotidiano locale [*Il Centro*]("))
+        assertFalse(result.contentMarkdown.contains("locale[* Il Centro*]("))
+        assertFalse(result.contentMarkdown.contains("[* Il Centro*]("))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

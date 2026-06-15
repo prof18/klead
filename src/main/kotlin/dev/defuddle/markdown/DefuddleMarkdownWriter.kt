@@ -99,30 +99,41 @@ private class Renderer(
         inLink: Boolean,
     ): String =
         when (element.normalName()) {
-            "strong", "b" -> "**${renderInlineNodes(element.childNodes(), inLink)}**"
-            "em", "i" -> "*${renderInlineNodes(element.childNodes(), inLink)}*"
+            "strong", "b" -> renderDelimitedInline(element, inLink, "**")
+            "em", "i" -> renderDelimitedInline(element, inLink, "*")
             "code" -> codeSpan(element.wholeText().ifBlank { element.text() })
             "a" -> renderLink(element, inLink)
             "img" -> renderImage(element)
             "br" -> "  \n"
             "sup" -> renderFootnoteReference(element) ?: renderInlineNodes(element.childNodes(), inLink)
             "sub", "span", "mark", "ins", "small" -> renderMath(element) ?: renderInlineNodes(element.childNodes(), inLink)
-            "del", "s" -> "~~${renderInlineNodes(element.childNodes(), inLink)}~~"
+            "del", "s" -> renderDelimitedInline(element, inLink, "~~")
             "math" -> element.text()
             else -> renderInlineNodes(element.childNodes(), inLink)
         }
+
+    private fun renderDelimitedInline(
+        element: Element,
+        inLink: Boolean,
+        delimiter: String,
+    ): String {
+        val parts = renderInlineNodes(element.childNodes(), inLink).splitInlineWhitespace()
+        if (parts.body.isBlank()) return parts.original
+        return "${parts.leading}$delimiter${parts.body}$delimiter${parts.trailing}"
+    }
 
     private fun renderLink(
         element: Element,
         inLink: Boolean,
     ): String {
-        val text = renderInlineNodes(element.childNodes(), inLink = true).trim()
+        val parts = renderInlineNodes(element.childNodes(), inLink = true).splitInlineWhitespace()
+        val text = parts.body
         val href = element.attr("href").trim()
-        if (inLink || href.isBlank() || isDangerousUrl(href)) return text
+        if (inLink || href.isBlank() || isDangerousUrl(href)) return parts.original
         val url = resolveUrl(baseUrl, href)
-        if (url.isBlank()) return text
-        if (text.isBlank() && element.selectFirst("img") != null) return renderInlineNodes(element.childNodes(), inLink = true)
-        return "[$text](${escapeDestination(url)})"
+        if (url.isBlank()) return parts.original
+        if (text.isBlank() && element.selectFirst("img") != null) return parts.original
+        return "${parts.leading}[$text](${escapeDestination(url)})${parts.trailing}"
     }
 
     private fun renderImage(element: Element): String {
@@ -288,6 +299,18 @@ private class Renderer(
     private fun String.normalizeFinalNewline(): String =
         replace("\r\n", "\n").replace('\r', '\n').trimEnd('\n') + "\n"
 
+    private fun String.splitInlineWhitespace(): InlineWhitespace {
+        val firstBodyIndex = indexOfFirst { !it.isWhitespace() }
+        if (firstBodyIndex == -1) return InlineWhitespace(original = this)
+        val lastBodyIndex = indexOfLast { !it.isWhitespace() }
+        return InlineWhitespace(
+            original = this,
+            leading = substring(0, firstBodyIndex),
+            body = substring(firstBodyIndex, lastBodyIndex + 1),
+            trailing = substring(lastBodyIndex + 1),
+        )
+    }
+
     private fun postProcess(markdown: String): String {
         val normalized = markdown.replace("\r\n", "\n").replace('\r', '\n')
         if (normalized.isBlank()) return ""
@@ -307,4 +330,11 @@ private class Renderer(
         }
         return result.joinToString("\n").trimEnd() + "\n"
     }
+
+    private data class InlineWhitespace(
+        val original: String,
+        val leading: String = "",
+        val body: String = "",
+        val trailing: String = "",
+    )
 }

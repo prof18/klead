@@ -154,3 +154,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-04/06 - complete - Added a FeedFlow reader-dump regression fixture for an ilpost article and fixed generic body-to-article refinement plus breadcrumb/recommendation clutter removal so reader Markdown excludes category/date breadcrumbs and bottom recommendation sections.
 2026-06-15 - PHASE-08 - complete - Added a FeedFlow reader-dump regression for WordPress-style captioned image wrappers and fixed block-level image Markdown rendering so body images are not dropped when they are direct children of non-figure containers.
 2026-06-15 - PHASE-06 - complete - Added a FeedFlow reader-dump regression for trailing article tag lists and removed generic trailing `Tag:`/`Tags:` blocks from reader Markdown.
+2026-06-15 - PHASE-08 - complete - Added a FeedFlow reader-dump regression for emphasized links with boundary whitespace and tightened Markdown inline delimiters so starred link text renders cleanly.

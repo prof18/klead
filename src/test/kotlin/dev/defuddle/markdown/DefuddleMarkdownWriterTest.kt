@@ -29,6 +29,19 @@ class DefuddleMarkdownWriterTest {
     }
 
     @Test
+    fun `link text with nested emphasis keeps markdown delimiters tight`() {
+        val markdown = render(
+            """
+            <article>
+              <p>Locale<a href="/story"><em> Il Centro</em></a> sarebbe indagato.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals("Locale [*Il Centro*](https://example.com/story) sarebbe indagato.\n", markdown)
+    }
+
+    @Test
     fun `inline code handles embedded backticks`() {
         val markdown = render("""<article><p>Use <code>a `tick` here</code>.</p></article>""")
 
