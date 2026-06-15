@@ -84,7 +84,7 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
-    fun `ilpost article dump keeps emphasized link delimiters tight`() {
+    fun `ilpost article dump flattens emphasized link labels with boundary spacing`() {
         val fixtureName = "general--www.ilpost.it-2026-06-15-sorelle-sparite-minturno"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
         val result = Defuddle.parseHtml(
@@ -92,7 +92,7 @@ class FeedFlowReaderDumpRegressionTest {
             url = FixtureLoader.extractUrl(fixtureName, html),
         )
 
-        assertTrue(result.contentMarkdown.contains("quotidiano locale [*Il Centro*]("))
+        assertTrue(result.contentMarkdown.contains("quotidiano locale [Il Centro]("))
         assertFalse(result.contentMarkdown.contains("locale[* Il Centro*]("))
         assertFalse(result.contentMarkdown.contains("[* Il Centro*]("))
     }
@@ -242,6 +242,24 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Good\\_ole\\_pinocchio"))
         assertFalse(result.contentMarkdown.contains("View all comments"))
         assertFalse(result.contentHtml.contains("top-comment"))
+    }
+
+    @Test
+    fun `nine to five mac deal dump flattens emphasized link labels`() {
+        val fixtureName = "general--9to5mac.com-2026-06-13-airpods-pro-3-drop-to-their-best-price-ever-as-apple-announces-new-ios-27-features"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("[now sitting down at $179 shipped](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20)"))
+        assertTrue(result.contentMarkdown.contains("- AirPods Pro 3 [$179 (Reg. $249)](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20)"))
+        assertTrue(result.contentMarkdown.contains("- AirPods 4 [$99 (Reg. $129)](https://www.amazon.com/dp/B0DGHMNQ5Z/?tag=toysj-20&th=1)"))
+        assertTrue(result.contentMarkdown.contains("- AirPods Max 2 [$499 (Reg. $549)](https://www.amazon.com/dp/B0GSS4SGZR/?tag=toysj-20)"))
+        assertFalse(result.contentMarkdown.contains("**]("))
+        assertFalse(result.contentMarkdown.contains("[**"))
+        assertFalse(Regex("""(^|[^!])\[\]\(""").containsMatchIn(result.contentMarkdown))
     }
 
     @Test

@@ -127,15 +127,32 @@ private class Renderer(
         element: Element,
         inLink: Boolean,
     ): String {
-        val parts = renderInlineNodes(element.childNodes(), inLink = true).splitInlineWhitespace()
+        val parts = renderLinkTextNodes(element.childNodes()).splitInlineWhitespace()
         val text = parts.body
         val href = element.attr("href").trim()
         if (inLink || href.isBlank() || isDangerousUrl(href)) return parts.original
         val url = resolveUrl(baseUrl, href)
         if (url.isBlank()) return parts.original
-        if (text.isBlank() && element.selectFirst("img") != null) return parts.original
+        if (text.isBlank()) return parts.original
         return "${parts.leading}[$text](${escapeDestination(url)})${parts.trailing}"
     }
+
+    private fun renderLinkTextNodes(nodes: List<Node>): String =
+        nodes.joinToString("") { node ->
+            when (node) {
+                is TextNode -> escapeInline(node.text())
+                is Element -> renderLinkTextElement(node)
+                else -> ""
+            }
+        }.replace(Regex("""[ \t]+"""), " ")
+
+    private fun renderLinkTextElement(element: Element): String =
+        when (element.normalName()) {
+            "br" -> " "
+            "img" -> escapeInline(element.attr("alt").ifBlank { element.attr("title") })
+            "math" -> escapeInline(element.text())
+            else -> renderLinkTextNodes(element.childNodes())
+        }
 
     private fun renderImage(element: Element): String {
         val sources = listOfNotNull(
@@ -293,6 +310,8 @@ private class Renderer(
 
     private fun escapeInline(text: String): String =
         text
+            .replace('\u00A0', ' ')
+            .replace('\u202F', ' ')
             .replace("\\", "\\\\")
             .replace("`", "\\`")
             .replace("*", "\\*")

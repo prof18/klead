@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 23
+- FeedFlow reader-dump regression fixtures: 24
 
 ## Active Strict Fixtures
 
@@ -33,13 +33,14 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.ilpost.it-2026-06-15-lisbona-funicolare-gloria-ferme`: verifies that WordPress-style captioned image wrappers keep body images in Markdown.
 - `general--www.ilpost.it-2026-06-15-cooling-break-mondiali-calcio-pause`: verifies that embedded audio player placeholders do not leak into reader Markdown.
 - `general--www.ilpost.it-2026-06-15-marius-borg-hoiby-figlio-principessa-ereditaria-norvegia-condannato-stupro`: verifies that trailing article tag lists do not leak into reader Markdown.
-- `general--www.ilpost.it-2026-06-15-sorelle-sparite-minturno`: verifies that emphasized link text with boundary whitespace produces tight Markdown delimiters.
+- `general--www.ilpost.it-2026-06-15-sorelle-sparite-minturno`: verifies that emphasized link text with boundary whitespace is flattened inside Markdown link labels without losing spacing.
 - `general--www.macrumors.com-2026-06-15-uk-ban-social-media-under-16s`: verifies that broad main selection, article tags, comment counts, popular-story modules, and comment modules do not leak into reader Markdown.
 - `general--www.androidcentral.com-phones-honor-phones-honor-magic-v6-review`: verifies that video carousels, affiliate/deal widgets, gallery controls, trailing comment prompts, back-to-top controls, and read-more recirculation modules do not leak into reader Markdown, while no-op-spanned specs tables render as Markdown tables.
 - `general--www.androidpolice.com-replaced-samsung-home-screen-with-custom-launcher-never-going-back`: verifies that Valnet-style author header/bio chrome, inline newsletter signup widgets, article tag links, and follow controls do not leak into reader Markdown.
 - `general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable`: verifies that timestamp/byline/share/source-preference/read-next chrome and empty list artifacts do not leak into reader Markdown while prose wrappers with utility-class clutter keywords are preserved.
 - `general--9to5google.com-2026-06-14-google-ads-tease-next-pixel-drop-with-screen-reactions-and-gemini-omni-video`: verifies that 9to5-style related headings, author follow links, preferred-source badges, affiliate disclaimers, and visitor promos do not leak after article prose.
 - `general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier`: verifies that embedded top-comment modules do not leak while adjacent article prose is preserved.
+- `general--9to5mac.com-2026-06-13-airpods-pro-3-drop-to-their-best-price-ever-as-apple-announces-new-ios-27-features`: verifies that emphasized affiliate deal link labels are flattened and whitespace-only links do not render as empty Markdown links.
 - `general--9to5linux.com-dietpi-10-5-enables-kms-drm-graphics-system-by-default-for-raspberry-pi-sbcs`: verifies that 9to5Linux share strips, duplicate post thumbnails, and ko-fi donation promos do not leak while the article image metadata remains correct.
 - `general--www.veneziatoday.it-cronaca-contratto-scaduto-sciopero-farmacie-comunali`: verifies that Citynews-style mobile app promos, entry footers, story-card recirculation, most-read sidebars, native footer sections, and Outbrain placeholders do not leak into reader Markdown.
 - `general--www.veneziatoday.it-eventi-estate-insieme-a-vigonovo-programma`: verifies that Citynews event info-square headers and byline chrome do not leak before event article prose.

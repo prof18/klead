@@ -29,7 +29,7 @@ class DefuddleMarkdownWriterTest {
     }
 
     @Test
-    fun `link text with nested emphasis keeps markdown delimiters tight`() {
+    fun `link text with nested emphasis is flattened for conservative markdown`() {
         val markdown = render(
             """
             <article>
@@ -38,7 +38,22 @@ class DefuddleMarkdownWriterTest {
             """.trimIndent(),
         )
 
-        assertEquals("Locale [*Il Centro*](https://example.com/story) sarebbe indagato.\n", markdown)
+        assertEquals("Locale [Il Centro](https://example.com/story) sarebbe indagato.\n", markdown)
+    }
+
+    @Test
+    fun `whitespace only links keep spacing without rendering empty markdown links`() {
+        val markdown = render(
+            """
+            <article>
+              <p>AirPods Max 2<a href="/empty">&nbsp;</a><a href="/deal"><strong>$499</strong> (Reg. $549)</a></p>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals("AirPods Max 2 [$499 (Reg. $549)](https://example.com/deal)\n", markdown)
+        assertFalse(markdown.contains("[]("))
+        assertFalse(markdown.contains("[**"))
     }
 
     @Test

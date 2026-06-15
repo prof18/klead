@@ -175,3 +175,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a 9to5Google FeedFlow reader-dump regression and removed trailing related headings, author follow links, preferred-source badges, affiliate disclaimers, and visitor promo footer chrome.
 2026-06-15 - PHASE-06 - complete - Added a 9to5Google FeedFlow reader-dump regression and removed embedded top-comment modules while preserving adjacent article prose.
 2026-06-15 - PHASE-05/06 - complete - Added a 9to5Linux FeedFlow reader-dump regression, resolved article schema image references ahead of author images, and removed share strips, duplicate post-thumbnail cover blocks, and ko-fi donation widgets from reader Markdown.
+2026-06-15 - PHASE-08 - complete - Added a 9to5Mac FeedFlow reader-dump regression and flattened Markdown link labels so nested emphasis and whitespace-only affiliate links do not leak renderer-visible delimiters.
