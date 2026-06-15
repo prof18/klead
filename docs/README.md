@@ -179,3 +179,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a 9to5Mac iPhone Ultra FeedFlow reader-dump regression and removed orphaned trailing commerce headings left behind after product-link lists are stripped.
 2026-06-15 - PHASE-06 - complete - Added an Android Central FeedFlow reader-dump regression and removed Future-style newsletter, author bio, and popular/latest article slice modules from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added an Android Police FeedFlow reader-dump regression and removed inline Valnet related article cards while preserving the surrounding story sections.
+2026-06-15 - PHASE-06 - complete - Added an AppleInsider FeedFlow reader-dump regression and removed opening article header chrome before article-body prose so category/title/read-time/hero-caption/rumor-score metadata does not leak into reader Markdown.

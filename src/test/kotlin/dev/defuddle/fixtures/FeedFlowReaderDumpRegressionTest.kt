@@ -217,6 +217,31 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `appleinsider article dump excludes opening header metadata and rumor score`() {
+        val fixtureName = "general--appleinsider.com-articles-26-06-15-iphone-18-pro-buyers-should-watch-out-for-a-repeat-problem"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("The fiasco of the color-changing"))
+        assertTrue(result.contentMarkdown.contains("Following the launch of the iPhone 17 Pro"))
+        assertTrue(result.contentMarkdown.contains("Oil and water"))
+        assertFalse(
+            lines.any { it == "News" || it == "Rumor Score" || it == "🤔 Possible" },
+            result.contentMarkdown.take(500),
+        )
+        assertFalse(result.contentMarkdown.contains("iPhone 18 Pro buyers should watch out for a repeat problem"))
+        assertFalse(result.contentMarkdown.contains("2 minute read"))
+        assertFalse(result.contentMarkdown.contains("iPhone 17 Pro Max in Cosmic Orange, without the color-change issue"))
+        assertFalse(result.contentHtml.contains("river-score-wrap"))
+        assertFalse(result.contentHtml.contains("article-aux"))
+    }
+
+    @Test
     fun `axios article dump excludes source share and read-next chrome`() {
         val fixtureName = "general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

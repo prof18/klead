@@ -171,6 +171,46 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove opening article header chrome before hinted body`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article id="post">
+                    <header>
+                      <div class="block-header hide-mobile"><h2>News</h2></div>
+                      <h1>Example title duplicated from metadata</h1>
+                      <div class="article-aux">
+                        <time datetime="2026-06-15T13:38:00+00:00">Mon Jun 15 2026, 09:38 AM EDT · 2 minute read</time>
+                      </div>
+                      <div class="hero">
+                        <p class="image-caption hero-caption">Hero caption duplicated from the cover image.</p>
+                      </div>
+                      <div class="river-score-wrap">
+                        <div class="rumor-head"><span>Rumor Score</span></div>
+                        <div class="rumor-foot">Possible</div>
+                      </div>
+                    </header>
+                    <div class="article-body">
+                      <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result instead of invoking short-page retries.</p>
+                      <p>A second paragraph keeps the selected content stable and confirms that body paragraphs survive after opening article chrome is removed.</p>
+                    </div>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/opening-header-chrome",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.contentMarkdown.contains("News"))
+        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("2 minute read"))
+        assertFalse(result.contentMarkdown.contains("Hero caption duplicated from the cover image"))
+        assertFalse(result.contentMarkdown.contains("Rumor Score"))
+        assertFalse(result.contentMarkdown.contains("Possible"))
+    }
+
+    @Test
     fun `partial selectors do not remove code blocks`() {
         val result = Defuddle.parseHtml(
             html = """

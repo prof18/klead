@@ -137,6 +137,7 @@ object RemovalPipeline {
         content: Element,
         debug: MutableList<RemovalRecord>,
     ) {
+        removeOpeningArticleHeaderBlocks(content, debug)
         removeNestedArticleFooterBlocks(content, debug)
         for (element in content.children().toList().asReversed()) {
             val text = element.text().trim()
@@ -175,6 +176,69 @@ object RemovalPipeline {
             }
             break
         }
+    }
+
+    private fun removeOpeningArticleHeaderBlocks(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (article in openingArticleCandidates(content)) {
+            val header = article.firstSubstantiveChild() ?: continue
+            if (header.normalName() != "header") continue
+            if (!header.hasOpeningArticleHeaderChromeHint()) continue
+            if (!article.hasArticleBodySiblingAfter(header)) continue
+
+            recordAndRemove(header, debug, "removeContentPatterns", null, "opening article header chrome")
+        }
+    }
+
+    private fun openingArticleCandidates(content: Element): List<Element> {
+        val candidates = mutableListOf<Element>()
+
+        fun addUnique(element: Element) {
+            if (candidates.none { it === element }) candidates.add(element)
+        }
+
+        if (content.normalName() == "article" || content.id().equals("post", ignoreCase = true)) {
+            addUnique(content)
+        }
+        content.select("article, #post").forEach(::addUnique)
+
+        return candidates
+    }
+
+    private fun Element.firstSubstantiveChild(): Element? =
+        children().firstOrNull { child ->
+            child.normalName() !in NON_SUBSTANTIVE_OPENING_TAGS &&
+                child.text().isNotBlank()
+        }
+
+    private fun Element.hasArticleBodySiblingAfter(header: Element): Boolean {
+        var afterHeader = false
+        for (child in children()) {
+            if (child === header) {
+                afterHeader = true
+                continue
+            }
+            if (afterHeader && child.hasArticleBodyHint()) return true
+        }
+        return false
+    }
+
+    private fun Element.hasArticleBodyHint(): Boolean {
+        val hints = partialHaystack(this)
+        return OPENING_ARTICLE_BODY_HINTS.any { it in hints }
+    }
+
+    private fun Element.hasOpeningArticleHeaderChromeHint(): Boolean {
+        val text = text().trim()
+        if (text.isBlank() || text.length > OPENING_ARTICLE_HEADER_MAX_LENGTH) return false
+        if (select("p").size > OPENING_ARTICLE_HEADER_MAX_PARAGRAPHS) return false
+
+        val nestedHints = select("*").joinToString(" ") { partialHaystack(it) }
+        val hints = "${partialHaystack(this)} $nestedHints"
+        return OPENING_ARTICLE_HEADER_HINTS.any { it in hints } ||
+            (selectFirst("h1") != null && selectFirst("time") != null)
     }
 
     private fun removeNestedArticleFooterBlocks(
@@ -698,6 +762,28 @@ object RemovalPipeline {
         "buy me a coffee",
     )
 
+    private val NON_SUBSTANTIVE_OPENING_TAGS = setOf(
+        "script",
+        "style",
+        "template",
+        "noscript",
+    )
+
+    private val OPENING_ARTICLE_BODY_HINTS = listOf(
+        "article-body",
+        "article-content",
+        "story-body",
+    )
+
+    private val OPENING_ARTICLE_HEADER_HINTS = listOf(
+        "article-aux",
+        "article-meta",
+        "block-header",
+        "hero-caption",
+        "river-score",
+        "rumor-score",
+    )
+
     private val VISUAL_IMAGE_WRAPPER_TAGS = setOf(
         "a",
         "div",
@@ -737,6 +823,8 @@ object RemovalPipeline {
     private const val MOBILE_APP_PROMO_MAX_LENGTH = 180
     private const val NEWSLETTER_SIGNUP_MAX_LENGTH = 700
     private const val DONATION_WIDGET_MAX_LENGTH = 220
+    private const val OPENING_ARTICLE_HEADER_MAX_LENGTH = 700
+    private const val OPENING_ARTICLE_HEADER_MAX_PARAGRAPHS = 2
     private const val AUTHOR_FOLLOW_MAX_LENGTH = 220
     private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
