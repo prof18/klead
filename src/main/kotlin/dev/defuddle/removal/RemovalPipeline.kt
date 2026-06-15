@@ -188,6 +188,9 @@ object RemovalPipeline {
                 isCommentPromptBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment prompt")
                 }
+                isReadyForMoreBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "article footer subscription call to action")
+                }
                 isMobileAppPromoBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "mobile app promo")
                 }
@@ -337,6 +340,20 @@ object RemovalPipeline {
             text.length <= COMMENT_PROMPT_MAX_LENGTH
     }
 
+    private fun isReadyForMoreBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (!READY_FOR_MORE_PATTERN.matches(text)) return false
+
+        val hints = listOfNotNull(
+            partialHaystack(element),
+            element.parent()?.let(::partialHaystack),
+            element.parent()?.parent()?.let(::partialHaystack),
+        ).joinToString(" ")
+        return "substack" in hints ||
+            "pubinvertedtheme" in hints ||
+            "single-post" in hints
+    }
+
     private fun isMobileAppPromoBlock(element: Element): Boolean {
         val text = element.text().trim()
         if (text.length > MOBILE_APP_PROMO_MAX_LENGTH) return false
@@ -405,6 +422,8 @@ object RemovalPipeline {
         "textarea",
         "[role=navigation]",
         "#comments",
+        "#discussion",
+        "#substack-comments",
         "#viafoura-comments-container",
         "#viafoura-comment-wrapper",
         ".viafoura-twig-component",
@@ -468,6 +487,12 @@ object RemovalPipeline {
         ".newsletter-section",
         """[data-inview-type*=newsletter]""",
         """[data-inview-category*=Newsletter]""",
+        """[aria-label="Top Posts Footer"]""",
+        ".comments-section",
+        ".more-comments",
+        ".portable-archive",
+        ".portable-archive-list",
+        ".portable-archive-empty",
         ".table__instruction",
         ".inline-gallery__count",
         ".inline-gallery__arrows",
@@ -526,6 +551,11 @@ object RemovalPipeline {
 
     private val COMMENT_PROMPT_PATTERN = Regex(
         """\b(commenting|join the conversation|display name before commenting)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val READY_FOR_MORE_PATTERN = Regex(
+        """^ready\s+for\s+more\??$""",
         RegexOption.IGNORE_CASE,
     )
 

@@ -138,11 +138,18 @@ private class Renderer(
     }
 
     private fun renderImage(element: Element): String {
-        val src = largestSrcsetUrl(element.attr("srcset")) ?: element.attr("src").trim()
-        if (src.isBlank() || isDangerousUrl(src)) return ""
-        val url = resolveUrl(baseUrl, src)
-        if (url.isBlank()) return ""
-        return "![${escapeInline(element.attr("alt"))}](${escapeDestination(url)})"
+        val sources = listOfNotNull(
+            largestSrcsetUrl(element.attr("srcset")),
+            element.attr("src").trim().takeIf { it.isNotBlank() },
+        ).distinct()
+        for (src in sources) {
+            if (isDangerousUrl(src)) continue
+            val url = resolveUrl(baseUrl, src)
+            if (url.isNotBlank()) {
+                return "![${escapeInline(element.attr("alt"))}](${escapeDestination(url)})"
+            }
+        }
+        return ""
     }
 
     private fun renderList(
@@ -257,7 +264,7 @@ private class Renderer(
     }
 
     private fun largestSrcsetUrl(srcset: String): String? =
-        srcset.split(",")
+        srcset.split(SRCSET_DELIMITER)
             .mapNotNull { candidate ->
                 val parts = candidate.trim().split(Regex("""\s+"""))
                 val url = parts.firstOrNull()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
@@ -343,6 +350,8 @@ private class Renderer(
         }
         return result.joinToString("\n").trimEnd() + "\n"
     }
+
+    private val SRCSET_DELIMITER = Regex(""",\s+""")
 
     private data class InlineWhitespace(
         val original: String,

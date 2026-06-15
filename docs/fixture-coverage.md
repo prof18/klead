@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 14
+- FeedFlow reader-dump regression fixtures: 16
 
 ## Active Strict Fixtures
 
@@ -43,6 +43,8 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.pianetabasket.com-euroleague-l-anadolu-efes-conferma-l-uscita-rolands-smits-stagioni-363578`: verifies that short semantic-main articles still exclude body-level navigation, author-profile boxes, latest-news modules, popular lists, and footer text.
 - `general--m.pianetabasket.com-euroleague-partizan-belgrado-interessato-all-ex-brindisi-venezia-derek-willis-363565`: verifies that mobile-template opening byline/date/read-count metadata does not leak into reader Markdown.
 - `general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori`: verifies that WordPress category chips and Author Bio Box latest-posts modules do not leak into reader Markdown.
+- `general--www.20percent.berlin-p-500-uber-bvg-nius-raves-podcast`: verifies that Substack captioned images with comma-bearing transformed `srcset` URLs render as Markdown images while Substack discussion/footer chrome is excluded.
+- `general--www.20percent.berlin-p-493-easy-burgeramt-appts-gun-raid`: verifies that Substack discussion, comments, top-posts archive, and ready-for-more footer modules do not leak into reader Markdown.
 
 ## Known Differences
 

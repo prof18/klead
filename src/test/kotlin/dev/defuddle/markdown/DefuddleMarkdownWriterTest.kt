@@ -56,6 +56,25 @@ class DefuddleMarkdownWriterTest {
     }
 
     @Test
+    fun `images keep srcset urls containing commas`() {
+        val small = "https://substackcdn.com/image/fetch/${'$'}s_!PiGr!,w_424,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fexample.com%2Fsmall.jpeg"
+        val large = "https://substackcdn.com/image/fetch/${'$'}s_!PiGr!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fexample.com%2Flarge.jpeg"
+        val markdown = render(
+            """
+            <article>
+              <figure>
+                <img alt="" src="$small" srcset="$small 424w, $large 1456w">
+                <figcaption>Useful caption.</figcaption>
+              </figure>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertTrue(markdown.contains("![]($large)"))
+        assertTrue(markdown.contains("*Useful caption.*"))
+    }
+
+    @Test
     fun `block image wrappers render image before caption text`() {
         val markdown = render(
             """

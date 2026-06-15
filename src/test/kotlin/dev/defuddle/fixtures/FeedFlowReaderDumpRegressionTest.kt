@@ -297,6 +297,46 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `twenty percent article dump preserves substack captioned images`() {
+        val fixtureName = "general--www.20percent.berlin-p-500-uber-bvg-nius-raves-podcast"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Wedding club given a lifeline"))
+        assertTrue(result.contentMarkdown.contains("Humboldthain Club"))
+        assertTrue(result.contentMarkdown.contains("!["))
+        assertTrue(result.contentMarkdown.contains("0393bf7b-e3f8-4e9c-a851-42095ff6e4e1"))
+        assertTrue(result.contentMarkdown.contains("35ec4003-0b52-4447-acbf-e0188038bc09"))
+        assertTrue(result.contentMarkdown.contains("The elevators in the chamber of industry"))
+        assertFalse(result.contentMarkdown.contains("Discussion about this post"))
+        assertFalse(result.contentMarkdown.contains("more comments"))
+        assertFalse(result.contentMarkdown.contains("Ready for more?"))
+    }
+
+    @Test
+    fun `twenty percent article dump excludes substack discussion footer`() {
+        val fixtureName = "general--www.20percent.berlin-p-493-easy-burgeramt-appts-gun-raid"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Two-week limit three years too late"))
+        assertTrue(result.contentMarkdown.contains("Gun crime raids"))
+        assertFalse(result.contentMarkdown.contains("Discussion about this post"))
+        assertFalse(result.contentMarkdown.contains("more comment"))
+        assertFalse(result.contentMarkdown.contains("No posts"))
+        assertFalse(result.contentMarkdown.contains("Ready for more?"))
+        assertFalse(result.contentHtml.contains("substack-comments"))
+        assertFalse(result.contentHtml.contains("Top Posts Footer"))
+        assertFalse(result.contentHtml.contains("portable-archive"))
+    }
+
+    @Test
     fun `basketuniverso article dump excludes category chips and author latest posts`() {
         val fixtureName = "general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

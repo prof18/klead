@@ -167,3 +167,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Expanded the Android Police FeedFlow reader-dump regression and removed Valnet-style inline newsletter signup widgets from reader Markdown while preserving surrounding article prose.
 2026-06-15 - PHASE-06 - complete - Added a BasketUniverso FeedFlow reader-dump regression and removed generic WordPress category chips plus Author Bio Box latest-posts modules from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added a mobile Pianeta Basket FeedFlow reader-dump regression and removed opening article metadata blocks with date/byline/read-count chrome from reader Markdown.
+2026-06-15 - PHASE-06/08 - complete - Added 20 Percent Berlin/Substack FeedFlow reader-dump regressions, fixed Markdown image rendering for transformed `srcset` URLs containing commas, and removed Substack discussion/top-posts/ready-for-more footer modules generically.
