@@ -552,6 +552,36 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove mobile article metadata while preserving story`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <div role="main">
+                  <div class="testo">
+                    <div class="data small">
+                      15.06.2026 09:05 di
+                      <span class="contatta upper"><a href="/redazione/example">Example Author</a></span>
+                      <span class="ecc_count_read"><span id="button_letture"><a><span class="box_reading">vedi letture</span></a></span></span>
+                    </div>
+                    <div class="testo_align">
+                      <img src="/story.jpg" alt="Story image">
+                      <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when mobile article metadata is removed from the reader output.</p>
+                      <p>The article conclusion should also stay after the mobile byline and read-count chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                    </div>
+                  </div>
+                </div>
+            """.trimIndent(),
+            url = "https://example.com/mobile-meta",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertTrue(result.contentMarkdown.contains("![Story image]"))
+        assertFalse(result.contentMarkdown.contains("15.06.2026 09:05"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentMarkdown.contains("vedi letture"))
+    }
+
+    @Test
     fun `exact selectors remove category chips and author latest posts boxes while preserving story`() {
         val result = Defuddle.parseHtml(
             html = """

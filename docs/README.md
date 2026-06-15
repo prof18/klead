@@ -166,3 +166,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a VeneziaToday FeedFlow reader-dump regression and removed Citynews-style mobile app promos, entry footers, story-card recirculation, most-read sidebars, native footer sections, and Outbrain placeholders from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Expanded the Android Police FeedFlow reader-dump regression and removed Valnet-style inline newsletter signup widgets from reader Markdown while preserving surrounding article prose.
 2026-06-15 - PHASE-06 - complete - Added a BasketUniverso FeedFlow reader-dump regression and removed generic WordPress category chips plus Author Bio Box latest-posts modules from reader Markdown.
+2026-06-15 - PHASE-06 - complete - Added a mobile Pianeta Basket FeedFlow reader-dump regression and removed opening article metadata blocks with date/byline/read-count chrome from reader Markdown.

@@ -279,6 +279,24 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `mobile pianetabasket article dump excludes opening byline and read count`() {
+        val fixtureName = "general--m.pianetabasket.com-euroleague-partizan-belgrado-interessato-all-ex-brindisi-venezia-derek-willis-363565"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Tra i nomi che stanno scaldando l’ambiente del Partizan"))
+        assertTrue(result.contentMarkdown.contains("Derek Willis"))
+        assertTrue(result.contentMarkdown.contains("Joan Peñarroya"))
+        assertTrue(result.contentMarkdown.contains("![Partizan Belgrado interessato all'ex Brindisi e Venezia Derek Willis]"))
+        assertFalse(result.contentMarkdown.contains("15.06.2026 09:05"))
+        assertFalse(result.contentMarkdown.contains("Redazione Pianetabasket.com"))
+        assertFalse(result.contentMarkdown.contains("vedi letture"))
+    }
+
+    @Test
     fun `basketuniverso article dump excludes category chips and author latest posts`() {
         val fixtureName = "general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
