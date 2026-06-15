@@ -904,6 +904,34 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("hide-when-no-script"))
     }
 
+    @Test
+    fun `buzzfeed article dump excludes post header author bio and comments wrapper`() {
+        val fixtureName = "general--www.buzzfeed.com-morgansloss1-world-cup-tourists-share-thoughts-on-the-usa"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        assertTrue(lines.first().startsWith("## The FIFA World Cup is happening"))
+        assertTrue(result.contentMarkdown.contains("Well, Reddit user"))
+        assertTrue(result.contentMarkdown.contains("ranch dressing should be a human right"))
+        assertFalse(result.contentMarkdown.contains("World Cup 2026 badge"))
+        assertFalse(result.contentMarkdown.contains("# “Ranch Dressing Should Be A Human Right”"))
+        assertFalse(result.contentMarkdown.take(500).contains("I came for football and accidentally got a geography lesson"))
+        assertFalse(result.contentMarkdown.contains("Posted"))
+        assertFalse(result.contentMarkdown.contains("27 minutes ago"))
+        assertFalse(result.contentMarkdown.contains("Morgan Sloss"))
+        assertFalse(result.contentMarkdown.contains("BuzzFeed Staff"))
+        assertFalse(result.contentMarkdown.contains("AAPI Culture Editor"))
+        assertFalse(lines.any { it == "Comments" || it == "## Comments" })
+        assertFalse(result.contentHtml.contains("postHead"))
+        assertFalse(result.contentHtml.contains("headline-byline"))
+        assertFalse(result.contentHtml.contains("reactions-title"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

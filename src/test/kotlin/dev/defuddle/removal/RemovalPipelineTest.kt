@@ -1627,6 +1627,57 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes BuzzFeed post header byline bio and comments wrapper`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <header class="postHead_postHead__xEyos postHead">
+                    <a href="/badge/world-cup"><img src="/badge.png" alt="World Cup 2026 badge"></a>
+                    <h1>Example title duplicated from metadata</h1>
+                    <p>Example dek duplicated from metadata.</p>
+                    <time datetime="2026-06-15T19:06:44.000Z">Posted 27 minutes ago</time>
+                  </header>
+                  <div class="post_article__U0mpv post_buzzfeed__G3TlM">
+                    <div class="post_content__w3pdf">
+                      <div class="headline-byline_adaptiveBylineContainer__fvxcl">
+                        <img src="/author.jpg" alt="Example Author">
+                        <span>by</span>
+                        <span>Example Author</span>
+                        <span>BuzzFeed Staff</span>
+                        <p>I'm the culture editor here at BuzzFeed, where this author bio should not appear in the article body.</p>
+                      </div>
+                      <div data-module="subbuzz-text">
+                        <h2>The actual article body should stay because it starts the useful story content.</h2>
+                      </div>
+                      <div data-module="subbuzz-text">
+                        <p>The article conclusion should also stay before comments chrome is removed from the cleaned result.</p>
+                      </div>
+                      <div class="CommentsWrapper_commentsWrapper__Qe9Al">
+                        <h2 id="reactions-title">Comments</h2>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/buzzfeed-post",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("World Cup 2026 badge"))
+        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("Example dek duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("Posted 27 minutes ago"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentMarkdown.contains("BuzzFeed Staff"))
+        assertFalse(result.contentMarkdown.contains("culture editor here at BuzzFeed"))
+        assertFalse(result.contentMarkdown.contains("Comments"))
+        assertFalse(result.contentHtml.contains("postHead"))
+        assertFalse(result.contentHtml.contains("headline-byline"))
+        assertFalse(result.contentHtml.contains("reactions-title"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
