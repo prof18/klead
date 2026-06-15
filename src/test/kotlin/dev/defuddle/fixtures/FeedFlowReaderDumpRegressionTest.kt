@@ -50,6 +50,22 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `ilpost article dump excludes audio player placeholder`() {
+        val fixtureName = "general--www.ilpost.it-2026-06-15-cooling-break-mondiali-calcio-pause"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Tra le nuove regole introdotte ai Mondiali"))
+        assertTrue(result.contentMarkdown.contains("hydration break"))
+        assertFalse(result.contentMarkdown.contains("Caricamento player"))
+        assertFalse(result.contentHtml.contains("audioPlayerArticle"))
+        assertFalse(result.contentHtml.contains("data-mp3"))
+    }
+
+    @Test
     fun `ilpost article dump excludes trailing tag list`() {
         val fixtureName = "general--www.ilpost.it-2026-06-15-marius-borg-hoiby-figlio-principessa-ereditaria-norvegia-condannato-stupro"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

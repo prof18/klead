@@ -311,6 +311,28 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove embedded audio player chrome while preserving article content`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes embedded audio player cleanup deterministic while preserving legitimate article text.</p>
+                  <div id="audioPlayerArticle" data-mp3="/audio.mp3">Caricamento player</div>
+                  <div class="audio-player" data-audio-src="/audio.ogg">Loading player</div>
+                  <p>The article conclusion should also stay after non-article audio player chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/audio-player",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Caricamento player"))
+        assertFalse(result.contentMarkdown.contains("Loading player"))
+        assertFalse(result.contentHtml.contains("audio.mp3"))
+        assertFalse(result.contentHtml.contains("audio.ogg"))
+    }
+
+    @Test
     fun `exact selectors remove author header and article options chrome while preserving body`() {
         val result = Defuddle.parseHtml(
             html = """
