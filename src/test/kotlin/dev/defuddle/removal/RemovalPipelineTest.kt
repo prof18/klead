@@ -1256,6 +1256,52 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes Entrepreneur header controls while preserving deck and story`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <header>
+                    <div class="tw:text-lg">
+                      <p>In some cases, the bonuses amount to more than a teacher's salary for the entire year.</p>
+                    </div>
+                    <div class="tw:text-sm tw:uppercase tw:mb-6 tw:font-sans tw:border-y tw:border-slate-200">
+                      By
+                      <span><a href="/author/example-writer">Example Writer</a></span>
+                      <span role="separator">|</span>
+                      <span>edited by <a href="/author/example-editor">Example Editor</a></span>
+                      <span role="separator">|</span>
+                      <time datetime="2026-06-15T17:58:02+00:00">Jun 15, 2026</time>
+                      <a href="https://www.google.com/preferences/source?q=example.com">Add Example</a>
+                      <a href="#ep-comments">Comment</a>
+                    </div>
+                  </header>
+                  <div class="classifai-listen-to-post-wrapper">
+                    <div class="classifai-post-audio-heading">Listen to this post</div>
+                  </div>
+                  <audio id="classifai-post-audio-player" src="/post.mp3"></audio>
+                  <h2>Key Takeaways</h2>
+                  <ul><li>The useful takeaway should stay in the article output.</li></ul>
+                  <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when publisher byline, editor, preferred-source, comment, and audio controls are removed.</p>
+                  <p>The article conclusion should also stay after the article header controls are removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/entrepreneur-header-controls",
+        )
+
+        assertTrue(result.contentMarkdown.contains("In some cases, the bonuses amount"))
+        assertTrue(result.contentMarkdown.contains("Key Takeaways"))
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertFalse(result.contentMarkdown.contains("By"))
+        assertFalse(result.contentMarkdown.contains("Example Writer"))
+        assertFalse(result.contentMarkdown.contains("edited by"))
+        assertFalse(result.contentMarkdown.contains("Example Editor"))
+        assertFalse(result.contentMarkdown.contains("Jun 15, 2026"))
+        assertFalse(result.contentMarkdown.contains("Add Example"))
+        assertFalse(result.contentMarkdown.contains("Comment"))
+        assertFalse(result.contentMarkdown.contains("Listen to this post"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

@@ -728,6 +728,31 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("back-to-home-container"))
     }
 
+    @Test
+    fun `entrepreneur article dump excludes byline controls and audio prompt`() {
+        val fixtureName = "general--www.entrepreneur.com-business-news-hundreds-of-louisiana-teachers-are-getting-50000-bonuses-this-year-heres-why"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("In some cases, the bonuses amount"))
+        assertTrue(result.contentMarkdown.contains("Key Takeaways"))
+        assertTrue(result.contentMarkdown.contains("Teachers in Richland Parish"))
+        assertTrue(result.contentMarkdown.contains("The 1968 rule behind the $50,000 checks"))
+        assertFalse(result.contentMarkdown.contains("By\n\nSherin Shibu"))
+        assertFalse(result.contentMarkdown.contains("edited by"))
+        assertFalse(result.contentMarkdown.contains("Jessica Thomas"))
+        assertFalse(result.contentMarkdown.contains("Jun 15, 2026"))
+        assertFalse(result.contentMarkdown.contains("Add Entrepreneur"))
+        assertFalse(result.contentMarkdown.contains("Comment"))
+        assertFalse(result.contentMarkdown.contains("Listen to this post"))
+        assertFalse(result.contentHtml.contains("classifai-listen-to-post-wrapper"))
+        assertFalse(result.contentHtml.contains("href=\"#ep-comments\""))
+        assertFalse(result.contentHtml.contains("Google Add ENT button"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

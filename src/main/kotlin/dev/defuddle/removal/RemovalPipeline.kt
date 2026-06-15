@@ -274,6 +274,9 @@ object RemovalPipeline {
                 isDonationWidgetBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "donation widget")
                 }
+                isBylineMetadataStrip(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "byline metadata strip")
+                }
                 isArticlePackageBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article package card")
                 }
@@ -518,6 +521,27 @@ object RemovalPipeline {
             DONATION_WIDGET_HINTS.any { it in hints }
     }
 
+    private fun isBylineMetadataStrip(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.length > BYLINE_METADATA_STRIP_MAX_LENGTH) return false
+        if (!BYLINE_METADATA_STRIP_PATTERN.containsMatchIn(text)) return false
+
+        val authorLinkCount = element.select("""a[href*="/author/"], a[rel~=author]""").size
+        val hasDate = element.select("time, [datetime]").isNotEmpty() ||
+            BYLINE_METADATA_DATE_PATTERN.containsMatchIn(text)
+        val hints = partialHaystack(element)
+
+        return authorLinkCount >= 1 &&
+            hasDate &&
+            (
+                "byline" in hints ||
+                    "author" in hints ||
+                    "uppercase" in hints ||
+                    "font-sans" in hints ||
+                    element.select("""a[href*="google.com/preferences/source"], a[href="#ep-comments"]""").isNotEmpty()
+            )
+    }
+
     private fun isArticlePackageBlock(element: Element): Boolean {
         val text = element.text().trim().collapseWhitespace()
         if (text.length > ARTICLE_PACKAGE_MAX_LENGTH) return false
@@ -649,6 +673,11 @@ object RemovalPipeline {
         """[data-component-type="post-video-recirc"]""",
         ".back-to-home-container",
         ".back-to-home",
+        """a[href*="google.com/preferences/source"]""",
+        """a[href="#ep-comments"]""",
+        ".classifai-listen-to-post-wrapper",
+        ".classifai-post-audio-heading",
+        """audio[id^="classifai-post-audio-player"]""",
         ".l-entry__footer",
         ".l-entry__sidebar",
         ".l-entry--infos-square > .l-entry__header",
@@ -837,6 +866,16 @@ object RemovalPipeline {
         "buy me a coffee",
     )
 
+    private val BYLINE_METADATA_STRIP_PATTERN = Regex(
+        """^\s*by\b.+(?:\bedited\s+by\b|\breviewed\s+by\b|\bupdated\s+by\b|[|].+\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\p{L}*\.?\s+\d{1,2},\s+\d{4}\b)""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val BYLINE_METADATA_DATE_PATTERN = Regex(
+        """\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\p{L}*\.?\s+\d{1,2},\s+\d{4}\b|\b\d{4}-\d{2}-\d{2}T""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val ARTICLE_PACKAGE_PATTERN = Regex(
         """^part\s+of\b.+\bsee\s+all\s+updates\b""",
         RegexOption.IGNORE_CASE,
@@ -924,6 +963,7 @@ object RemovalPipeline {
     private const val MOBILE_APP_PROMO_MAX_LENGTH = 180
     private const val NEWSLETTER_SIGNUP_MAX_LENGTH = 700
     private const val DONATION_WIDGET_MAX_LENGTH = 220
+    private const val BYLINE_METADATA_STRIP_MAX_LENGTH = 360
     private const val ARTICLE_PACKAGE_MAX_LENGTH = 320
     private const val INLINE_AUTHOR_BIO_MAX_LENGTH = 420
     private const val FOLLOW_TOPICS_MAX_LENGTH = 360
