@@ -263,6 +263,37 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove css module byline and linkback roundup chrome`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article>
+                    <div class="byline--3Eec5bcq">
+                      <time datetime="2026-06-15T05:56:50-07:00">Monday June 15, 2026 5:56 am PDT</time>
+                      by <a href="/author/example" rel="author">Example Author</a>
+                    </div>
+                    <div class="content--2u3grYDr js-content">
+                      <div class="ugc--2nTu61bm">
+                        <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result instead of invoking short-page retries.</p>
+                        <p>A second paragraph keeps the selected content stable and confirms that body paragraphs survive after CSS-module byline and roundup footer chrome is removed.</p>
+                        <div class="linkback">Related Roundup: <a href="/roundup/example">Example Product</a></div>
+                      </div>
+                    </div>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/css-module-byline",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.contentMarkdown.contains("Monday June 15"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentMarkdown.contains("Related Roundup"))
+        assertFalse(result.contentMarkdown.contains("Example Product"))
+    }
+
+    @Test
     fun `partial selectors do not remove code blocks`() {
         val result = Defuddle.parseHtml(
             html = """

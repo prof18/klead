@@ -118,6 +118,27 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `macrumors article dump excludes top byline and related roundup footer`() {
+        val fixtureName = "general--www.macrumors.com-2026-06-15-iphone-18-pro-may-face-same-durability-issues"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("A known Weibo leaker has reiterated"))
+        assertTrue(result.contentMarkdown.contains("The ‌iPhone 18 Pro‌ and ‌iPhone 18 Pro‌ Max are expected"))
+        assertFalse(result.contentMarkdown.contains("Monday June 15, 2026 5:56 am PDT"))
+        assertFalse(lines.any { it == "by" || it == "Hartley Charlton" })
+        assertFalse(result.contentMarkdown.contains("Related Roundup"))
+        assertFalse(lines.any { it == "iPhone 18 Pro" })
+        assertFalse(result.contentHtml.contains("byline--"))
+        assertFalse(result.contentHtml.contains("""class="linkback""""))
+    }
+
+    @Test
     fun `androidcentral article dump excludes trailing comments and read more modules`() {
         val fixtureName = "general--www.androidcentral.com-phones-honor-phones-honor-magic-v6-review"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
