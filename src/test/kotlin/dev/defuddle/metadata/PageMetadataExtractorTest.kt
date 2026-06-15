@@ -124,6 +124,29 @@ class PageMetadataExtractorTest {
     }
 
     @Test
+    fun `article schema image reference wins over person image`() {
+        val metadata = extract(
+            """
+            <html><head>
+              <script type="application/ld+json">
+                {
+                  "@context": "https://schema.org",
+                  "@graph": [
+                    {"@type": "Article", "image": {"@id": "https://example.com/post#primaryimage"}},
+                    {"@type": "ImageObject", "@id": "https://example.com/post#primaryimage", "url": "/article.webp"},
+                    {"@type": "Person", "name": "Example Author", "image": {"url": "/author.webp"}}
+                  ]
+                }
+              </script>
+            </head><body><article><h1>Title</h1></article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/post",
+        )
+
+        assertEquals("https://example.com/article.webp", metadata.image)
+    }
+
+    @Test
     fun `placeholder author is rejected`() {
         val metadata = extract("""<meta name="author" content="admin"><article><h1>Title</h1></article>""")
 

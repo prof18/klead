@@ -5,6 +5,7 @@ import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -241,6 +242,28 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Good\\_ole\\_pinocchio"))
         assertFalse(result.contentMarkdown.contains("View all comments"))
         assertFalse(result.contentHtml.contains("top-comment"))
+    }
+
+    @Test
+    fun `nine to five linux article dump excludes share strip thumbnail and donation promo`() {
+        val fixtureName = "general--9to5linux.com-dietpi-10-5-enables-kms-drm-graphics-system-by-default-for-raspberry-pi-sbcs"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("DietPi 10.5 has been released today"))
+        assertTrue(result.contentMarkdown.contains("DietPi-Config configuration tool received a revamped display menu"))
+        assertTrue(result.contentMarkdown.contains("DietPi 10.5 can be downloaded right now"))
+        assertEquals("https://9to5linux.com/wp-content/uploads/2026/05/dietpi.webp", result.image)
+        assertFalse(result.contentMarkdown.contains("Share this article"))
+        assertFalse(result.contentMarkdown.contains("![DietPi]"))
+        assertFalse(result.contentMarkdown.contains("Enjoyed the article"))
+        assertFalse(result.contentMarkdown.contains("Buy Me a Coffee"))
+        assertFalse(result.contentHtml.contains("bm-social-top"))
+        assertFalse(result.contentHtml.contains("""class="post-thumbnail""""))
+        assertFalse(result.contentHtml.contains("kofi"))
     }
 
     @Test

@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 22
+- FeedFlow reader-dump regression fixtures: 23
 
 ## Active Strict Fixtures
 
@@ -40,6 +40,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable`: verifies that timestamp/byline/share/source-preference/read-next chrome and empty list artifacts do not leak into reader Markdown while prose wrappers with utility-class clutter keywords are preserved.
 - `general--9to5google.com-2026-06-14-google-ads-tease-next-pixel-drop-with-screen-reactions-and-gemini-omni-video`: verifies that 9to5-style related headings, author follow links, preferred-source badges, affiliate disclaimers, and visitor promos do not leak after article prose.
 - `general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier`: verifies that embedded top-comment modules do not leak while adjacent article prose is preserved.
+- `general--9to5linux.com-dietpi-10-5-enables-kms-drm-graphics-system-by-default-for-raspberry-pi-sbcs`: verifies that 9to5Linux share strips, duplicate post thumbnails, and ko-fi donation promos do not leak while the article image metadata remains correct.
 - `general--www.veneziatoday.it-cronaca-contratto-scaduto-sciopero-farmacie-comunali`: verifies that Citynews-style mobile app promos, entry footers, story-card recirculation, most-read sidebars, native footer sections, and Outbrain placeholders do not leak into reader Markdown.
 - `general--www.veneziatoday.it-eventi-estate-insieme-a-vigonovo-programma`: verifies that Citynews event info-square headers and byline chrome do not leak before event article prose.
 - `general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560`: verifies that body-level site chrome, repeated dates, section navigation, latest-news modules, popular lists, and footer text do not leak when a semantic `role="main"` article container is available.

@@ -129,11 +129,59 @@ object PageMetadataExtractor {
         schemaOrg: SchemaOrgResult,
         baseUrl: String,
     ): String? {
-        val raw = schemaOrg.firstString("image.url")
-            ?: schemaOrg.firstString("image")
+        val raw = schemaOrg.primaryArticleImage()
             ?: metaTags.firstContent("og:image", "twitter:image")
+            ?: schemaOrg.firstString("image.url")
+            ?: schemaOrg.firstString("image")
         return raw?.let { resolveUrl(baseUrl, it).ifBlank { null } }
     }
+
+    private fun SchemaOrgResult.primaryArticleImage(): String? {
+        val articleTypes = setOf("article", "newsarticle", "blogposting", "reportageNewsArticle".lowercase())
+        val pageTypes = setOf("webpage")
+        val primary = items.firstNotNullOfOrNull { item ->
+            if (item.hasType(articleTypes)) imageValue(item["image"], items) ?: imageValue(item["primaryImageOfPage"], items) else null
+        }
+        if (primary != null) return primary
+
+        return items.firstNotNullOfOrNull { item ->
+            if (item.hasType(pageTypes)) {
+                imageValue(item["primaryImageOfPage"], items)
+                    ?: imageValue(item["image"], items)
+                    ?: (item["thumbnailUrl"] as? String)?.takeIf { it.isNotBlank() }
+            } else {
+                null
+            }
+        }
+    }
+
+    private fun Map<String, Any?>.hasType(types: Set<String>): Boolean {
+        val raw = this["@type"]
+        return when (raw) {
+            is String -> raw.lowercase() in types
+            is List<*> -> raw.filterIsInstance<String>().any { it.lowercase() in types }
+            else -> false
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun imageValue(
+        value: Any?,
+        items: List<Map<String, Any?>>,
+    ): String? =
+        when (value) {
+            is String -> value.takeIf { it.isNotBlank() }
+            is Map<*, *> -> {
+                val map = value as Map<String, Any?>
+                (map["url"] as? String)?.takeIf { it.isNotBlank() }
+                    ?: (map["contentUrl"] as? String)?.takeIf { it.isNotBlank() }
+                    ?: (map["@id"] as? String)
+                        ?.let { id -> items.firstOrNull { it["@id"] == id } }
+                        ?.let { imageValue(it, items) }
+            }
+            is List<*> -> value.firstNotNullOfOrNull { imageValue(it, items) }
+            else -> null
+        }
 
     private fun extractFavicon(
         document: Document,

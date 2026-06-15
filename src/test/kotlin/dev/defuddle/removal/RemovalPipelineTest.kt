@@ -557,6 +557,64 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove WordPress post thumbnail and social share strip while preserving article body`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <html><head>
+                  <meta property="og:image" content="https://example.com/cover.webp">
+                </head><body>
+                  <main>
+                    <article class="hentry has-post-thumbnail">
+                      <div class="bm-social-top">Share this article:<a class="bm-share" href="/share">Share</a></div>
+                      <div class="post-thumbnail">
+                        <a class="image-link" href="https://example.com/cover.webp">
+                          <img src="https://example.com/cover.webp" alt="Cover">
+                        </a>
+                      </div>
+                      <div class="entry-content">
+                        <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                        <p>The article conclusion should also stay after the social share strip and duplicate cover thumbnail are removed. It contains useful article text and stable punctuation.</p>
+                      </div>
+                    </article>
+                  </main>
+                </body></html>
+            """.trimIndent(),
+            url = "https://example.com/wordpress-cover",
+            options = DefuddleOptions(contentSelector = "main"),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Share this article"))
+        assertFalse(result.contentMarkdown.contains("![Cover]"))
+        assertFalse(result.contentHtml.contains("bm-social-top"))
+        assertFalse(result.contentHtml.contains("""class="post-thumbnail""""))
+    }
+
+    @Test
+    fun `content patterns remove ko-fi donation widgets while preserving article body`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                  <div style="margin-top: 20px; display: inline-block; text-align: center;">
+                    <p>Enjoyed the article?</p>
+                    <a href="https://ko-fi.com/example"><img src="/kofi3.webp" alt="Buy Me a Coffee at ko-fi.com"></a>
+                  </div>
+                  <p>The article conclusion should also stay after the donation widget is removed. It contains useful article text and stable punctuation.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/donation-widget",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Enjoyed the article"))
+        assertFalse(result.contentMarkdown.contains("Buy Me a Coffee"))
+        assertFalse(result.contentMarkdown.contains("ko-fi.com"))
+    }
+
+    @Test
     fun `exact selectors remove entry footer sidebar and footer recirculation modules`() {
         val result = Defuddle.parseHtml(
             html = """
@@ -860,7 +918,7 @@ class RemovalPipelineTest {
                   <meta property="og:image" content="https://example.com/cover.png">
                 </head><body>
                   <article>
-                    <img src="/cover.png" alt="Cover">
+                    <div class="post-thumbnail"><img src="/cover.png" alt="Cover"></div>
                     <p>Article prose has enough words to keep the default cleaned parse result. It describes the article content clearly and avoids short retry paths with stable text.</p>
                   </article>
                 </body></html>
@@ -870,5 +928,6 @@ class RemovalPipelineTest {
 
         assertEquals("https://example.com/cover.png", result.image)
         assertFalse(result.contentHtml.contains("""alt="Cover""""))
+        assertFalse(result.contentHtml.contains("""class="post-thumbnail""""))
     }
 }

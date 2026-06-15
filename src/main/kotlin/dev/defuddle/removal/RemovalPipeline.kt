@@ -205,6 +205,9 @@ object RemovalPipeline {
                 isNewsletterSignupBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "newsletter signup")
                 }
+                isDonationWidgetBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "donation widget")
+                }
             }
         }
     }
@@ -252,9 +255,39 @@ object RemovalPipeline {
         for (image in content.select("img[src]").toList()) {
             val key = image.imageKey() ?: continue
             if (key == coverKey) {
-                recordAndRemove(image, debug, "removeCoverImage", "img[src]", "duplicates metadata image")
+                val target = image.coverImageRemovalTarget(content)
+                if (!target.hasCoverImageHint(image)) continue
+                recordAndRemove(target, debug, "removeCoverImage", coverImageSelector(target), "duplicates metadata image")
             }
         }
+    }
+
+    private fun Element.coverImageRemovalTarget(root: Element): Element {
+        var target = this
+        var current = parent()
+        while (current != null && current != root && current.isVisualOnlyImageWrapper()) {
+            target = current
+            current = current.parent()
+        }
+        return target
+    }
+
+    private fun Element.isVisualOnlyImageWrapper(): Boolean {
+        if (normalName() !in VISUAL_IMAGE_WRAPPER_TAGS) return false
+        if (text().trim().isNotBlank()) return false
+        return children().all { child ->
+            child.normalName() in VISUAL_IMAGE_WRAPPER_TAGS ||
+                child.normalName() in VISUAL_IMAGE_LEAF_TAGS
+        }
+    }
+
+    private fun Element.hasCoverImageHint(image: Element): Boolean {
+        val hints = listOfNotNull(
+            partialHaystack(this),
+            parent()?.let(::partialHaystack),
+            partialHaystack(image),
+        ).joinToString(" ")
+        return COVER_IMAGE_HINTS.any { it in hints }
     }
 
     private fun isProtected(element: Element): Boolean {
@@ -397,6 +430,19 @@ object RemovalPipeline {
         return hasWidgetHint || NEWSLETTER_LEGAL_PATTERN.containsMatchIn(text)
     }
 
+    private fun isDonationWidgetBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (text.length > DONATION_WIDGET_MAX_LENGTH) return false
+
+        val hints = partialHaystack(element) + " " +
+            element.select("a[href], img[src], img[alt]").joinToString(" ") {
+                "${it.attr("href")} ${it.attr("src")} ${it.attr("alt")}"
+            }.lowercase()
+
+        return DONATION_WIDGET_PATTERN.containsMatchIn(text) &&
+            DONATION_WIDGET_HINTS.any { it in hints }
+    }
+
     private fun recordAndRemove(
         element: Element,
         debug: MutableList<RemovalRecord>,
@@ -415,6 +461,13 @@ object RemovalPipeline {
 
     private fun Element.imageKey(): String? =
         absUrl("src").ifBlank { attr("src").trim() }.ifBlank { null }
+
+    private fun coverImageSelector(element: Element): String =
+        when {
+            element.id().isNotBlank() -> "#${element.id()}"
+            element.className().isNotBlank() -> ".${element.classNames().joinToString(".")}"
+            else -> element.normalName()
+        }
 
     private fun Element.isSmallImage(): Boolean {
         val width = dimension("width")
@@ -507,6 +560,7 @@ object RemovalPipeline {
         ".comments-link",
         ".big-preview",
         ".avia-copyright",
+        ".bm-social-top",
         ".testo > .data.small",
         ".abh_box",
         ".author-bio-box",
@@ -621,6 +675,39 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val DONATION_WIDGET_PATTERN = Regex(
+        """\b(enjoyed\s+the\s+article|buy\s+me\s+a\s+coffee|support\s+(?:us|our\s+work))\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val DONATION_WIDGET_HINTS = listOf(
+        "ko-fi",
+        "kofi",
+        "buy me a coffee",
+    )
+
+    private val VISUAL_IMAGE_WRAPPER_TAGS = setOf(
+        "a",
+        "div",
+        "figure",
+        "picture",
+        "span",
+    )
+
+    private val VISUAL_IMAGE_LEAF_TAGS = setOf(
+        "img",
+        "source",
+    )
+
+    private val COVER_IMAGE_HINTS = listOf(
+        "post-thumbnail",
+        "featured",
+        "hero",
+        "cover",
+        "wp-post-image",
+        "image-link",
+    )
+
     private val COMMENT_LINK_HINTS = listOf(
         "/thread",
         "/comment",
@@ -637,6 +724,7 @@ object RemovalPipeline {
     private const val COMMENT_PROMPT_MAX_LENGTH = 260
     private const val MOBILE_APP_PROMO_MAX_LENGTH = 180
     private const val NEWSLETTER_SIGNUP_MAX_LENGTH = 700
+    private const val DONATION_WIDGET_MAX_LENGTH = 220
     private const val AUTHOR_FOLLOW_MAX_LENGTH = 220
     private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
