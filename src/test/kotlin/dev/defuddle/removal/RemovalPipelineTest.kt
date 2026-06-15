@@ -117,6 +117,30 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `partial selectors preserve prose wrappers with clutter-looking utility classes`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <div class="[&_.visual-newsletter-fallback-image]:hidden">
+                    <p>The actual story body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                    <p>A second paragraph keeps this prose wrapper clearly article-like even though one of its utility classes contains a clutter keyword from nested CSS selector syntax.</p>
+                  </div>
+                  <section class="related-posts">
+                    <a href="/one">Related one</a>
+                    <a href="/two">Related two</a>
+                    <a href="/three">Related three</a>
+                  </section>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/prose-utility-classes",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual story body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps this prose wrapper"))
+        assertFalse(result.contentMarkdown.contains("Related one"))
+    }
+
+    @Test
     fun `breadcrumb wrappers are removed as navigation clutter`() {
         val result = Defuddle.parseHtml(
             html = """
@@ -330,6 +354,46 @@ class RemovalPipelineTest {
         assertFalse(result.contentMarkdown.contains("Loading player"))
         assertFalse(result.contentHtml.contains("audio.mp3"))
         assertFalse(result.contentHtml.contains("audio.ogg"))
+    }
+
+    @Test
+    fun `exact selectors remove social source and read-next chrome while preserving story body`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article>
+                    <span data-cy="time-rubric">17 hours ago - <a href="/technology">Technology</a></span>
+                    <ul data-cy="byline-list"><li><a data-cy="byline-author" href="/authors/mcuri">Maria Curi</a></li></ul>
+                    <ul data-cy="social-share-top"><li><button>Share</button></li><li><button>Copy</button></li></ul>
+                    <div data-vars-event-name="preferred_source_view">
+                      <div data-cy="preferred-source-top"><a href="https://google.com/preferences/source?q=example.com">Add Example on Google</a></div>
+                      <span role="tooltip">Add Example as your preferred source to see more of our stories on Google.</span>
+                    </div>
+                    <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes social and source cleanup deterministic while preserving legitimate article text.</p>
+                    <p>The article conclusion should also stay after source-preference and recirculation chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                    <ul data-cy="social-share-bottom"><li><button>Share</button></li><li><button>Copy</button></li></ul>
+                    <div data-vars-event-name="preferred_source_view" data-vars-location="bottom">
+                      <div data-cy="preferred-source-bottom"><a href="https://google.com/preferences/source?q=example.com">Add Example on Google</a></div>
+                    </div>
+                    <section data-cy="what-to-read-next">
+                      <h2>What to read next</h2>
+                      <a href="/one"><img src="data:image/webp;base64,AAAA" alt="">Suggested story</a>
+                    </section>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/social-source-chrome",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("17 hours ago"))
+        assertFalse(result.contentMarkdown.contains("Technology"))
+        assertFalse(result.contentMarkdown.contains("Maria Curi"))
+        assertFalse(result.contentMarkdown.contains("Add Example on Google"))
+        assertFalse(result.contentMarkdown.contains("preferred source"))
+        assertFalse(result.contentMarkdown.contains("What to read next"))
+        assertFalse(result.contentMarkdown.contains("data:image/webp;base64"))
     }
 
     @Test

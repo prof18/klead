@@ -169,6 +169,32 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `axios article dump excludes source share and read-next chrome`() {
+        val fixtureName = "general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(
+            result.contentMarkdown.contains("Senior technical Anthropic staff are in Washington"),
+            result.contentMarkdown.take(1_000),
+        )
+        assertTrue(result.contentMarkdown.contains("Anthropic is mobilizing quickly"))
+        assertTrue(result.contentMarkdown.contains("Administration officials claim Anthropic"))
+        assertTrue(result.contentMarkdown.contains("This is a developing story."))
+        assertFalse(result.contentMarkdown.contains("17 hours ago"))
+        assertFalse(lines.any { it == "Technology" || it == "Maria Curi" || it == "-" })
+        assertFalse(result.contentMarkdown.contains("Add Axios on Google"))
+        assertFalse(result.contentMarkdown.contains("preferred source"))
+        assertFalse(result.contentMarkdown.contains("What to read next"))
+        assertFalse(result.contentMarkdown.contains("data:image/webp;base64"))
+    }
+
+    @Test
     fun `pianetabasket article dump excludes site chrome and latest news modules`() {
         val fixtureName = "general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

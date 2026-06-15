@@ -94,6 +94,23 @@ class DefuddleMarkdownWriterTest {
     }
 
     @Test
+    fun `lists skip empty items left by stripped chrome`() {
+        val markdown = render(
+            """
+            <article>
+              <ul>
+                <li></li>
+                <li><span></span></li>
+                <li>Actual item</li>
+              </ul>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals("- Actual item\n", markdown)
+    }
+
+    @Test
     fun `fenced code preserves content and post processing does not trim code`() {
         val markdown = render("""<article><pre><code data-lang="kotlin">fun main() {  ${"\n"}  println("hi")  ${"\n"}}</code></pre></article>""")
 

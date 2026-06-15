@@ -162,3 +162,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added an Android Police FeedFlow reader-dump regression and removed Valnet-style author header/bio chrome plus article tag/follow controls from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added an ilpost cooling-break FeedFlow reader-dump regression and removed embedded audio/player placeholders from reader Markdown.
 2026-06-15 - PHASE-04/06 - complete - Added a short Pianeta Basket EuroLeague reader-dump regression, trusted semantic `main`/`role=main` containers once they clear the word guard, and removed author-profile boxes from reader Markdown.
+2026-06-15 - PHASE-06/08 - complete - Added an Axios FeedFlow reader-dump regression, removed timestamp/byline/share/source-preference/read-next chrome, preserved prose wrappers with clutter-looking utility classes, and skipped empty Markdown list items left by stripped controls.

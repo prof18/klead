@@ -151,18 +151,22 @@ private class Renderer(
         listDepth: Int,
     ): String {
         var number = element.attr("start").toIntOrNull() ?: 1
-        return element.children().filter { it.normalName() == "li" }.joinToString("\n") { item ->
-            val marker = if (ordered) "${number++}." else "-"
+        return element.children().filter { it.normalName() == "li" }.mapNotNull { item ->
             val indent = "  ".repeat(listDepth)
             val inlineNodes = item.childNodes().filterNot { it is Element && it.normalName() in setOf("ul", "ol") }
             val firstLine = renderInlineNodes(inlineNodes, inLink = false).trim()
             val nested = item.children()
                 .filter { it.normalName() == "ul" || it.normalName() == "ol" }
                 .joinToString("\n") { renderElementBlock(it, listDepth + 1) }
-            listOf("$indent$marker $firstLine", nested)
+            if (firstLine.isBlank() && nested.isBlank()) {
+                return@mapNotNull null
+            }
+            val marker = if (ordered) "${number++}." else "-"
+            val currentLine = if (firstLine.isBlank()) "" else "$indent$marker $firstLine"
+            listOf(currentLine, nested)
                 .filter { it.isNotBlank() }
                 .joinToString("\n")
-        }
+        }.joinToString("\n")
     }
 
     private fun blockquote(markdown: String): String =

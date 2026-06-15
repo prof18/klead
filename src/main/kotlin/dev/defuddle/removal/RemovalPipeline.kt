@@ -109,7 +109,7 @@ object RemovalPipeline {
         debug: MutableList<RemovalRecord>,
     ) {
         for (element in content.select("*").toList()) {
-            if (isProtected(element)) continue
+            if (isProtected(element) || isLikelyProse(element)) continue
             val haystack = partialHaystack(element)
             if (PARTIAL_PATTERNS.any { it in haystack }) {
                 recordAndRemove(element, debug, "removePartialSelectors", null, "partial clutter attribute")
@@ -400,6 +400,14 @@ object RemovalPipeline {
         ".audioplayer",
         "[data-mp3]",
         "[data-audio-src]",
+        """[data-cy="time-rubric"]""",
+        """[data-cy="byline-author"]""",
+        """[data-cy="social-share-top"]""",
+        """[data-cy="social-share-bottom"]""",
+        """[data-vars-event-name="preferred_source_view"]""",
+        """[data-cy="preferred-source-top"]""",
+        """[data-cy="preferred-source-bottom"]""",
+        """[data-cy="what-to-read-next"]""",
         ".w-article-header-comp",
         ".thumbuser",
         ".author-bio",
