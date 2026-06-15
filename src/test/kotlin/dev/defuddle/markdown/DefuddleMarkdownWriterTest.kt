@@ -43,6 +43,29 @@ class DefuddleMarkdownWriterTest {
     }
 
     @Test
+    fun `block image wrappers render image before caption text`() {
+        val markdown = render(
+            """
+            <article>
+              <div class="wp-caption alignnone">
+                <img src="/photo.jpg" alt="" width="980" height="653">
+                <p class="wp-caption-text">Useful caption.</p>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals(
+            """
+            ![](https://example.com/photo.jpg)
+
+            Useful caption.
+            """.trimIndent() + "\n",
+            markdown,
+        )
+    }
+
+    @Test
     fun `lists preserve nesting and blockquotes prefix lines`() {
         val markdown = render(
             """

@@ -65,6 +65,8 @@ private class Renderer(
             "li" -> renderInline(element).trim()
             "pre" -> renderCodeBlock(element)
             "hr" -> "---"
+            "img" -> renderImage(element)
+            "picture" -> element.selectFirst("img")?.let { renderImage(it) }.orEmpty()
             "figure" -> renderFigure(element, listDepth)
             "table" -> renderTable(element)
             "section" -> if (element.hasAttr("data-footnotes")) "" else renderBlocks(element.childNodes(), listDepth)
