@@ -203,6 +203,40 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove nested newsletter signup widgets while preserving prose`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes inline newsletter cleanup deterministic while preserving legitimate article text.</p>
+                  <div class="w-promotion-offer promo-article-content-3/4-depth w-promotion-widget" data-nosnippet>
+                    <div class="promotion-offer-box">
+                      <div class="newsletter-promotion-large">
+                        <div class="newsletter-section" data-inview-category="Newsletter Article Content Widget" data-inview-type="loaded_newsletter">
+                          <h3>Subscribe to our newsletter for smarter home-screen tips</h3>
+                          <div class="form-notes bottom-note">By subscribing, you agree to receive newsletter and marketing emails, and accept our <a href="/terms">Terms of Use</a> and <a href="/privacy">Privacy Policy</a>. You can unsubscribe anytime.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p>The article conclusion should also stay after the newsletter signup is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/newsletter-widget",
+            options = DefuddleOptions(
+                removeExactSelectors = false,
+                removePartialSelectors = false,
+            ),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Subscribe to our newsletter"))
+        assertFalse(result.contentMarkdown.contains("marketing emails"))
+        assertFalse(result.contentMarkdown.contains("Terms of Use"))
+        assertFalse(result.contentMarkdown.contains("unsubscribe anytime"))
+    }
+
+    @Test
     fun `content patterns remove trailing recommendation blocks`() {
         val result = Defuddle.parseHtml(
             html = """

@@ -191,6 +191,9 @@ object RemovalPipeline {
                 isMobileAppPromoBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "mobile app promo")
                 }
+                isNewsletterSignupBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "newsletter signup")
+                }
             }
         }
     }
@@ -340,6 +343,18 @@ object RemovalPipeline {
         return MOBILE_APP_PROMO_PATTERN.containsMatchIn(text)
     }
 
+    private fun isNewsletterSignupBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (text.isBlank() || text.length > NEWSLETTER_SIGNUP_MAX_LENGTH) return false
+        if (!NEWSLETTER_SIGNUP_PATTERN.containsMatchIn(text)) return false
+
+        val hints = partialHaystack(element)
+        val hasWidgetHint = "newsletter" in hints ||
+            "mailinglist" in hints ||
+            element.select("form, input, button").isNotEmpty()
+        return hasWidgetHint || NEWSLETTER_LEGAL_PATTERN.containsMatchIn(text)
+    }
+
     private fun recordAndRemove(
         element: Element,
         debug: MutableList<RemovalRecord>,
@@ -435,6 +450,10 @@ object RemovalPipeline {
         ".follow-container",
         "[data-is-follow-choice-button]",
         "[data-is-followed-choice-button]",
+        ".newsletter-promotion-large",
+        ".newsletter-section",
+        """[data-inview-type*=newsletter]""",
+        """[data-inview-category*=Newsletter]""",
         ".table__instruction",
         ".inline-gallery__count",
         ".inline-gallery__arrows",
@@ -501,6 +520,16 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val NEWSLETTER_SIGNUP_PATTERN = Regex(
+        """\b(subscribe\s+to\s+(?:our|the|a)\s+newsletter|receive\s+newsletter|newsletter\s+signup|subscribe\s+.*\bnewsletter)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val NEWSLETTER_LEGAL_PATTERN = Regex(
+        """\b(marketing\s+emails|terms\s+of\s+use|privacy\s+policy|unsubscribe\s+(?:anytime|any\s+time))\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val COMMENT_LINK_HINTS = listOf(
         "/thread",
         "/comment",
@@ -516,6 +545,7 @@ object RemovalPipeline {
     private const val COMMENT_COUNT_MAX_LINKS = 2
     private const val COMMENT_PROMPT_MAX_LENGTH = 260
     private const val MOBILE_APP_PROMO_MAX_LENGTH = 180
+    private const val NEWSLETTER_SIGNUP_MAX_LENGTH = 700
     private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }
