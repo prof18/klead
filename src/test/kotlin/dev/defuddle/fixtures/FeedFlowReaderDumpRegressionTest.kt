@@ -337,6 +337,27 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `berlino magazine article dump excludes enfold cover caption and entry metadata`() {
+        val fixtureName = "general--berlinomagazine.com-2026-berlino-progetto-unico-in-europa-case-e-spazi-per-lesbiche-e-persone-queer-nel-cuore-della-citt"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Il complesso, realizzato su iniziativa"))
+        assertTrue(result.contentMarkdown.contains("A Berlino sta per aprire"))
+        assertTrue(result.contentMarkdown.contains("Non solo una casa"))
+        assertFalse(result.contentMarkdown.contains("CC0\\_https://images.pexels.com"))
+        assertFalse(result.contentMarkdown.contains("12 Giugno 2026"))
+        assertFalse(result.contentMarkdown.contains("Cronaca"))
+        assertFalse(result.contentMarkdown.contains("katherina ricchi"))
+        assertFalse(result.contentMarkdown.contains("\n/\n"))
+        assertFalse(result.contentHtml.contains("post-meta-infos"))
+        assertFalse(result.contentHtml.contains("avia-copyright"))
+    }
+
+    @Test
     fun `basketuniverso article dump excludes category chips and author latest posts`() {
         val fixtureName = "general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

@@ -100,6 +100,47 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove enfold hero caption and entry metadata`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main role="main">
+                  <article>
+                    <div class="big-preview single-big">
+                      <a href="/cover.jpg" title="CC0_https://images.example/photo.jpeg">
+                        <small class="avia-copyright">CC0_https://images.example/photo.jpeg</small>
+                      </a>
+                    </div>
+                    <div class="entry-content-wrapper">
+                      <header class="entry-content-header">
+                        <span class="post-meta-infos">
+                          <time class="date-container">12 Giugno 2026</time>
+                          <span class="text-sep">/</span>
+                          <span class="blog-categories">in <a href="/category/cronaca">Cronaca</a></span>
+                          <span class="text-sep">/</span>
+                          <span class="blog-author">da <a rel="author" href="/author">katherina ricchi</a></span>
+                        </span>
+                      </header>
+                      <div class="entry-content">
+                        <h2>Important article subtitle</h2>
+                        <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result. This makes Enfold metadata cleanup deterministic while preserving legitimate article content.</p>
+                      </div>
+                    </div>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/enfold",
+        )
+
+        assertTrue(result.contentMarkdown.contains("Important article subtitle"))
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertFalse(result.contentMarkdown.contains("CC0_https"))
+        assertFalse(result.contentMarkdown.contains("12 Giugno 2026"))
+        assertFalse(result.contentMarkdown.contains("Cronaca"))
+        assertFalse(result.contentMarkdown.contains("katherina ricchi"))
+        assertFalse(result.contentMarkdown.contains("\n/\n"))
+    }
+
+    @Test
     fun `partial selectors do not remove code blocks`() {
         val result = Defuddle.parseHtml(
             html = """
