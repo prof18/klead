@@ -137,6 +137,7 @@ object RemovalPipeline {
         content: Element,
         debug: MutableList<RemovalRecord>,
     ) {
+        removeNestedArticleFooterBlocks(content, debug)
         for (element in content.children().toList().asReversed()) {
             val text = element.text().trim()
             if (text.isBlank()) continue
@@ -148,11 +149,32 @@ object RemovalPipeline {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing recommendation block")
                 continue
             }
-            if (isTrailingTagBlock(element)) {
+            if (isTagListBlock(element)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing tag list")
                 continue
             }
+            if (isCommentCountBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing comment count")
+                continue
+            }
             break
+        }
+    }
+
+    private fun removeNestedArticleFooterBlocks(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        for (element in content.select("aside, div, p, section, ul, ol").toList()) {
+            if (isProtected(element)) continue
+            when {
+                isTagListBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "article footer tag list")
+                }
+                isCommentCountBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment count")
+                }
+            }
         }
     }
 
@@ -242,7 +264,7 @@ object RemovalPipeline {
             imageCount >= RECOMMENDATION_MIN_IMAGES
     }
 
-    private fun isTrailingTagBlock(element: Element): Boolean {
+    private fun isTagListBlock(element: Element): Boolean {
         val text = element.text().trim()
         if (!TRAILING_TAG_LABEL_PATTERN.containsMatchIn(text)) return false
 
@@ -252,6 +274,20 @@ object RemovalPipeline {
 
         return tagLinkCount >= TRAILING_TAG_MIN_LINKS ||
             (linkCount >= TRAILING_TAG_MIN_LINKS && wordCount <= TRAILING_TAG_MAX_WORDS)
+    }
+
+    private fun isCommentCountBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (!COMMENT_COUNT_PATTERN.matches(text)) return false
+
+        val links = element.select("a[href]")
+        if (links.isEmpty() || links.size > COMMENT_COUNT_MAX_LINKS) return false
+
+        val hrefHints = links.joinToString(" ") { it.attr("href") }.lowercase()
+        val elementHints = "${partialHaystack(element)} ${element.parent()?.let(::partialHaystack).orEmpty()}"
+        return COMMENT_LINK_HINTS.any { it in hrefHints } ||
+            "comment" in elementHints ||
+            "footer" in elementHints
     }
 
     private fun recordAndRemove(
@@ -303,6 +339,7 @@ object RemovalPipeline {
         "select",
         "textarea",
         "[role=navigation]",
+        "#comments",
         ".ad",
         ".ads",
         ".advertisement",
@@ -335,7 +372,7 @@ object RemovalPipeline {
     )
 
     private val RECOMMENDATION_HEADING_PATTERN = Regex(
-        """\b(recommended|related|more stories|more from|read more|you may also like|consigliati|altre storie)\b""",
+        """\b(recommended|related|more stories|more from|read more|you may also like|popular stories|consigliati|altre storie)\b""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -344,10 +381,23 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val COMMENT_COUNT_PATTERN = Regex(
+        """^\[?\s*\d+\s+comments?\s*\]?$""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val COMMENT_LINK_HINTS = listOf(
+        "/thread",
+        "/comment",
+        "#comment",
+        "forums.",
+    )
+
     private const val RECOMMENDATION_MIN_LINKS = 2
     private const val RECOMMENDATION_MIN_ARTICLES = 2
     private const val RECOMMENDATION_MIN_IMAGES = 2
     private const val TRAILING_TAG_MIN_LINKS = 1
     private const val TRAILING_TAG_MAX_WORDS = 16
+    private const val COMMENT_COUNT_MAX_LINKS = 2
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

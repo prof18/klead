@@ -69,6 +69,7 @@ object MainContentDetector {
 
         val sorted = candidates.sortedByDescending { it.score }
         var selected = refineListingParent(sorted.first(), sorted)
+        refineBroadContainerToDirectArticle(selected, sorted)?.let { selected = it }
         if (selected.element.tagName() == "body") {
             refineBodyToFocusedCandidate(selected, sorted)?.let { selected = it }
         }
@@ -103,6 +104,34 @@ object MainContentDetector {
                 candidate.element.children().any { it === selected.element }
         }
         return parentCandidate ?: selected
+    }
+
+    private fun refineBroadContainerToDirectArticle(
+        selected: Candidate,
+        candidates: List<Candidate>,
+    ): Candidate? {
+        if (selected.selector !in BROAD_CONTAINER_SELECTORS) return null
+        val directArticles = selected.element.children()
+            .filter { it.normalName() == "article" || it.attr("role").equals("article", ignoreCase = true) }
+        if (directArticles.size != 1) return null
+
+        val article = directArticles.single()
+        val selectedScore = ContentScorer.scoreElement(selected.element)
+        val articleScore = ContentScorer.scoreElement(article)
+        if (articleScore.wordCount < BROAD_REFINEMENT_MIN_WORDS) return null
+        if (
+            articleScore.total < selectedScore.total * BROAD_REFINEMENT_MIN_SCORE_RATIO &&
+            articleScore.wordCount < selectedScore.wordCount * BROAD_REFINEMENT_MIN_WORD_RATIO
+        ) {
+            return null
+        }
+
+        return candidates.firstOrNull { it.element === article }
+            ?: Candidate(
+                element = article,
+                selector = if (article.normalName() == "article") "article" else """[role="article"]""",
+                score = articleScore.total,
+            )
     }
 
     private fun refineBodyToFocusedCandidate(
@@ -231,6 +260,16 @@ object MainContentDetector {
         "#content",
     )
 
+    private val BROAD_CONTAINER_SELECTORS = setOf(
+        "body",
+        "main",
+        """[role="main"]""",
+        "#content",
+    )
+
+    private const val BROAD_REFINEMENT_MIN_SCORE_RATIO = 0.45
+    private const val BROAD_REFINEMENT_MIN_WORD_RATIO = 0.35
+    private const val BROAD_REFINEMENT_MIN_WORDS = 50
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
     private const val BODY_REFINEMENT_MIN_WORDS = 80
 }

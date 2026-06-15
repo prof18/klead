@@ -80,6 +80,26 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("[* Il Centro*]("))
     }
 
+    @Test
+    fun `macrumors article dump excludes footer modules`() {
+        val fixtureName = "general--www.macrumors.com-2026-06-15-uk-ban-social-media-under-16s"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The British government will introduce a ban on social media"))
+        assertTrue(result.contentMarkdown.contains("Starmer said he plans to pass legislation before Christmas"))
+        assertFalse(result.contentMarkdown.contains("Tag:"))
+        assertFalse(result.contentMarkdown.contains("United Kingdom"))
+        assertFalse(result.contentMarkdown.contains("8 comments"))
+        assertFalse(result.contentMarkdown.contains("Popular Stories"))
+        assertFalse(result.contentMarkdown.contains("Hartley Charlton"))
+        assertFalse(result.contentMarkdown.contains("Top Rated Comments"))
+        assertFalse(result.contentMarkdown.contains("Read All Comments"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

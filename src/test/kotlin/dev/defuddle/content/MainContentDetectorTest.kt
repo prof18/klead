@@ -85,6 +85,35 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `single focused article beats parent main with footer modules`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <main id="container">
+                  <article id="story">
+                    <p>This focused article contains the actual story with enough natural language, punctuation, and context to be selected as the reading surface. It should not lose just because the page main also contains footer modules after the story.</p>
+                    <p>The second paragraph keeps the article substantial and realistic. Readers expect this core article prose to remain while popular stories, comment widgets, and other footer material below the story stay outside the selected content.</p>
+                  </article>
+                  <div data-track="popular-stories">
+                    <h2>Popular Stories</h2>
+                    <article><h3>First unrelated popular card</h3><p>A long teaser paragraph adds enough unrelated text to make the full main score higher than the article alone.</p></article>
+                    <article><h3>Second unrelated popular card</h3><p>Another teaser paragraph contributes non-article words that should not make the broad main selection win.</p></article>
+                    <article><h3>Third unrelated popular card</h3><p>More unrelated summary text simulates bottom-of-page recommendations from a news site.</p></article>
+                  </div>
+                  <div id="comments">
+                    <h2>Top Rated Comments</h2>
+                    <p>Comment excerpts and voting controls add readable-looking text that should not be part of the article body.</p>
+                  </div>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals("article", detected.selectedSelector)
+    }
+
+    @Test
     fun `multiple article cards keep parent listing container`() {
         val detected = MainContentDetector.detect(
             Jsoup.parse(

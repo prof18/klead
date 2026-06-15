@@ -223,6 +223,29 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove nested article footer tags and comment links`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <div class="article-body">
+                    <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes nested article-footer cleanup deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and only footer clutter is removed.</p>
+                    <div class="linkback">Tag: <a href="/guide/united-kingdom/">United Kingdom</a></div>
+                  </div>
+                  <div class="article-footer">
+                    <div>[ <a href="https://forums.example.com/threads/story.1/">8 comments</a> ]</div>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/footer-clutter",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
+        assertFalse(result.contentMarkdown.contains("Tag:"))
+        assertFalse(result.contentMarkdown.contains("United Kingdom"))
+        assertFalse(result.contentMarkdown.contains("8 comments"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
