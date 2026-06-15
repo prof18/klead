@@ -278,6 +278,28 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Copyright © 2026 PIANETABASKET"))
     }
 
+    @Test
+    fun `basketuniverso article dump excludes category chips and author latest posts`() {
+        val fixtureName = "general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("La National Basketball Association rappresenta"))
+        assertTrue(result.contentMarkdown.contains("cronometro dei 24 secondi"))
+        assertTrue(result.contentMarkdown.contains("I Boston Celtics guidano la classifica"))
+        assertFalse(lines.any { it == "NBA" || it == "News" || it == "About" || it == "Latest Posts" })
+        assertFalse(result.contentMarkdown.contains("Roberto Caporilli"))
+        assertFalse(result.contentMarkdown.contains("Latest posts by"))
+        assertFalse(result.contentMarkdown.contains("see all"))
+        assertFalse(result.contentMarkdown.contains("Verona torna in Serie A"))
+        assertFalse(result.contentMarkdown.contains("Quale sarà il roster"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

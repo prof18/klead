@@ -552,6 +552,48 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove category chips and author latest posts boxes while preserving story`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <div class="post-cats-list">
+                    <span class="category-button"><a href="/category/basketball/">Basketball</a></span>
+                    <span class="category-button"><a href="/category/news/">News</a></span>
+                  </div>
+                  <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when category chips and an author latest-posts box are removed from the reader output.</p>
+                  <p>The article conclusion should also stay after author recirculation chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                  <div class="abh_box abh_box_down abh_box_business">
+                    <ul class="abh_tabs">
+                      <li class="abh_about"><a href="#abh_about">About</a></li>
+                      <li class="abh_posts"><a href="#abh_posts">Latest Posts</a></li>
+                    </ul>
+                    <section class="vcard author abh_about_tab abh_tab">
+                      <img src="/author.jpg" alt="Roberto Caporilli">
+                      <a href="/author/roberto-caporilli/">Roberto Caporilli</a>
+                    </section>
+                    <section class="abh_posts_tab abh_tab">
+                      <div>Latest posts by Roberto Caporilli <a href="/author/roberto-caporilli/">see all</a></div>
+                      <ul>
+                        <li><a href="/old-story/">Old recirculated story</a> - 14 Giugno 2026</li>
+                      </ul>
+                    </section>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/category-author-chrome",
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(lines.any { it == "Basketball" || it == "News" || it == "About" || it == "Latest Posts" })
+        assertFalse(result.contentMarkdown.contains("Roberto Caporilli"))
+        assertFalse(result.contentMarkdown.contains("Latest posts by"))
+        assertFalse(result.contentMarkdown.contains("Old recirculated story"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
