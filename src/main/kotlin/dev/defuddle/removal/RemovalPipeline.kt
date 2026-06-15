@@ -316,14 +316,20 @@ object RemovalPipeline {
         content: Element,
         debug: MutableList<RemovalRecord>,
     ) {
-        for (element in content.select("aside, div, p, section, ul, ol").toList()) {
+        for (element in content.select("aside, div, p, section, ul, ol, hr").toList()) {
             if (isProtected(element)) continue
             when {
                 isOrphanSeparatorBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "orphan separator block")
                 }
+                isTrailingDividerBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "trailing divider")
+                }
                 isSkeletonRecirculationBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "skeleton recirculation block")
+                }
+                isPostedByBylineBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "posted-by byline strip")
                 }
                 isRecommendationSectionHeadingBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "orphan recommendation heading")
@@ -532,6 +538,21 @@ object RemovalPipeline {
         }
     }
 
+    private fun isTrailingDividerBlock(element: Element): Boolean {
+        if (element.normalName() != "hr") return false
+
+        var sibling = element.nextElementSibling()
+        while (sibling != null) {
+            if (sibling.hasSubstantiveContent()) return false
+            sibling = sibling.nextElementSibling()
+        }
+        return true
+    }
+
+    private fun Element.hasSubstantiveContent(): Boolean =
+        text().trim().isNotBlank() ||
+            select("img, picture, figure, table, pre, code, math, p, h1, h2, h3, h4, h5, h6").isNotEmpty()
+
     private fun isSkeletonRecirculationBlock(element: Element): Boolean {
         val text = element.text().trim().collapseWhitespace()
         if (text.isBlank() || text.length > SKELETON_RECIRCULATION_MAX_LENGTH) return false
@@ -550,6 +571,19 @@ object RemovalPipeline {
         val hints = "${partialHaystack(element)} ${element.select("*").joinToString(" ") { partialHaystack(it) }}"
         val hasSkeletonHint = SKELETON_RECIRCULATION_HINTS.any { it in hints }
         return hasSkeletonHint && SKELETON_RECIRCULATION_HEADING_PATTERN.containsMatchIn(text)
+    }
+
+    private fun isPostedByBylineBlock(element: Element): Boolean {
+        val text = element.text().trim().collapseWhitespace()
+        if (text.length > POSTED_BY_BYLINE_MAX_LENGTH) return false
+        if (!POSTED_BY_BYLINE_PATTERN.matches(text)) return false
+        if (element.select("a, img, figure, picture, table, pre, code, math").isNotEmpty()) return false
+
+        val hints = listOfNotNull(
+            partialHaystack(element),
+            element.parent()?.let(::partialHaystack),
+        ).joinToString(" ")
+        return POSTED_BY_BYLINE_HINTS.any { it in hints }
     }
 
     private fun isAuthorFollowBlock(element: Element): Boolean {
@@ -802,6 +836,14 @@ object RemovalPipeline {
         """[data-cy="author-bio"]""",
         """[data-cy="author-see-full-bio"]""",
         "#author-bio",
+        ".copy-tooltip",
+        ".copy-tooltiptext",
+        """div.separator:matchesOwn((?i)^\s*posted\s+by\s+)""",
+        "#blog-pager",
+        ".blog-pager",
+        ".adb-detail > hr:last-child",
+        ".blog-pager-newer-link",
+        ".blog-pager-older-link",
         "aside[data-mrf-recirculation]",
         "aside.hawk-root",
         "#audioPlayerArticle",
@@ -975,6 +1017,11 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val POSTED_BY_BYLINE_PATTERN = Regex(
+        """^posted\s+by\s+[\p{L}\p{N} ._'&/@-]{1,80}$""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val TRAILING_TAG_LABEL_PATTERN = Regex(
         """^\s*(tags?|tagged|etichette?)\s*:""",
         RegexOption.IGNORE_CASE,
@@ -1136,6 +1183,14 @@ object RemovalPipeline {
         "placeholder",
     )
 
+    private val POSTED_BY_BYLINE_HINTS = listOf(
+        "author",
+        "byline",
+        "post-meta",
+        "posted",
+        "separator",
+    )
+
     private const val RECOMMENDATION_MIN_LINKS = 2
     private const val RECOMMENDATION_MIN_ARTICLES = 2
     private const val RECOMMENDATION_MIN_IMAGES = 2
@@ -1157,6 +1212,7 @@ object RemovalPipeline {
     private const val OPENING_ARTICLE_HEADER_MAX_LENGTH = 700
     private const val OPENING_ARTICLE_HEADER_MAX_PARAGRAPHS = 2
     private const val AUTHOR_FOLLOW_MAX_LENGTH = 220
+    private const val POSTED_BY_BYLINE_MAX_LENGTH = 120
     private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

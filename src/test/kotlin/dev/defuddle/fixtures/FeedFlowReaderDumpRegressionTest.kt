@@ -805,6 +805,28 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("animate-pulse"))
     }
 
+    @Test
+    fun `android developers dump excludes copied tooltip byline and pager chrome`() {
+        val fixtureName = "general--android-developers.googleblog.com-2026-05-apply-android-xr-developer-catalyst"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The Android XR ecosystem is expanding"))
+        assertTrue(result.contentMarkdown.contains("Why join the catalyst program?"))
+        assertTrue(result.contentMarkdown.contains("Start Your Application"))
+        assertTrue(result.contentMarkdown.contains("Explore this announcement and all Google I/O 2026 updates"))
+        assertFalse(result.contentMarkdown.contains("Link copied to clipboard"))
+        assertFalse(result.contentMarkdown.contains("Posted by Android XR Team"))
+        assertFalse(result.contentMarkdown.contains("Newer post"))
+        assertFalse(result.contentMarkdown.contains("Older post"))
+        assertFalse(result.contentMarkdown.trim().endsWith("---"))
+        assertFalse(result.contentHtml.contains("copy-tooltip"))
+        assertFalse(result.contentHtml.contains("blog-pager"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

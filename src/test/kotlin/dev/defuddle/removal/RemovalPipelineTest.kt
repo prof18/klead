@@ -1425,6 +1425,53 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes copied tooltip blogger byline and pager chrome`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <div class="adb-detail">
+                    <div class="adb-detail__info">
+                      <p>19 May 2026</p>
+                    </div>
+                    <hr>
+                    <div class="copy-tooltip">
+                      <span class="copy-tooltiptext">Link copied to clipboard</span>
+                    </div>
+                    <div class="adb-detail__content">
+                      <div>
+                        <div class="separator" style="clear: both; text-align: left;">Posted by Android XR Team</div>
+                        <div class="separator" style="clear: both; text-align: center;">
+                          <a href="/hero.png"><img src="/hero.png" width="1200" height="600"></a>
+                        </div>
+                        <p>The actual article body should stay because it contains normal explanatory prose about a developer program and gives the reader useful context.</p>
+                        <p>The article conclusion should also stay before the publisher previous and next post navigation controls are removed.</p>
+                      </div>
+                    </div>
+                    <hr>
+                    <div class="blog-pager pagination" id="blog-pager">
+                      <a class="blog-pager-newer-link page-button" href="/newer" title="Newer Post"><span>Newer post</span></a>
+                      <a class="blog-pager-older-link page-button" href="/older" title="Older Post"><span>Older post</span></a>
+                    </div>
+                  </div>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/blogger-post",
+            options = DefuddleOptions(contentSelector = "main"),
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertTrue(result.contentMarkdown.contains("hero.png"))
+        assertFalse(result.contentMarkdown.contains("Link copied to clipboard"))
+        assertFalse(result.contentMarkdown.contains("Posted by Android XR Team"))
+        assertFalse(result.contentMarkdown.contains("Newer post"))
+        assertFalse(result.contentMarkdown.contains("Older post"))
+        assertFalse(result.contentMarkdown.trim().endsWith("---"))
+        assertFalse(result.contentHtml.contains("copy-tooltip"))
+        assertFalse(result.contentHtml.contains("blog-pager"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
