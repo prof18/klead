@@ -402,6 +402,7 @@ object RemovalPipeline {
         ".ad",
         ".ads",
         ".advertisement",
+        ".tcc-badge",
         ".comments",
         ".comment",
         ".share",

@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 6
+- FeedFlow reader-dump regression fixtures: 7
 
 ## Active Strict Fixtures
 
@@ -35,6 +35,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.ilpost.it-2026-06-15-sorelle-sparite-minturno`: verifies that emphasized link text with boundary whitespace produces tight Markdown delimiters.
 - `general--www.macrumors.com-2026-06-15-uk-ban-social-media-under-16s`: verifies that broad main selection, article tags, comment counts, popular-story modules, and comment modules do not leak into reader Markdown.
 - `general--www.androidcentral.com-phones-honor-phones-honor-magic-v6-review`: verifies that video carousels, affiliate/deal widgets, gallery controls, trailing comment prompts, back-to-top controls, and read-more recirculation modules do not leak into reader Markdown, while no-op-spanned specs tables render as Markdown tables.
+- `general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560`: verifies that body-level site chrome, repeated dates, section navigation, latest-news modules, popular lists, and footer text do not leak when a semantic `role="main"` article container is available.
 
 ## Known Differences
 

@@ -145,7 +145,15 @@ object MainContentDetector {
                     candidate.score >= selected.score * BODY_REFINEMENT_MIN_SCORE_RATIO &&
                     ContentScorer.scoreElement(candidate.element).wordCount >= BODY_REFINEMENT_MIN_WORDS
             }
+        val semanticMainCandidates = candidates
+            .filter { candidate ->
+                candidate.element !== selected.element &&
+                    candidate.selector in SEMANTIC_MAIN_SELECTORS &&
+                    candidate.score >= selected.score * SEMANTIC_MAIN_BODY_REFINEMENT_MIN_SCORE_RATIO &&
+                    ContentScorer.scoreElement(candidate.element).wordCount >= BODY_REFINEMENT_MIN_WORDS
+            }
         return focusedCandidates.firstOrNull { it.selector in ARTICLE_SELECTORS }
+            ?: semanticMainCandidates.firstOrNull()
             ?: focusedCandidates.firstOrNull()
     }
 
@@ -260,6 +268,11 @@ object MainContentDetector {
         "#content",
     )
 
+    private val SEMANTIC_MAIN_SELECTORS = setOf(
+        "main",
+        """[role="main"]""",
+    )
+
     private val BROAD_CONTAINER_SELECTORS = setOf(
         "body",
         "main",
@@ -271,5 +284,6 @@ object MainContentDetector {
     private const val BROAD_REFINEMENT_MIN_WORD_RATIO = 0.35
     private const val BROAD_REFINEMENT_MIN_WORDS = 50
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
+    private const val SEMANTIC_MAIN_BODY_REFINEMENT_MIN_SCORE_RATIO = 0.20
     private const val BODY_REFINEMENT_MIN_WORDS = 80
 }

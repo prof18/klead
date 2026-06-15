@@ -130,6 +130,32 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("\n##\n"))
     }
 
+    @Test
+    fun `pianetabasket article dump excludes site chrome and latest news modules`() {
+        val fixtureName = "general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("Virtus Bologna"))
+        assertTrue(result.contentMarkdown.contains("Aleksander"))
+        assertTrue(result.contentMarkdown.contains("Sekulic"))
+        assertFalse(result.contentMarkdown.contains("HOME"))
+        assertFalse(result.contentMarkdown.contains("NETWORK"))
+        assertFalse(result.contentMarkdown.contains("REDAZIONE"))
+        assertFalse(result.contentMarkdown.contains("Lunedì 15 giugno 2026"))
+        assertFalse(lines.any { it == "LEGABASKET SERIE A" || it == "Mercato" })
+        assertFalse(result.contentMarkdown.contains("Altre notizie"))
+        assertFalse(result.contentMarkdown.contains("Francesco Ferrari"))
+        assertFalse(result.contentMarkdown.contains("Verso la Serie A 2026/27"))
+        assertFalse(result.contentMarkdown.contains("Le più lette"))
+        assertFalse(result.contentMarkdown.contains("Copyright © 2026 PIANETABASKET"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

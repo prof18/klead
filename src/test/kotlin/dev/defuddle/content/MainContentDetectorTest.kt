@@ -69,6 +69,41 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `semantic main beats body with navigation and latest-news lists`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <header>
+                    <table><tr><td><a href="/">HOME</a> <a href="/network">NETWORK</a></td><td><a href="/redazione">REDAZIONE</a></td></tr></table>
+                    <p>Lunedì 15 giugno 2026 Lunedì 15 giugno 2026</p>
+                    <table><tr><td>LEGABASKET SERIE A</td></tr></table>
+                  </header>
+                  <div role="main" id="story">
+                    <div class="mbottom"><span class="tcc-badge">Mercato</span></div>
+                    <p>The actual story starts here with enough natural language, punctuation, and context to be selected as the reading surface. It should not lose just because the page body also contains a large latest-news module after the story.</p>
+                    <p>The second paragraph keeps the story substantial and realistic. Readers expect this core article prose to remain while navigation, repeated dates, category tables, and unrelated news links stay outside the selected content.</p>
+                  </div>
+                  <section id="latest-news">
+                    <h2>Altre notizie</h2>
+                    <ul>
+                      <li>15.06.2026 11:45 <a href="/one">First unrelated story has a long headline that increases the body score</a></li>
+                      <li>15.06.2026 11:25 <a href="/two">Second unrelated story has another long headline that increases the body score</a></li>
+                      <li>15.06.2026 10:50 <a href="/three">Third unrelated story has another long headline that increases the body score</a></li>
+                      <li>15.06.2026 10:20 <a href="/four">Fourth unrelated story has another long headline that increases the body score</a></li>
+                      <li>15.06.2026 09:55 <a href="/five">Fifth unrelated story has another long headline that increases the body score</a></li>
+                    </ul>
+                  </section>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals("""[role="main"]""", detected.selectedSelector)
+    }
+
+    @Test
     fun `child article can beat parent main`() {
         val detected = MainContentDetector.detect(
             Jsoup.parse(
