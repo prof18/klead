@@ -194,6 +194,33 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Copyright © 2026 PIANETABASKET"))
     }
 
+    @Test
+    fun `pianetabasket short article dump excludes body chrome author box and latest news`() {
+        val fixtureName = "general--www.pianetabasket.com-euroleague-l-anadolu-efes-conferma-l-uscita-rolands-smits-stagioni-363578"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("L'**Anadolu Efes**"))
+        assertTrue(result.contentMarkdown.contains("Rolands Šmits"))
+        assertTrue(result.contentMarkdown.contains("Jordan Loyd"))
+        assertFalse(result.contentMarkdown.contains("HOME"))
+        assertFalse(result.contentMarkdown.contains("NETWORK"))
+        assertFalse(result.contentMarkdown.contains("REDAZIONE"))
+        assertFalse(result.contentMarkdown.contains("Lunedì 15 giugno 2026"))
+        assertFalse(lines.any { it == "EUROLEAGUE" || it == "autore" })
+        assertFalse(result.contentMarkdown.contains("Editore di Pianeta Basket"))
+        assertFalse(result.contentMarkdown.contains("IacopoDeSantis"))
+        assertFalse(result.contentMarkdown.contains("Altre notizie"))
+        assertFalse(result.contentMarkdown.contains("Pierric Poupet"))
+        assertFalse(result.contentMarkdown.contains("Le più lette"))
+        assertFalse(result.contentMarkdown.contains("Copyright © 2026 PIANETABASKET"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

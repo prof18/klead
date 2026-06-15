@@ -380,6 +380,33 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove author profile boxes while preserving story`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when the author profile box below the short article is removed from the reader output.</p>
+                  <div class="thumbuser row">
+                    <img src="/author.jpg" alt="Iacopo De Santis">
+                    <div class="upper">autore</div>
+                    <div class="serif"><a href="/redazione/iacopo">Iacopo De Santis</a></div>
+                    <div>Editore di Pianeta Basket, 26 anni. Sempre connesso con il mondo della palla a spicchi.</div>
+                    <a href="https://twitter.example/iacopo">IacopoDeSantis</a>
+                  </div>
+                  <p>The article conclusion should also stay after the author profile chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/author-profile",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("autore"))
+        assertFalse(result.contentMarkdown.contains("Iacopo De Santis"))
+        assertFalse(result.contentMarkdown.contains("Editore di Pianeta Basket"))
+        assertFalse(result.contentMarkdown.contains("IacopoDeSantis"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

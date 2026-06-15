@@ -104,6 +104,40 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `short semantic main beats noisy body with teaser modules`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <header>
+                    <table><tr><td><a href="/">HOME</a> <a href="/network">NETWORK</a></td><td><a href="/redazione">REDAZIONE</a></td></tr></table>
+                    <p>Lunedì 15 giugno 2026 Lunedì 15 giugno 2026</p>
+                    <table><tr><td>EUROLEAGUE</td></tr></table>
+                  </header>
+                  <div role="main" id="story">
+                    <img src="/story.jpg" alt="Story image">
+                    <p>The short article starts here with enough natural language, punctuation, and context to be selected as the reading surface. It should not lose just because the page body also contains many teaser modules after the story, especially when the focused semantic main is the only plausible article container on the page. The paragraph includes several extra descriptive words so it clears the minimum word guard for trusted semantic article containers.</p>
+                    <p>A compact second paragraph keeps the story readable while still representing a short news item with one more sentence of useful context.</p>
+                  </div>
+                  <section id="latest-news">
+                    <h2>Altre notizie</h2>
+                    <p>First unrelated teaser has enough readable text to inflate the body score without belonging to the article.</p>
+                    <p>Second unrelated teaser has enough readable text to inflate the body score without belonging to the article.</p>
+                    <p>Third unrelated teaser has enough readable text to inflate the body score without belonging to the article.</p>
+                    <p>Fourth unrelated teaser has enough readable text to inflate the body score without belonging to the article.</p>
+                    <p>Fifth unrelated teaser has enough readable text to inflate the body score without belonging to the article.</p>
+                    <p>Sixth unrelated teaser has enough readable text to inflate the body score without belonging to the article.</p>
+                  </section>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals("""[role="main"]""", detected.selectedSelector)
+    }
+
+    @Test
     fun `child article can beat parent main`() {
         val detected = MainContentDetector.detect(
             Jsoup.parse(
