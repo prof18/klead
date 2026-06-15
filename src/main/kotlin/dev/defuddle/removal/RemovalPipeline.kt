@@ -145,6 +145,14 @@ object RemovalPipeline {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing subscribe call to action")
                 continue
             }
+            if (isAuthorFollowBlock(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing author follow links")
+                continue
+            }
+            if (isTrailingRecommendationHeading(element)) {
+                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing recommendation heading")
+                continue
+            }
             if (isTrailingRecommendationBlock(element)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing recommendation block")
                 continue
@@ -274,6 +282,11 @@ object RemovalPipeline {
         return "${element.id()} ${element.className()} $attrs".lowercase()
     }
 
+    private fun isTrailingRecommendationHeading(element: Element): Boolean {
+        if (!element.normalName().matches(Regex("""h[1-6]"""))) return false
+        return RECOMMENDATION_HEADING_PATTERN.containsMatchIn(element.text().trim())
+    }
+
     private fun isTrailingRecommendationBlock(element: Element): Boolean {
         val heading = element.selectFirst("h1, h2, h3, h4, h5, h6")?.text()
             ?: element.ownText()
@@ -291,6 +304,18 @@ object RemovalPipeline {
         return linkCount >= RECOMMENDATION_MIN_LINKS ||
             articleCount >= RECOMMENDATION_MIN_ARTICLES ||
             imageCount >= RECOMMENDATION_MIN_IMAGES
+    }
+
+    private fun isAuthorFollowBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (text.length > AUTHOR_FOLLOW_MAX_LENGTH || !AUTHOR_FOLLOW_PATTERN.containsMatchIn(text)) return false
+        if (element.select("a[href]").isEmpty()) return false
+
+        val hints = partialHaystack(element)
+        return element.normalName() == "p" ||
+            "follow" in hints ||
+            "author" in hints ||
+            "social" in hints
     }
 
     private fun isTagListBlock(element: Element): Boolean {
@@ -460,6 +485,11 @@ object RemovalPipeline {
         """[data-cy="preferred-source-top"]""",
         """[data-cy="preferred-source-bottom"]""",
         """[data-cy="what-to-read-next"]""",
+        ".google-preferred-source-badge",
+        ".ad-disclaimer-container",
+        ".disclaimer-affiliate",
+        ".visitor-promo",
+        "#after_disclaimer_placement",
         ".w-article-header-comp",
         ".thumbuser",
         ".author-bio",
@@ -541,7 +571,12 @@ object RemovalPipeline {
     )
 
     private val RECOMMENDATION_HEADING_PATTERN = Regex(
-        """\b(recommended|related|more stories|more from|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b""",
+        """\b(recommended|related|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
+    private val AUTHOR_FOLLOW_PATTERN = Regex(
+        """^\s*follow\s+[\p{L}\p{N} ._'’-]{1,48}\s*:""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -601,6 +636,7 @@ object RemovalPipeline {
     private const val COMMENT_PROMPT_MAX_LENGTH = 260
     private const val MOBILE_APP_PROMO_MAX_LENGTH = 180
     private const val NEWSLETTER_SIGNUP_MAX_LENGTH = 700
+    private const val AUTHOR_FOLLOW_MAX_LENGTH = 220
     private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

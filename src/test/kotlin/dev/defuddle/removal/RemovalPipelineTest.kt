@@ -722,6 +722,49 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes post footer source follow and promo modules while preserving story`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article class="post-content">
+                  <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when publisher footer chrome is removed from the reader output.</p>
+                  <p>The story conclusion should also stay after source badges, author-follow prompts, affiliate disclaimers, and visitor promos are removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                  <h2>More on Google Pixel:</h2>
+                  <ul>
+                    <li><a href="/related-one">Related one</a></li>
+                    <li><a href="/related-two">Related two</a></li>
+                    <li><a href="/related-three">Related three</a></li>
+                  </ul>
+                  <p><em><strong>Follow Ben:</strong> <a href="/twitter">Twitter/X</a>, <a href="/threads">Threads</a>, and <a href="/instagram">Instagram</a></em></p>
+                  <div class="google-preferred-source-badge">
+                    <a href="https://google.com/preferences/source?q=https://example.com">
+                      <img src="/preferred-source-dark.png" alt="Add Example as a preferred source on Google">
+                    </a>
+                  </div>
+                  <div class="ad-disclaimer-container">
+                    <p class="disclaimer-affiliate"><em>FTC: We use income earning auto affiliate links.</em> <a href="/about">More.</a></p>
+                  </div>
+                  <div id="after_disclaimer_placement">
+                    <div class="visitor-promo" data-nosnippet="true">
+                      You’re reading Example News, day after day. Be sure to check out our homepage and follow Example on Twitter, Facebook, and LinkedIn to stay in the loop. Don’t know where to start? Check out our exclusive stories, reviews, how-tos, and subscribe to our YouTube channel.
+                    </div>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/footer-chrome",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
+        assertTrue(result.contentMarkdown.contains("The story conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("More on Google Pixel"))
+        assertFalse(result.contentMarkdown.contains("Related one"))
+        assertFalse(result.contentMarkdown.contains("Follow Ben"))
+        assertFalse(result.contentMarkdown.contains("preferred source on Google"))
+        assertFalse(result.contentMarkdown.contains("FTC: We use income earning"))
+        assertFalse(result.contentMarkdown.contains("You’re reading Example News"))
+        assertFalse(result.contentMarkdown.contains("subscribe to our YouTube channel"))
+    }
+
+    @Test
     fun `exact selectors remove category chips and author latest posts boxes while preserving story`() {
         val result = Defuddle.parseHtml(
             html = """

@@ -201,6 +201,30 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `nine to five google article dump excludes publisher footer chrome`() {
+        val fixtureName = "general--9to5google.com-2026-06-14-google-ads-tease-next-pixel-drop-with-screen-reactions-and-gemini-omni-video"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("We’re due for Google’s next Pixel Drop"))
+        assertTrue(result.contentMarkdown.contains("The Gemini Omni videos are a bit stranger"))
+        assertTrue(result.contentMarkdown.contains("It’s rather likely we’ll see more in the next few days."))
+        assertFalse(result.contentMarkdown.contains("More on Google Pixel"))
+        assertFalse(result.contentMarkdown.contains("Follow Ben"))
+        assertFalse(result.contentMarkdown.contains("preferred source on Google"))
+        assertFalse(result.contentMarkdown.contains("FTC: We use income earning auto affiliate links"))
+        assertFalse(result.contentMarkdown.contains("You’re reading 9to5Google"))
+        assertFalse(result.contentMarkdown.contains("our homepage"))
+        assertFalse(result.contentMarkdown.contains("exclusive stories"))
+        assertFalse(result.contentMarkdown.contains("subscribe to our YouTube channel"))
+        assertFalse(result.contentHtml.contains("google-preferred-source-badge"))
+        assertFalse(result.contentHtml.contains("visitor-promo"))
+    }
+
+    @Test
     fun `veneziatoday article dump excludes footer recommendations and sidebar modules`() {
         val fixtureName = "general--www.veneziatoday.it-cronaca-contratto-scaduto-sciopero-farmacie-comunali"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
