@@ -211,6 +211,46 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove mega article header chrome before article content`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article>
+                    <header class="mega-header">
+                      <div class="tags">
+                        <a href="/tag/charts/" rel="tag">charts</a>
+                        <a href="/tag/data-visualization/" rel="tag">data visualization</a>
+                      </div>
+                      <h1 class="article-title">Example title duplicated from metadata</h1>
+                      <div class="author-row">
+                        <img src="https://example.com/avatar.png" width="80" height="80">
+                        <a class="author-name" href="/author/example/">Example Author</a>
+                        <span>on</span>
+                        <time datetime="2026-06-04T13:14:49Z">Jun 4, 2026</time>
+                      </div>
+                    </header>
+                    <div class="article-content">
+                      <p>The actual article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result.</p>
+                      <p>A second paragraph keeps the selected content stable and confirms that CSS-Tricks style article headers can be removed without losing the post body.</p>
+                    </div>
+                  </article>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/mega-header",
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertFalse(lines.any { it == "charts" || it == "data visualization" || it == "on" || it == "Jun 4, 2026" })
+        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("Example Author"))
+        assertFalse(result.contentHtml.contains("mega-header"))
+        assertFalse(result.contentHtml.contains("author-row"))
+    }
+
+    @Test
     fun `content patterns remove publisher header controls and author mini bio around post content`() {
         val result = Defuddle.parseHtml(
             html = """

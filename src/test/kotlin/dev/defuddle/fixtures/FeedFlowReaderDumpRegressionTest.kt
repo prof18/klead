@@ -827,6 +827,28 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("blog-pager"))
     }
 
+    @Test
+    fun `css tricks article dump excludes duplicated mega header chrome`() {
+        val fixtureName = "general--css-tricks.com-another-stab-at-the-perfect-css-pie-chart-sans-javascript"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        assertTrue(lines.first().startsWith("Recently, [Juan Diego"))
+        assertTrue(result.contentMarkdown.contains("Citing Juan himself:"))
+        assertTrue(result.contentMarkdown.contains("Prior Art"))
+        assertFalse(lines.any { it == "charts" || it == "data visualization" || it == "on" || it == "Jun 4, 2026" })
+        assertFalse(result.contentMarkdown.contains("# Another Stab at the Perfect CSS Pie Chart"))
+        assertFalse(result.contentMarkdown.contains("Antoine Villepreux"))
+        assertFalse(result.contentHtml.contains("mega-header"))
+        assertFalse(result.contentHtml.contains("author-row"))
+        assertFalse(result.contentHtml.contains("""class="tags""""))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

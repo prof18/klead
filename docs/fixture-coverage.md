@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 37
+- FeedFlow reader-dump regression fixtures: 38
 
 ## Active Strict Fixtures
 
@@ -50,6 +50,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.entrepreneur.com-business-news-she-turned-celebrity-gossip-into-a-22-billion-company`: verifies that orphan separator wrappers and related-content card runs do not leak before or after article prose.
 - `general--fortune.com-2026-06-15-beagle-breeding-farm-wisconsin-protests-closed`: verifies that Fortune trending bars, article category eyebrows, author bio cards, and loading-skeleton latest/most-popular recirculation modules do not leak into reader Markdown.
 - `general--android-developers.googleblog.com-2026-05-apply-android-xr-developer-catalyst`: verifies that Blogger copy-to-clipboard tooltips, posted-by separators, previous/next post pagers, and orphan trailing dividers do not leak into reader Markdown.
+- `general--css-tricks.com-another-stab-at-the-perfect-css-pie-chart-sans-javascript`: verifies that CSS-Tricks mega article headers with duplicated tags, title, avatar, author, and date do not leak before article prose.
 - `general--9to5google.com-2026-06-14-google-ads-tease-next-pixel-drop-with-screen-reactions-and-gemini-omni-video`: verifies that 9to5-style related headings, author follow links, preferred-source badges, affiliate disclaimers, and visitor promos do not leak after article prose.
 - `general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier`: verifies that embedded top-comment modules do not leak while adjacent article prose is preserved.
 - `general--9to5mac.com-2026-06-13-airpods-pro-3-drop-to-their-best-price-ever-as-apple-announces-new-ios-27-features`: verifies that emphasized affiliate deal link labels are flattened and whitespace-only links do not render as empty Markdown links.

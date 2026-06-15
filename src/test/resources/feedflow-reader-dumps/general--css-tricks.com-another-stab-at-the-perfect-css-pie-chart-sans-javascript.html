@@ -1,0 +1,1564 @@
+<!doctype html>
+<html lang="en" id="top-of-site" class="js">
+
+<head>
+<title>Another Stab at the Perfect CSS Pie Chart... Sans JavaScript! | CSS-Tricks</title>
+
+  <meta charset="utf-8">
+<script>
+var gform;gform||(document.addEventListener("gform_main_scripts_loaded",function(){gform.scriptsLoaded=!0}),document.addEventListener("gform/theme/scripts_loaded",function(){gform.themeScriptsLoaded=!0}),window.addEventListener("DOMContentLoaded",function(){gform.domLoaded=!0}),gform={domLoaded:!1,scriptsLoaded:!1,themeScriptsLoaded:!1,isFormEditor:()=>"function"==typeof InitializeEditor,callIfLoaded:function(o){return!(!gform.domLoaded||!gform.scriptsLoaded||!gform.themeScriptsLoaded&&!gform.isFormEditor()||(gform.isFormEditor()&&console.warn("The use of gform.initializeOnLoaded() is deprecated in the form editor context and will be removed in Gravity Forms 3.1."),o(),0))},initializeOnLoaded:function(o){gform.callIfLoaded(o)||(document.addEventListener("gform_main_scripts_loaded",()=>{gform.scriptsLoaded=!0,gform.callIfLoaded(o)}),document.addEventListener("gform/theme/scripts_loaded",()=>{gform.themeScriptsLoaded=!0,gform.callIfLoaded(o)}),window.addEventListener("DOMContentLoaded",()=>{gform.domLoaded=!0,gform.callIfLoaded(o)}))},hooks:{action:{},filter:{}},addAction:function(o,r,e,t){gform.addHook("action",o,r,e,t)},addFilter:function(o,r,e,t){gform.addHook("filter",o,r,e,t)},doAction:function(o){gform.doHook("action",o,arguments)},applyFilters:function(o){return gform.doHook("filter",o,arguments)},removeAction:function(o,r){gform.removeHook("action",o,r)},removeFilter:function(o,r,e){gform.removeHook("filter",o,r,e)},addHook:function(o,r,e,t,n){null==gform.hooks[o][r]&&(gform.hooks[o][r]=[]);var d=gform.hooks[o][r];null==n&&(n=r+"_"+d.length),gform.hooks[o][r].push({tag:n,callable:e,priority:t=null==t?10:t})},doHook:function(r,o,e){var t;if(e=Array.prototype.slice.call(e,1),null!=gform.hooks[r][o]&&((o=gform.hooks[r][o]).sort(function(o,r){return o.priority-r.priority}),o.forEach(function(o){"function"!=typeof(t=o.callable)&&(t=window[t]),"action"==r?t.apply(null,e):e[0]=t.apply(null,e)})),"filter"==r)return e[0]},removeHook:function(o,r,t,n){var e;null!=gform.hooks[o][r]&&(e=(e=gform.hooks[o][r]).filter(function(o,r,e){return!!(null!=n&&n!=o.tag||null!=t&&t!=o.priority)}),gform.hooks[o][r]=e)}});
+</script>
+
+
+  <meta name="viewport" content="width=device-width">
+
+  
+  
+
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ff7a18">
+
+  <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="CSS-Tricks Search">
+
+  <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="https://css-tricks.com/feed/">
+
+  <link rel="preconnect" href="https://s3.buysellads.com">
+  <link rel="dns-prefetch" href="https://s3.buysellads.com">
+  <link rel="preconnect" href="https://srv.buysellads.com">
+  <link rel="dns-prefetch" href="https://srv.buysellads.com">
+  <link rel="preconnect" href="https://static.codepen.io">
+  <link rel="dns-prefetch" href="https://static.codepen.io">
+
+  
+  
+<!-- Search Engine Optimization by Rank Math - https://rankmath.com/ -->
+<meta name="description" content="We dive again into CSS Pie Charts! This time, Author Antoine Villepreux delivers semantic and flexible charts without a single line of JS."/>
+<meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large"/>
+<link rel="canonical" href="https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Another Stab at the Perfect CSS Pie Chart... Sans JavaScript! | CSS-Tricks" />
+<meta property="og:description" content="We dive again into CSS Pie Charts! This time, Author Antoine Villepreux delivers semantic and flexible charts without a single line of JS." />
+<meta property="og:url" content="https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/" />
+<meta property="og:site_name" content="CSS-Tricks" />
+<meta property="article:publisher" content="https://www.facebook.com/CSSTricks" />
+<meta property="article:tag" content="charts" />
+<meta property="article:tag" content="data visualization" />
+<meta property="article:section" content="Articles" />
+<meta property="og:updated_time" content="2026-06-04T07:15:09-06:00" />
+<meta property="og:image" content="https://i0.wp.com/css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp" />
+<meta property="og:image:secure_url" content="https://i0.wp.com/css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="600" />
+<meta property="og:image:alt" content="A circular pit chart pin three slices differentiated by different colors. Sparkle emoji surrounds the chart." />
+<meta property="og:image:type" content="image/webp" />
+<meta property="article:published_time" content="2026-06-04T07:14:49-06:00" />
+<meta property="article:modified_time" content="2026-06-04T07:15:09-06:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Another Stab at the Perfect CSS Pie Chart... Sans JavaScript! | CSS-Tricks" />
+<meta name="twitter:description" content="We dive again into CSS Pie Charts! This time, Author Antoine Villepreux delivers semantic and flexible charts without a single line of JS." />
+<meta name="twitter:site" content="@CSS" />
+<meta name="twitter:creator" content="@CSS" />
+<meta name="twitter:image" content="https://i0.wp.com/css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp" />
+<meta name="twitter:label1" content="Written by" />
+<meta name="twitter:data1" content="Antoine Villepreux" />
+<meta name="twitter:label2" content="Time to read" />
+<meta name="twitter:data2" content="11 minutes" />
+<script type="application/ld+json" class="rank-math-schema">{"@context":"https://schema.org","@graph":[{"@type":["Person","Organization"],"@id":"https://css-tricks.com/#person","name":"CSS-Tricks","sameAs":["https://www.facebook.com/CSSTricks","https://twitter.com/CSS"]},{"@type":"WebSite","@id":"https://css-tricks.com/#website","url":"https://css-tricks.com","name":"CSS-Tricks","publisher":{"@id":"https://css-tricks.com/#person"},"inLanguage":"en-US"},{"@type":"ImageObject","@id":"https://i0.wp.com/css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp?fit=1200%2C600&amp;ssl=1","url":"https://i0.wp.com/css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp?fit=1200%2C600&amp;ssl=1","width":"1200","height":"600","caption":"A circular pit chart pin three slices differentiated by different colors. Sparkle emoji surrounds the chart.","inLanguage":"en-US"},{"@type":"WebPage","@id":"https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#webpage","url":"https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/","name":"Another Stab at the Perfect CSS Pie Chart... Sans JavaScript! | CSS-Tricks","datePublished":"2026-06-04T07:14:49-06:00","dateModified":"2026-06-04T07:15:09-06:00","isPartOf":{"@id":"https://css-tricks.com/#website"},"primaryImageOfPage":{"@id":"https://i0.wp.com/css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp?fit=1200%2C600&amp;ssl=1"},"inLanguage":"en-US"},{"@type":"Person","@id":"https://css-tricks.com/author/antoinevillepreux/","name":"Antoine Villepreux","url":"https://css-tricks.com/author/antoinevillepreux/","image":{"@type":"ImageObject","@id":"https://secure.gravatar.com/avatar/97a1baab4e336485ab809f24d2dc93f7b68b361e2c5603283d4064b4cfeeeb90?s=96&amp;d=retro&amp;r=pg","url":"https://secure.gravatar.com/avatar/97a1baab4e336485ab809f24d2dc93f7b68b361e2c5603283d4064b4cfeeeb90?s=96&amp;d=retro&amp;r=pg","caption":"Antoine Villepreux","inLanguage":"en-US"},"sameAs":["https://villepreux.net"]},{"@type":"BlogPosting","headline":"Another Stab at the Perfect CSS Pie Chart... Sans JavaScript! | CSS-Tricks","datePublished":"2026-06-04T07:14:49-06:00","dateModified":"2026-06-04T07:15:09-06:00","author":{"@id":"https://css-tricks.com/author/antoinevillepreux/","name":"Antoine Villepreux"},"publisher":{"@id":"https://css-tricks.com/#person"},"description":"We dive again into CSS Pie Charts! This time, Author Antoine Villepreux delivers semantic and flexible charts without a single line of JS.","name":"Another Stab at the Perfect CSS Pie Chart... Sans JavaScript! | CSS-Tricks","@id":"https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#richSnippet","isPartOf":{"@id":"https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#webpage"},"image":{"@id":"https://i0.wp.com/css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp?fit=1200%2C600&amp;ssl=1"},"inLanguage":"en-US","mainEntityOfPage":{"@id":"https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#webpage"}}]}</script>
+<!-- /Rank Math WordPress SEO plugin -->
+
+<link rel='dns-prefetch' href='//stats.wp.com' />
+<link rel='preconnect' href='//i0.wp.com' />
+<link rel='preconnect' href='//c0.wp.com' />
+<link rel="alternate" type="application/rss+xml" title="CSS-Tricks &raquo; Another Stab at the Perfect CSS Pie Chart&#8230; Sans JavaScript! Comments Feed" href="https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/feed/" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://css-tricks.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fcss-tricks.com%2Fanother-stab-at-the-perfect-css-pie-chart-sans-javascript%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://css-tricks.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fcss-tricks.com%2Fanother-stab-at-the-perfect-css-pie-chart-sans-javascript%2F&#038;format=xml" />
+<style id="wp-img-auto-sizes-contain-inline-css">
+img:is([sizes=auto i],[sizes^="auto," i]){contain-intrinsic-size:3000px 1500px}
+/*# sourceURL=wp-img-auto-sizes-contain-inline-css */
+</style>
+<style id="classic-theme-styles-inline-css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+
+<style id="css-tricks-baseline-status-style-inline-css">
+/*!***************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/style.scss ***!
+  \***************************************************************************************************************************************************************************************************************************************/
+/**
+ * The following styles get applied both on the front of your site
+ * and in the editor.
+ *
+ * Replace them with your own styles or remove the file completely.
+ */
+baseline-status {
+  --color-text: #fff;
+  --color-outline: var(--orange);
+  background: #000;
+  border: solid 5px var(--color-outline);
+  border-radius: 8px;
+  color: var(--color-text);
+  display: block;
+  margin-block-end: var(--gap);
+  padding: calc(var(--gap) / 4);
+}
+@media (prefers-color-scheme: dark) {
+  baseline-status {
+    --color-text: #fff;
+    --color-link: var(--orange);
+  }
+}
+
+/*# sourceMappingURL=style-index.css.map*/
+/*# sourceURL=https://css-tricks.com/wp-content/plugins/baseline-status/build/style-index.css */
+</style>
+
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='learndash_quiz_front_css-css' href='//css-tricks.com/wp-content/plugins/sfwd-lms/themes/legacy/templates/learndash_quiz_front.min.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='dashicons-css' href='https://c0.wp.com/c/7.0/wp-includes/css/dashicons.min.css' media='all' />
+<link rel='stylesheet' id='learndash-css' href='//css-tricks.com/wp-content/plugins/sfwd-lms/src/assets/dist/css/styles.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='jquery-dropdown-css-css' href='//css-tricks.com/wp-content/plugins/sfwd-lms/assets/css/jquery.dropdown.min.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='learndash_lesson_video-css' href='//css-tricks.com/wp-content/plugins/sfwd-lms/themes/legacy/templates/learndash_lesson_video.min.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='learndash-admin-bar-css' href='https://css-tricks.com/wp-content/plugins/sfwd-lms/src/assets/dist/css/admin-bar/styles.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='jetpack-instant-search-css' href='https://css-tricks.com/wp-content/plugins/jetpack/jetpack_vendor/automattic/jetpack-search/build/instant-search/jp-search.chunk-main-payload.css?minify=false&#038;ver=52dbe7cc70e522fe47c0' media='all' />
+<link rel='stylesheet' id='learndash-course-grid-skin-grid-css' href='https://css-tricks.com/wp-content/plugins/sfwd-lms/includes/course-grid/templates/skins/grid/style.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='learndash-course-grid-pagination-css' href='https://css-tricks.com/wp-content/plugins/sfwd-lms/includes/course-grid/templates/pagination/style.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='learndash-course-grid-filter-css' href='https://css-tricks.com/wp-content/plugins/sfwd-lms/includes/course-grid/templates/filter/style.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='learndash-course-grid-card-grid-1-css' href='https://css-tricks.com/wp-content/plugins/sfwd-lms/includes/course-grid/templates/cards/grid-1/style.css?ver=5.1.4' media='all' />
+<link rel='stylesheet' id='css-tricks-style-css' href='https://css-tricks.com/wp-content/themes/CSS-Tricks-19/style.css?ver=17360904070013' media='all' />
+<link rel='stylesheet' id='learndash-front-css' href='//css-tricks.com/wp-content/plugins/sfwd-lms/themes/ld30/assets/css/learndash.min.css?ver=5.1.4' media='all' />
+<style id="learndash-front-inline-css">
+		.learndash-wrapper .ld-item-list .ld-item-list-item.ld-is-next,
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_questionListItem label:focus-within {
+			border-color: #ff7a18;
+		}
+
+		/*
+		.learndash-wrapper a:not(.ld-button):not(#quiz_continue_link):not(.ld-focus-menu-link):not(.btn-blue):not(#quiz_continue_link):not(.ld-js-register-account):not(#ld-focus-mode-course-heading):not(#btn-join):not(.ld-item-name):not(.ld-table-list-item-preview):not(.ld-lesson-item-preview-heading),
+		 */
+
+		.learndash-wrapper .ld-breadcrumbs a,
+		.learndash-wrapper .ld-lesson-item.ld-is-current-lesson .ld-lesson-item-preview-heading,
+		.learndash-wrapper .ld-lesson-item.ld-is-current-lesson .ld-lesson-title,
+		.learndash-wrapper .ld-primary-color-hover:hover,
+		.learndash-wrapper .ld-primary-color,
+		.learndash-wrapper .ld-primary-color-hover:hover,
+		.learndash-wrapper .ld-primary-color,
+		.learndash-wrapper .ld-tabs .ld-tabs-navigation .ld-tab.ld-active,
+		.learndash-wrapper .ld-button.ld-button-transparent,
+		.learndash-wrapper .ld-button.ld-button-reverse,
+		.learndash-wrapper .ld-icon-certificate,
+		.learndash-wrapper .ld-login-modal .ld-login-modal-login .ld-modal-heading,
+		#wpProQuiz_user_content a,
+		.learndash-wrapper .ld-item-list .ld-item-list-item a.ld-item-name:hover,
+		.learndash-wrapper .ld-focus-comments__heading-actions .ld-expand-button,
+		.learndash-wrapper .ld-focus-comments__heading a,
+		.learndash-wrapper .ld-focus-comments .comment-respond a,
+		.learndash-wrapper .ld-focus-comment .ld-comment-reply a.comment-reply-link:hover,
+		.learndash-wrapper .ld-expand-button.ld-button-alternate {
+			color: #ff7a18 !important;
+		}
+
+		.learndash-wrapper .ld-focus-comment.bypostauthor>.ld-comment-wrapper,
+		.learndash-wrapper .ld-focus-comment.role-group_leader>.ld-comment-wrapper,
+		.learndash-wrapper .ld-focus-comment.role-administrator>.ld-comment-wrapper {
+			background-color:rgba(255, 122, 24, 0.03) !important;
+		}
+
+
+		.learndash-wrapper .ld-primary-background,
+		.learndash-wrapper .ld-tabs .ld-tabs-navigation .ld-tab.ld-active:after {
+			background: #ff7a18 !important;
+		}
+
+
+
+		.learndash-wrapper .ld-course-navigation .ld-lesson-item.ld-is-current-lesson .ld-status-incomplete,
+		.learndash-wrapper .ld-focus-comment.bypostauthor:not(.ptype-sfwd-assignment) >.ld-comment-wrapper>.ld-comment-avatar img,
+		.learndash-wrapper .ld-focus-comment.role-group_leader>.ld-comment-wrapper>.ld-comment-avatar img,
+		.learndash-wrapper .ld-focus-comment.role-administrator>.ld-comment-wrapper>.ld-comment-avatar img {
+			border-color: #ff7a18 !important;
+		}
+
+
+
+		.learndash-wrapper .ld-loading::before {
+			border-top:3px solid #ff7a18 !important;
+		}
+
+		.learndash-wrapper .ld-button:hover:not([disabled]):not(.ld-button-transparent):not(.ld--ignore-inline-css),
+		#learndash-tooltips .ld-tooltip:after,
+		#learndash-tooltips .ld-tooltip,
+		.ld-tooltip:not(.ld-tooltip--modern) [role="tooltip"],
+		.learndash-wrapper .ld-primary-background,
+		.learndash-wrapper .btn-join:not(.ld--ignore-inline-css),
+		.learndash-wrapper #btn-join:not(.ld--ignore-inline-css),
+		.learndash-wrapper .ld-button:not([disabled]):not(.ld-button-reverse):not(.ld-button-transparent):not(.ld--ignore-inline-css),
+		.learndash-wrapper .ld-expand-button:not([disabled]),
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button:not([disabled]):not(.wpProQuiz_button_reShowQuestion):not(.wpProQuiz_button_restartQuiz),
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button2:not([disabled]),
+		.learndash-wrapper .ld-focus .ld-focus-sidebar .ld-course-navigation-heading,
+		.learndash-wrapper .ld-focus-comments .form-submit #submit,
+		.learndash-wrapper .ld-login-modal input[type='submit']:not([disabled]),
+		.learndash-wrapper .ld-login-modal .ld-login-modal-register:not([disabled]),
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_certificate a.btn-blue:not([disabled]),
+		.learndash-wrapper .ld-focus .ld-focus-header .ld-user-menu .ld-user-menu-items a:not([disabled]),
+		#wpProQuiz_user_content table.wp-list-table thead th,
+		#wpProQuiz_overlay_close:not([disabled]),
+		.learndash-wrapper .ld-expand-button.ld-button-alternate:not([disabled]) .ld-icon {
+			background-color: #ff7a18 !important;
+			color: #000000;
+		}
+
+		.learndash-wrapper .ld-focus .ld-focus-sidebar .ld-focus-sidebar-trigger:not([disabled]):not(:hover):not(:focus) .ld-icon {
+			background-color: #ff7a18;
+		}
+
+		.learndash-wrapper .ld-focus .ld-focus-sidebar .ld-focus-sidebar-trigger:hover .ld-icon,
+		.learndash-wrapper .ld-focus .ld-focus-sidebar .ld-focus-sidebar-trigger:focus .ld-icon {
+			border-color: #ff7a18;
+			color: #ff7a18;
+		}
+
+		.learndash-wrapper .ld-button:focus:not(.ld-button-transparent):not(.ld--ignore-inline-css),
+		.learndash-wrapper .btn-join:focus:not(.ld--ignore-inline-css),
+		.learndash-wrapper #btn-join:focus:not(.ld--ignore-inline-css),
+		.learndash-wrapper .ld-expand-button:focus,
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button:not(.wpProQuiz_button_reShowQuestion):focus:not(.wpProQuiz_button_restartQuiz),
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button2:focus,
+		.learndash-wrapper .ld-focus-comments .form-submit #submit,
+		.learndash-wrapper .ld-login-modal input[type='submit']:focus,
+		.learndash-wrapper .ld-login-modal .ld-login-modal-register:focus,
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_certificate a.btn-blue:focus {
+			opacity: 0.75; /* Replicates the hover/focus states pre-4.21.3. */
+			outline-color: #ff7a18;
+		}
+
+		.learndash-wrapper .ld-button:hover:not(.ld-button-transparent):not(.ld--ignore-inline-css),
+		.learndash-wrapper .btn-join:hover:not(.ld--ignore-inline-css),
+		.learndash-wrapper #btn-join:hover:not(.ld--ignore-inline-css),
+		.learndash-wrapper .ld-expand-button:hover,
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button:not(.wpProQuiz_button_reShowQuestion):hover:not(.wpProQuiz_button_restartQuiz),
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button2:hover,
+		.learndash-wrapper .ld-focus-comments .form-submit #submit,
+		.learndash-wrapper .ld-login-modal input[type='submit']:hover,
+		.learndash-wrapper .ld-login-modal .ld-login-modal-register:hover,
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_certificate a.btn-blue:hover {
+			background-color: #ff7a18; /* Replicates the hover/focus states pre-4.21.3. */
+			opacity: 0.85; /* Replicates the hover/focus states pre-4.21.3. */
+		}
+
+		.learndash-wrapper .ld-item-list .ld-item-search .ld-closer:focus {
+			border-color: #ff7a18;
+		}
+
+		.learndash-wrapper .ld-focus .ld-focus-header .ld-user-menu .ld-user-menu-items:before {
+			border-bottom-color: #ff7a18 !important;
+		}
+
+		.learndash-wrapper .ld-button.ld-button-transparent:hover {
+			background: transparent !important;
+		}
+
+		.learndash-wrapper .ld-button.ld-button-transparent:focus {
+			outline-color: #ff7a18;
+		}
+
+		.learndash-wrapper .ld-focus .ld-focus-header .sfwd-mark-complete .learndash_mark_complete_button:not(.ld--ignore-inline-css),
+		.learndash-wrapper .ld-focus .ld-focus-header #sfwd-mark-complete #learndash_mark_complete_button,
+		.learndash-wrapper .ld-button.ld-button-transparent,
+		.learndash-wrapper .ld-button.ld-button-alternate,
+		.learndash-wrapper .ld-expand-button.ld-button-alternate {
+			background-color:transparent !important;
+		}
+
+		.learndash-wrapper .ld-focus-header .ld-user-menu .ld-user-menu-items a,
+		.learndash-wrapper .ld-button.ld-button-reverse:hover,
+		.learndash-wrapper .ld-alert-success .ld-alert-icon.ld-icon-certificate,
+		.learndash-wrapper .ld-alert-warning .ld-button,
+		.learndash-wrapper .ld-primary-background.ld-status {
+			color:white !important;
+		}
+
+		.learndash-wrapper .ld-status.ld-status-unlocked {
+			background-color: rgba(255,122,24,0.2) !important;
+			color: #ff7a18 !important;
+		}
+
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_addToplist {
+			background-color: rgba(255,122,24,0.1) !important;
+			border: 1px solid #ff7a18 !important;
+		}
+
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_toplistTable th {
+			background: #ff7a18 !important;
+		}
+
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_toplistTrOdd {
+			background-color: rgba(255,122,24,0.1) !important;
+		}
+
+
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_time_limit .wpProQuiz_progress {
+			background-color: #ff7a18 !important;
+		}
+		
+		.learndash-wrapper #quiz_continue_link,
+		.learndash-wrapper .ld-secondary-background,
+		.learndash-wrapper .learndash_mark_complete_button:not(.ld--ignore-inline-css),
+		.learndash-wrapper #learndash_mark_complete_button,
+		.learndash-wrapper .ld-status-complete,
+		.learndash-wrapper .ld-alert-success .ld-button,
+		.learndash-wrapper .ld-alert-success .ld-alert-icon {
+			background-color: #e52e71 !important;
+		}
+
+		.learndash-wrapper #quiz_continue_link:focus,
+		.learndash-wrapper .learndash_mark_complete_button:focus:not(.ld--ignore-inline-css),
+		.learndash-wrapper #learndash_mark_complete_button:focus,
+		.learndash-wrapper .ld-alert-success .ld-button:focus {
+			outline-color: #e52e71;
+		}
+
+		.learndash-wrapper .wpProQuiz_content a#quiz_continue_link {
+			background-color: #e52e71 !important;
+		}
+
+		.learndash-wrapper .wpProQuiz_content a#quiz_continue_link:focus {
+			outline-color: #e52e71;
+		}
+
+		.learndash-wrapper .course_progress .sending_progress_bar {
+			background: #e52e71 !important;
+		}
+
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button_reShowQuestion:hover, .learndash-wrapper .wpProQuiz_content .wpProQuiz_button_restartQuiz:hover {
+			background-color: #e52e71 !important;
+			opacity: 0.75;
+		}
+
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button_reShowQuestion:focus,
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_button_restartQuiz:focus {
+			outline-color: #e52e71;
+		}
+
+		.learndash-wrapper .ld-secondary-color-hover:hover,
+		.learndash-wrapper .ld-secondary-color,
+		.learndash-wrapper .ld-focus .ld-focus-header .sfwd-mark-complete .learndash_mark_complete_button:not(.ld--ignore-inline-css),
+		.learndash-wrapper .ld-focus .ld-focus-header #sfwd-mark-complete #learndash_mark_complete_button,
+		.learndash-wrapper .ld-focus .ld-focus-header .sfwd-mark-complete:after {
+			color: #e52e71 !important;
+		}
+
+		.learndash-wrapper .ld-secondary-in-progress-icon {
+			border-left-color: #e52e71 !important;
+			border-top-color: #e52e71 !important;
+		}
+
+		.learndash-wrapper .ld-alert-success {
+			border-color: #e52e71;
+			background-color: transparent !important;
+			color: #e52e71;
+		}
+
+		
+		.learndash-wrapper .ld-alert-warning {
+			background-color:transparent;
+		}
+
+		.learndash-wrapper .ld-status-waiting,
+		.learndash-wrapper .ld-alert-warning .ld-alert-icon {
+			background-color: #000000 !important;
+		}
+
+		.learndash-wrapper .ld-tertiary-color-hover:hover,
+		.learndash-wrapper .ld-tertiary-color,
+		.learndash-wrapper .ld-alert-warning {
+			color: #000000 !important;
+		}
+
+		.learndash-wrapper .ld-tertiary-background {
+			background-color: #000000 !important;
+		}
+
+		.learndash-wrapper .ld-alert-warning {
+			border-color: #000000 !important;
+		}
+
+		.learndash-wrapper .ld-tertiary-background,
+		.learndash-wrapper .ld-alert-warning .ld-alert-icon {
+			color:white !important;
+		}
+
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_reviewQuestion li.wpProQuiz_reviewQuestionReview,
+		.learndash-wrapper .wpProQuiz_content .wpProQuiz_box li.wpProQuiz_reviewQuestionReview {
+			background-color: #000000 !important;
+		}
+
+		
+/*# sourceURL=learndash-front-inline-css */
+</style>
+<script id="jetpack_related-posts-js-extra">
+var related_posts_js_options = {"post_heading":"h4"};
+//# sourceURL=jetpack_related-posts-js-extra
+</script>
+<script id="jetpack_related-posts-js" src="https://c0.wp.com/p/jetpack/15.8/_inc/build/related-posts/related-posts.min.js"></script>
+<script id="breeze-prefetch-js-extra">
+var breeze_prefetch = {"local_url":"https://css-tricks.com","ignore_remote_prefetch":"1","ignore_list":["wp-admin","wp-login.php"]};
+//# sourceURL=breeze-prefetch-js-extra
+</script>
+<script id="breeze-prefetch-js" src="https://css-tricks.com/wp-content/plugins/breeze/assets/js/js-front-end/breeze-prefetch-links.min.js?ver=2.5.3"></script>
+<link rel="https://api.w.org/" href="https://css-tricks.com/wp-json/" /><link rel="alternate" title="JSON" type="application/json" href="https://css-tricks.com/wp-json/wp/v2/posts/393178" /><link rel='shortlink' href='https://css-tricks.com/?p=393178' />
+<!-- Better Art Direction Styles -->
+
+
+	<style>img#wpstats{display:none}</style>
+		<link rel="icon" href="https://i0.wp.com/css-tricks.com/wp-content/uploads/2021/07/star.png?fit=32%2C32&#038;ssl=1" sizes="32x32" />
+<link rel="icon" href="https://i0.wp.com/css-tricks.com/wp-content/uploads/2021/07/star.png?fit=180%2C180&#038;ssl=1" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://i0.wp.com/css-tricks.com/wp-content/uploads/2021/07/star.png?fit=180%2C180&#038;ssl=1" />
+<meta name="msapplication-TileImage" content="https://i0.wp.com/css-tricks.com/wp-content/uploads/2021/07/star.png?fit=180%2C180&#038;ssl=1" />
+
+<style id="wp-block-heading-inline-css">
+h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-background,h3:where(.wp-block-heading).has-background,h4:where(.wp-block-heading).has-background,h5:where(.wp-block-heading).has-background,h6:where(.wp-block-heading).has-background{padding:1.25em 2.375em}h1.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h1.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h2.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h2.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h3.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h3.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h4.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h4.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h5.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h5.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h6.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h6.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]){rotate:180deg}
+/*# sourceURL=https://c0.wp.com/c/7.0/wp-includes/blocks/heading/style.min.css */
+</style>
+<style id="wp-block-list-inline-css">
+ol,ul{box-sizing:border-box}:root :where(.wp-block-list.has-background){padding:1.25em 2.375em}
+/*# sourceURL=https://c0.wp.com/c/7.0/wp-includes/blocks/list/style.min.css */
+</style>
+<style id="wp-block-paragraph-inline-css">
+.is-small-text{font-size:.875em}.is-regular-text{font-size:1em}.is-large-text{font-size:2.25em}.is-larger-text{font-size:3em}.has-drop-cap:not(:focus):first-letter{float:left;font-size:8.4em;font-style:normal;font-weight:100;line-height:.68;margin:.05em .1em 0 0;text-transform:uppercase}body.rtl .has-drop-cap:not(:focus):first-letter{float:none;margin-left:.1em}p.has-drop-cap.has-background{overflow:hidden}:root :where(p.has-background){padding:1.25em 2.375em}:where(p.has-text-color:not(.has-link-color)) a{color:inherit}p.has-text-align-left[style*="writing-mode:vertical-lr"],p.has-text-align-right[style*="writing-mode:vertical-rl"]{rotate:180deg}
+/*# sourceURL=https://c0.wp.com/c/7.0/wp-includes/blocks/paragraph/style.min.css */
+</style>
+<style id="wp-block-video-inline-css">
+.wp-block-video{box-sizing:border-box}.wp-block-video video{height:auto;vertical-align:middle;width:100%}@supports (position:sticky){.wp-block-video [poster]{object-fit:cover}}.wp-block-video.aligncenter{text-align:center}.wp-block-video :where(figcaption){margin-bottom:1em;margin-top:.5em}
+/*# sourceURL=https://c0.wp.com/c/7.0/wp-includes/blocks/video/style.min.css */
+</style>
+<style id="wp-block-quote-inline-css">
+.wp-block-quote{box-sizing:border-box;overflow-wrap:break-word}.wp-block-quote.is-large:where(:not(.is-style-plain)),.wp-block-quote.is-style-large:where(:not(.is-style-plain)){margin-bottom:1em;padding:0 1em}.wp-block-quote.is-large:where(:not(.is-style-plain)) p,.wp-block-quote.is-style-large:where(:not(.is-style-plain)) p{font-size:1.5em;font-style:italic;line-height:1.6}.wp-block-quote.is-large:where(:not(.is-style-plain)) cite,.wp-block-quote.is-large:where(:not(.is-style-plain)) footer,.wp-block-quote.is-style-large:where(:not(.is-style-plain)) cite,.wp-block-quote.is-style-large:where(:not(.is-style-plain)) footer{font-size:1.125em;text-align:right}.wp-block-quote>cite{display:block}
+/*# sourceURL=https://c0.wp.com/c/7.0/wp-includes/blocks/quote/style.min.css */
+</style>
+<link rel='stylesheet' id='student-notes-style-css' href='https://css-tricks.com/wp-content/plugins/learndash-notes/dist/css/styles.css?ver=2.0.1' media='all' />
+<link rel='stylesheet' id='jquery-ui-smoothness-css' href='https://ajax.googleapis.com/ajax/libs/jqueryui//themes/smoothness/jquery-ui.min.css' media='all' />
+<link rel='stylesheet' id='font-awesome-css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css?ver=4.7.0' media='all' />
+<link rel='stylesheet' id='gravity_forms_theme_reset-css' href='https://css-tricks.com/wp-content/plugins/gravityforms/assets/css/dist/gravity-forms-theme-reset.min.css?ver=2.10.3' media='all' />
+<link rel='stylesheet' id='gravity_forms_theme_foundation-css' href='https://css-tricks.com/wp-content/plugins/gravityforms/assets/css/dist/gravity-forms-theme-foundation.min.css?ver=2.10.3' media='all' />
+<link rel='stylesheet' id='gravity_forms_theme_framework-css' href='https://css-tricks.com/wp-content/plugins/gravityforms/assets/css/dist/gravity-forms-theme-framework.min.css?ver=2.10.3' media='all' />
+<link rel='stylesheet' id='gravity_forms_orbital_theme-css' href='https://css-tricks.com/wp-content/plugins/gravityforms/assets/css/dist/gravity-forms-orbital-theme.min.css?ver=2.10.3' media='all' />
+
+</head>
+
+<body class="wp-singular post-template-default single single-post postid-393178 single-format-standard wp-theme-CSS-Tricks-19 jps-theme-CSS-Tricks-19 category-articles">
+
+  <div id="top-of-site-pixel-anchor"></div>
+
+  <header class="site-header" id="site-header">
+
+  <a id="skip-nav" class="skip-nav screen-reader-text" href="#maincontent">Skip to main content</a> 
+
+  <div class="logo">
+    <a href="/">
+      <div class="screen-reader-text">CSS-Tricks</div>
+
+      <svg class="icon-logo-star" width="35px" height="35px" viewBox="0 0 362.62 388.52" data-spin-me="false">
+  <path d="M156.58,239l-88.3,64.75c-10.59,7.06-18.84,11.77-29.43,11.77-21.19,0-38.85-18.84-38.85-40C0,257.83,14.13,244.88,27.08,239l103.6-44.74L27.08,148.34C13,142.46,0,129.51,0,111.85,0,90.66,18.84,73,40,73c10.6,0,17.66,3.53,28.25,11.77l88.3,64.75L144.81,44.74C141.28,20,157.76,0,181.31,0s40,18.84,36.5,43.56L206,149.52l88.3-64.75C304.93,76.53,313.17,73,323.77,73a39.2,39.2,0,0,1,38.85,38.85c0,18.84-12.95,30.61-27.08,36.5L231.93,194.26,335.54,239c14.13,5.88,27.08,18.83,27.08,37.67,0,21.19-18.84,38.85-40,38.85-9.42,0-17.66-4.71-28.26-11.77L206,239l11.77,104.78c3.53,24.72-12.95,44.74-36.5,44.74s-40-18.84-36.5-43.56Z" />
+</svg>
+            <svg id="Layer_1" class="icon-logo-text" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 974.89 117.95"><g id="CSS-Tricks" style="isolation:isolate"><g style="isolation:isolate"><path d="M66.18,66.2v-.33c0-32.42,24.27-59,58.81-59,17.6,0,29.16,5.21,39.1,12.87a10,10,0,0,1,3.91,8,10,10,0,0,1-16,7.82c-7.82-6.35-16.29-10.26-27.21-10.26-21.67,0-37.63,17.92-37.63,40.24v.33c0,22.32,15.8,40.4,37.63,40.4,12.06,0,20.2-3.91,28.51-10.92a9.12,9.12,0,0,1,6-2.28,9.53,9.53,0,0,1,9.45,9.29,9.63,9.63,0,0,1-3.26,7.17c-10.75,9.45-23,15.31-41.38,15.31C90.94,124.85,66.18,98.95,66.18,66.2Z" transform="translate(-66.18 -6.9)" /><path d="M188.53,110.19a9.34,9.34,0,0,1,5.54-16.94A9.29,9.29,0,0,1,199.93,95c9.45,7.49,19.55,11.73,31.93,11.73s20.2-5.87,20.2-14.34V92.1c0-8.15-4.56-12.54-25.74-17.43-24.27-5.87-38-13-38-34V40.3c0-19.55,16.29-33.07,38.94-33.07,14.34,0,25.9,3.75,36.17,10.59a9,9,0,0,1,4.4,8,9.32,9.32,0,0,1-9.45,9.29,9.69,9.69,0,0,1-5.21-1.47C244.41,27.91,235.94,25,227,25c-11.73,0-18.57,6-18.57,13.52v.33c0,8.8,5.21,12.71,27.21,17.92,24.11,5.86,36.49,14.5,36.49,33.4v.33c0,21.34-16.78,34.05-40.73,34.05A71,71,0,0,1,188.53,110.19Z" transform="translate(-66.18 -6.9)" /><path d="M291.17,110.19a9.34,9.34,0,0,1,5.54-16.94A9.29,9.29,0,0,1,302.57,95c9.45,7.49,19.55,11.73,31.93,11.73s20.2-5.87,20.2-14.34V92.1c0-8.15-4.56-12.54-25.74-17.43-24.27-5.87-38-13-38-34V40.3c0-19.55,16.29-33.07,38.94-33.07,14.34,0,25.9,3.75,36.17,10.59a9,9,0,0,1,4.4,8,9.32,9.32,0,0,1-9.45,9.29,9.69,9.69,0,0,1-5.21-1.47C347,27.91,338.57,25,329.61,25,317.88,25,311,31,311,38.5v.33c0,8.8,5.21,12.71,27.21,17.92,24.11,5.86,36.49,14.5,36.49,33.4v.33c0,21.34-16.78,34.05-40.73,34.05A71,71,0,0,1,291.17,110.19Z" transform="translate(-66.18 -6.9)" /><path d="M392,73a9.77,9.77,0,0,1,9.61-9.77h30.63a9.69,9.69,0,0,1,0,19.39H401.62A9.74,9.74,0,0,1,392,73Z" transform="translate(-66.18 -6.9)" /><path d="M478.19,27.43H450.5a9.29,9.29,0,0,1,0-18.57h75.76a9.29,9.29,0,0,1,0,18.57H498.4v86.35a10.1,10.1,0,0,1-20.2,0Z" transform="translate(-66.18 -6.9)" /><path d="M555.74,19a10,10,0,0,1,10.1-10.1h40.73c14.34,0,25.58,4.24,32.91,11.4,6,6.19,9.45,14.66,9.45,24.6v.33c0,18.25-10.59,29.33-25.9,34.05l21.83,27.53c2,2.44,3.26,4.56,3.26,7.66a9.45,9.45,0,0,1-9.61,9.29c-4.56,0-7.49-2.12-9.77-5.21L601,83.14H575.78v30.63a10,10,0,0,1-20,0Zm49.36,46.43c14.34,0,23.46-7.49,23.46-19.06V46c0-12.22-8.8-18.9-23.62-18.9H575.78V65.39Z" transform="translate(-66.18 -6.9)" /><path d="M674.67,18a10,10,0,0,1,20,0v95.8a10,10,0,0,1-20,0Z" transform="translate(-66.18 -6.9)" /><path d="M720.12,66.2v-.33c0-32.42,24.27-59,58.81-59,17.59,0,29.16,5.21,39.1,12.87a10,10,0,0,1,3.91,8,10,10,0,0,1-16,7.82c-7.82-6.35-16.29-10.26-27.21-10.26-21.67,0-37.63,17.92-37.63,40.24v.33c0,22.32,15.8,40.4,37.63,40.4,12.06,0,20.2-3.91,28.51-10.92a9.12,9.12,0,0,1,6-2.28,9.53,9.53,0,0,1,9.45,9.29,9.63,9.63,0,0,1-3.26,7.17c-10.75,9.45-23,15.31-41.38,15.31C744.89,124.85,720.12,98.95,720.12,66.2Z" transform="translate(-66.18 -6.9)" /><path d="M845.41,18a10,10,0,0,1,20,0V66.2l54.09-54.42A10.54,10.54,0,0,1,927.84,8a9.18,9.18,0,0,1,9.29,9.29,9.74,9.74,0,0,1-3.58,7.49L898,59l38.45,47.74a10.85,10.85,0,0,1,2.77,7.17,9.78,9.78,0,0,1-10.1,9.78c-3.91,0-6.35-2-8.47-4.72L884,72.23,865.44,90.15v23.62a10,10,0,0,1-20,0Z" transform="translate(-66.18 -6.9)" /><path d="M957.49,110.19A9.34,9.34,0,0,1,963,93.25,9.29,9.29,0,0,1,968.9,95c9.45,7.49,19.55,11.73,31.93,11.73s20.2-5.87,20.2-14.34V92.1c0-8.15-4.56-12.54-25.74-17.43-24.28-5.87-38-13-38-34V40.3c0-19.55,16.29-33.07,38.94-33.07,14.34,0,25.9,3.75,36.17,10.59a9,9,0,0,1,4.4,8,9.32,9.32,0,0,1-9.45,9.29,9.69,9.69,0,0,1-5.21-1.47c-8.8-5.7-17.27-8.63-26.23-8.63-11.73,0-18.57,6-18.57,13.52v.33c0,8.8,5.21,12.71,27.21,17.92,24.11,5.86,36.49,14.5,36.49,33.4v.33c0,21.34-16.78,34.05-40.73,34.05A71,71,0,0,1,957.49,110.19Z" transform="translate(-66.18 -6.9)" /></g></g></svg>    </a>
+
+    <span>Since 2007</span>
+  </div>
+
+  <div class="header-middle-area">
+
+    <nav id="main-nav" class="main-nav" role="navigation">
+	<ul id="menu-primary" class="menu"><li id="menu-item-379211" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-379211"><a href="https://css-tricks.com/category/articles/"><span>Articles</span></a></li>
+<li id="menu-item-377808" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-377808"><a href="/guides"><span>Guides</span></a></li>
+<li id="menu-item-377809" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-377809"><a href="/almanac"><span>Almanac</span></a></li>
+<li id="menu-item-379154" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-379154"><a href="https://css-tricks.com/category/links/"><span>Links</span></a></li>
+<li id="menu-item-382690" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-382690"><a href="https://css-tricks.com/picks/"><span>Picks</span></a></li>
+<li id="menu-item-394345" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-394345"><a href="https://css-tricks.com/newsletters/"><span>Newsletter</span></a></li>
+<li class="search-item"><a href="https://www.google.com/search?q=site:css-tricks.com%20layout" class="jetpack-search-filter__link"><span class="screen-reader-text">Search</span><svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.0726 10.4326C12.4801 10.4326 10.4 12.5451 10.4 15.1053C10.4 17.6978 12.5125 19.7779 15.0726 19.7779C17.6651 19.7779 19.7453 17.6654 19.7453 15.1053C19.744 12.544 17.664 10.4326 15.0726 10.4326Z" fill="white"/>
+<path d="M16.0327 0.447479C7.42401 0.447479 0.447693 7.4238 0.447693 16.0324C0.447693 24.6398 7.42401 31.6161 16.0314 31.6161C24.64 31.6161 31.6163 24.6398 31.6163 16.0324C31.6163 7.4238 24.64 0.447479 16.0327 0.447479ZM23.6163 24.0324C23.3926 24.2562 23.0401 24.385 22.6563 24.385C22.2726 24.385 21.9526 24.2575 21.6963 24.0324L18.7526 21.0887L18.4651 21.2487C17.4088 21.825 16.2576 22.145 15.0724 22.145C11.1998 22.145 8.06509 19.0087 8.06509 15.1376C8.06509 11.265 11.2013 8.13023 15.0724 8.13023C18.9451 8.13023 22.0798 11.2665 22.0798 15.1376C22.0798 16.5138 21.6961 17.8251 20.9273 18.9776L20.7348 19.2976L23.6473 22.2101C23.8711 22.4664 24.0311 22.7864 24.0311 23.1376C23.9998 23.4563 23.8723 23.7763 23.616 24.0326L23.6163 24.0324Z" fill="white"/>
+</svg>
+</a></li></ul></nav>
+  </div>
+  
+</header>
+
+  <div class="page-wrap">
+<script>
+  var articleID = 393178;
+  var articleYear = 2026;
+  var articleAuthor = "288766";
+  var articleType = "post";
+</script>
+
+<div class="articles-and-sidebar ">
+
+  <main id="post-393178">
+
+    <article>
+
+      <header class="mega-header">
+
+    <style>
+    html {
+      --featured-img: url(https://css-tricks.com/wp-content/uploads/2026/01/pie-chart.webp);
+      --bg-blend-mode: multiply;
+      background-size: 120% 2000px, 100% auto;
+    }
+  </style>
+  
+    <div class="tags">
+    <a href="https://css-tricks.com/tag/charts/" rel="tag">charts</a> <a href="https://css-tricks.com/tag/data-visualization/" rel="tag">data visualization</a>  </div>
+
+  <h1 class="article-title">
+          Another Stab at the Perfect CSS Pie Chart&#8230; Sans&nbsp;JavaScript!      </h1>
+
+      <div class="author-row">
+
+    
+          <img style="border-radius: 50%;" src="https://secure.gravatar.com/avatar/97a1baab4e336485ab809f24d2dc93f7b68b361e2c5603283d4064b4cfeeeb90?s=80&d=retro&r=pg"/>
+    
+    <div>
+      
+              
+        <a class="author-name" href="https://css-tricks.com/author/antoinevillepreux/">
+          Antoine Villepreux        </a>
+      
+        on
+              <time datetime="">
+          Jun 4, 2026        </time> 
+
+    </div>
+
+  
+</div>
+  
+</header>
+        <div class="article-sponsor">
+
+  
+      <div id="bsa-custom-01"></div>
+<script src="//m.servedby-buysellads.com/monetization.custom.js" type="text/javascript"
+></script>
+
+<script>
+	(function () {
+		if (typeof _bsa !== 'undefined' && _bsa) {
+			_bsa.init(
+				'custom',
+				'CWBD6277',
+				'placement:css-tricks.com',
+				{
+					target: '#bsa-custom-01',
+					template: `
+            <div class="bsaNativeResponsive">
+              <a
+                href="##statlink##"
+                class="bsaNativeResponsiveChild"
+                rel="sponsored noopener"
+                target="_blank"
+                title="##company## — ##tagline##"
+              >
+                <div
+                  class="bsaNativeResponsiveLogoWrap"
+                  style="background: ##backgroundColor##; padding: 5px 10px; border-radius: 8px; corner-shape: squircle;"
+                >
+                  <img
+                    class="bsaNativeResponsiveLogo"
+                    width="125"
+                    src="##logo##"
+                    alt="##company## logo"
+                    loading="lazy"
+                  />
+                </div>
+                <div class="bsaNativeResponsiveText" />
+                  <div class="bsaNativeResponsiveDetails">
+                    <span class="bsaNativeResponsiveDescription">
+                      ##description##
+                    </span>
+                  </div>
+                </div>
+                <div class="bsaNativeResponsiveButton">
+                  Ad
+                </div>
+              </a>
+            </div>
+          `,
+				}
+			);
+		}
+	})();
+</script>
+    
+</div>
+        <div class="article-content">
+
+          
+          
+<p class="wp-block-paragraph">Recently,&nbsp;<a href="https://css-tricks.com/trying-to-make-the-perfect-pie-chart-in-css/">Juan Diego Rodríguez published an excellent article</a>&nbsp;exploring how far CSS can be pushed to build a semantic and customizable pie chart while keeping JavaScript to a minimum.</p>
+
+
+
+<span id="more-393178"></span>
+
+
+
+<p class="wp-block-paragraph">Citing Juan himself:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">In this article, we&#8217;ll try making the perfect pie chart in CSS. That means avoiding as much JavaScript as possible while addressing major headaches that comes with handwriting pie charts.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">And it stated some goals that I want to go through again in order of priority:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<ul class="wp-block-list">
+<li>This must be semantic! Meaning a screen reader should be able to understand the data shown in the pie chart.</li>
+</ul>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">To my understanding, the original article&#8217;s solution reached that goal. Its semantic approach (labels in plain HTML + values as attributes reinjected into the DOM via pseudo-elements) is clean, expressive, and hopefully accessible.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<ul class="wp-block-list">
+<li>This should be HTML-customizable! Once the CSS is done, we only have to change the markup to customize the pie chart.</li>
+</ul>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">The original article reached that goal as well.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<ul class="wp-block-list">
+<li>This should keep JavaScript to a minimum! No problem with JavaScript in general, it&#8217;s just more fun this way.</li>
+</ul>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">The original article aimed to use as little JavaScript as possible, mainly for fun. I tend to disagree slightly. For me, it should not be just for fun, since&#8230;</p>
+
+
+
+<ul class="wp-block-list">
+<li>JavaScript is there to deal with states and logic, and</li>
+
+
+
+<li>CSS is there to style the markup.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">The initial &#8220;no JavaScript&#8221; constraint was meaningful to me. CSS should be powerful enough to let us style a pie chart. JavaScript should not be required. So, I decided to see whether there was a way to 100% get rid of it and, for fun, forked <a href="https://codepen.io/monknow/pen/pvbrmGL" rel="noopener">the article&#8217;s CodePen</a> during a lunch break.</p>
+
+
+
+<p class="wp-block-paragraph">I kept the original code as unchanged as possible, preserving its semantic approach and HTML-side customizability. If It Ain&#8217;t Broke, Don&#8217;t Fix It&#x2122;.</p>
+
+
+
+<p class="wp-block-paragraph">Coincidentally, this article came right after a&nbsp;<a href="https://codepen.io/villepreux/pen/NPrBEgE" rel="noopener">recent short pen of mine toying with bar charts</a>. So I was already in the mood for charts. But bar charts are far easier: each bar&#8217;s position or size does not depend on the others. A pie chart is a different beast: each slice&#8217;s position depends on the previous one. Luckily, this made it more of a fun challenge.</p>
+
+
+
+<p class="wp-block-paragraph">But before diving into my take on pie charts, let&#8217;s see how these have been approached by other web developers.</p>
+
+
+
+<h3 id="prior-art" class="wp-block-heading"><a href="#prior-art" aria-hidden="true" class="aal_anchor" id="prior-art"><svg aria-hidden="true" class="aal_svg" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Prior Art</h3>
+
+
+
+<p class="wp-block-paragraph">I read many blogs, articles, and code examples from professional front-end developers, but I am not one myself, so I am not entirely certain of my ability to identify the most relevant and up-to-date prior art&#8230; Let&#8217;s try anyway.</p>
+
+
+
+<p class="wp-block-paragraph">It is easy to find many JavaScript libraries dealing with charts. I have used them a lot in my work. However, due to our no-JavaScript constraint, we shall exclude them.</p>
+
+
+
+<p class="wp-block-paragraph">I started looking for CSS-only pie charts, and one of the first libraries that pops up is <a href="https://chartscss.org/charts" rel="noopener">Chart-CSS</a>. It advertises semantic structure, HTML tags to display data, accessibility, and raw data inside the markup. It seems to be a very good library and does not use any JavaScript.</p>
+
+
+
+<p class="wp-block-paragraph">Instead, it uses HTML tables, which, in my opinion and experience, makes total sense (most of the time, source data comes in a table). However, it does not solve the specific challenge of letting the user set only the values while having the start and end angles of each slice automatically computed. In this case, users still have to manually define them.</p>
+
+
+
+<p class="wp-block-paragraph">There are also very good articles discussing charts or data visualization in general. To name a few:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Vitaly Friedman&#8217;s&nbsp;<a href="https://www.smashingmagazine.com/2021/03/complete-guide-accessible-front-end-components/#accessible-data-visualizations" rel="noopener">&#8220;2022 Guide to Accessible Front-End Components&#8221;</a>&nbsp;is still relevant.</li>
+
+
+
+<li>Sarah L. Fossheim&nbsp;<a href="https://fossheim.io/writing/tag/dataviz/" rel="noopener">wrote extensively about data visualization accessibility</a>&nbsp;between 2020 and 2024</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">They just have one small (but very important to us) drawback. While these resources are valuable in explaining how chart accessibility should work, they do not really address easy HTML &#8220;interface&#8221; nor pure CSS implementations.</p>
+
+
+
+<h3 id="how-i-tackled-the-problem" class="wp-block-heading"><a href="#how-i-tackled-the-problem" aria-hidden="true" class="aal_anchor" id="how-i-tackled-the-problem"><svg aria-hidden="true" class="aal_svg" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How I Tackled the Problem</h3>
+
+
+
+<p class="wp-block-paragraph">If you are still reading, I assume you are at least somewhat interested in my approach. Understandably, If you just want to see the code, here it is!</p>
+
+
+
+<div class="wp-block-cp-codepen-gutenberg-embed-block cp_embed_wrapper"><iframe id="cp_embed_KwMrGGa" src="//codepen.io/anon/embed/KwMrGGa?height=550&amp;theme-id=1&amp;slug-hash=KwMrGGa&amp;default-tab=result" height="550" scrolling="no" frameborder="0" allowfullscreen allowpaymentrequest name="CodePen Embed KwMrGGa" title="CodePen Embed KwMrGGa" class="cp_embed_iframe" style="width:100%;overflow:hidden">CodePen Embed Fallback</iframe></div>
+
+
+
+<p class="wp-block-paragraph">Initially, the reason JavaScript was required was that each slice needed to know the value of the previous one. However, due to how CSS property inheritance works, a child cannot know the state of another child. Despite knowing this, I first tried to determine whether there were niche or &#8220;voodoo&#8221; techniques that would allow me to keep the original HTML markup and attribute-based approach while removing JavaScript.</p>
+
+
+
+<p class="wp-block-paragraph">I know that people like&nbsp;<a href="https://kizu.dev/" rel="noopener">Roman Komarov</a>&nbsp;can do incredible things with CSS, so I even considered exploring techniques involving property animations. But I clearly did not have the time to investigate that direction.</p>
+
+
+
+<p class="wp-block-paragraph">I returned to the core issue: because of how CSS inheritance works, children cannot know the state of their siblings. I obviously needed a &#8220;surrounding entity&#8221; to handle this.</p>
+
+
+
+<p class="wp-block-paragraph">In Juan&#8217;s post, that &#8220;entity&#8221; was JavaScript, which could loop through all children and compute the appropriate slice accumulations.</p>
+
+
+
+<pre rel="JavaScript" class="wp-block-csstricks-code-block language-javascript" data-line=""><code markup="tt">const pieChartItems = document.querySelectorAll(".pie-chart li");
+
+let accum = 0;
+
+pieChartItems.forEach((item) => {
+  item.style.setProperty("--accum", accum);
+  accum += parseFloat(item.getAttribute("data-percentage"));
+});</code></pre>
+
+
+
+<p class="wp-block-paragraph">The JavaScript code sets an&nbsp;<code>--accum</code>&nbsp;value for each slice, which holds the percentage values of all charts prior to it. Without it, we wouldn&#8217;t know where to position each slice and its corresponding label.</p>
+
+
+
+<p class="wp-block-paragraph">In HTML/CSS, that entity exists too: the classic parent element. Therefore, my solution was to move the percentage values to the parent.</p>
+
+
+
+<p class="wp-block-paragraph">First, let&#8217;s remember what the original markup for the pie chart looked like this:</p>
+
+
+
+<pre rel="HTML" class="wp-block-csstricks-code-block language-markup" data-line=""><code markup="tt">&lt;ul class="pie-chart">
+  &lt;li data-percentage-1="10">Apple&lt;/li>
+  &lt;li data-percentage-2="30">Banana&lt;/li>
+  &lt;li data-percentage-3="20">Orange&lt;/li>
+  &lt;li data-percentage-4="40">Strawberry&lt;/li>
+&lt;/ul></code></pre>
+
+
+
+<p class="wp-block-paragraph">While the version we&#8217;ll be using looks like this:</p>
+
+
+
+<pre rel="HTML" class="wp-block-csstricks-code-block language-markup" data-line=""><code markup="tt">&lt;ul class="pie-chart" data-percentage-1="10" data-percentage-2="30" data-percentage-3="20" data-percentage-4="40">
+  &lt;li>Apple&lt;/li>
+  &lt;li>Banana&lt;/li>
+  &lt;li>Orange&lt;/li>
+  &lt;li>Strawberry&lt;/li>
+&lt;/ul></code></pre>
+
+
+
+<p class="wp-block-paragraph">We&#8217;ve moved all values to the parent <code>&lt;ul&gt;</code> and given each item a dedicated name — effectively indexing them.</p>
+
+
+
+<p class="wp-block-paragraph">I had previously experimented with this kind of &#8220;indexing&#8221; CSS workaround, for example, to compensate for the lack of&nbsp;<a href="https://css-tricks.com/almanac/functions/s/sibling-index/"><code>sibling-index()</code></a>&nbsp;and&nbsp;<a href="https://css-tricks.com/almanac/functions/s/sibling-count/"><code>sibling-count()</code></a>&nbsp;functions to&nbsp;<a href="https://codepen.io/villepreux/pen/azdgZRG" rel="noopener">generate random numbers</a>. I knew this was the right direction and that the rest would follow logically on the CSS side.</p>
+
+
+
+<p class="is-style-explanation wp-block-paragraph"><strong>Spoiler:</strong>&nbsp;<code>sibling-index()</code>&nbsp;and&nbsp;<code>sibling-count()</code>&nbsp;are becoming Baseline soon!</p>
+
+
+
+
+<baseline-status class="wp-block-css-tricks-baseline-status" featureId="sibling-count"></baseline-status>
+
+
+
+<p class="wp-block-paragraph">It may look like duplication since we didn&#8217;t add anything but rather moved the attributes. However, this slight change allows us to manage all labels and values from the parent in CSS. What&#8217;s best, we still keep all attributes close together. And while you may say that this won&#8217;t scale as well, if we have data with tons of entries, then a pie chart is rarely the best choice to show it.</p>
+
+
+
+<p class="wp-block-paragraph">Optionally, we could add&nbsp;<code>data-label</code>&nbsp;attributes to the labels just to pair labels and values visually.</p>
+
+
+
+<pre rel="HTML" class="wp-block-csstricks-code-block language-markup" data-line=""><code markup="tt">&lt;ul class="pie-chart" data-percentage-1="10" data-percentage-2="30" data-percentage-3="20" data-percentage-4="40">
+  &lt;!-- Optional data-label attributes: just visual hints-->
+  &lt;li data-label-1>Apple&lt;/li>
+  &lt;li data-label-2>Banana&lt;/li>
+  &lt;li data-label-3>Orange&lt;/li>
+  &lt;li data-label-4>Strawberry&lt;/li>
+&lt;/ul></code></pre>
+
+
+
+<p class="wp-block-paragraph">Now let&#8217;s examine the CSS. The implementation requires two sets of some repetitive but straightforward CSS rules.</p>
+
+
+
+<p class="wp-block-paragraph">Firstly, we&#8217;ll need to pass down each percentage to its corresponding slice. To do so, we use Juan&#8217;s and get the&nbsp;<code>data-percentage</code>&nbsp;attributes into CSS through the upgraded&nbsp;<a href="https://developer.chrome.com/blog/advanced-attr" rel="noopener"><code>attr()</code></a>&nbsp;function. In parallel, we&#8217;ll assign them to the corresponding slice using the&nbsp;<a href="https://css-tricks.com/almanac/pseudo-selectors/n/nth-child/"><code>nth-child()</code></a>&nbsp;selector.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">.pie-chart {
+   /* We write one for each slice we think we'll need */
+  --p-100-1: attr(data-percentage-1 type(&lt;number>)); :nth-child(1) { --p-100: var(--p-100-1) }
+  --p-100-2: attr(data-percentage-2 type(&lt;number>)); :nth-child(2) { --p-100: var(--p-100-2) }
+  --p-100-3: attr(data-percentage-3 type(&lt;number>)); :nth-child(3) { --p-100: var(--p-100-3) }
+  --p-100-4: attr(data-percentage-4 type(&lt;number>)); :nth-child(4) { --p-100: var(--p-100-4) }
+   /*...*/
+}</code></pre>
+
+
+
+<p class="is-style-explanation wp-block-paragraph">For that kind of repetitive/incremental code, I keep it as a one-liner without carriage return. <abbr>IMHO</abbr> it&#8217;s a very acceptable exception to common formatting rules as it prevents typos by easing scan-ability of and also eases further iterations (e.g., adding support for more slices). But your mileage may vary.</p>
+
+
+
+<p class="wp-block-paragraph">Let&#8217;s look a little closer at what&#8217;s going on here. At the level of the whole pie, we access the percentages for each slice through their index and store them in a corresponding CSS variable, so the fourth element gets&nbsp;<code>--p-100-4</code>, the fifth element gets&nbsp;<code>--p-100-5</code>, and so on:</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">--p-100-4: attr(data-percentage-4 type(&lt;number>));</code></pre>
+
+
+
+<p class="wp-block-paragraph">Next, we pass each a&nbsp;<code>--p-100</code>&nbsp;variable that&#8217;s local to each slice.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">:nth-child(4) {
+  --p-100: var(--p-100-4);
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">We now have all these slice values accessible at two levels:</p>
+
+
+
+<ul class="wp-block-list">
+<li>On the pie, via indexed variables:&nbsp;<code>--p-100-1</code>,&nbsp;<code>--p-100-2</code>,&nbsp;<code>--p-100-3</code></li>
+
+
+
+<li>On each slice, via the&nbsp;<code>--p-100</code>&nbsp;variable</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Now, we&#8217;ll need to calculate the corresponding&nbsp;<code>--accum</code>&nbsp;value, which is the sum of the values of all previous slices. To do so, we&#8217;ll have to progressively sum each percentage after each slice, then assign the value to the slice using&nbsp;<code>nth-child()</code>&nbsp;again.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">.pie-chart {
+  /* ... */
+  --accum-1: 0;                                     :nth-child(1) { --accum: var(--accum-1) }
+  --accum-2: calc(var(--accum-1) + var(--p-100-1)); :nth-child(2) { --accum: var(--accum-2) }
+  --accum-3: calc(var(--accum-2) + var(--p-100-2)); :nth-child(3) { --accum: var(--accum-3) }
+  --accum-4: calc(var(--accum-3) + var(--p-100-3)); :nth-child(4) { --accum: var(--accum-4) }
+  /*...*/
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">Again, we first work at the pie level, where we compute one dedicated variable per slice. The first slice is a special case: there is no previous slice, so the accumulation is <code>0</code>. While in the rest, the accumulation for the slice&nbsp;<code>n</code>&nbsp;is the accumulation of the slices before&nbsp;<code>n−1</code>&nbsp;plus the value of the slice&nbsp;<code>n−1</code>.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">--accum-4: calc(var(--accum-3) + var(--p-100-3));</code></pre>
+
+
+
+<p class="wp-block-paragraph">The fourth element gets&nbsp;<code>--accum-4</code>, the fifth element gets&nbsp;<code>--accum-5</code>, and so on. Just as the percentages, at the level of each slice, we assign them to the local variable&nbsp;<code>--accum</code>.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">:nth-child(4) {
+  --accum: var(--accum-4);
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">Once again, we have all these slice accumulation values accessible at two levels:</p>
+
+
+
+<ul class="wp-block-list">
+<li>On the pie, via indexed variables:&nbsp;<code>--accum-1</code>,&nbsp;<code>--accum-2</code>,&nbsp;<code>--accum-3</code></li>
+
+
+
+<li>On each slice, via the&nbsp;<code>--accum</code>&nbsp;variable</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">I hope future native CSS features (perhaps&nbsp;<code><a href="https://css-tricks.com/functions-in-css/">@function</a></code>?) will prevent us from having to resort to such repetitive code. In the meantime, this can be simplified with a CSS preprocessor (Sass, Less).</p>
+
+
+
+<p class="wp-block-paragraph">While forking the original Pen, some questions popped out in my mind — that I did not actually explore — to keep the original code as unchanged as possible:</p>
+
+
+
+<ul class="wp-block-list">
+<li>What about using&nbsp;<code>&lt;label&gt;</code>&nbsp;and&nbsp;<code>&lt;meter&gt;</code>&nbsp;for labels and values?</li>
+
+
+
+<li>What about using a&nbsp;<code>&lt;table&gt;</code>&nbsp;(since charts are often extracted from tables with rows like <code>[label, value]</code>)?</li>
+</ul>
+
+
+
+<h3 id="note-about-accessibility" class="wp-block-heading"><a href="#note-about-accessibility" aria-hidden="true" class="aal_anchor" id="note-about-accessibility"><svg aria-hidden="true" class="aal_svg" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Note About Accessibility</h3>
+
+
+
+<p class="wp-block-paragraph">In my fork, I handled accessibility the same way Juan did, but with one slight modification: I used&nbsp;<a href="https://css-tricks.com/almanac/properties/c/counter-reset/"><code>counter-reset</code></a>&nbsp;/&nbsp;<a href="https://css-tricks.com/almanac/functions/c/counter/"><code>counter()</code></a>&nbsp;instead of&nbsp;<code>attr()</code>&nbsp;to assign the percentages to the&nbsp;<a href="https://css-tricks.com/almanac/properties/c/content/"><code>content</code></a>&nbsp;property. This should work just as good as&nbsp;<code>attr()</code>, but let&#8217;s make sure it is still screenreader-friendly:</p>
+
+
+
+<figure class="wp-block-video"><video height="1080" style="aspect-ratio: 1920 / 1080;" width="1920" controls src="https://css-tricks.com/wp-content/uploads/2026/03/screenreader.mp4" playsinline></video></figure>
+
+
+
+<p class="wp-block-paragraph">Another thing I thought of changing was the label elements inside each&nbsp;<code>&lt;li&gt;</code>. In the original article, Juan uses a&nbsp;<code>&lt;strong&gt;</code> element, while I opted for&nbsp;<code>&lt;span&gt;</code>&nbsp;instead. However, I think it may be totally acceptable to use the&nbsp;<code>&lt;label&gt;</code>&nbsp;itself. We normally think of them as being bounded inside&nbsp;<code>&lt;form&gt;</code>&nbsp;elements, but&nbsp;<a href="https://html.spec.whatwg.org/multipage/forms.html#the-label-element" rel="noopener">the spec says</a>&nbsp;that we could expect to use them in contexts &#8220;where phrasing content is expected.&#8221; So I could not find any obligation to use them only in the context of forms.</p>
+
+
+
+<h3 id="default-colors" class="wp-block-heading"><a href="#default-colors" aria-hidden="true" class="aal_anchor" id="default-colors"><svg aria-hidden="true" class="aal_svg" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Default Colors</h3>
+
+
+
+<p class="wp-block-paragraph">Juan&#8217;s article also called upon&nbsp;<a href="https://css-tricks.com/trying-to-make-the-perfect-pie-chart-in-css/#aa-thats-about-it-for-now">some improvements</a>, which I tried to address in my fork:</p>
+
+
+
+<ul class="wp-block-list">
+<li><code>data-color</code>&nbsp;can be omitted, and colors are then generated.</li>
+
+
+
+<li>Colors can be defined either on the parent or on the children (user&#8217;s choice; both are supported).</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">This translates to the next snippet for each slice:</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">.pie-chart li {
+  --color: attr(data-color type(&lt;color>));
+  --bg-color: var(--color, hsl(calc(360deg * sibling-index() / sibling-count()) 90% 40%));
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">I refrained from using&nbsp;<code>sibling-index()</code>&nbsp;and&nbsp;<code>sibling-count()</code>&nbsp;in the main part, since they aren&#8217;t Baseline (yet, but soon!), but I couldn&#8217;t hold myself back since calculating the color hue is so much fancier with them. These functions really allow some&nbsp;<a href="https://codepen.io/villepreux/pen/pvEjVdK" rel="noopener">magic</a>!</p>
+
+
+
+<p class="wp-block-paragraph">Still, here is my &#8220;CSS-only polyfill&#8221;; repetitive (yet simple) code:</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt">.pie-chart {
+  :has(:nth-child(1)) { --sibling-count: 1 } :nth-child(1) { --sibling-index: 1; }
+  :has(:nth-child(2)) { --sibling-count: 2 } :nth-child(2) { --sibling-index: 2; }
+  :has(:nth-child(3)) { --sibling-count: 3 } :nth-child(3) { --sibling-index: 3; }
+  :has(:nth-child(4)) { --sibling-count: 4 } :nth-child(4) { --sibling-index: 4; }
+  /* ... */
+}</code></pre>
+
+
+
+<h3 id="more-chart-types-" class="wp-block-heading"><a href="#more-chart-types" aria-hidden="true" class="aal_anchor" id="more-chart-types"><svg aria-hidden="true" class="aal_svg" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>More Chart Types?</h3>
+
+
+
+<p class="wp-block-paragraph">We now have a common foundation for other chart types. As a proof of concept, I implemented a bar chart mode in&nbsp;<a href="https://codepen.io/villepreux/pen/KwMrGGa?editors=0100" rel="noopener">my fork</a>.</p>
+
+
+
+<div class="wp-block-cp-codepen-gutenberg-embed-block cp_embed_wrapper"><iframe id="cp_embed_KwMrGGa" src="//codepen.io/anon/embed/KwMrGGa?height=550&amp;theme-id=1&amp;slug-hash=KwMrGGa&amp;default-tab=result" height="550" scrolling="no" frameborder="0" allowfullscreen allowpaymentrequest name="CodePen Embed KwMrGGa" title="CodePen Embed KwMrGGa" class="cp_embed_iframe" style="width:100%;overflow:hidden">CodePen Embed Fallback</iframe></div>
+
+
+
+<figure class="wp-block-video"><video height="1390" style="aspect-ratio: 2008 / 1390;" width="2008" controls src="https://css-tricks.com/wp-content/uploads/2026/03/pie-bar-charts.mov" playsinline></video></figure>
+
+
+
+<h3 id="a-web-component-" class="wp-block-heading"><a href="#a-web-component-perhaps" aria-hidden="true" class="aal_anchor" id="a-web-component-perhaps"><svg aria-hidden="true" class="aal_svg" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>A Web Component, Perhaps?</h3>
+
+
+
+<p class="wp-block-paragraph">In a way, we already have a web component here — one without JavaScript, using&nbsp;<a href="https://meyerweb.com/eric/thoughts/2023/11/01/blinded-by-the-light-dom/" rel="noopener">light DOM</a>.</p>
+
+
+
+<p class="wp-block-paragraph">And to me&nbsp;<code>&lt;pie-char attributes...&gt;</code>&nbsp;is not fundamentally different that either&nbsp;<code>&lt;div class="pie chart" attributes...&gt;</code>&nbsp;or&nbsp;<code>&lt;div pie chart attributes...&gt;</code>. I can see value in this approach when considering progressive enhancement, though.</p>
+
+
+
+<p class="wp-block-paragraph">For example, a chart that refreshes automatically and fetches live data. But that would require JavaScript — which we are deliberately avoiding today.</p>
+
+          
+        </div>
+
+    </article>
+
+  </main>
+
+      <div class="entry-unrelated sidebar">
+
+    <div id="scroll-ad-position"></div>
+
+      
+
+  <div id="sticky-sidebar-container">
+        <div id="all-modules">
+      <div id="sticky-sidebar-stuff"></div>
+      <div id="carbon-placement"></div>
+    </div>
+  </div>
+
+</div>  
+</div>
+
+<div class="related-ads-comments-wrap">
+  <div class="related-ads-comments">
+    <div class="articles-and-sidebar">
+  <div class="after-article-note article-sponsor">
+		<div id="bsa-custom-02"></div>
+    <script src="//m.servedby-buysellads.com/monetization.custom.js" type="text/javascript"
+></script>
+
+    <script>
+      (function () {
+        if (typeof _bsa !== 'undefined' && _bsa) {
+          _bsa.init(
+            'custom',
+            'CWBD6277',
+            'placement:css-tricks.com',
+            {
+              target: '#bsa-custom-02',
+              template: `
+                <div class="bsaNativeResponsive">
+                  <a
+                    href="##statlink##"
+                    class="bsaNativeResponsiveChild"
+                    rel="sponsored noopener"
+                    target="_blank"
+                    title="##company## — ##tagline##"
+                  >
+                    <div
+                      class="bsaNativeResponsiveLogoWrap"
+                      style="background: ##backgroundColor##; padding: 5px 10px; border-radius: 8px; corner-shape: squircle;"
+                    >
+                      <img
+                        class="bsaNativeResponsiveLogo"
+                        width="125"
+                        src="##logo##"
+                        alt="##company## logo"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div class="bsaNativeResponsiveText" />
+                      <div class="bsaNativeResponsiveDetails">
+                        <span class="bsaNativeResponsiveDescription">
+                          ##description##
+                        </span>
+                      </div>
+                    </div>
+                    <div class="bsaNativeResponsiveButton">
+                      Ad
+                    </div>
+                  </a>
+                </div>
+              `,
+            }
+          );
+        }
+      })();
+    </script>
+  </div>
+</div>
+
+<section class="respond-area">
+
+  
+    <h2 class="comments-title" id="comments">
+      <span>Comments</span>
+    </h2>
+
+    
+        <ol class="commentlist" id="commentlist">
+          
+  <li class="comment even thread-even depth-1" id="li-comment-1884386">
+
+    <div class="comment-wrap" id="comment-1884386">
+
+      <div class="comment-author-wrap">
+        <div class="comment-author">John30013</div> <div class="comment-time"><a href="https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#comment-1884386"><span class="screen-reader">Permalink to comment</span>#</a> <time datetime="2026-06-04T17:19:05-06:00">June 4, 2026</time></div>
+      </div>
+
+      
+      <div class="comment-content">
+
+        <p>While this is a worthy technology demonstration, I&#8217;m not sure I would call the HTML &#8220;semantic&#8221;, since:<br />
+(1) the elements used (<code>ul</code> and <code>li</code>) by themselves don&#8217;t have any semantics for &#8220;charts&#8221; or &#8220;data&#8221;, and you haven&#8217;t tried to augment them with any ARIA roles that might help (although I haven&#8217;t investigated what the appropriate rules might be); and<br />
+(2) while the <code>counter</code> solution makes the chart accessible for screen readers, it&#8217;s not clear that&#8217;s a valid solution for all assistive technologies.</p>
+<p>I think this is a really great start, but I&#8217;m wary of declaring the accessibility issue resolved.</p>
+
+      </div>
+
+      <div class="comment-actions">
+        <div class="reply">
+          <a rel="nofollow" class="comment-reply-link" href="#comment-1884386" data-commentid="1884386" data-postid="393178" data-belowelement="comment-1884386" data-respondelement="respond" data-replyto="Reply to John30013" aria-label="Reply to John30013">Reply</a>        </div>
+      </div>
+
+    </div>
+
+    
+  
+<ul class="children">
+
+  <li class="comment odd alt depth-2" id="li-comment-1884390">
+
+    <div class="comment-wrap" id="comment-1884390">
+
+      <div class="comment-author-wrap">
+        <div class="comment-author">Antoine Villepreux</div> <div class="comment-time"><a href="https://css-tricks.com/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#comment-1884390"><span class="screen-reader">Permalink to comment</span>#</a> <time datetime="2026-06-05T01:55:03-06:00">June 5, 2026</time></div>
+      </div>
+
+      
+      <div class="comment-content">
+
+        <p>Hello ! This is a fair comment.</p>
+<p>This article is more about a css technique rather than html, and, as stated, what&#8217;s presented here is &#8220;as semantic&#8221; as was the original article, not more.</p>
+<p>Regarding accessibility I&#8217;m no expert. I care about it and did my best to test it. But as for every solution found in articles demos like this, never copy/paste as is, and always do accessibility testing in your use case before going into production. Maybe a more prominent disclaimer should have been added at the end of the article as I did not meant to declare &#8220;the a11y issue resolved&#8221;.</p>
+
+      </div>
+
+      <div class="comment-actions">
+        <div class="reply">
+                  </div>
+      </div>
+
+    </div>
+
+    
+  
+</li><!-- #comment-## -->
+</ul><!-- .children -->
+</li><!-- #comment-## -->
+        </ol>
+
+      
+  
+  
+    <div class="respond">
+
+      
+        <div class="comment-form-form-area">
+
+          	<div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#respond" style="display:none;">Cancel reply</a></small></h3><form action="" method="post" id="commentform" class="comment-form"><p class="comment-notes"><span id="email-notes">Your email address will not be published.</span> <span class="required-field-message">Required fields are marked <span class="required">*</span></span></p><p class="comment-form-comment"><label for="comment">Comment <span class="required">*</span></label> <textarea id="comment" name="comment" cols="45" rows="8" maxlength="65525" required="required"></textarea></p><p class="comment-form-author"><label for="author">Name <span class="required">*</span></label> <input id="author" name="author" type="text" value="" size="30" maxlength="245" autocomplete="name" required="required" /></p>
+<p class="comment-form-email"><label for="email">Email <span class="required">*</span></label> <input id="email" name="email" type="email" value="" size="30" maxlength="100" aria-describedby="email-notes" required="required"></p>
+<p class="comment-form-url"><label for="url">Website</label> <input id="url" name="url" type="text" value="" size="30" maxlength="200" autocomplete="url" /></p>
+<p class="comment-form-cookies-consent"><input id="wp-comment-cookies-consent" name="wp-comment-cookies-consent" type="checkbox" value="yes" /> <label for="wp-comment-cookies-consent">Save my name, email, and website in this browser for the next time I comment.</label></p>
+<p class="form-submit"><input name="submit" type="submit" id="submit" class="submit" value="Post Comment" /> <input type='hidden' name='comment_post_ID' value='393178' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+</p><p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="9a80d76209" /></p>		<p class="antispam-group antispam-group-q" style="clear: both;">
+			<label>Copy and paste this code: <strong class="antspmpro-input-a">micuno</strong> <span class="required">*</span></label>
+			<input type="hidden" name="antspmpro-a" class="antispam-control antispam-control-a" value="micuno" />
+			<input type="text" name="antspmpro-q-luwele" class="antispam-control antispam-control-q" value="4.1" />
+		</p>
+		<p class="antispam-group antispam-group-e" style="display: none;">
+			<label>Leave this field empty</label>
+			<input type="text" name="antspmpro-e-email-url-website-luwele" class="antispam-control antispam-control-e" value="" />
+		</p>
+<p style="display: none !important;" class="akismet-fields-container" data-prefix="ak_"><label>&#916;<textarea name="ak_hp_textarea" cols="45" rows="8" maxlength="100"></textarea></label><input type="hidden" id="ak_js_1" name="ak_js" value="18"/><script>
+document.getElementById( "ak_js_1" ).setAttribute( "value", ( new Date() ).getTime() );
+</script>
+</p></form>	</div><!-- #respond -->
+	
+        </div>
+
+      
+    </div>
+  
+</section>          <div class="related-posts">
+  <div id='jp-relatedposts' class='jp-relatedposts' >
+	
+</div></div>      </div>
+</div>
+
+  </div>
+
+  <footer class="site-footer">
+
+    <svg class="icon-logo-star" width="35px" height="35px" viewBox="0 0 362.62 388.52" data-spin-me="false">
+  <path d="M156.58,239l-88.3,64.75c-10.59,7.06-18.84,11.77-29.43,11.77-21.19,0-38.85-18.84-38.85-40C0,257.83,14.13,244.88,27.08,239l103.6-44.74L27.08,148.34C13,142.46,0,129.51,0,111.85,0,90.66,18.84,73,40,73c10.6,0,17.66,3.53,28.25,11.77l88.3,64.75L144.81,44.74C141.28,20,157.76,0,181.31,0s40,18.84,36.5,43.56L206,149.52l88.3-64.75C304.93,76.53,313.17,73,323.77,73a39.2,39.2,0,0,1,38.85,38.85c0,18.84-12.95,30.61-27.08,36.5L231.93,194.26,335.54,239c14.13,5.88,27.08,18.83,27.08,37.67,0,21.19-18.84,38.85-40,38.85-9.42,0-17.66-4.71-28.26-11.77L206,239l11.77,104.78c3.53,24.72-12.95,44.74-36.5,44.74s-40-18.84-36.5-43.56Z" />
+</svg>
+    <div class="footer-inside">
+
+      <div class="footer-message-and-form">
+        <p class="colophon">
+          CSS-Tricks is powered by <a href="https://www.digitalocean.com/?utm_source=css-tricks.com&utm_medium=cta&utm_campaign=website_link">DigitalOcean</a>.
+        </p>
+
+        <div class="footer-form-wrap">
+  <div class="newsletter-form-content">
+    <h4>Get Curated Front-End Roundups Right in Your Inbox</h4>
+    <p>Coming back really, really soon! <a href="/newsletters">See past issues →</a></p>
+  </div>
+
+  <div id="newsletter-form" class="footer-form">
+    
+                <div class='gf_browser_unknown gform_wrapper gform-theme gform-theme--foundation gform-theme--framework gform-theme--orbital' data-form-theme='orbital' data-form-index='0' id='gform_wrapper_3' ><style>#gform_wrapper_3[data-form-index="0"].gform-theme,[data-parent-form="3_0"]{--gf-color-primary: #204ce5;--gf-color-primary-rgb: 32, 76, 229;--gf-color-primary-contrast: #fff;--gf-color-primary-contrast-rgb: 255, 255, 255;--gf-color-primary-darker: #001AB3;--gf-color-primary-lighter: #527EFF;--gf-color-secondary: #fff;--gf-color-secondary-rgb: 255, 255, 255;--gf-color-secondary-contrast: #112337;--gf-color-secondary-contrast-rgb: 17, 35, 55;--gf-color-secondary-darker: #F5F5F5;--gf-color-secondary-lighter: #FFFFFF;--gf-color-out-ctrl-light: rgba(17, 35, 55, 0.1);--gf-color-out-ctrl-light-rgb: 17, 35, 55;--gf-color-out-ctrl-light-darker: rgba(104, 110, 119, 0.35);--gf-color-out-ctrl-light-lighter: #F5F5F5;--gf-color-out-ctrl-dark: #585e6a;--gf-color-out-ctrl-dark-rgb: 88, 94, 106;--gf-color-out-ctrl-dark-darker: #112337;--gf-color-out-ctrl-dark-lighter: rgba(17, 35, 55, 0.65);--gf-color-in-ctrl: #fff;--gf-color-in-ctrl-rgb: 255, 255, 255;--gf-color-in-ctrl-contrast: #112337;--gf-color-in-ctrl-contrast-rgb: 17, 35, 55;--gf-color-in-ctrl-darker: #F5F5F5;--gf-color-in-ctrl-lighter: #FFFFFF;--gf-color-in-ctrl-primary: #204ce5;--gf-color-in-ctrl-primary-rgb: 32, 76, 229;--gf-color-in-ctrl-primary-contrast: #fff;--gf-color-in-ctrl-primary-contrast-rgb: 255, 255, 255;--gf-color-in-ctrl-primary-darker: #001AB3;--gf-color-in-ctrl-primary-lighter: #527EFF;--gf-color-in-ctrl-light: rgba(17, 35, 55, 0.1);--gf-color-in-ctrl-light-rgb: 17, 35, 55;--gf-color-in-ctrl-light-darker: rgba(104, 110, 119, 0.35);--gf-color-in-ctrl-light-lighter: #F5F5F5;--gf-color-in-ctrl-dark: #585e6a;--gf-color-in-ctrl-dark-rgb: 88, 94, 106;--gf-color-in-ctrl-dark-darker: #112337;--gf-color-in-ctrl-dark-lighter: rgba(17, 35, 55, 0.65);--gf-radius: 3px;--gf-font-size-secondary: 14px;--gf-font-size-tertiary: 13px;--gf-icon-ctrl-number: url("data:image/svg+xml,%3Csvg width='8' height='14' viewBox='0 0 8 14' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M4 0C4.26522 5.96046e-08 4.51957 0.105357 4.70711 0.292893L7.70711 3.29289C8.09763 3.68342 8.09763 4.31658 7.70711 4.70711C7.31658 5.09763 6.68342 5.09763 6.29289 4.70711L4 2.41421L1.70711 4.70711C1.31658 5.09763 0.683417 5.09763 0.292893 4.70711C-0.0976311 4.31658 -0.097631 3.68342 0.292893 3.29289L3.29289 0.292893C3.48043 0.105357 3.73478 0 4 0ZM0.292893 9.29289C0.683417 8.90237 1.31658 8.90237 1.70711 9.29289L4 11.5858L6.29289 9.29289C6.68342 8.90237 7.31658 8.90237 7.70711 9.29289C8.09763 9.68342 8.09763 10.3166 7.70711 10.7071L4.70711 13.7071C4.31658 14.0976 3.68342 14.0976 3.29289 13.7071L0.292893 10.7071C-0.0976311 10.3166 -0.0976311 9.68342 0.292893 9.29289Z' fill='rgba(17, 35, 55, 0.65)'/%3E%3C/svg%3E");--gf-icon-ctrl-select: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M0.292893 0.292893C0.683417 -0.097631 1.31658 -0.097631 1.70711 0.292893L5 3.58579L8.29289 0.292893C8.68342 -0.0976311 9.31658 -0.0976311 9.70711 0.292893C10.0976 0.683417 10.0976 1.31658 9.70711 1.70711L5.70711 5.70711C5.31658 6.09763 4.68342 6.09763 4.29289 5.70711L0.292893 1.70711C-0.0976311 1.31658 -0.0976311 0.683418 0.292893 0.292893Z' fill='rgba(17, 35, 55, 0.65)'/%3E%3C/svg%3E");--gf-icon-ctrl-search: url("data:image/svg+xml,%3Csvg width='640' height='640' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M256 128c-70.692 0-128 57.308-128 128 0 70.691 57.308 128 128 128 70.691 0 128-57.309 128-128 0-70.692-57.309-128-128-128zM64 256c0-106.039 85.961-192 192-192s192 85.961 192 192c0 41.466-13.146 79.863-35.498 111.248l154.125 154.125c12.496 12.496 12.496 32.758 0 45.254s-32.758 12.496-45.254 0L367.248 412.502C335.862 434.854 297.467 448 256 448c-106.039 0-192-85.962-192-192z' fill='rgba(17, 35, 55, 0.65)'/%3E%3C/svg%3E");--gf-label-space-y-secondary: var(--gf-label-space-y-md-secondary);--gf-ctrl-border-color: #686e77;--gf-ctrl-size: var(--gf-ctrl-size-md);--gf-ctrl-label-color-primary: #112337;--gf-ctrl-label-color-secondary: #112337;--gf-ctrl-choice-size: var(--gf-ctrl-choice-size-md);--gf-ctrl-checkbox-check-size: var(--gf-ctrl-checkbox-check-size-md);--gf-ctrl-radio-check-size: var(--gf-ctrl-radio-check-size-md);--gf-ctrl-btn-font-size: var(--gf-ctrl-btn-font-size-md);--gf-ctrl-btn-padding-x: var(--gf-ctrl-btn-padding-x-md);--gf-ctrl-btn-size: var(--gf-ctrl-btn-size-md);--gf-ctrl-btn-border-color-secondary: #686e77;--gf-ctrl-file-btn-bg-color-hover: #EBEBEB;--gf-field-img-choice-size: var(--gf-field-img-choice-size-md);--gf-field-img-choice-card-space: var(--gf-field-img-choice-card-space-md);--gf-field-img-choice-check-ind-size: var(--gf-field-img-choice-check-ind-size-md);--gf-field-img-choice-check-ind-icon-size: var(--gf-field-img-choice-check-ind-icon-size-md);--gf-field-pg-steps-number-color: rgba(17, 35, 55, 0.8);}</style><div id='gf_3' class='gform_anchor' tabindex='-1'></div><form method='post' enctype='multipart/form-data' target='gform_ajax_frame_3' id='gform_3'  action='/another-stab-at-the-perfect-css-pie-chart-sans-javascript/#gf_3' data-formid='3' novalidate>
+                        <div class='gform-body gform_body'><div id='gform_fields_3' class='gform_fields top_label form_sublabel_below description_below validation_below'><div id="field_3_1" class="gfield gfield--type-email gfield--input-type-email field_sublabel_below gfield--no-description field_description_below field_validation_below gfield_visibility_visible"  ><label class='gfield_label gform-field-label' for='input_3_1'>Email</label><div class='ginput_container ginput_container_email'>
+                            <input name='input_1' id='input_3_1' type='email' value='' class='large' tabindex='1'  placeholder='email@example.com'  aria-invalid="false"  />
+                        </div></div></div></div>
+        <div class='gform-footer gform_footer top_label'> <input type='submit' id='gform_submit_button_3' class='gform_button button' onclick='gform.submission.handleButtonClick(this);' data-submission-type='submit' value='Subscribe' tabindex='2' /> <input type='hidden' name='gform_ajax' value='form_id=3&amp;title=&amp;description=&amp;tabindex=1&amp;theme=orbital&amp;hash=db2252dcb5375128529e9f37d8a911c7' />
+            <input type='hidden' class='gform_hidden' name='gform_submission_method' data-js='gform_submission_method_3' value='iframe' />
+            <input type='hidden' class='gform_hidden' name='gform_theme' data-js='gform_theme_3' id='gform_theme_3' value='orbital' />
+            <input type='hidden' class='gform_hidden' name='gform_style_settings' data-js='gform_style_settings_3' id='gform_style_settings_3' value='' />
+            <input type='hidden' class='gform_hidden' name='is_submit_3' value='1' />
+            <input type='hidden' class='gform_hidden' name='gform_submit' value='3' />
+            
+            <input type='hidden' class='gform_hidden' name='gform_currency' data-currency='USD' value='8tPYkJQGnoVLz44Xtcl1HMtuJD8SMPQcjuPWVjFA5jR9Bg69PDGowDWbFbCfSv+NYcHuaDgPCGro7+hFBy6QIXuuByOX+zOlzFWyC9Li7bHtYhE=' />
+            <input type='hidden' class='gform_hidden' name='gform_unique_id' value='' />
+            <input type='hidden' class='gform_hidden' name='state_3' value='WyJbXSIsImYyZDBjMmI5MDlhODIxMDAxNDQ2NjdkNGQ4YWI3ZGQ0Il0=' />
+            <input type='hidden' autocomplete='off' class='gform_hidden' name='gform_target_page_number_3' id='gform_target_page_number_3' value='0' />
+            <input type='hidden' autocomplete='off' class='gform_hidden' name='gform_source_page_number_3' id='gform_source_page_number_3' value='1' />
+            <input type='hidden' name='gform_field_values' value='' />
+            
+        </div>
+                        <p style="display: none !important;" class="akismet-fields-container" data-prefix="ak_"><label>&#916;<textarea name="ak_hp_textarea" cols="45" rows="8" maxlength="100"></textarea></label><input type="hidden" id="ak_js_2" name="ak_js" value="213"/><script>
+document.getElementById( "ak_js_2" ).setAttribute( "value", ( new Date() ).getTime() );
+</script>
+</p></form>
+                        </div>
+		                <iframe style='display:none;width:0px;height:0px;' src='about:blank' name='gform_ajax_frame_3' id='gform_ajax_frame_3' title='This iframe contains the logic required to handle Ajax powered Gravity Forms.'></iframe>
+		                <script>
+gform.initializeOnLoaded( function() {gformInitSpinner( 3, 'https://css-tricks.com/wp-content/plugins/gravityforms/images/spinner.svg', false );jQuery('#gform_ajax_frame_3').on('load',function(){var contents = jQuery(this).contents().find('*').html();var is_postback = contents.indexOf('GF_AJAX_POSTBACK') >= 0;if(!is_postback){return;}var form_content = jQuery(this).contents().find('#gform_wrapper_3');var is_confirmation = jQuery(this).contents().find('#gform_confirmation_wrapper_3').length > 0;var is_redirect = contents.indexOf('gformRedirect(){') >= 0;var is_form = form_content.length > 0 && ! is_redirect && ! is_confirmation;var mt = parseInt(jQuery('html').css('margin-top'), 10) + parseInt(jQuery('body').css('margin-top'), 10) + 100;if(is_form){jQuery('#gform_wrapper_3').html(form_content.html());if(form_content.hasClass('gform_validation_error')){jQuery('#gform_wrapper_3').addClass('gform_validation_error');} else {jQuery('#gform_wrapper_3').removeClass('gform_validation_error');}setTimeout( function() { /* delay the scroll by 50 milliseconds to fix a bug in chrome */ jQuery(document).scrollTop(jQuery('#gform_wrapper_3').offset().top - mt); }, 50 );if(window['gformInitDatepicker']) {gformInitDatepicker();}if(window['gformInitPriceFields']) {gformInitPriceFields();}var current_page = jQuery('#gform_source_page_number_3').val();gformInitSpinner( 3, 'https://css-tricks.com/wp-content/plugins/gravityforms/images/spinner.svg', false );jQuery(document).trigger('gform_page_loaded', [3, current_page]);window['gf_submitting_3'] = false;}else if(!is_redirect){var confirmation_content = jQuery(this).contents().find('.GF_AJAX_POSTBACK').html();if(!confirmation_content){confirmation_content = contents;}jQuery('#gform_wrapper_3').replaceWith(confirmation_content);jQuery(document).scrollTop(jQuery('#gf_3').offset().top - mt);jQuery(document).trigger('gform_confirmation_loaded', [3]);window['gf_submitting_3'] = false;wp.a11y.speak(jQuery('#gform_confirmation_message_3').text());}else{jQuery('#gform_3').append(contents);if(window['gformRedirect']) {gformRedirect();}}jQuery(document).trigger("gform_pre_post_render", [{ formId: "3", currentPage: "current_page", abort: function() { this.preventDefault(); } }]);        if (event && event.defaultPrevented) {                return;        }        const gformWrapperDiv = document.getElementById( "gform_wrapper_3" );        if ( gformWrapperDiv ) {            const visibilitySpan = document.createElement( "span" );            visibilitySpan.id = "gform_visibility_test_3";            gformWrapperDiv.insertAdjacentElement( "afterend", visibilitySpan );        }        const visibilityTestDiv = document.getElementById( "gform_visibility_test_3" );        let postRenderFired = false;        function triggerPostRender() {            if ( postRenderFired ) {                return;            }            postRenderFired = true;            gform.core.triggerPostRenderEvents( 3, current_page );            if ( visibilityTestDiv ) {                visibilityTestDiv.parentNode.removeChild( visibilityTestDiv );            }        }        function debounce( func, wait, immediate ) {            var timeout;            return function() {                var context = this, args = arguments;                var later = function() {                    timeout = null;                    if ( !immediate ) func.apply( context, args );                };                var callNow = immediate && !timeout;                clearTimeout( timeout );                timeout = setTimeout( later, wait );                if ( callNow ) func.apply( context, args );            };        }        const debouncedTriggerPostRender = debounce( function() {            triggerPostRender();        }, 200 );        if ( visibilityTestDiv && visibilityTestDiv.offsetParent === null ) {            const observer = new MutationObserver( ( mutations ) => {                mutations.forEach( ( mutation ) => {                    if ( mutation.type === 'attributes' && visibilityTestDiv.offsetParent !== null ) {                        debouncedTriggerPostRender();                        observer.disconnect();                    }                });            });            observer.observe( document.body, {                attributes: true,                childList: false,                subtree: true,                attributeFilter: [ 'style', 'class' ],            });        } else {            triggerPostRender();        }    } );} );
+</script>
+  </div>
+</div>      </div>
+
+      <div class="link-grid">
+
+        <div>
+          <div>
+            <h5>DigitalOcean</h5>
+            <nav id="footer-nav-digitalocean" class="footer-nav" role="navigation">
+              <ul id="menu-digitalocean" class="menu"><li id="menu-item-379274" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-379274"><a href="https://www.digitalocean.com/about?utm_source=css-tricks.com&#038;utm_medium=cta&#038;utm_campaign=website_link">About DO</a></li>
+<li id="menu-item-379275" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-379275"><a href="https://www.cloudways.com/en/wordpress-hosting.php?id=1223312">Cloudways</a></li>
+<li id="menu-item-379276" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-379276"><a href="https://www.digitalocean.com/legal?utm_source=css-tricks.com&#038;utm_medium=cta&#038;utm_campaign=website_link">Legal stuff</a></li>
+<li id="menu-item-379277" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-379277"><a href="https://try.digitalocean.com/css-tricks/?utm_source=wordpress-1242695-4567563.cloudwaysapps.com&#038;utm_medium=cta&#038;utm_campaign=website_link">Get free credit!</a></li>
+</ul>              </nav>
+          </div>
+        </div>
+
+        <div>
+          <div>
+            <h5>CSS-Tricks</h5>
+            <nav id="footer-nav-csstricks" class="footer-nav" role="navigation">
+              <ul id="menu-css-tricks" class="menu"><li id="menu-item-383182" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-383182"><a href="https://css-tricks.com/contact/">Contact</a></li>
+<li id="menu-item-383181" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-383181"><a href="https://css-tricks.com/guest-writing/">Write for CSS-Tricks!</a></li>
+</ul>            </nav>
+          </div>
+        </div>
+
+        <div>
+          <div>
+            <h5>Social</h5>
+            <nav id="footer-nav-social" class="footer-nav" role="navigation">
+              <ul id="menu-social" class="menu"><li id="menu-item-379051" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-379051"><a href="https://css-tricks.com/rss-feeds/">RSS Feeds</a></li>
+<li id="menu-item-377816" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-377816"><a href="https://codepen.io/team/css-tricks">CodePen</a></li>
+<li id="menu-item-377813" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-377813"><a href="https://mastodon.social/@csstricks">Mastodon</a></li>
+<li id="menu-item-382192" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-382192"><a href="https://bsky.app/profile/css-tricks.com">Bluesky</a></li>
+</ul>            </nav>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <a href="#top-of-site" class="top-of-site-link" data-visible="false">
+      <span class="screen-reader-text">Back to Top</span>
+      <svg width="32" height="32" viewBox="0 0 100 100">
+  <path fill="white" d="m50 0c-13.262 0-25.98 5.2695-35.355 14.645s-14.645 22.094-14.645 35.355 5.2695 25.98 14.645 35.355 22.094 14.645 35.355 14.645 25.98-5.2695 35.355-14.645 14.645-22.094 14.645-35.355-5.2695-25.98-14.645-35.355-22.094-14.645-35.355-14.645zm20.832 62.5-20.832-22.457-20.625 22.457c-1.207 0.74219-2.7656 0.57812-3.7891-0.39844-1.0273-0.98047-1.2695-2.5273-0.58594-3.7695l22.918-25c0.60156-0.61328 1.4297-0.96094 2.2891-0.96094 0.86328 0 1.6914 0.34766 2.293 0.96094l22.918 25c0.88672 1.2891 0.6875 3.0352-0.47266 4.0898-1.1562 1.0508-2.9141 1.0859-4.1133 0.078125z"/>
+</svg>
+    </a>
+
+    <div id="consent-banner"></div>
+    <div id="teconsent">
+      <script async="async" src="//consent.trustarc.com/notice?domain=css-tricks.com&c=teconsent&js=nj&noticeType=bb&text=true&gtm=1" crossorigin></script>
+    </div>
+    <script>
+      var style = document.createElement('style');
+      style.innerHTML = '#teconsent {position: fixed; z-index: 1000; bottom: 0px; right: 0; font-size: 0px; height: 33px;}';
+      document.head.appendChild(style);
+    </script>
+    
+  </footer>
+
+  <script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/CSS-Tricks-19/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+
+<script type="text/javascript" id="bbp-swap-no-js-body-class">
+	document.body.className = document.body.className.replace( 'bbp-no-js', 'bbp-js' );
+</script>
+
+		<div class="jetpack-instant-search__widget-area" style="display: none">
+							<div id="jetpack-search-filters-8" class="widget jetpack-filters widget_search">			<div id="jetpack-search-filters-8-wrapper" class="jetpack-instant-search-wrapper">
+		</div></div>					</div>
+		<script type="module" src="https://css-tricks.com/wp-content/plugins/baseline-status/baseline-status.min.js?ver=1.0.8"></script><script id="jquery-js" src="https://css-tricks.com/wp-content/themes/CSS-Tricks-19/js/min/jquery-3.5.1.min.js"></script>
+<script id="antispampro-script-js-extra">
+var antispampro_vars = {"code":"micuno","input_name_suffix":"luwele"};
+//# sourceURL=antispampro-script-js-extra
+</script>
+<script id="antispampro-script-js" src="https://css-tricks.com/wp-content/plugins/anti-spam-pro/js/anti-spam-pro-4.1.js"></script>
+<script id="wp-hooks-js" src="https://c0.wp.com/c/7.0/wp-includes/js/dist/hooks.min.js"></script>
+<script id="wp-i18n-js" src="https://c0.wp.com/c/7.0/wp-includes/js/dist/i18n.min.js"></script>
+<script id="wp-i18n-js-after">
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+//# sourceURL=wp-i18n-js-after
+</script>
+<script id="wp-jp-i18n-loader-js" src="https://css-tricks.com/wp-content/plugins/jetpack/jetpack_vendor/automattic/jetpack-assets/build/i18n-loader.js?minify=true&#038;ver=5ba5dddc04be2306aaf0"></script>
+<script id="wp-jp-i18n-loader-js-after">
+wp.jpI18nLoader.state = {"baseUrl":"https://css-tricks.com/wp-content/languages/","locale":"en_US","domainMap":{"jetpack-admin-ui":"plugins/jetpack","jetpack-assets":"plugins/jetpack","jetpack-boost-core":"plugins/jetpack","jetpack-boost-speed-score":"plugins/jetpack","jetpack-config":"plugins/jetpack","jetpack-connection":"plugins/jetpack","jetpack-explat":"plugins/jetpack","jetpack-ip":"plugins/jetpack","jetpack-jitm":"plugins/jetpack","jetpack-licensing":"plugins/jetpack","jetpack-my-jetpack":"plugins/jetpack","jetpack-password-checker":"plugins/jetpack","jetpack-plugins-installer":"plugins/jetpack","jetpack-protect-models":"plugins/jetpack","jetpack-protect-status":"plugins/jetpack","jetpack-search-pkg":"plugins/jetpack","jetpack-stats":"plugins/jetpack","jetpack-sync":"plugins/jetpack","jetpack-account-protection":"plugins/jetpack","jetpack-activity-log":"plugins/jetpack","jetpack-backup-pkg":"plugins/jetpack","jetpack-blaze":"plugins/jetpack","jetpack-block-delimiter":"plugins/jetpack","jetpack-classic-theme-helper":"plugins/jetpack","jetpack-compat":"plugins/jetpack","jetpack-external-connections":"plugins/jetpack","jetpack-external-media":"plugins/jetpack","jetpack-forms":"plugins/jetpack","jetpack-image-cdn":"plugins/jetpack","jetpack-import":"plugins/jetpack","jetpack-jwt":"plugins/jetpack","jetpack-masterbar":"plugins/jetpack","jetpack-newsletter":"plugins/jetpack","jetpack-paypal-payments":"plugins/jetpack","jetpack-post-list":"plugins/jetpack","jetpack-post-media":"plugins/jetpack","jetpack-publicize-pkg":"plugins/jetpack","jetpack-stats-admin":"plugins/jetpack","jetpack-subscribers-dashboard":"plugins/jetpack","jetpack-videopress-pkg":"plugins/jetpack","jetpack-waf":"plugins/jetpack","jetpack-wp-abilities":"plugins/jetpack","jetpack-wp-build-polyfills":"plugins/jetpack","woocommerce-analytics":"plugins/jetpack"},"domainPaths":{"jetpack-admin-ui":"jetpack_vendor/automattic/jetpack-admin-ui/","jetpack-assets":"jetpack_vendor/automattic/jetpack-assets/","jetpack-boost-core":"jetpack_vendor/automattic/jetpack-boost-core/","jetpack-boost-speed-score":"jetpack_vendor/automattic/jetpack-boost-speed-score/","jetpack-config":"jetpack_vendor/automattic/jetpack-config/","jetpack-connection":"jetpack_vendor/automattic/jetpack-connection/","jetpack-explat":"jetpack_vendor/automattic/jetpack-explat/","jetpack-ip":"jetpack_vendor/automattic/jetpack-ip/","jetpack-jitm":"jetpack_vendor/automattic/jetpack-jitm/","jetpack-licensing":"jetpack_vendor/automattic/jetpack-licensing/","jetpack-my-jetpack":"jetpack_vendor/automattic/jetpack-my-jetpack/","jetpack-password-checker":"jetpack_vendor/automattic/jetpack-password-checker/","jetpack-plugins-installer":"jetpack_vendor/automattic/jetpack-plugins-installer/","jetpack-protect-models":"jetpack_vendor/automattic/jetpack-protect-models/","jetpack-protect-status":"jetpack_vendor/automattic/jetpack-protect-status/","jetpack-search-pkg":"jetpack_vendor/automattic/jetpack-search/","jetpack-stats":"jetpack_vendor/automattic/jetpack-stats/","jetpack-sync":"jetpack_vendor/automattic/jetpack-sync/","jetpack-account-protection":"jetpack_vendor/automattic/jetpack-account-protection/","jetpack-activity-log":"jetpack_vendor/automattic/jetpack-activity-log/","jetpack-backup-pkg":"jetpack_vendor/automattic/jetpack-backup/","jetpack-blaze":"jetpack_vendor/automattic/jetpack-blaze/","jetpack-block-delimiter":"jetpack_vendor/automattic/block-delimiter/","jetpack-classic-theme-helper":"jetpack_vendor/automattic/jetpack-classic-theme-helper/","jetpack-compat":"jetpack_vendor/automattic/jetpack-compat/","jetpack-external-connections":"jetpack_vendor/automattic/jetpack-external-connections/","jetpack-external-media":"jetpack_vendor/automattic/jetpack-external-media/","jetpack-forms":"jetpack_vendor/automattic/jetpack-forms/","jetpack-image-cdn":"jetpack_vendor/automattic/jetpack-image-cdn/","jetpack-import":"jetpack_vendor/automattic/jetpack-import/","jetpack-jwt":"jetpack_vendor/automattic/jetpack-jwt/","jetpack-masterbar":"jetpack_vendor/automattic/jetpack-masterbar/","jetpack-newsletter":"jetpack_vendor/automattic/jetpack-newsletter/","jetpack-paypal-payments":"jetpack_vendor/automattic/jetpack-paypal-payments/","jetpack-post-list":"jetpack_vendor/automattic/jetpack-post-list/","jetpack-post-media":"jetpack_vendor/automattic/jetpack-post-media/","jetpack-publicize-pkg":"jetpack_vendor/automattic/jetpack-publicize/","jetpack-stats-admin":"jetpack_vendor/automattic/jetpack-stats-admin/","jetpack-subscribers-dashboard":"jetpack_vendor/automattic/jetpack-subscribers-dashboard/","jetpack-videopress-pkg":"jetpack_vendor/automattic/jetpack-videopress/","jetpack-waf":"jetpack_vendor/automattic/jetpack-waf/","jetpack-wp-abilities":"jetpack_vendor/automattic/jetpack-wp-abilities/","jetpack-wp-build-polyfills":"jetpack_vendor/automattic/jetpack-wp-build-polyfills/","woocommerce-analytics":"jetpack_vendor/automattic/woocommerce-analytics/"}};
+//# sourceURL=wp-jp-i18n-loader-js-after
+</script>
+<script id="wp-polyfill-js" src="https://c0.wp.com/c/7.0/wp-includes/js/dist/vendor/wp-polyfill.min.js"></script>
+<script id="wp-url-js" src="https://c0.wp.com/c/7.0/wp-includes/js/dist/url.min.js"></script>
+<script id="jetpack-instant-search-js-before">
+var JetpackInstantSearchOptions={"overlayOptions":{"colorTheme":"dark","enableInfScroll":false,"enableFilteringOpensOverlay":true,"enablePostDate":true,"enableProductPrice":true,"enableSort":true,"highlightColor":"#f4af38","overlayTrigger":"immediate","resultFormat":"expanded","showPoweredBy":true,"defaultSort":"relevance","excludedPostTypes":["attachment"],"fallbackImageUrl":"","enableFallbackImage":false},"homeUrl":"https://css-tricks.com","locale":"en-US","postsPerPage":9,"siteId":45537868,"postTypes":{"post":{"singular_name":"Post","name":"Posts"},"page":{"singular_name":"Page","name":"Pages"},"attachment":{"singular_name":"Media","name":"Media"},"sfwd-lessons":{"singular_name":"Module","name":"Modules"},"groups":{"singular_name":"Group","name":"Groups"},"guides":{"singular_name":"Guide","name":"Guides"},"newsletters":{"singular_name":"Newsletter","name":"Newsletters"},"chapters":{"singular_name":"Chapter","name":"Chapters"},"rm_content_editor":{"singular_name":"RM Content Editor","name":"RM Content Editor"}},"webpackPublicPath":"https://css-tricks.com/wp-content/plugins/jetpack/jetpack_vendor/automattic/jetpack-search/build/instant-search/","isPhotonEnabled":true,"isFreePlan":false,"apiRoot":"https://css-tricks.com/wp-json/","apiNonce":"d9e6f1abd3","isPrivateSite":false,"isWpcom":false,"hasOverlayWidgets":true,"widgets":[{"filters":[{"name":"Post Types","type":"post_type","count":5,"widget_id":"jetpack-search-filters-8","filter_id":"post_type_0"},{"name":"Topic Tags","type":"taxonomy","taxonomy":"topic-tag","count":5,"widget_id":"jetpack-search-filters-8","filter_id":"taxonomy_1"},{"name":"Gallery Tags","type":"taxonomy","taxonomy":"gallerytags","count":5,"widget_id":"jetpack-search-filters-8","filter_id":"taxonomy_2"},{"name":"Categories","type":"taxonomy","taxonomy":"category","count":5,"widget_id":"jetpack-search-filters-8","filter_id":"taxonomy_3"},{"name":"Tags","type":"taxonomy","taxonomy":"post_tag","count":5,"widget_id":"jetpack-search-filters-8","filter_id":"taxonomy_4"},{"name":"Year","type":"date_histogram","count":5,"field":"post_date","interval":"year","widget_id":"jetpack-search-filters-8","filter_id":"date_histogram_5"}],"widget_id":"jetpack-search-filters-8"}],"widgetsOutsideOverlay":[],"hasNonSearchWidgets":false,"preventTrackingCookiesReset":false,"disableTracking":false,"adminQueryFilter":{"bool":{"should":[{"term":{"post_type":"post"}},{"term":{"post_type":"page"}},{"term":{"post_type":"newsletters"}},{"term":{"post_type":"chapters"}}]}}};
+//# sourceURL=jetpack-instant-search-js-before
+</script>
+<script id="jetpack-instant-search-js" src="https://css-tricks.com/wp-content/plugins/jetpack/jetpack_vendor/automattic/jetpack-search/build/instant-search/jp-search.js?minify=false&#038;ver=52dbe7cc70e522fe47c0"></script>
+<script id="jp-tracks-js" src="//stats.wp.com/w.js?ver=202624"></script>
+<script id="learndash-course-grid-skin-grid-js" src="https://css-tricks.com/wp-content/plugins/sfwd-lms/includes/course-grid/templates/skins/grid/script.js?ver=5.1.4"></script>
+<script id="learndash-js-extra">
+var LearnDash_Course_Grid = {"ajaxurl":"https://css-tricks.com/wp-admin/admin-ajax.php","nonce":{"load_posts":"674b833983"}};
+//# sourceURL=learndash-js-extra
+</script>
+<script id="learndash-js" src="https://css-tricks.com/wp-content/plugins/sfwd-lms/includes/course-grid/assets/js/script.js?ver=5.1.4"></script>
+<script id="jetpack-live-comment-markdown-js-extra">
+var markdownify = {"ajax_url":"/wp-admin/admin-ajax.php","nonce":"383ea79fe6"};
+//# sourceURL=jetpack-live-comment-markdown-js-extra
+</script>
+<script id="jetpack-live-comment-markdown-js" src="https://css-tricks.com/wp-content/plugins/jetpack-markdown-live-preview-comments/js/markdownify.js?ver=1"></script>
+<script id="my-comment-reply-js" src="https://css-tricks.com/wp-content/themes/CSS-Tricks-19/js/min/comment-reply.min.js?ver=1.1"></script>
+<script id="learndash-main-ns-extra">
+window.learndash = window.learndash || {};
+window.learndash.global = Object.assign(window.learndash.global || {}, {"ajaxurl":"https:\/\/css-tricks.com\/wp-admin\/admin-ajax.php","scrollOffset":0});
+</script><script id="learndash-main-js" src="https://css-tricks.com/wp-content/plugins/sfwd-lms/src/assets/dist/js/main.js?ver=5.1.4"></script>
+<script id="learndash-breakpoints-ns-extra">
+window.learndash = window.learndash || {};
+window.learndash.views = window.learndash.views || {};
+window.learndash.views.breakpoints = Object.assign(window.learndash.views.breakpoints || {}, {"list":{"mobile":375,"tablet":420,"extra-small":600,"small":720,"medium":960,"large":1240,"wide":1440}});
+</script><script id="learndash-breakpoints-js" src="https://css-tricks.com/wp-content/plugins/sfwd-lms/src/assets/dist/js/breakpoints.js?ver=5.1.4"></script>
+<script id="learndash-front-js-extra">
+var ldVars = {"postID":"393178","videoReqMsg":"You must watch the video before accessing this content","ajaxurl":"https://css-tricks.com/wp-admin/admin-ajax.php"};
+//# sourceURL=learndash-front-js-extra
+</script>
+<script id="learndash-front-js" src="//css-tricks.com/wp-content/plugins/sfwd-lms/themes/ld30/assets/js/learndash.js?ver=5.1.4"></script>
+<script id="jetpack-stats-js-before">
+_stq = window._stq || [];
+_stq.push([ "view", {"v":"ext","blog":"45537868","post":"393178","tz":"-6","srv":"css-tricks.com","j":"1:15.8"} ]);
+_stq.push([ "clickTrackerInit", "45537868", "393178" ]);
+//# sourceURL=jetpack-stats-js-before
+</script>
+<script data-wp-strategy="defer" defer id="jetpack-stats-js" src="https://stats.wp.com/e-202624.js"></script>
+<script id="jquery-ui-core-js" src="https://c0.wp.com/c/7.0/wp-includes/js/jquery/ui/core.min.js"></script>
+<script id="jquery-ui-accordion-js" src="https://c0.wp.com/c/7.0/wp-includes/js/jquery/ui/accordion.min.js"></script>
+<script id="jquery-effects-core-js" src="https://c0.wp.com/c/7.0/wp-includes/js/jquery/ui/effect.min.js"></script>
+<script id="jquery-effects-shake-js" src="https://c0.wp.com/c/7.0/wp-includes/js/jquery/ui/effect-shake.min.js"></script>
+<script id="jquery-ui-mouse-js" src="https://c0.wp.com/c/7.0/wp-includes/js/jquery/ui/mouse.min.js"></script>
+<script id="jquery-touch-punch-js" src="https://c0.wp.com/c/7.0/wp-includes/js/jquery/jquery.ui.touch-punch.js"></script>
+<script id="LEARNDASH_NOTES_URL_js_j-js" src="https://css-tricks.com/wp-content/plugins/learndash-notes/dist/js/scripts.js?ver=2.0.1"></script>
+<script id="LEARNDASH_NOTES_ajax_js-js-extra">
+var sn_object = {"ajax_url":"https://css-tricks.com/wp-admin/admin-ajax.php"};
+//# sourceURL=LEARNDASH_NOTES_ajax_js-js-extra
+</script>
+<script id="LEARNDASH_NOTES_ajax_js-js" src="https://css-tricks.com/wp-content/plugins/learndash-notes/dist/js/scripts-ajax.js?ver=2.0.1"></script>
+<script data-wp-strategy="defer" defer id="css-tricks-baseline-status-view-script-js" src="https://css-tricks.com/wp-content/plugins/baseline-status/build/view.js?ver=d39f06e80286cd3e6e42"></script>
+<script defer id="akismet-frontend-js" src="https://css-tricks.com/wp-content/plugins/akismet/_inc/akismet-frontend.js?ver=1777939266"></script>
+<script id="wp-dom-ready-js" src="https://c0.wp.com/c/7.0/wp-includes/js/dist/dom-ready.min.js"></script>
+<script id="wp-a11y-js" src="https://c0.wp.com/c/7.0/wp-includes/js/dist/a11y.min.js"></script>
+<script id="gform_json-js" defer='defer' src="https://css-tricks.com/wp-content/plugins/gravityforms/js/jquery.json.min.js?ver=2.10.3"></script>
+<script id="gform_gravityforms-js-extra">
+var gform_i18n = {"datepicker":{"days":{"monday":"Mo","tuesday":"Tu","wednesday":"We","thursday":"Th","friday":"Fr","saturday":"Sa","sunday":"Su"},"months":{"january":"January","february":"February","march":"March","april":"April","may":"May","june":"June","july":"July","august":"August","september":"September","october":"October","november":"November","december":"December"},"firstDay":0,"iconText":"Select date"}};
+var gf_legacy_multi = [];
+var gform_gravityforms = {"strings":{"invalid_file_extension":"This type of file is not allowed. Must be one of the following:","delete_file":"Delete this file","in_progress":"in progress","file_exceeds_limit":"File exceeds size limit","illegal_extension":"This type of file is not allowed.","max_reached":"Maximum number of files reached","unknown_error":"There was a problem while saving the file on the server","currently_uploading":"Please wait for the uploading to complete","cancel":"Cancel","cancel_upload":"Cancel this upload","cancelled":"Cancelled","error":"Error","message":"Message"},"vars":{"images_url":"https://css-tricks.com/wp-content/plugins/gravityforms/images"}};
+var gf_global = {"gf_currency_config":{"name":"U.S. Dollar","symbol_left":"$","symbol_right":"","symbol_padding":"","thousand_separator":",","decimal_separator":".","decimals":2,"code":"USD"},"base_url":"https://css-tricks.com/wp-content/plugins/gravityforms","number_formats":[],"spinnerUrl":"https://css-tricks.com/wp-content/plugins/gravityforms/images/spinner.svg","version_hash":"2594cd3bab485712286f4df0bfbcdb70","strings":{"newRowAdded":"New row added.","rowRemoved":"Row removed","formSaved":"The form has been saved.  The content contains the link to return and complete the form."}};
+//# sourceURL=gform_gravityforms-js-extra
+</script>
+<script id="gform_gravityforms-js" defer='defer' src="https://css-tricks.com/wp-content/plugins/gravityforms/js/gravityforms.min.js?ver=2.10.3"></script>
+<script id="gform_placeholder-js" defer='defer' src="https://css-tricks.com/wp-content/plugins/gravityforms/js/placeholders.jquery.min.js?ver=2.10.3"></script>
+<script id="gform_gravityforms_utils-js" defer='defer' src="https://css-tricks.com/wp-content/plugins/gravityforms/assets/js/dist/utils.min.js?ver=3f278756f0a3032bed328ff6a9f6c01d"></script>
+<script id="gform_gravityforms_theme_vendors-js" defer='defer' src="https://css-tricks.com/wp-content/plugins/gravityforms/assets/js/dist/vendor-theme.min.js?ver=7c651d0ba638ce98b9c65141edddd567"></script>
+<script id="gform_gravityforms_theme-js-extra">
+var gform_theme_config = {"common":{"form":{"honeypot":{"version_hash":"2594cd3bab485712286f4df0bfbcdb70"},"ajax":{"ajaxurl":"https://css-tricks.com/wp-admin/admin-ajax.php","ajax_submission_nonce":"2fd5a6c2c0","i18n":{"step_announcement":"Step %1$s of %2$s, %3$s","unknown_error":"There was an unknown error processing your request. Please try again.","error_403":"The request was blocked (403 error) for unknown security reasons. Remove any code-like text (scripts or DB queries) and try again."}}}},"hmr_dev":"","public_path":"https://css-tricks.com/wp-content/plugins/gravityforms/assets/js/dist/","config_nonce":"67547dce80"};
+//# sourceURL=gform_gravityforms_theme-js-extra
+</script>
+<script id="gform_gravityforms_theme-js" defer='defer' src="https://css-tricks.com/wp-content/plugins/gravityforms/assets/js/dist/scripts-theme.min.js?ver=301fdc9aa6144168f3b854c4c2c8f6d3"></script>
+<script type="application/json" fncls="fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99">
+	{"f":"3826c2c3b8144aa3b4e30456ed63f322","s":"_393178","sandbox":false}</script>
+
+<script>let commentForm = document.querySelector("#commentform, #ast-commentform, #fl-comment-form, #ht-commentform");document.onscroll = function () {commentForm.action = "/wp-comments-post.php?6a7cbfef58e82ba39ae75385078a86d5";};</script>
+<script>
+gform.initializeOnLoaded( function() { jQuery(document).on('gform_post_render', function(event, formId, currentPage){if(formId == 3) {if(typeof Placeholders != 'undefined'){
+                        Placeholders.enable();
+                    }} } );jQuery(document).on('gform_post_conditional_logic', function(event, formId, fields, isInit){} ) } );
+</script>
+<script>
+gform.initializeOnLoaded( function() {jQuery(document).trigger("gform_pre_post_render", [{ formId: "3", currentPage: "1", abort: function() { this.preventDefault(); } }]);        if (event && event.defaultPrevented) {                return;        }        const gformWrapperDiv = document.getElementById( "gform_wrapper_3" );        if ( gformWrapperDiv ) {            const visibilitySpan = document.createElement( "span" );            visibilitySpan.id = "gform_visibility_test_3";            gformWrapperDiv.insertAdjacentElement( "afterend", visibilitySpan );        }        const visibilityTestDiv = document.getElementById( "gform_visibility_test_3" );        let postRenderFired = false;        function triggerPostRender() {            if ( postRenderFired ) {                return;            }            postRenderFired = true;            gform.core.triggerPostRenderEvents( 3, 1 );            if ( visibilityTestDiv ) {                visibilityTestDiv.parentNode.removeChild( visibilityTestDiv );            }        }        function debounce( func, wait, immediate ) {            var timeout;            return function() {                var context = this, args = arguments;                var later = function() {                    timeout = null;                    if ( !immediate ) func.apply( context, args );                };                var callNow = immediate && !timeout;                clearTimeout( timeout );                timeout = setTimeout( later, wait );                if ( callNow ) func.apply( context, args );            };        }        const debouncedTriggerPostRender = debounce( function() {            triggerPostRender();        }, 200 );        if ( visibilityTestDiv && visibilityTestDiv.offsetParent === null ) {            const observer = new MutationObserver( ( mutations ) => {                mutations.forEach( ( mutation ) => {                    if ( mutation.type === 'attributes' && visibilityTestDiv.offsetParent !== null ) {                        debouncedTriggerPostRender();                        observer.disconnect();                    }                });            });            observer.observe( document.body, {                attributes: true,                childList: false,                subtree: true,                attributeFilter: [ 'style', 'class' ],            });        } else {            triggerPostRender();        }    } );
+</script>
+
+  
+<script src="https://css-tricks.com/wp-content/themes/CSS-Tricks-19/js/min/global-concat.min.js?cache_bust=1780515917112"></script>
+
+
+
+
+
+<script>
+    window.addEventListener("load", () => {
+        const consent = truste.cma.callApi("getGDPRConsentDecision","css-tricks.com");
+
+        // Google Analytics and Segment are functional
+        if (consent.consentDecision.includes(2) || (consent.source === 'implied' && truste.eu.bindMap.behaviorManager !== 'eu')) {
+            // Google Analytics
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            ga('create', 'UA-68528-29', 'auto');
+
+            if (typeof articleYear !== "undefined") {
+                ga('set', 'dimension1', articleYear);
+            }
+            if (typeof articleAuthor !== "undefined") {
+                ga('set', 'dimension2', articleAuthor);
+            }
+            if (typeof articleType !== "undefined") {
+                ga('set', 'dimension3', articleType);
+            }
+
+            ga('send', 'pageview');
+
+            // Segment Analytics
+            !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"];analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);t.unshift(e);analytics.push(t);return analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(key,e){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(t,n);analytics._loadOptions=e};analytics._writeKey="nnmtLrk127wcC9ggBpAutRr4F4x4TMVz";;analytics.SNIPPET_VERSION="4.15.3";
+                analytics.load("nnmtLrk127wcC9ggBpAutRr4F4x4TMVz");
+
+                const analyticsProperties = {};
+                if (typeof articleID !== "undefined") {
+                    analyticsProperties.article_id = articleID;
+                }
+                if (typeof articleYear !== "undefined") {
+                    analyticsProperties.article_year = articleYear;
+                }
+                if (typeof articleAuthor !== "undefined") {
+                    analyticsProperties.article_author = articleAuthor;
+                }
+                if (typeof articleType !== "undefined") {
+                    analyticsProperties.article_type = articleType;
+                }
+
+                analytics.page({
+                    properties: analyticsProperties
+                });
+            }}();
+        }
+    });
+</script>
+  <script async src="https://static.codepen.io/assets/embed/ei.js"></script>
+
+
+  <script src="//instant.page/5.1.0" type="module" integrity="sha384-by67kQnR+pyfy8yWP4kPO12fHKRLHZPfEsiSXR8u2IKcTdxD805MGUXBzVPnkLHw"></script>
+
+  <svg width="0" height="0" class="screen-reader">
+    <defs>
+
+      <linearGradient id="orange-to-pink" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0%" stop-color="#ff7a18" />
+        <stop offset="40%" stop-color="#af002d" />
+        <stop offset="100%" stop-color="#319197" />
+      </linearGradient>
+
+      <filter id="duotone_orange_pink">
+        <feColorMatrix type="matrix" result="grayscale" values="1 0 0 0 0
+                  1 0 0 0 0
+                  1 0 0 0 0
+                  0 0 0 1 0">
+        </feColorMatrix>
+        <feComponentTransfer color-interpolation-filters="sRGB" result="duotone">
+          <feFuncR type="table" tableValues="0.7411764706 0.9882352941"></feFuncR>
+          <feFuncG type="table" tableValues="0.0431372549 0.7333333333"></feFuncG>
+          <feFuncB type="table" tableValues="0.568627451 0.05098039216"></feFuncB>
+          <feFuncA type="table" tableValues="0 1"></feFuncA>
+        </feComponentTransfer>
+      </filter>
+
+    </defs>
+  </svg>
+
+  </body>
+
+  </html>
+<!-- Cache served by breeze CACHE (Desktop) - Last modified: Wed, 10 Jun 2026 13:00:49 GMT -->

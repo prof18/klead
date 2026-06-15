@@ -1126,6 +1126,7 @@ object RemovalPipeline {
         "article-meta",
         "block-header",
         "hero-caption",
+        "mega-header",
         "river-score",
         "rumor-score",
         "upper-deck",
