@@ -835,6 +835,33 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `polygon article dump excludes opening header controls author image and categories`() {
+        val fixtureName = "general--www.polygon.com-overwatch-season-3-skins-nyan-cat-cafe-ultra-mythic-battle-pass"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        assertTrue(lines.first().startsWith("![OVR\\_S3\\_LegendarySkins\\_NyanCafe"))
+        assertTrue(result.contentMarkdown.contains("[Overwatch](https://www.polygon.com/overwatch/)"))
+        assertTrue(result.contentMarkdown.contains("season 3 starts"))
+        assertTrue(result.contentMarkdown.contains("## Nyan Cafe Ultra Skins"))
+        assertFalse(lines.any { it == "Thread" || it == "News" || it == "Overwatch" })
+        assertFalse(result.contentMarkdown.contains("Link copied to clipboard"))
+        assertFalse(result.contentMarkdown.contains("wp-content%2Fauthors"))
+        assertFalse(result.contentMarkdown.contains("Here's what you can spend Overwatch Coins on soon"))
+        assertFalse(result.contentMarkdown.contains("# Overwatch season 3 skins include"))
+        assertFalse(result.contentHtml.contains("w-heading-options"))
+        assertFalse(result.contentHtml.contains("sharingCopyAlertDiv"))
+        assertFalse(result.contentHtml.contains("w-article-header-author-img"))
+        assertFalse(result.contentHtml.contains("bc-listing-categories"))
+        assertFalse(result.contentHtml.contains("w-tag-interaction-popup-menu"))
+    }
+
+    @Test
     fun `android developers dump excludes copied tooltip byline and pager chrome`() {
         val fixtureName = "general--android-developers.googleblog.com-2026-05-apply-android-xr-developer-catalyst"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
