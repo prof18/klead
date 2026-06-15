@@ -10,7 +10,7 @@ This is part of the broad port target, not an optional feature family. The work 
 
 - Generic extraction must work without site extractors.
 - Extractors should feed the same cleanup and Markdown pipeline where possible.
-- Async/network extractors must be behind options and injected HTTP clients.
+- Async/network extractors must be behind options and suspend injected HTTP clients.
 - Do not let extractor work block core Markdown output.
 - Extractors that cannot be ported exactly must have a documented reason and fixture coverage for the closest practical behavior.
 
@@ -19,9 +19,13 @@ This is part of the broad port target, not an optional feature family. The work 
 Implement a small registry:
 
 ```kotlin
+interface DefuddleHttpClient {
+    suspend fun get(url: String): String
+}
+
 interface Extractor {
     fun canExtract(document: Document, url: String): Boolean
-    fun extract(document: Document, url: String): ExtractorResult
+    suspend fun extract(document: Document, url: String, context: ExtractorContext): ExtractorResult
 }
 ```
 
@@ -31,6 +35,8 @@ The registry should:
 - allow disabling extractors
 - expose extractor type in result
 - be testable without network
+
+`Defuddle.parseHtmlAsync` runs the parse on `DefuddleOptions.parseDispatcher`, defaulting to `Dispatchers.Default`. `Defuddle.parseHtml` remains a blocking compatibility wrapper around the suspend path. Injected HTTP clients should use their own non-blocking APIs or switch blocking I/O to an appropriate dispatcher internally.
 
 ## Suggested Priority
 
@@ -72,7 +78,7 @@ If extractor returns a content selector, run the normal pipeline against that co
 - `[x]` Static extractor can return direct content.
 - `[x]` Extractor variables appear in result.
 - `[x]` Extractor output still goes through Markdown writer.
-- `[x]` Network extractors use injected HTTP clients and are controlled by options.
+- `[x]` Network extractors use suspend injected HTTP clients and are controlled by options.
 
 ## Acceptance Gate
 
@@ -83,5 +89,5 @@ If extractor returns a content selector, run the normal pipeline against that co
 - Registry interface.
 - One static extractor.
 - Fixture tests for that extractor.
-- Async interface with fake HTTP client.
+- Suspend async interface with fake HTTP client.
 - One network-backed extractor at a time.

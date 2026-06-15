@@ -17,6 +17,10 @@ import dev.defuddle.metadata.PageMetadataExtractor
 import dev.defuddle.removal.RemovalPipeline
 import dev.defuddle.removal.RemovalRecord
 import dev.defuddle.standardize.HtmlStandardizer
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -28,6 +32,7 @@ data class DefuddleOptions(
     val extractors: List<Extractor> = DefaultExtractors.all,
     val disabledExtractors: Set<String> = emptySet(),
     val httpClient: DefuddleHttpClient? = null,
+    val parseDispatcher: CoroutineDispatcher = Dispatchers.Default,
     val removeExactSelectors: Boolean = true,
     val removePartialSelectors: Boolean = true,
     val removeHiddenElements: Boolean = true,
@@ -68,7 +73,15 @@ object Defuddle {
         html: String,
         url: String,
         options: DefuddleOptions = DefuddleOptions(),
-    ): DefuddleResult {
+    ): DefuddleResult = runBlocking {
+        parseHtmlAsync(html = html, url = url, options = options)
+    }
+
+    suspend fun parseHtmlAsync(
+        html: String,
+        url: String,
+        options: DefuddleOptions = DefuddleOptions(),
+    ): DefuddleResult = withContext(options.parseDispatcher) {
         val timed = measureTimedValue {
             val document = Jsoup.parse(html, url)
             document.outputSettings().prettyPrint(false)
@@ -109,7 +122,7 @@ object Defuddle {
         if (options.profile) {
             debug["profileTimings"] = mapOf("parseHtml" to parseTimeMillis)
         }
-        return timed.value.copy(
+        timed.value.copy(
             parseTimeMillis = parseTimeMillis,
             debug = debug,
         )

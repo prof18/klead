@@ -3,7 +3,7 @@ package dev.defuddle.extractors
 import org.jsoup.nodes.Document
 
 interface DefuddleHttpClient {
-    fun get(url: String): String
+    suspend fun get(url: String): String
 }
 
 interface Extractor {
@@ -14,7 +14,7 @@ interface Extractor {
         url: String,
     ): Boolean
 
-    fun extract(
+    suspend fun extract(
         document: Document,
         url: String,
         context: ExtractorContext,
@@ -49,7 +49,7 @@ data class AppliedExtractor(
 class ExtractorRegistry(
     private val extractors: List<Extractor> = DefaultExtractors.all,
 ) {
-    fun extract(
+    suspend fun extract(
         document: Document,
         url: String,
         context: ExtractorContext,

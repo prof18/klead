@@ -2,6 +2,7 @@ package dev.defuddle.extractors
 
 import dev.defuddle.Defuddle
 import dev.defuddle.DefuddleOptions
+import kotlinx.coroutines.test.runTest
 import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,7 +11,7 @@ import kotlin.test.assertTrue
 
 class ExtractorRegistryTest {
     @Test
-    fun `registry priority is deterministic`() {
+    fun `registry priority is deterministic`() = runTest {
         val document = Jsoup.parse("<main></main>", "https://example.com")
         val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
 
@@ -20,7 +21,7 @@ class ExtractorRegistryTest {
     }
 
     @Test
-    fun `disabled extractors are skipped`() {
+    fun `disabled extractors are skipped`() = runTest {
         val document = Jsoup.parse("<main></main>", "https://example.com")
         val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
 
@@ -34,7 +35,7 @@ class ExtractorRegistryTest {
     }
 
     @Test
-    fun `static extractor can return content selector`() {
+    fun `static extractor can return content selector`() = runTest {
         val document = Jsoup.parse(
             """<html><body><div id="mw-content-text"><p>Wikipedia article text.</p></div></body></html>""",
             "https://en.wikipedia.org/wiki/Test",
@@ -59,7 +60,7 @@ class ExtractorRegistryTest {
                         override fun canExtract(document: org.jsoup.nodes.Document, url: String) =
                             url.contains("direct.example")
 
-                        override fun extract(
+                        override suspend fun extract(
                             document: org.jsoup.nodes.Document,
                             url: String,
                             context: ExtractorContext,
@@ -83,7 +84,7 @@ class ExtractorRegistryTest {
     fun `network extractors use injected HTTP clients`() {
         val calls = mutableListOf<String>()
         val client = object : DefuddleHttpClient {
-            override fun get(url: String): String {
+            override suspend fun get(url: String): String {
                 calls += url
                 return "<article><p>Fetched transcript.</p></article>"
             }
@@ -100,7 +101,7 @@ class ExtractorRegistryTest {
                         override fun canExtract(document: org.jsoup.nodes.Document, url: String) =
                             url.contains("network.example")
 
-                        override fun extract(
+                        override suspend fun extract(
                             document: org.jsoup.nodes.Document,
                             url: String,
                             context: ExtractorContext,
@@ -124,7 +125,7 @@ class ExtractorRegistryTest {
 
             override fun canExtract(document: org.jsoup.nodes.Document, url: String) = true
 
-            override fun extract(
+            override suspend fun extract(
                 document: org.jsoup.nodes.Document,
                 url: String,
                 context: ExtractorContext,

@@ -13,7 +13,7 @@ object WikipediaExtractor : Extractor {
         runCatching { URI(url).host.orEmpty().contains("wikipedia.org") }.getOrDefault(false) &&
             document.selectFirst("#mw-content-text") != null
 
-    override fun extract(
+    override suspend fun extract(
         document: Document,
         url: String,
         context: ExtractorContext,
