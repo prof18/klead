@@ -397,6 +397,53 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove entry footer sidebar and footer recirculation modules`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <section class="entry">
+                    <p>The article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes footer and recirculation cleanup deterministic while preserving legitimate article text.</p>
+                    <p>A second paragraph keeps this story body clearly article-like even when sibling story-card, sidebar, and native footer modules are present in the selected main container.</p>
+                    <p class="u-text-center u-body-02"><em>ExampleToday is also on Mobile! Download our app to stay updated.</em></p>
+                    <section class="l-entry__footer">
+                      <p>© Riproduzione riservata</p>
+                      <a class="btn-gpsource-bt-article" href="//www.google.com/preferences/source?q=example.com">Add as source</a>
+                    </section>
+                  </section>
+                  <article class="c-story c-story--stack">
+                    <span>attualita</span>
+                    <h2>Related story should go</h2>
+                  </article>
+                  <aside class="l-entry__sidebar">
+                    <h2>I più letti</h2>
+                    <article><h2>Popular story should go</h2></article>
+                  </aside>
+                  <section data-section-key="article-footer-natives">
+                    <h2>In Evidenza</h2>
+                    <article><h2>Highlighted story should go</h2></article>
+                  </section>
+                  <section data-section-key="article-footer-outbrain">
+                    <h3>Potrebbe interessarti</h3>
+                  </section>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/footer-recirculation",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps this story body"))
+        assertFalse(result.contentMarkdown.contains("Download our app"))
+        assertFalse(result.contentMarkdown.contains("Riproduzione riservata"))
+        assertFalse(result.contentMarkdown.contains("Add as source"))
+        assertFalse(result.contentMarkdown.contains("Related story should go"))
+        assertFalse(result.contentMarkdown.contains("I più letti"))
+        assertFalse(result.contentMarkdown.contains("Popular story should go"))
+        assertFalse(result.contentMarkdown.contains("In Evidenza"))
+        assertFalse(result.contentMarkdown.contains("Highlighted story should go"))
+        assertFalse(result.contentMarkdown.contains("Potrebbe interessarti"))
+    }
+
+    @Test
     fun `exact selectors remove author header and article options chrome while preserving body`() {
         val result = Defuddle.parseHtml(
             html = """

@@ -195,6 +195,31 @@ class FeedFlowReaderDumpRegressionTest {
     }
 
     @Test
+    fun `veneziatoday article dump excludes footer recommendations and sidebar modules`() {
+        val fixtureName = "general--www.veneziatoday.it-cronaca-contratto-scaduto-sciopero-farmacie-comunali"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }
+
+        assertTrue(result.contentMarkdown.contains("Mercoledì 17 giugno sarà giorno di sciopero"))
+        assertTrue(result.contentMarkdown.contains("Il contratto nazionale delle farmacie comunali"))
+        assertTrue(result.contentMarkdown.contains("Il Comune non può considerarsi estraneo alla vertenza"))
+        assertFalse(result.contentMarkdown.contains("VeneziaToday è anche su Mobile"))
+        assertFalse(result.contentMarkdown.contains("Riproduzione riservata"))
+        assertFalse(lines.any { it == "attualita" || it == "1." })
+        assertFalse(result.contentMarkdown.contains("La protesta delle farmacie comunali a corto di personale"))
+        assertFalse(result.contentMarkdown.contains("I più letti"))
+        assertFalse(result.contentMarkdown.contains("Trovato il corpo senza vita di Mattia Testi"))
+        assertFalse(result.contentMarkdown.contains("In Evidenza"))
+        assertFalse(result.contentMarkdown.contains("Hanno portato via tutto"))
+        assertFalse(result.contentMarkdown.contains("Potrebbe interessarti"))
+    }
+
+    @Test
     fun `pianetabasket article dump excludes site chrome and latest news modules`() {
         val fixtureName = "general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560"
         val html = resourceText("feedflow-reader-dumps/$fixtureName.html")

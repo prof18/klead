@@ -188,6 +188,9 @@ object RemovalPipeline {
                 isCommentPromptBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment prompt")
                 }
+                isMobileAppPromoBlock(element) -> {
+                    recordAndRemove(element, debug, "removeContentPatterns", null, "mobile app promo")
+                }
             }
         }
     }
@@ -331,6 +334,12 @@ object RemovalPipeline {
             text.length <= COMMENT_PROMPT_MAX_LENGTH
     }
 
+    private fun isMobileAppPromoBlock(element: Element): Boolean {
+        val text = element.text().trim()
+        if (text.length > MOBILE_APP_PROMO_MAX_LENGTH) return false
+        return MOBILE_APP_PROMO_PATTERN.containsMatchIn(text)
+    }
+
     private fun recordAndRemove(
         element: Element,
         debug: MutableList<RemovalRecord>,
@@ -400,6 +409,12 @@ object RemovalPipeline {
         ".audioplayer",
         "[data-mp3]",
         "[data-audio-src]",
+        ".l-entry__footer",
+        ".l-entry__sidebar",
+        ".btn-gpsource-bt-article",
+        ".c-story--stack",
+        ":scope > article.c-story--stack",
+        """[data-section-key^="article-footer"]""",
         """[data-cy="time-rubric"]""",
         """[data-cy="byline-author"]""",
         """[data-cy="social-share-top"]""",
@@ -457,7 +472,7 @@ object RemovalPipeline {
     )
 
     private val RECOMMENDATION_HEADING_PATTERN = Regex(
-        """\b(recommended|related|more stories|more from|read more|you may also like|popular stories|consigliati|altre storie)\b""",
+        """\b(recommended|related|more stories|more from|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -481,6 +496,11 @@ object RemovalPipeline {
         RegexOption.IGNORE_CASE,
     )
 
+    private val MOBILE_APP_PROMO_PATTERN = Regex(
+        """\b(download our app|scarica l['’]?app|app per rimanere sempre aggiornato|also on mobile|anche su mobile)\b""",
+        RegexOption.IGNORE_CASE,
+    )
+
     private val COMMENT_LINK_HINTS = listOf(
         "/thread",
         "/comment",
@@ -495,6 +515,7 @@ object RemovalPipeline {
     private const val TRAILING_TAG_MAX_WORDS = 16
     private const val COMMENT_COUNT_MAX_LINKS = 2
     private const val COMMENT_PROMPT_MAX_LENGTH = 260
+    private const val MOBILE_APP_PROMO_MAX_LENGTH = 180
     private const val RECOMMENDATION_TEXT_PREFIX_LENGTH = 80
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }
