@@ -1166,6 +1166,26 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("w-display-card-info"))
     }
 
+    @Test
+    fun `variety article dump excludes comment jump and loading placeholders`() {
+        val fixtureName = "general--variety.com-2026-film-festivals-cecilia-yip-rebecca-li-manxuan-kering-women-in-motion-shanghai-1236781725"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Issues of under-written female roles"))
+        assertTrue(result.contentMarkdown.contains("Boundless Imagination, Endless Motion"))
+        assertFalse(result.contentMarkdown.contains("Jump to Comments"))
+        assertFalse(result.contentMarkdown.contains("Loading comments"))
+        assertFalse(result.contentMarkdown.contains("JavaScript is required to load the comments"))
+        assertFalse(result.contentHtml.contains("o-comments-link"))
+        assertFalse(result.contentHtml.contains("comments-loading"))
+        assertFalse(result.contentHtml.contains("comments-loaded"))
+        assertFalse(result.contentHtml.contains("article-comments"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

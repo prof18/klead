@@ -202,3 +202,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-16 - PHASE-06 - complete - Added a Rolling Stone FeedFlow reader-dump regression and removed article header/dek/date chrome plus in-article trending story recirculation from reader Markdown.
 2026-06-16 - PHASE-06 - complete - Added a PopCulture FeedFlow reader-dump regression and removed Gutenberg video placeholders, next-article/footer modules, sidebars, newsletter signup blocks, and most-viewed headings from reader Markdown.
 2026-06-16 - PHASE-06 - complete - Added a ScreenRant FeedFlow reader-dump regression and removed Valnet display-card rating/database widgets from reader Markdown.
+2026-06-16 - PHASE-06 - complete - Added a Variety FeedFlow reader-dump regression and removed comment jump links plus JavaScript comment-loading placeholders from reader Markdown.

@@ -1836,6 +1836,36 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove comment jump links and loading placeholders`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
+                  <p>The article conclusion should also stay before comment loading chrome is removed from the cleaned result.</p>
+                  <div class="o-comments-link">
+                    <a class="c-link a-content-ignore" href="#article-comments">Jump to Comments</a>
+                  </div>
+                  <div id="article-comments">
+                    <noscript>JavaScript is required to load the comments.</noscript>
+                    <div id="comments-loading" style="display:none">Loading comments...</div>
+                    <div id="comments-loaded"></div>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/comment-widget",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Jump to Comments"))
+        assertFalse(result.contentMarkdown.contains("Loading comments"))
+        assertFalse(result.contentMarkdown.contains("JavaScript is required to load the comments"))
+        assertFalse(result.contentHtml.contains("o-comments-link"))
+        assertFalse(result.contentHtml.contains("comments-loading"))
+        assertFalse(result.contentHtml.contains("article-comments"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
