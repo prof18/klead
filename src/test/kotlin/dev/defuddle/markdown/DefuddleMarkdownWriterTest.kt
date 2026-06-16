@@ -223,6 +223,31 @@ class DefuddleMarkdownWriterTest {
         assertEquals("${'$'}x^2${'$'} y\n", markdown)
     }
 
+    @Test
+    fun `trusted video iframes render as markdown links`() {
+        val markdown = render(
+            """
+            <article>
+              <p>See the trailer below</p>
+              <iframe
+                title="YouTube video"
+                src="https://www.youtube-nocookie.com/embed/1hKyYaBzko8"
+                data-defuddle-video-url="https://www.youtube.com/watch?v=1hKyYaBzko8">
+              </iframe>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals(
+            """
+            See the trailer below
+
+            [YouTube video](https://www.youtube.com/watch?v=1hKyYaBzko8)
+            """.trimIndent() + "\n",
+            markdown,
+        )
+    }
+
     private fun render(html: String): String =
         DefuddleMarkdownWriter.write(
             root = Jsoup.parse(html, "https://example.com/base/").selectFirst("article") ?: error("missing article"),

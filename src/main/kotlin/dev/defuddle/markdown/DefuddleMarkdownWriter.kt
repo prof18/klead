@@ -5,6 +5,7 @@ import dev.defuddle.dom.resolveUrl
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
+import java.net.URI
 
 object DefuddleMarkdownWriter {
     fun write(
@@ -67,9 +68,10 @@ private class Renderer(
             "pre" -> renderCodeBlock(element)
             "hr" -> "---"
             "img" -> renderImage(element)
-            "picture" -> element.selectFirst("img")?.let { renderImage(it) }.orEmpty()
+            "picture" -> element.select("img").firstOrNull()?.let { renderImage(it) }.orEmpty()
             "figure" -> renderFigure(element, listDepth)
             "table" -> renderTable(element)
+            "iframe" -> renderEmbeddedMedia(element)
             "section" -> if (element.hasAttr("data-footnotes")) "" else renderBlocks(element.childNodes(), listDepth)
             "div" -> if (element.hasClass("callout") || element.hasAttr("data-callout")) {
                 renderCallout(element, listDepth)
@@ -169,6 +171,26 @@ private class Renderer(
         return ""
     }
 
+    private fun renderEmbeddedMedia(element: Element): String {
+        val href = element.attr("data-defuddle-video-url").trim().ifBlank {
+            videoWatchUrlFromEmbed(element.attr("src").trim()).orEmpty()
+        }.ifBlank {
+            element.attr("src").trim()
+        }
+        if (href.isBlank() || isDangerousUrl(href)) return ""
+        val url = resolveUrl(baseUrl, href)
+        if (url.isBlank()) return ""
+
+        val title = element.attr("title").trim().ifBlank {
+            if (url.contains("youtube.com", ignoreCase = true) || url.contains("youtu.be", ignoreCase = true)) {
+                "YouTube video"
+            } else {
+                "Embedded video"
+            }
+        }
+        return "[${escapeInline(title)}](${escapeDestination(url)})"
+    }
+
     private fun renderList(
         element: Element,
         ordered: Boolean,
@@ -214,7 +236,7 @@ private class Renderer(
         listDepth: Int,
     ): String {
         val imageMarkdown = element.select("img").joinToString("\n") { renderImage(it) }.trim()
-        val caption = element.selectFirst("figcaption")?.let { renderInline(it).trim() }
+        val caption = element.select("figcaption").firstOrNull()?.let { renderInline(it).trim() }
         return listOfNotNull(
             imageMarkdown.takeIf { it.isNotBlank() },
             caption?.takeIf { it.isNotBlank() }?.let { "*$it*" },
@@ -290,6 +312,17 @@ private class Renderer(
             }
             .maxByOrNull { it.second }
             ?.first
+
+    private fun videoWatchUrlFromEmbed(src: String): String? {
+        val uri = runCatching { URI(src) }.getOrNull() ?: return null
+        val host = uri.host?.lowercase()?.removePrefix("www.") ?: return null
+        if (host != "youtube.com" && host != "youtube-nocookie.com") return null
+        val path = uri.rawPath.orEmpty()
+        if (!path.startsWith("/embed/")) return null
+        val id = path.removePrefix("/embed/").substringBefore('/')
+        if (!YOUTUBE_ID.matches(id)) return null
+        return "https://www.youtube.com/watch?v=$id"
+    }
 
     private fun codeSpan(text: String): String {
         val maxTicks = Regex("`+").findAll(text).maxOfOrNull { it.value.length } ?: 0
@@ -371,6 +404,7 @@ private class Renderer(
     }
 
     private val SRCSET_DELIMITER = Regex(""",\s+""")
+    private val YOUTUBE_ID = Regex("""[A-Za-z0-9_-]{6,32}""")
 
     private data class InlineWhitespace(
         val original: String,

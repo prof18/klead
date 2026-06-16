@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 39
+- FeedFlow reader-dump regression fixtures: 40
 
 ## Active Strict Fixtures
 
@@ -68,6 +68,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.ilmitte.com-2026-06-riforma-sanita-warken-opposizione-germania`: verifies that Jannah/TieLabs WordPress category-chip wrappers do not leak before article prose.
 - `general--www.ilmitte.com-2026-06-svastica-vegana-al-buffet-di-afd`: verifies that inline WordPress/Mailchimp newsletter blocks do not leak into article prose.
 - `general--www.gamespot.com-articles-microsoft-boss-wants-xbox-to-start-pulling-its-weight-financially`: verifies that GameSpot right-rail commerce widgets such as "Where to Buy" do not leak into reader Markdown.
+- `general--www.gamingonlinux.com-2026-06-the-big-dino-update-for-dwarf-fortress-announced-for-june-25`: verifies that GamingOnLinux YouTube consent placeholders become safe YouTube links/embeds while article-likes, social-comment, and rules footer chrome do not leak into reader Markdown.
 
 ## Known Differences
 

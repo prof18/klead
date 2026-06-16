@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.net.URI
 import kotlin.math.max
 import kotlin.time.measureTimedValue
 
@@ -132,7 +133,6 @@ object Defuddle {
         document.selectFirst("article")
             ?: document.selectFirst("main")
             ?: document.body()
-            ?: Element("body")
 
     private fun parseInternal(
         document: Document,
@@ -249,7 +249,8 @@ object Defuddle {
         content.select("script").filterNot { script ->
             script.attr("type").contains("math/tex", ignoreCase = true)
         }.forEach { it.remove() }
-        content.select("style, noscript, frame, frameset, iframe, object, embed, applet, base").remove()
+        content.select("style, noscript, frame, frameset, object, embed, applet, base").remove()
+        content.select("iframe").filterNot(::isTrustedVideoIframe).forEach { it.remove() }
 
         for (element in content.select("*")) {
             for (attribute in element.attributes().asList()) {
@@ -263,6 +264,19 @@ object Defuddle {
                 }
             }
         }
+    }
+
+    private fun isTrustedVideoIframe(element: Element): Boolean {
+        val src = element.absUrl("src").ifBlank { element.attr("src").trim() }
+        if (src.isBlank() || isDangerousUrl(src)) return false
+        val uri = runCatching { URI(src) }.getOrNull() ?: return false
+        if (!uri.scheme.equals("https", ignoreCase = true)) return false
+
+        val host = uri.host?.lowercase()?.removePrefix("www.") ?: return false
+        val path = uri.rawPath.orEmpty()
+        return (host == "youtube.com" || host == "youtube-nocookie.com") &&
+            path.startsWith("/embed/") &&
+            YOUTUBE_VIDEO_ID.matches(path.removePrefix("/embed/").substringBefore('/'))
     }
 
     private fun Element.cleanOuterHtml(): String =
@@ -279,6 +293,7 @@ object Defuddle {
     }
 
     private val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
+    private val YOUTUBE_VIDEO_ID = Regex("""[A-Za-z0-9_-]{6,32}""")
 
     private val DANGEROUS_URL_ATTRIBUTES = setOf("href", "src", "action", "formaction", "xlink:href")
 }

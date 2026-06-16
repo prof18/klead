@@ -65,6 +65,27 @@ class CorePipelinePreparationTest {
     }
 
     @Test
+    fun `trusted youtube iframe is preserved as cleaned html and markdown link`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <html><body><article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                  <iframe src="https://www.youtube.com/embed/1hKyYaBzko8" title="Dwarf Fortress trailer" onclick="bad()" srcdoc="<p>bad</p>"></iframe>
+                  <iframe src="https://evil.example/embed/1hKyYaBzko8"></iframe>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/article",
+        )
+
+        assertTrue(result.contentHtml.contains("""src="https://www.youtube-nocookie.com/embed/1hKyYaBzko8""""))
+        assertTrue(result.contentHtml.contains("""data-defuddle-video-url="https://www.youtube.com/watch?v=1hKyYaBzko8""""))
+        assertFalse(result.contentHtml.contains("evil.example"))
+        assertFalse(result.contentHtml.contains("onclick"))
+        assertFalse(result.contentHtml.contains("srcdoc"))
+        assertTrue(result.contentMarkdown.contains("[Dwarf Fortress trailer](https://www.youtube.com/watch?v=1hKyYaBzko8)"))
+    }
+
+    @Test
     fun `profile timings are present only when requested`() {
         val result = Defuddle.parseHtml(
             html = "<html><body><article><p>Profile on.</p></article></body></html>",

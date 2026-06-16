@@ -1056,6 +1056,37 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("single-sidebar right-rail"))
     }
 
+    @Test
+    fun `gamingonlinux article dump preserves youtube link and excludes comment footer chrome`() {
+        val fixtureName = "general--www.gamingonlinux.com-2026-06-the-big-dino-update-for-dwarf-fortress-announced-for-june-25"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Dinos? In my fortress? Oh no."))
+        assertTrue(result.contentMarkdown.contains("See the trailer below"))
+        assertTrue(result.contentMarkdown.contains("[YouTube video](https://www.youtube.com/watch?v=1hKyYaBzko8)"))
+        assertTrue(result.contentHtml.contains("""src="https://www.youtube-nocookie.com/embed/1hKyYaBzko8""""))
+        assertFalse(result.contentMarkdown.contains("YouTube videos require cookies"))
+        assertFalse(result.contentMarkdown.contains("View cookie preferences"))
+        assertFalse(result.contentMarkdown.contains("Accept Cookies & Show"))
+        assertFalse(result.contentMarkdown.contains("Direct Link"))
+        assertFalse(result.contentMarkdown.contains("Article taken from"))
+        assertFalse(result.contentMarkdown.contains("4 Likes"))
+        assertFalse(result.contentMarkdown.contains("You can also find comments"))
+        assertFalse(result.contentMarkdown.contains("Mastodon"))
+        assertFalse(result.contentMarkdown.contains("Bluesky"))
+        assertFalse(result.contentMarkdown.contains("All posts need to"))
+        assertFalse(result.contentMarkdown.contains("follow our rules"))
+        assertFalse(result.contentMarkdown.contains("Please hit the Report"))
+        assertFalse(result.contentHtml.contains("hidden_video_content"))
+        assertFalse(result.contentHtml.contains("article_likes"))
+        assertFalse(result.contentHtml.contains("social-media-comments"))
+        assertFalse(result.contentHtml.contains("rules-reminder"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

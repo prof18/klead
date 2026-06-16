@@ -1,6 +1,7 @@
 package dev.defuddle.standardize
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -115,6 +116,35 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `youtube consent placeholder normalizes to safe iframe`() {
+        val article = article(
+            """
+            <article>
+              <p>See the trailer below</p>
+              <div class="hidden_video" data-video-id="1hKyYaBzko8">
+                <img alt="YouTube Thumbnail" src="/youtube_cache_default.png">
+                <div class="hidden_video_content">
+                  YouTube videos require cookies, you must accept their cookies to view.
+                  <a href="/index.php?module=cookie_prefs">View cookie preferences</a>.
+                  <a class="accept_video" data-video-id="1hKyYaBzko8" href="#">Accept Cookies &amp; Show</a>
+                  <a href="https://www.youtube.com/watch?v=1hKyYaBzko8">Direct Link</a>
+                </div>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val iframe = article.selectFirst("iframe")
+        assertNotNull(iframe)
+        assertEquals("https://www.youtube-nocookie.com/embed/1hKyYaBzko8", iframe.attr("src"))
+        assertEquals("https://www.youtube.com/watch?v=1hKyYaBzko8", iframe.attr("data-defuddle-video-url"))
+        assertFalse(article.text().contains("YouTube videos require cookies"))
+        assertFalse(article.text().contains("Accept Cookies"))
+    }
+
+    @Test
     fun `empty wrappers removed without losing text`() {
         val article = article("""<article><div><span>Kept text</span></div><span></span></article>""")
 
@@ -124,6 +154,6 @@ class HtmlStandardizerTest {
         assertFalse(article.outerHtml().contains("<span></span>"))
     }
 
-    private fun article(html: String) =
+    private fun article(html: String): Element =
         Jsoup.parse(html, "https://example.com").selectFirst("article") ?: error("missing article")
 }
