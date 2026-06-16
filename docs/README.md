@@ -204,3 +204,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-16 - PHASE-06 - complete - Added a ScreenRant FeedFlow reader-dump regression and removed Valnet display-card rating/database widgets from reader Markdown.
 2026-06-16 - PHASE-06 - complete - Added a Variety FeedFlow reader-dump regression and removed comment jump links plus JavaScript comment-loading placeholders from reader Markdown.
 2026-06-16 - PHASE-06 - complete - Added an Android Authority FeedFlow reader-dump regression and removed affiliate disclosure, opening metadata/share/source chrome, Google preferred-source prompts, and comment-policy footer text from reader Markdown.
+2026-06-16 - PHASE-06 - complete - Added a PhoneArena FeedFlow reader-dump regression and removed comment counters, author/date/disclaimer chrome, author bio/latest-post blocks, community discussions, and related-device footer links from reader Markdown.

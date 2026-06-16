@@ -1216,6 +1216,37 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("android-authority-comment-policy"))
     }
 
+    @Test
+    fun `phonearena deal dump excludes article chrome and community footer`() {
+        val fixtureName = "general--www.phonearena.com-news-razr-ultra-2025-motorola-deal-700-usd-off-free-earbuds_id181125"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("You're getting a lot of phone for the money."))
+        assertTrue(result.contentMarkdown.contains("may not be Motorola’s latest clamshell flagship"))
+        assertTrue(result.contentMarkdown.contains("So, don’t miss out and treat yourself"))
+        assertTrue(result.contentMarkdown.contains("The phone is still a force to be reckoned with."))
+        assertFalse(result.contentMarkdown.contains("Published: Jun 16, 2026"))
+        assertFalse(result.contentMarkdown.contains("We may earn a commission if you make a purchase"))
+        assertFalse(result.contentMarkdown.contains("Follow us on Google News"))
+        assertFalse(result.contentMarkdown.contains("View Full Bio"))
+        assertFalse(result.contentMarkdown.contains("Read the latest from Preslav Mladenov"))
+        assertFalse(result.contentMarkdown.contains("Latest Discussions"))
+        assertFalse(result.contentMarkdown.contains("Galaxy A16 5G Takeover"))
+        assertFalse(result.contentMarkdown.contains("Discover more from the community"))
+        assertFalse(result.contentMarkdown.contains("Explore Related Devices"))
+        assertFalse(result.contentMarkdown.contains("Motorola Razr Ultra (2025) Review"))
+        assertFalse(result.contentHtml.contains("content-header-widgets"))
+        assertFalse(result.contentHtml.contains("content-disclaimer"))
+        assertFalse(result.contentHtml.contains("content-after-content-row"))
+        assertFalse(result.contentHtml.contains("content-author-byline"))
+        assertFalse(result.contentHtml.contains("discussions-latest"))
+        assertFalse(result.contentHtml.contains("phone-links"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

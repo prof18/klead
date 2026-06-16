@@ -1905,6 +1905,66 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove PhoneArena article chrome while preserving story`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p><strong>The phone is still a force to be reckoned with.</strong></p>
+                  <div class="content-header-widgets">
+                    <div class="content-comments-counter"><span class="comments-count">0</span></div>
+                    <div class="author">
+                      <img src="https://example.com/preslav.webp" alt="Preslav Mladenov">
+                      <span class="author-label">By</span>
+                      <a class="author-name" rel="author" href="/team/preslav.m">Preslav Mladenov</a>
+                    </div>
+                    <div class="content-date"><time>Published: Jun 16, 2026, 2:26 AM</time></div>
+                  </div>
+                  <div class="content-disclaimer">We may earn a commission if you make a purchase from the links on this page.</div>
+                  <figure><img src="https://example.com/hero.jpg" alt="Hero"></figure>
+                  <div class="content-body">
+                    <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
+                    <p>The article conclusion should also stay before PhoneArena footer chrome is removed from the cleaned result.</p>
+                  </div>
+                  <div class="content-after-content-row"><a class="gnews-wrapper-down" href="/google-news">Follow us on Google News</a></div>
+                  <div class="content-author-byline">
+                    <span>View Full Bio</span>
+                    <p>Preslav Mladenov is a News and Affiliate Content Writer at PhoneArena.</p>
+                    <div class="author-byline-latest-title">Read the latest from Preslav Mladenov</div>
+                  </div>
+                  <div class="discussions-latest">
+                    <div class="discussions-latest-title">Latest Discussions</div>
+                    <a href="/discussions/example">Galaxy A16 5G Takeover</a>
+                    <a href="/community-zone">Discover more from the community</a>
+                  </div>
+                  <div class="phone-links">
+                    <div class="phone-links-title">Explore Related Devices</div>
+                    <a href="/reviews/motorola-razr-ultra-2025-review_id7206">Motorola Razr Ultra (2025) Review</a>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://www.phonearena.com/news/example_id1",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertTrue(result.contentMarkdown.contains("![Hero](https://example.com/hero.jpg)"))
+        assertTrue(result.contentMarkdown.contains("The phone is still a force"))
+        assertFalse(result.contentMarkdown.contains("Preslav Mladenov"))
+        assertFalse(result.contentMarkdown.contains("Published: Jun 16"))
+        assertFalse(result.contentMarkdown.contains("We may earn a commission"))
+        assertFalse(result.contentMarkdown.contains("Follow us on Google News"))
+        assertFalse(result.contentMarkdown.contains("View Full Bio"))
+        assertFalse(result.contentMarkdown.contains("Latest Discussions"))
+        assertFalse(result.contentMarkdown.contains("Galaxy A16 5G Takeover"))
+        assertFalse(result.contentMarkdown.contains("Discover more from the community"))
+        assertFalse(result.contentMarkdown.contains("Explore Related Devices"))
+        assertFalse(result.contentHtml.contains("content-header-widgets"))
+        assertFalse(result.contentHtml.contains("content-author-byline"))
+        assertFalse(result.contentHtml.contains("discussions-latest"))
+        assertFalse(result.contentHtml.contains("phone-links"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
