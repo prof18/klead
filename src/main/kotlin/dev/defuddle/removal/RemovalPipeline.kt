@@ -948,6 +948,12 @@ object RemovalPipeline {
         ".a-article-grid__author",
         ".trending-in-article",
         ".recirculation-modules",
+        ".entry-footer",
+        ".entry-aside",
+        ".more-like-this",
+        ".wp-block-savage-platform-beehiiv-form",
+        ".wp-block-savage-platform-primis-video",
+        """.section-heading:matches((?i)^\s*Most\s+Viewed\s*$)""",
         """[aria-label="Author Bio Flyout"]""",
         """[role="tooltip"][aria-label*="Author Bio"]""",
         """div:matchesOwn((?i)^\s*All products featured here are independently selected)""",
@@ -1135,12 +1141,12 @@ object RemovalPipeline {
     )
 
     private val RECOMMENDATION_HEADING_PATTERN = Regex(
-        """\b(recommended|related|related terms|explore more|keep exploring|discover more|more stories|more from|more on|read more|you may also like|popular stories|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b|^best\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80}\s+(accessories|deals|offers|prices?|discounts?|sales?)$""",
+        """\b(recommended|related|related terms|explore more|keep exploring|discover more|more stories|more from|more on|read more|you may also like|popular stories|most viewed|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti)\b|^best\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80}\s+(accessories|deals|offers|prices?|discounts?|sales?)$""",
         RegexOption.IGNORE_CASE,
     )
 
     private val RECOMMENDATION_SECTION_HEADING_PATTERN = Regex(
-        """^(related\s+content|related\s+articles?|related\s+terms|recommended(?:\s+for\s+you)?|explore\s+more|keep\s+exploring|discover\s+more(?:\s+.+)?|what\s+to\s+read\s+next|read\s+more|popular\s+stories|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
+        """^(related\s+content|related\s+articles?|related\s+terms|recommended(?:\s+for\s+you)?|explore\s+more|keep\s+exploring|discover\s+more(?:\s+.+)?|what\s+to\s+read\s+next|read\s+more|popular\s+stories|most\s+viewed|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti)$""",
         RegexOption.IGNORE_CASE,
     )
 
@@ -1150,7 +1156,7 @@ object RemovalPipeline {
     )
 
     private val SKELETON_RECIRCULATION_HEADING_PATTERN = Regex(
-        """\b(latest\s+in|most\s+popular|popular\s+stories|recommended|related|read\s+more)\b""",
+        """\b(latest\s+in|most\s+popular|most\s+viewed|popular\s+stories|recommended|related|read\s+more)\b""",
         RegexOption.IGNORE_CASE,
     )
 

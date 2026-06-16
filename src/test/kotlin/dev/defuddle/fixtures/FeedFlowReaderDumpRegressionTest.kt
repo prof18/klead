@@ -1114,6 +1114,32 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("recirculation-modules"))
     }
 
+    @Test
+    fun `popculture article dump excludes bottom template modules`() {
+        val fixtureName = "general--popculture.com-celebrity-news-alf-mom-anne-schedeen-dead-at-77"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Schedeen was most commonly known for her role as Kate Tanner"))
+        assertTrue(result.contentMarkdown.contains("A cause of death has not been made public."))
+        assertFalse(result.contentMarkdown.contains("Videos by PopCulture.com"))
+        assertFalse(result.contentMarkdown.contains("Next Article"))
+        assertFalse(result.contentMarkdown.contains("More Celebrity"))
+        assertFalse(result.contentMarkdown.contains("Your inbox just got relevant"))
+        assertFalse(result.contentMarkdown.contains("Sign up to get the latest pop culture scoop"))
+        assertFalse(result.contentMarkdown.contains("Terms of Use"))
+        assertFalse(result.contentMarkdown.contains("Privacy Policy"))
+        assertFalse(result.contentMarkdown.contains("Most Viewed"))
+        assertFalse(result.contentHtml.contains("wp-block-savage-platform-primis-video"))
+        assertFalse(result.contentHtml.contains("entry-footer"))
+        assertFalse(result.contentHtml.contains("entry-aside"))
+        assertFalse(result.contentHtml.contains("more-like-this"))
+        assertFalse(result.contentHtml.contains("wp-block-savage-platform-beehiiv-form"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

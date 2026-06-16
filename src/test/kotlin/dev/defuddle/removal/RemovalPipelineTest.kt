@@ -1752,6 +1752,50 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove Gutenberg article footer sidebar newsletter and video chrome`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <div class="entry-content">
+                    <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
+                    <div class="wp-block-savage-platform-primis-video">
+                      <h2 class="wp-block-savage-platform-primis-video__heading">Videos by PopCulture.com</h2>
+                    </div>
+                    <p>The article conclusion should also stay before the publisher template modules are removed from the cleaned result.</p>
+                  </div>
+                  <div class="wp-block-group entry-footer">
+                    <hr class="entry-footer__sep">
+                    <section class="wp-block-group more-like-this"><h2>Next Article</h2></section>
+                  </div>
+                  <aside class="wp-block-group entry-aside">
+                    <section class="wp-block-group more-like-this"><h2>More Celebrity</h2></section>
+                    <div class="wp-block-savage-platform-beehiiv-form">
+                      <h2>Your inbox just got relevant</h2>
+                      <p>Sign up to get the latest pop culture scoop and celebrity news.</p>
+                    </div>
+                  </aside>
+                  <section class="wp-block-group alignwide">
+                    <div class="wp-block-group section-heading"><h2>Most Viewed</h2></div>
+                  </section>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/gutenberg-footer",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Videos by PopCulture.com"))
+        assertFalse(result.contentMarkdown.contains("Next Article"))
+        assertFalse(result.contentMarkdown.contains("More Celebrity"))
+        assertFalse(result.contentMarkdown.contains("Your inbox just got relevant"))
+        assertFalse(result.contentMarkdown.contains("Most Viewed"))
+        assertFalse(result.contentHtml.contains("wp-block-savage-platform-primis-video"))
+        assertFalse(result.contentHtml.contains("entry-footer"))
+        assertFalse(result.contentHtml.contains("entry-aside"))
+        assertFalse(result.contentHtml.contains("wp-block-savage-platform-beehiiv-form"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
