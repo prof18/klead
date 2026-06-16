@@ -15,7 +15,16 @@ The current dump-driven cleanup loop is useful and should continue, but the sele
 
 ## Prior Thread Note
 
-The referenced `codex://threads/019ec81f-e095-7a32-98dd-9c8dafb02ec1` thread is not directly readable from this workspace. The inventory below is reconstructed from the current repository state: `RemovalPipeline.kt`, recent commits, `docs/README.md`, and `docs/fixture-coverage.md`.
+The referenced `codex://threads/019ec81f-e095-7a32-98dd-9c8dafb02ec1` thread is readable through the local Codex session store and was used to reconstruct the June 15 dump-fix sequence. The inventory below is cross-checked against:
+
+- `/Users/mg/.codex/sessions/2026/06/14/rollout-2026-06-14T23-53-12-019ec81f-e095-7a32-98dd-9c8dafb02ec1.jsonl`;
+- `RemovalPipeline.kt`;
+- `MainContentDetector.kt`;
+- recent commits;
+- `docs/README.md`;
+- `docs/fixture-coverage.md`.
+
+The important correction from that prior thread is that the current global removal list does not only contain the latest June 16 sites. It also contains a large June 15 batch from the FeedFlow dump loop: Il Post, MacRumors, Android Central/Future, Axios, TechCrunch, The Verge/Vox, Business Insider, Entrepreneur, Fortune, Blogger, CSS-Tricks, JetBrains Blog, BBC, BuzzFeed, Mashable, Polygon, NASA, Pianetabasket, Citynews/VeneziaToday, WordPress/Jannah/Enfold/Mailchimp, Substack, and 9to5 sites.
 
 ## Proposed Architecture
 
@@ -136,7 +145,7 @@ Tests:
 
 ### Phase 4: Migrate High-Risk Recent Selectors
 
-Start with the sites fixed in the latest real-app loop because they contain the most obvious overfit global selectors:
+Start with the most obviously site-specific selectors. These were added during the live FeedFlow dump loop and currently create the highest risk of global false positives:
 
 1. Motorsport.com
 2. SI / MinuteMedia
@@ -148,6 +157,11 @@ Start with the sites fixed in the latest real-app loop because they contain the 
 8. Variety
 9. GameSpot
 10. GamingOnLinux
+11. Axios
+12. Business Insider
+13. Mashable
+14. BBC
+15. BuzzFeed
 
 For each migration:
 
@@ -161,12 +175,17 @@ For each migration:
 
 Move older committed site/family rules into profiles:
 
+- Il Post.
+- MacRumors.
 - Future: Android Central and similar Future sites.
 - Valnet: Android Police, ScreenRant, Polygon patterns where shared.
 - Vox: The Verge/SBNation style.
+- Axios.
+- Business Insider.
 - Citynews/VeneziaToday.
+- Pianetabasket.
 - WordPress/Jannah/Enfold/Blogger/Mailchimp as family profiles if domain-specific selectors are too broad globally.
-- TechCrunch, Ars Technica, MacRumors, Fortune, BuzzFeed, Mashable, NASA.
+- TechCrunch, Ars Technica, Fortune, BuzzFeed, Mashable, NASA.
 
 ### Phase 6: Consolidate Generic Behavioral Rules
 
@@ -381,7 +400,11 @@ Fixtures:
 - `general--screenrant.com-gilmore-girls-leaving-netflix-june-2026`
 - `general--www.androidpolice.com-replaced-samsung-home-screen-with-custom-launcher-never-going-back`
 - `general--www.androidpolice.com-two-week-android-experiment-changed-how-i-interact-with-social-media`
-- `general--www.polygon.com-...` if Valnet-style selectors are confirmed for that page, otherwise split Polygon.
+- `general--www.polygon.com-overwatch-season-3-skins-nyan-cat-cafe-ultra-mythic-battle-pass`
+
+Decision:
+
+- Polygon shares several Valnet-style selectors in the current global list, but it should remain easy to split into `PolygonProfile` if future Polygon fixtures diverge from ScreenRant/Android Police behavior.
 
 ### FutureProfile
 
@@ -491,6 +514,34 @@ Fixtures:
 
 - `general--techcrunch.com-2026-06-15-spacexs-biggest-ever-ipo-just-grew-to-85-7-billion-raised`
 
+### AxiosProfile
+
+Domains:
+
+- `axios.com`
+
+Known removals from the prior thread:
+
+- timestamp/byline/share chrome;
+- source-preference prompts;
+- read-next modules;
+- empty list artifacts.
+
+Current selectors and rules involved:
+
+- `a[href*="google.com/preferences/source"]`
+- source/preferred-source prompt heuristics;
+- byline metadata strip heuristics;
+- read-next/recommendation module heuristics.
+
+Fixtures:
+
+- `general--www.axios.com-2026-06-14-anthropic-white-house-mythos-fable`
+
+Decision:
+
+- Keep the source-preference URL selector generic only if it stays strongly host/path scoped by URL shape and tests show no false positives. Axios-specific layout selectors should move to this profile.
+
 ### VoxProfile
 
 Domains/examples:
@@ -509,6 +560,32 @@ Post-content removals:
 Fixtures:
 
 - `general--www.theverge.com-games-949853-roblox-age-verification-demo-nbc`
+
+### BusinessInsiderProfile
+
+Domains:
+
+- `businessinsider.com`
+
+Post-content removals:
+
+- `[data-component-type="post-byline"]`
+- `.post-byline`
+- `.byline-wrapper`
+- `.byline-author-container`
+- `[data-component-type="timestamp"]`
+- `.post-video-recirc`
+- `[data-component-type="post-video-recirc"]`
+- `.back-to-home-container`
+- `.back-to-home`
+
+Fixtures:
+
+- `general--www.businessinsider.com-anthropic-white-house-fable-mythos-5-drama-explained-2026-6`
+
+Decision:
+
+- These are publisher layout selectors and should not remain global.
 
 ### CitynewsProfile
 
@@ -529,6 +606,47 @@ Fixtures:
 
 - `general--www.veneziatoday.it-cronaca-contratto-scaduto-sciopero-farmacie-comunali`
 - `general--www.veneziatoday.it-eventi-estate-insieme-a-vigonovo-programma`
+
+### PianetaBasketProfile
+
+Domains:
+
+- `pianetabasket.com`
+- `m.pianetabasket.com`
+
+Known removals from the prior thread:
+
+- body-level site chrome when semantic `role="main"` is available;
+- repeated dates;
+- section navigation;
+- latest-news modules;
+- popular lists;
+- footer text;
+- author-profile boxes;
+- mobile opening byline/date/read-count metadata.
+
+Current selectors and rules involved:
+
+- semantic-main selection preference from `MainContentDetector`;
+- `.post-author`
+- `.byline-box`
+- `.entry-meta`
+- `.post-meta`
+- `.post-meta-infos`
+- `.article-meta`
+- `.posted-on`
+- `.byline`
+- latest-news/recommendation module heuristics.
+
+Fixtures:
+
+- `general--www.pianetabasket.com-legabasket-serie-a-virtus-bologna-casting-continua-sekulic-profili-panchina-363560`
+- `general--www.pianetabasket.com-euroleague-l-anadolu-efes-conferma-l-uscita-rolands-smits-stagioni-363578`
+- `general--m.pianetabasket.com-euroleague-partizan-belgrado-interessato-all-ex-brindisi-venezia-derek-willis-363565`
+
+Decision:
+
+- Semantic-main preference can stay generic, but mobile/template selectors and latest-news blocks should be profile scoped.
 
 ### WordPressFamilyProfile
 
@@ -566,6 +684,44 @@ Fixtures:
 - `general--www.ilmitte.com-2026-06-riforma-sanita-warken-opposizione-germania`
 - `general--www.ilmitte.com-2026-06-svastica-vegana-al-buffet-di-afd`
 - `general--www.basketuniverso.it-nba-piu-di-una-semplice-lega-un-viaggio-tra-stori`
+
+### IlPostProfile
+
+Domains:
+
+- `ilpost.it`
+
+Known removals and fixes from the prior thread:
+
+- broad body selection/breadcrumb leakage before the article;
+- bottom recommendation sections;
+- embedded audio player placeholders;
+- trailing article tag lists;
+- Markdown link-label flattening around emphasized inline text;
+- WordPress-style captioned body images should remain as Markdown images.
+
+Current selectors and rules involved:
+
+- `#audioPlayerArticle`
+- `.audio-player`
+- `.audioplayer`
+- `[data-mp3]`
+- `[data-audio-src]`
+- trailing tag-list heuristics;
+- recommendation module heuristics;
+- image-wrapper Markdown handling.
+
+Fixtures:
+
+- `general--www.ilpost.it-2026-06-15-ufc-casa-bianca`
+- `general--www.ilpost.it-2026-06-15-lisbona-funicolare-gloria-ferme`
+- `general--www.ilpost.it-2026-06-15-cooling-break-mondiali-calcio-pause`
+- `general--www.ilpost.it-2026-06-15-marius-borg-hoiby-figlio-principessa-ereditaria-norvegia-condannato-stupro`
+- `general--www.ilpost.it-2026-06-15-sorelle-sparite-minturno`
+
+Decision:
+
+- Image-wrapper and Markdown delimiter fixes stay generic. Audio-player placeholders and Il Post-specific trailing chrome should move to this profile unless another publisher fixture proves the selector is generic.
 
 ### SubstackProfile
 
@@ -628,13 +784,13 @@ Post-content removals:
 
 Fixtures:
 
-- `general--kotlin...` fixture listed in docs as JetBrains/Kotlin Blog.
+- `general--blog.jetbrains.com-kotlin-2026-05-security-support-policy-for-the-kotlin-standard-library`
 
 ### NASAProfile
 
 Domains:
 
-- NASA Science fixture domain.
+- `science.nasa.gov`
 
 Post-content removals:
 
@@ -645,7 +801,96 @@ Post-content removals:
 
 Fixtures:
 
-- NASA Science FeedFlow fixture from docs.
+- `general--science.nasa.gov-missions-chandra-nasas-chandra-finds-unexpected-fireworks-in-aftermath-of-stellar-explosions`
+
+### MashableProfile
+
+Domains:
+
+- `mashable.com`
+
+Post-content removals:
+
+- `[aria-label="Author Bio Flyout"]`
+- `[role="tooltip"][aria-label*="Author Bio"]`
+- `div:matchesOwn((?i)^\s*All products featured here are independently selected)`
+- `img[src*="seamless-keep-scrolling"]`
+- `img[alt="Mashable Potato"]`
+- author-card heuristics for freelance-writer profile boxes and default avatar images.
+
+Known removals from the prior thread:
+
+- breadcrumb/title/dek/byline blocks before article prose;
+- top and bottom Mashable author bio blocks;
+- keep-scrolling placeholder art;
+- author flyouts and footer bios;
+- affiliate disclosure and inline newsletter prompts.
+
+Fixtures:
+
+- `general--mashable.com-tech-june-15-aiper-scuba-v3-deal`
+- `general--mashable.com-tech-june-12-bose-ultra-open-earbuds-deal`
+
+Decision:
+
+- Generic author-bio heuristics can remain if guarded by prose/image/role checks. Mashable fallback images and author flyout selectors should be profile scoped.
+
+### BBCProfile
+
+Domains:
+
+- `bbc.com`
+
+Post-content removals:
+
+- `[data-component="headline-block"]`
+- `[data-component="byline-block"]`
+- `img.hide-when-no-script`
+- `img[aria-label="image unavailable"]`
+- `img[src*="grey-placeholder"]`
+- `p:matches((?i)\bdo\s+you\s+have\s+a\s+story\s+suggestion\b)`
+- `p:matches((?i)^follow\s+.{1,80}\s+news\s+on\b)`
+
+Known removals from the prior thread:
+
+- duplicated headline/byline blocks;
+- no-script grey placeholder images;
+- story-suggestion prompts;
+- local-news social follow footers.
+
+Fixtures:
+
+- `general--www.bbc.com-news-articles-cnv9367gvp4o`
+
+Decision:
+
+- Placeholder image cleanup may remain generic only if constrained to empty/no-script placeholder images. BBC `data-component` selectors and social prompts should move to this profile.
+
+### BuzzFeedProfile
+
+Domains:
+
+- `buzzfeed.com`
+
+Post-content removals:
+
+- `.postHead`
+- `[class*=headline-byline]`
+- comment wrappers already covered by generic comments selectors.
+
+Known removals from the prior thread:
+
+- `header.postHead` badge/title/dek/timestamp blocks;
+- `headline-byline` author bio blocks;
+- trailing comments wrappers.
+
+Fixtures:
+
+- `general--www.buzzfeed.com-morgansloss1-world-cup-tourists-share-thoughts-on-the-usa`
+
+Decision:
+
+- `.postHead` and `headline-byline` are not safe as global selectors and should move to this profile.
 
 ### AppleInsiderProfile
 
@@ -665,6 +910,29 @@ Many of these are behavioral opening-header rules and may remain generic if guar
 Fixtures:
 
 - `general--appleinsider.com-articles-26-06-15-iphone-18-pro-buyers-should-watch-out-for-a-repeat-problem`
+
+### CSS-TricksProfile
+
+Domains:
+
+- `css-tricks.com`
+
+Known removals from the prior thread:
+
+- mega article headers that duplicate tags, title, avatar, author, and date before article prose.
+
+Current selectors and rules involved:
+
+- `:scope > div:first-child > header`
+- opening article header heuristics.
+
+Fixtures:
+
+- `general--css-tricks.com-another-stab-at-the-perfect-css-pie-chart-sans-javascript`
+
+Decision:
+
+- The opening-header heuristic can stay generic when it uses body/prose guards. Any CSS-Tricks-only wrapper selector should move here.
 
 ### MacRumorsProfile
 
@@ -751,6 +1019,7 @@ Domains:
 
 - `9to5google.com`
 - `9to5mac.com`
+- `9to5linux.com`
 
 Post-content removals:
 
@@ -766,7 +1035,9 @@ Fixtures:
 
 - `general--9to5google.com-2026-06-14-google-ads-tease-next-pixel-drop-with-screen-reactions-and-gemini-omni-video`
 - `general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier`
-- 9to5Mac fixtures listed in `docs/fixture-coverage.md`.
+- `general--9to5mac.com-2026-06-13-airpods-pro-3-drop-to-their-best-price-ever-as-apple-announces-new-ios-27-features`
+- `general--9to5mac.com-2026-06-11-iphone-ultra-is-coming-six-new-features-in-apples-top-tier-model`
+- `general--9to5linux.com-dietpi-10-5-enables-kms-drm-graphics-system-by-default-for-raspberry-pi-sbcs`
 
 ## Selectors to Keep Generic Initially
 
