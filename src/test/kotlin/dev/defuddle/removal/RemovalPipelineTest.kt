@@ -1965,6 +1965,64 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove SI source recirculation author and breadcrumb chrome`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <header>
+                    <div class="mb-4 flex items-center justify-between text-grey font-group-tiny">
+                      <div class="flex items-center">
+                        <a href="/nfl/draft/onsi/authors/just-melo" data-testtype="author-link">Justin Melo</a>
+                        <span>|</span>
+                      </div>
+                    </div>
+                    <figure><img src="https://example.com/hero.jpg" alt="Hero" width="720" height="405"><figcaption>Hero caption stays.</figcaption></figure>
+                  </header>
+                  <div class="article-content">
+                    <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
+                    <p>Sources familiar with the Seahawks confirm Stephens is well-liked within the building. This conclusion should stay before SI footer chrome is removed.</p>
+                    <div data-testid="google-news-widget"><span>Add us as a preferred source on <span>Google</span></span></div>
+                  </div>
+                  <div data-mm-recirc class="voltax-recirculation-widget">
+                    <div class="rw-widget-loading"><p>Loading recommendations... Please wait while we load personalized content recommendations</p></div>
+                  </div>
+                  <div class="flex flex-col gap-5 my-[30px]">
+                    <hr>
+                    <div>
+                      <span>Published <time datetime="2026-06-16T10:00:04Z">1 hour ago</time></span>
+                      <span>| Modified <time datetime="2026-06-16T10:00:04Z">1 hour ago</time></span>
+                    </div>
+                    <div>
+                      <a href="/nfl/draft/onsi/authors/just-melo" data-testtype="author-link">JUSTIN MELO</a>
+                      <p data-testtype="author-bio">Justin Melo is the publisher of NFL Draft on SI, a Sports Illustrated channel.</p>
+                      <a href="https://x.com/JustinM_NFL" data-testtype="x-link">Follow JustinM_NFL</a>
+                    </div>
+                  </div>
+                  <div class="my-8">
+                    <a href="https://www.si.com/nfl/draft/onsi">Home</a>
+                    <span>/</span>
+                    <a href="https://www.si.com/nfl/draft/onsi/late-round-expert">Late-Round Expert</a>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://www.si.com/nfl/draft/onsi/late-round-expert/example",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("Sources familiar with the Seahawks confirm Stephens"))
+        assertFalse(result.contentMarkdown.contains("Justin Melo"))
+        assertFalse(result.contentMarkdown.contains("Add us as a preferred source"))
+        assertFalse(result.contentMarkdown.contains("Loading recommendations"))
+        assertFalse(result.contentMarkdown.contains("Published"))
+        assertFalse(result.contentMarkdown.contains("Modified"))
+        assertFalse(result.contentMarkdown.contains("Follow JustinM"))
+        assertFalse(result.contentMarkdown.contains("Late-Round Expert"))
+        assertFalse(result.contentHtml.contains("google-news-widget"))
+        assertFalse(result.contentHtml.contains("data-mm-recirc"))
+        assertFalse(result.contentHtml.contains("author-bio"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

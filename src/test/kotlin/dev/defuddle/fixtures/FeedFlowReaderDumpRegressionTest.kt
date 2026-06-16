@@ -1247,6 +1247,33 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("phone-links"))
     }
 
+    @Test
+    fun `si article dump excludes source recirculation author and breadcrumb footer`() {
+        val fixtureName = "general--www.si.com-nfl-draft-onsi-late-round-expert-five-sleeper-nfl-draft-picks-already-putting-pressure-on-coaches-to-change-t"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Several NFL teams"))
+        assertTrue(result.contentMarkdown.contains("2026 NFL Draft: Late-Round Rookies Climbing Depth Charts"))
+        assertTrue(result.contentMarkdown.contains("That responsibility will soon belong to Stephens."))
+        assertFalse(result.contentMarkdown.contains("Add us as a preferred source"))
+        assertFalse(result.contentMarkdown.contains("Loading recommendations"))
+        assertFalse(result.contentMarkdown.contains("personalized content recommendations"))
+        assertFalse(result.contentMarkdown.contains("Published"))
+        assertFalse(result.contentMarkdown.contains("Modified"))
+        assertFalse(result.contentMarkdown.contains("JUSTIN MELO"))
+        assertFalse(result.contentMarkdown.contains("Justin Melo is the publisher of NFL Draft on SI"))
+        assertFalse(result.contentMarkdown.contains("Follow JustinM"))
+        assertFalse(result.contentMarkdown.contains("Home\n\n/\n\nLate-Round Expert"))
+        assertFalse(result.contentHtml.contains("google-news-widget"))
+        assertFalse(result.contentHtml.contains("data-mm-recirc"))
+        assertFalse(result.contentHtml.contains("voltax-recirculation-widget"))
+        assertFalse(result.contentHtml.contains("data-testtype=\"author-bio\""))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")
