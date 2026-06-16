@@ -2023,6 +2023,57 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove Motorsport story footer widgets while preserving article prose`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <article class="ms-page">
+                    <div class="ms-article-content">
+                      <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
+                      <p>So it's part of the learning process as a year one.</p>
+                      <h2>Photos from Barcelona-Catalunya GP - Sunday</h2>
+                    </div>
+                    <div class="ms-article-end"><h4>Share Or Save This Story</h4></div>
+                    <div class="msnt-article-prev-next"><span>Previous article</span><a>Lewis Hamilton's first Ferrari win celebrations spill into the streets in Italy</a></div>
+                    <div class="ms-comments-wrapper"><h3 id="top-comments-title">Top Comments</h3></div>
+                  </article>
+                  <div class="ms-inarticle-widgets">
+                    <div class="ms-items-widget ms-items-widget--more-from-author" data-widget="more-from">
+                      <span class="ms-item-more-from__label">More from</span>
+                      <address>Oleg Karpov</address>
+                      <a>McLaren labels upgraded Ferrari best F1 chassis after Lewis Hamilton's Barcelona win</a>
+                    </div>
+                    <div class="ms-items-widget ms-items-widget--latest-news" data-widget="latest-news">
+                      <span class="msnt-heading__title">Latest news</span>
+                    </div>
+                    <div class="ms-items-widget ms-items-widget--prime-content-fullwidth" data-widget="prime-content-fullwidth">
+                      <span>Discover prime content</span>
+                    </div>
+                    <div class="adblock-content-blocked">
+                      <h3>Subscribe and access Motorsport.com with your ad-blocker.</h3>
+                    </div>
+                  </div>
+                </main>
+            """.trimIndent(),
+            url = "https://www.motorsport.com/f1/news/example/10830609/",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("So it's part of the learning process"))
+        assertFalse(result.contentMarkdown.contains("Photos from Barcelona"))
+        assertFalse(result.contentMarkdown.contains("Share Or Save This Story"))
+        assertFalse(result.contentMarkdown.contains("Previous article"))
+        assertFalse(result.contentMarkdown.contains("Top Comments"))
+        assertFalse(result.contentMarkdown.contains("More from"))
+        assertFalse(result.contentMarkdown.contains("Latest news"))
+        assertFalse(result.contentMarkdown.contains("Discover prime content"))
+        assertFalse(result.contentMarkdown.contains("Subscribe and access Motorsport.com"))
+        assertFalse(result.contentHtml.contains("ms-article-end"))
+        assertFalse(result.contentHtml.contains("ms-inarticle-widgets"))
+        assertFalse(result.contentHtml.contains("adblock-content-blocked"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

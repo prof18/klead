@@ -1274,6 +1274,37 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("data-testtype=\"author-bio\""))
     }
 
+    @Test
+    fun `motorsport article dump excludes comments recirculation and subscription footer`() {
+        val fixtureName = "general--www.motorsport.com-f1-news-im-not-a-machine-isack-hadjar-blasts-red-bull-start-procedure-10830609"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Red Bull's drivers have been struggling with their starts"))
+        assertTrue(result.contentMarkdown.contains("I'm not a computer, I'm not a machine"))
+        assertTrue(result.contentMarkdown.contains("So it's part of the learning process as a year one."))
+        assertFalse(result.contentMarkdown.contains("Photos from Barcelona-Catalunya GP - Sunday"))
+        assertFalse(result.contentMarkdown.contains("Share Or Save This Story"))
+        assertFalse(result.contentMarkdown.contains("Previous article"))
+        assertFalse(result.contentMarkdown.contains("Top Comments"))
+        assertFalse(result.contentMarkdown.contains("More from"))
+        assertFalse(result.contentMarkdown.contains("McLaren labels upgraded Ferrari best F1 chassis"))
+        assertFalse(result.contentMarkdown.contains("More from\n\nIsack Hadjar"))
+        assertFalse(result.contentMarkdown.contains("More from\n\nRed Bull Racing"))
+        assertFalse(result.contentMarkdown.contains("Latest news"))
+        assertFalse(result.contentMarkdown.contains("Discover prime content"))
+        assertFalse(result.contentMarkdown.contains("Subscribe and access Motorsport.com with your ad-blocker"))
+        assertFalse(result.contentMarkdown.contains("Disable your adblocker"))
+        assertFalse(result.contentHtml.contains("ms-article-end"))
+        assertFalse(result.contentHtml.contains("msnt-article-prev-next"))
+        assertFalse(result.contentHtml.contains("ms-comments-wrapper"))
+        assertFalse(result.contentHtml.contains("ms-inarticle-widgets"))
+        assertFalse(result.contentHtml.contains("adblock-content-blocked"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

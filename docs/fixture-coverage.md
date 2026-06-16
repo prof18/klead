@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 47
+- FeedFlow reader-dump regression fixtures: 48
 
 ## Active Strict Fixtures
 
@@ -76,6 +76,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--www.androidauthority.com-samsung-galaxy-s26-one-ui-9-beta-3-3677792`: verifies that Android Authority affiliate disclosures, opening category/dek/byline/share chrome, Google preferred-source prompts, and comment-policy footers do not leak into reader Markdown.
 - `general--www.phonearena.com-news-razr-ultra-2025-motorola-deal-700-usd-off-free-earbuds_id181125`: verifies that PhoneArena comment counters, author/date/disclaimer chrome, Google News follow rows, author bio/latest-post blocks, community discussions, and related-device footer links do not leak into reader Markdown.
 - `general--www.si.com-nfl-draft-onsi-late-round-expert-five-sleeper-nfl-draft-picks-already-putting-pressure-on-coaches-to-change-t`: verifies that SI/MinuteMedia preferred-source widgets, recommendation loaders, publish/modified metadata, author bio/follow cards, and breadcrumb footers do not leak after article prose.
+- `general--www.motorsport.com-f1-news-im-not-a-machine-isack-hadjar-blasts-red-bull-start-procedure-10830609`: verifies that Motorsport.com share/save, previous article, top comments, more-from recirculation, latest-news, prime-content, and adblock subscription footer modules do not leak after article prose.
 
 ## Known Differences
 
