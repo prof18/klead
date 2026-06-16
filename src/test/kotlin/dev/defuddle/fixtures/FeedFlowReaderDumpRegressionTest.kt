@@ -1186,6 +1186,36 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("article-comments"))
     }
 
+    @Test
+    fun `androidauthority article dump excludes source prompts and comment footer`() {
+        val fixtureName = "general--www.androidauthority.com-samsung-galaxy-s26-one-ui-9-beta-3-3677792"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("Samsung has released the third One UI 9 beta"))
+        assertTrue(result.contentMarkdown.contains("The changelog for the update notes the following bugs have been fixed"))
+        assertTrue(result.contentMarkdown.contains("This update is already live in practically all beta regions"))
+        assertFalse(result.contentMarkdown.contains("Affiliate links on Android Authority"))
+        assertFalse(result.contentMarkdown.contains("Mobile"))
+        assertFalse(result.contentMarkdown.contains("The Android 17-based update brings critical display"))
+        assertFalse(result.contentMarkdown.contains("34 minutes ago"))
+        assertFalse(result.contentMarkdown.contains("Add AndroidAuthority on Google"))
+        assertFalse(result.contentMarkdown.contains("Follow us on Google Discover"))
+        assertFalse(result.contentMarkdown.contains("Add us as preferred source"))
+        assertFalse(result.contentMarkdown.contains("Don’t want to miss the best"))
+        assertFalse(result.contentMarkdown.contains("favorite source in Google Discover"))
+        assertFalse(result.contentMarkdown.contains("preferred source in Google Search"))
+        assertFalse(result.contentMarkdown.contains("Thank you for being part of our community"))
+        assertFalse(result.contentMarkdown.contains("Comment Policy"))
+        assertFalse(result.contentHtml.contains("AAGoogleDiscoverSource"))
+        assertFalse(result.contentHtml.contains("AAGooglePreferredSource"))
+        assertFalse(result.contentHtml.contains("AAGooglePrefSource"))
+        assertFalse(result.contentHtml.contains("android-authority-comment-policy"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

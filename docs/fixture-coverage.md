@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 44
+- FeedFlow reader-dump regression fixtures: 45
 
 ## Active Strict Fixtures
 
@@ -73,6 +73,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--popculture.com-celebrity-news-alf-mom-anne-schedeen-dead-at-77`: verifies that PopCulture Gutenberg video placeholders, next-article/footer modules, category sidebars, newsletter signup blocks, and most-viewed template headings do not leak into reader Markdown.
 - `general--screenrant.com-gilmore-girls-leaving-netflix-june-2026`: verifies that ScreenRant/Valnet display-card rating widgets and database metadata cards do not leak after article prose.
 - `general--variety.com-2026-film-festivals-cecilia-yip-rebecca-li-manxuan-kering-women-in-motion-shanghai-1236781725`: verifies that Variety comment jump links and JavaScript loading placeholders do not leak after article prose.
+- `general--www.androidauthority.com-samsung-galaxy-s26-one-ui-9-beta-3-3677792`: verifies that Android Authority affiliate disclosures, opening category/dek/byline/share chrome, Google preferred-source prompts, and comment-policy footers do not leak into reader Markdown.
 
 ## Known Differences
 

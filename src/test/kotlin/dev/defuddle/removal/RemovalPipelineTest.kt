@@ -1866,6 +1866,45 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove Android Authority source and comment chrome`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <main>
+                  <div><p>Affiliate links on Android Authority may earn us a commission. <a href="/external-links/">Learn more.</a></p></div>
+                  <div><a href="https://www.androidauthority.com/mobile/">Mobile</a></div>
+                  <div>The Android 17-based update brings critical display, camera, and stability patches.</div>
+                  <div><span>By</span><p>34 minutes ago</p><a href="https://andauth.co/AAGooglePrefSource">Add AndroidAuthority on Google</a></div>
+                  <figure><img src="https://example.com/hero.jpg" alt="Hero"></figure>
+                  <div><a href="https://andauth.co/AAGoogleDiscoverSource">Follow us on Google Discover</a><a href="https://andauth.co/AAGooglePreferredSource">Add us as preferred source</a></div>
+                  <div data-container-type="content">
+                    <p><strong>Don’t want to miss the best from <em>Android Authority</em>?</strong></p>
+                    <ul>
+                      <li>Set us as a <a href="https://andauth.co/AAGoogleDiscoverSource">favorite source in Google Discover</a>.</li>
+                      <li>You can also set us as a <a href="https://andauth.co/AAGooglePreferredSource">preferred source in Google Search</a>.</li>
+                    </ul>
+                  </div>
+                  <div data-container-type="content"><p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p></div>
+                  <div><div>Follow</div></div>
+                  <div data-container-type="content"><p>Thank you for being part of our community. Read our <a href="https://www.androidauthority.com/android-authority-comment-policy/">Comment Policy</a> before posting.</p></div>
+                </main>
+            """.trimIndent(),
+            url = "https://www.androidauthority.com/example",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("![Hero](https://example.com/hero.jpg)"))
+        assertFalse(result.contentMarkdown.contains("Affiliate links on Android Authority"))
+        assertFalse(result.contentMarkdown.contains("Mobile"))
+        assertFalse(result.contentMarkdown.contains("The Android 17-based update brings critical display"))
+        assertFalse(result.contentMarkdown.contains("Add AndroidAuthority on Google"))
+        assertFalse(result.contentMarkdown.contains("Follow us on Google Discover"))
+        assertFalse(result.contentMarkdown.contains("Don’t want to miss the best"))
+        assertFalse(result.contentMarkdown.contains("preferred source in Google Search"))
+        assertFalse(result.contentMarkdown.contains("Thank you for being part of our community"))
+        assertFalse(result.contentMarkdown.contains("Comment Policy"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
