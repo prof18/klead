@@ -1796,6 +1796,46 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove Valnet display card rating widgets`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
+                  <div class="display-card type-screen medium" data-show-streamrentbuy-links="true" data-include-community-rating="true">
+                    <div class="display-card-rate user-rating" data-is-stars-user-rating-widget="true">
+                      <h3 class="rating-title">Your Rating</h3>
+                      <label>10 stars</label>
+                      <label>1 star</label>
+                      <div class="rating-text">Rate Now</div>
+                      <div class="rating-text rate-number">0<em>/10</em></div>
+                      <a class="review-link" href="/db/example/#thread">Leave a Review</a>
+                      <p class="comment-msg">Your comment has not been saved</p>
+                    </div>
+                    <h5 class="display-card-title"><a href="/db/tv-show/example/">Example Show</a></h5>
+                    <div class="dc-tags-genre"><a>Comedy</a><a>Drama</a></div>
+                    <div class="w-display-card-info"><dl><dt>Release Date</dt><dd>2000</dd></dl></div>
+                    <div class="display-card-footer">Powered by ScreenRant</div>
+                  </div>
+                  <p>The article conclusion should also stay after the display-card rating widget is removed.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/valnet-display-card",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertFalse(result.contentMarkdown.contains("Your Rating"))
+        assertFalse(result.contentMarkdown.contains("10 stars"))
+        assertFalse(result.contentMarkdown.contains("Rate Now"))
+        assertFalse(result.contentMarkdown.contains("Leave a Review"))
+        assertFalse(result.contentMarkdown.contains("Your comment has not been saved"))
+        assertFalse(result.contentMarkdown.contains("Example Show"))
+        assertFalse(result.contentMarkdown.contains("Powered by ScreenRant"))
+        assertFalse(result.contentHtml.contains("""class="display-card"""))
+        assertFalse(result.contentHtml.contains("data-include-community-rating"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """

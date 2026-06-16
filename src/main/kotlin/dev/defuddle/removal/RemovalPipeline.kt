@@ -1012,6 +1012,8 @@ object RemovalPipeline {
         ".duet--ledes--standard-lede-bottom",
         ".wp-block-query",
         ".display-card.article-card",
+        ".display-card[data-include-community-rating]",
+        ".display-card[data-show-streamrentbuy-links]",
         "div.article-card[data-nosnippet]",
         ".btn-gpsource-bt-article",
         ".c-story--stack",

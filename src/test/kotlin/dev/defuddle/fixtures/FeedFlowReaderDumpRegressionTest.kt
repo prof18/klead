@@ -1140,6 +1140,32 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("wp-block-savage-platform-beehiiv-form"))
     }
 
+    @Test
+    fun `screenrant article dump excludes display card rating widget`() {
+        val fixtureName = "general--screenrant.com-gilmore-girls-leaving-netflix-june-2026"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("[Gilmore Girls](https://screenrant.com/db/tv-show/gilmore-girls/) is about to say goodbye"))
+        assertTrue(result.contentMarkdown.contains("Wherever the show lands, there will be droves of eager fans waiting"))
+        assertFalse(result.contentMarkdown.contains("### Your Rating"))
+        assertFalse(result.contentMarkdown.contains("10 stars"))
+        assertFalse(result.contentMarkdown.contains("Rate Now"))
+        assertFalse(result.contentMarkdown.contains("Leave a Review"))
+        assertFalse(result.contentMarkdown.contains("Your comment has not been saved"))
+        assertFalse(result.contentMarkdown.contains("##### [Gilmore Girls]"))
+        assertFalse(result.contentMarkdown.contains("Powered by"))
+        assertFalse(result.contentMarkdown.contains("Expand"))
+        assertFalse(result.contentMarkdown.contains("Collapse"))
+        assertFalse(result.contentHtml.contains("display-card"))
+        assertFalse(result.contentHtml.contains("data-include-community-rating"))
+        assertFalse(result.contentHtml.contains("display-card-rate"))
+        assertFalse(result.contentHtml.contains("w-display-card-info"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")
