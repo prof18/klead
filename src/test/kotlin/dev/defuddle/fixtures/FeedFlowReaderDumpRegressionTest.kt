@@ -1087,6 +1087,33 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("rules-reminder"))
     }
 
+    @Test
+    fun `rollingstone article dump excludes header chrome and trending stories`() {
+        val fixtureName = "general--www.rollingstone.com-music-music-news-madonna-bring-your-love-video-sabrina-carpenter-1235577750"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+        assertTrue(result.contentMarkdown.contains("[Madonna](https://www.rollingstone.com/t/madonna/) and [Sabrina Carpenter]"))
+        assertTrue(result.contentMarkdown.contains("Directed by Torso, the visual is set in an enormous club space"))
+        assertTrue(result.contentMarkdown.contains("[Madonna & Sabrina Carpenter - Bring Your Love (Official Video)](https://www.youtube.com/watch?v=EHrt-gFgvXo)"))
+        assertTrue(result.contentMarkdown.contains("video looks to be an extended version"))
+        assertFalse(lines.any { it == "Loose Lips" || it == "Confessions II" || it == "single" || it == "June 15, 2026" })
+        assertFalse(result.contentMarkdown.contains("## Trending Stories"))
+        assertFalse(result.contentMarkdown.contains("Jelly Roll Files for Divorce From Bunnie Xo"))
+        assertFalse(result.contentMarkdown.contains("Melanie Martinez Pays Tribute"))
+        assertFalse(result.contentMarkdown.contains("Bonnie Tyler No Longer in Coma"))
+        assertFalse(result.contentMarkdown.contains("Oliver Tree, 'Life Goes On' Singer"))
+        assertFalse(result.contentHtml.contains("a-article-grid__header"))
+        assertFalse(result.contentHtml.contains("a-article-grid__author"))
+        assertFalse(result.contentHtml.contains("trending-in-article"))
+        assertFalse(result.contentHtml.contains("recirculation-modules"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

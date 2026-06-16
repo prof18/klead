@@ -1709,6 +1709,49 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove article header chrome and in article recirculation`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <header class="a-article-grid__header">
+                    <div class="article-kicker">Loose Lips</div>
+                    <h1>Example title duplicated from metadata</h1>
+                    <div class="article-excerpt">Example dek duplicated from metadata.</div>
+                  </header>
+                  <div class="a-article-grid__author">
+                    <time datetime="2026-06-15T14:00:00Z">June 15, 2026</time>
+                  </div>
+                  <div class="a-article-grid__featured-media">
+                    <img src="https://example.com/hero.jpg" alt="Hero image">
+                  </div>
+                  <div class="a-content">
+                    <p>The actual article intro should stay because it contains useful reporting and normal prose for the reader output.</p>
+                    <section class="brands-most-popular recirculation-modules trending-in-article">
+                      <h2>Trending Stories</h2>
+                      <article><h3>Jelly Roll Files for Divorce From Bunnie Xo</h3></article>
+                    </section>
+                    <p>The article conclusion should also stay after the in-article recirculation module is removed from the cleaned result.</p>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/rollingstone-article",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The actual article intro should stay"))
+        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertTrue(result.contentHtml.contains("""class="a-article-grid__featured-media""""))
+        assertFalse(result.contentMarkdown.contains("Loose Lips"))
+        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("Example dek duplicated from metadata"))
+        assertFalse(result.contentMarkdown.contains("June 15, 2026"))
+        assertFalse(result.contentMarkdown.contains("Trending Stories"))
+        assertFalse(result.contentMarkdown.contains("Jelly Roll Files for Divorce From Bunnie Xo"))
+        assertFalse(result.contentHtml.contains("a-article-grid__header"))
+        assertFalse(result.contentHtml.contains("a-article-grid__author"))
+        assertFalse(result.contentHtml.contains("trending-in-article"))
+    }
+
+    @Test
     fun `duplicate images are removed after first occurrence`() {
         val result = Defuddle.parseHtml(
             html = """
