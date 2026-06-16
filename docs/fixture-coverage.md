@@ -1,6 +1,6 @@
 # Fixture Coverage
 
-Last updated: 2026-06-15
+Last updated: 2026-06-16
 
 Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
@@ -13,7 +13,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: deferred as a documented known difference
-- FeedFlow reader-dump regression fixtures: 38
+- FeedFlow reader-dump regression fixtures: 39
 
 ## Active Strict Fixtures
 
@@ -67,6 +67,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - `general--berlinomagazine.com-2026-berlino-progetto-unico-in-europa-case-e-spazi-per-lesbiche-e-persone-queer-nel-cuore-della-citt`: verifies that Enfold/WordPress cover copyright captions and entry metadata strips do not leak before article prose.
 - `general--www.ilmitte.com-2026-06-riforma-sanita-warken-opposizione-germania`: verifies that Jannah/TieLabs WordPress category-chip wrappers do not leak before article prose.
 - `general--www.ilmitte.com-2026-06-svastica-vegana-al-buffet-di-afd`: verifies that inline WordPress/Mailchimp newsletter blocks do not leak into article prose.
+- `general--www.gamespot.com-articles-microsoft-boss-wants-xbox-to-start-pulling-its-weight-financially`: verifies that GameSpot right-rail commerce widgets such as "Where to Buy" do not leak into reader Markdown.
 
 ## Known Differences
 

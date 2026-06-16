@@ -1038,6 +1038,24 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentHtml.contains("reactions-title"))
     }
 
+    @Test
+    fun `gamespot article dump excludes right rail commerce widget`() {
+        val fixtureName = "general--www.gamespot.com-articles-microsoft-boss-wants-xbox-to-start-pulling-its-weight-financially"
+        val html = resourceText("feedflow-reader-dumps/$fixtureName.html")
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = FixtureLoader.extractUrl(fixtureName, html),
+        )
+
+        assertTrue(result.contentMarkdown.contains("While the new Xbox leadership team under CEO Asha Sharma"))
+        assertTrue(result.contentMarkdown.contains("Microsoft CEO Satya Nadella got down to brass tacks"))
+        assertFalse(result.contentMarkdown.contains("Where to Buy"))
+        assertFalse(result.contentMarkdown.contains("Loading..."))
+        assertFalse(result.contentMarkdown.contains("GameSpot may get a commission from retail offers."))
+        assertFalse(result.contentHtml.contains("wp-block-gamespot-blocks-where-to-buy"))
+        assertFalse(result.contentHtml.contains("single-sidebar right-rail"))
+    }
+
     private fun resourceText(path: String): String {
         val resource = Thread.currentThread().contextClassLoader.getResource(path)
             ?: error("Missing test resource: $path")

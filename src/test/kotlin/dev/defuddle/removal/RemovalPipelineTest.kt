@@ -892,6 +892,37 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `exact selectors remove article right rail commerce widgets`() {
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <div class="article-body">
+                    <p>The article body should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                    <p>A second paragraph keeps this story body clearly article-like when a commerce sidebar appears as a sibling inside the selected article root.</p>
+                  </div>
+                  <aside class="single-sidebar right-rail" aria-label="Article sidebar">
+                    <div class="widget widget-sidebar widget_block">
+                      <div class="widget-decor wp-block-gamespot-blocks-where-to-buy">
+                        <h2>Where to Buy</h2>
+                        <h3>Loading...</h3>
+                        <p>GameSpot may get a commission from retail offers.</p>
+                      </div>
+                    </div>
+                  </aside>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/right-rail-commerce",
+        )
+
+        assertTrue(result.contentMarkdown.contains("The article body should stay"))
+        assertTrue(result.contentMarkdown.contains("A second paragraph keeps this story body"))
+        assertFalse(result.contentMarkdown.contains("Where to Buy"))
+        assertFalse(result.contentMarkdown.contains("Loading..."))
+        assertFalse(result.contentMarkdown.contains("GameSpot may get a commission"))
+        assertFalse(result.contentHtml.contains("right-rail"))
+    }
+
+    @Test
     fun `exact selectors remove inline Valnet related article cards while preserving surrounding prose`() {
         val result = Defuddle.parseHtml(
             html = """
