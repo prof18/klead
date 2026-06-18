@@ -53,13 +53,7 @@ internal object RemovalPipeline {
         for (element in content.select("*").toList()) {
             val reason = hiddenReason(element) ?: continue
             if (isMathWrapper(element)) continue
-            debug += RemovalRecord(
-                step = "removeHiddenElements",
-                selector = hiddenSelector(element),
-                reason = reason,
-                preview = element.text().take(100),
-            )
-            element.removeSafely()
+            recordAndRemove(element, debug, "removeHiddenElements", hiddenSelector(element), reason)
         }
     }
 
@@ -862,11 +856,12 @@ internal object RemovalPipeline {
     private fun Element.isSmallImage(): Boolean {
         val width = dimension("width")
         val height = dimension("height")
-        return if (width != null && height != null) {
-            width > 0 && height > 0 && width <= SMALL_IMAGE_MAX_DIMENSION && height <= SMALL_IMAGE_MAX_DIMENSION
-        } else {
-            false
-        }
+        return width != null &&
+            height != null &&
+            width > 0 &&
+            height > 0 &&
+            width <= SMALL_IMAGE_MAX_DIMENSION &&
+            height <= SMALL_IMAGE_MAX_DIMENSION
     }
 
     private fun Element.dimension(name: String): Int? =

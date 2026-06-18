@@ -66,7 +66,6 @@ object PageMetadataExtractor {
             .asSequence()
             .mapNotNull { cleanTitle(it, site, domain) }
             .firstOrNull()
-            ?: cleanTitle(h1, site, domain)
     }
 
     private fun extractAuthor(
@@ -255,8 +254,7 @@ object PageMetadataExtractor {
     private fun List<MetaTagItem>.firstContent(vararg keys: String): String? {
         for (key in keys) {
             val match = firstOrNull { tag ->
-                tag.name.equals(key, ignoreCase = true) ||
-                    tag.property.equals(key, ignoreCase = true)
+                tag.matchesKey(key)
             }
             val content = cleanValue(match?.content)
             if (content != null) return content
@@ -266,9 +264,12 @@ object PageMetadataExtractor {
 
     private fun List<MetaTagItem>.contents(key: String): List<String> =
         filter { tag ->
-            tag.name.equals(key, ignoreCase = true) ||
-                tag.property.equals(key, ignoreCase = true)
+            tag.matchesKey(key)
         }.mapNotNull { cleanValue(it.content) }
+
+    private fun MetaTagItem.matchesKey(key: String): Boolean =
+        name.equals(key, ignoreCase = true) ||
+            property.equals(key, ignoreCase = true)
 
     private val PLACEHOLDERS = setOf(
         "untitled",

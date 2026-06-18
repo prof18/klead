@@ -4,6 +4,7 @@ import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorMetadata
 import dev.defuddle.extractors.ExtractorResult
+import java.net.URI
 
 object WikipediaExtractor : Extractor {
     override val id: String = "wikipedia"

@@ -8,6 +8,7 @@ import dev.defuddle.extractors.AppliedExtractor
 import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorRegistry
+import dev.defuddle.extractors.site.ExtractorRemovalPipeline
 import dev.defuddle.markdown.DefuddleMarkdownWriter
 import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
@@ -101,11 +102,6 @@ object Defuddle {
         )
     }
 
-    private fun selectContent(document: Document): Element =
-        document.selectFirst("article")
-            ?: document.selectFirst("main")
-            ?: document.body()
-
     private fun parseInternal(
         document: Document,
         url: String,
@@ -120,7 +116,7 @@ object Defuddle {
         )
         val matchedExtractors = ExtractorRegistry(options.effectiveExtractors()).resolve(context = extractorContext)
         val removals = mutableListOf<RemovalRecord>()
-        _root_ide_package_.dev.defuddle.extractors.site.ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
+        ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
 
         val metaTags = MetadataExtractor.collectMetaTags(document)
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
@@ -145,7 +141,7 @@ object Defuddle {
             metadataImage = metadata.image,
             policy = removalPolicy,
         )
-        _root_ide_package_.dev.defuddle.extractors.site.ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
+        ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
         val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
         matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
         HtmlStandardizer.apply(content, metadata.title)
