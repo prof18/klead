@@ -1,0 +1,26 @@
+```json
+{
+  "title": "DietPi 10.5 Enables KMS/DRM Graphics System by Default for Raspberry Pi SBCs",
+  "author": "Marcus Nestor",
+  "site": "9to5Linux",
+  "published": "2026-06-14T22:08:58+00:00"
+}
+```
+
+DietPi 10.5 has been released today as a new stable version of this Linux distribution for single-board computers, improving support for Raspberry Pi and NanoPi K2 SBCs, and updating the DietPi-Software and DietPi-Config tools.
+
+Coming almost a month after **[DietPi 10.4](https://9to5linux.com/dietpi-10-4-released-with-orange-pi-5b-support-dietpi-software-improvements)**, the DietPi 10.5 release enables KMS (Kernel Mode Setting) and DRM (Direct Rendering Manager) by default for **[Raspberry Pi](https://9to5linux.com/raspberry-pi-500-launches-as-the-ultimate-all-in-one-pc-based-on-raspberry-pi-5)** boards when installing a graphical app or desktop environment via DietPi-Software. While this option is enabled by default now, you can control it via a new dedicated entry in DietPi-Config’s Display Options.
+
+Also for Raspberry Pi SBCs, the DietPi 10.5 release updates the Raspberry Pi Camera setting in the DietPi-Config tool to allow you to toggle the modern camera stack via the new libcamera API. For NanoPi K2 SBCs, the DietPi 10.5 release addresses a bug that prevented users from setting a static Ethernet MAC address via the ethaddr variable.
+
+The DietPi devs recommended users who want a static MAC address on their NanoPi K2 boards to use the one assigned during boot. However, keep in mind that on existing installations, you will need to flash U-Boot via DietPi-Config’s Advanced Options for the change to take effect.
+
+DietPi-Software, the tool that lets you install any app on DietPi, has been updated in this release to enable the RustDesk Client for ARMv7 architectures and fix a regression for the ownCloud Infinite Scale software that caused logins via intended password to fail on fresh installations.
+
+On the other hand, the DietPi-Config configuration tool received a revamped display menu, support for configuring the GRUB terminal, and the resolution of the early boot console. Also, the devs addressed an issue where the RTC mode option in Advanced Options wasn’t displayed due to the incorrect detection of `/dev/rtc*`.
+
+Starting with this release, DietPi-Config also sees the removal of the device-specific resolution menus for Raspberry Pi and Odroid SBCs, along with Raspberry Pi headless mode, HDMI rotation, and PSU noise reduction. For more details about the changes included in DietPi 10.5, check out the release notes on the *[project’s GitHub page](https://github.com/MichaIng/DietPi/releases/tag/v10.5)*.
+
+DietPi 10.5 can be downloaded right now from the *[official website](https://dietpi.com/)* for your favorite single-board computer. Of course, existing DietPi users need only to update their installations to receive the new features and enhancements included in this update.
+
+*Image credits: DietPi*

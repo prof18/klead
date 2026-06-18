@@ -22,6 +22,14 @@ data class FixtureCase(
     val categories: Set<FixtureCategory>,
 )
 
+data class FeedFlowReaderDumpCase(
+    val name: String,
+    val path: Path,
+    val sourceUrl: String,
+    val rawHtml: String,
+    val expectedMarkdown: ExpectedResult,
+)
+
 data class ExpectedResult(val metadata: Map<String, String>, val markdownBody: String)
 
 enum class FixtureCategory {
@@ -114,9 +122,40 @@ object FixtureLoader {
     private val FRONTMATTER_REGEX = Regex("""<!--\s*(\{"url":.*?})\s*-->""")
 }
 
+object FeedFlowReaderDumpLoader {
+    fun loadAll(): List<FeedFlowReaderDumpCase> {
+        val dumpDir = resourceDir("feedflow-reader-dumps")
+        return Files.list(dumpDir).use { paths ->
+            paths
+                .filter { it.extension == "html" }
+                .sorted(Comparator.comparing<Path, String> { it.name })
+                .map { path ->
+                    val name = path.nameWithoutExtension
+                    val rawHtml = path.readText()
+                    FeedFlowReaderDumpCase(
+                        name = name,
+                        path = path,
+                        sourceUrl = FixtureLoader.extractUrl(name, rawHtml),
+                        rawHtml = rawHtml,
+                        expectedMarkdown = ExpectedResultLoader.loadFrom(
+                            resourceDirectory = "feedflow-reader-expected",
+                            fixtureName = name,
+                        ) ?: error("Missing expected FeedFlow markdown fixture: $name.md"),
+                    )
+                }
+                .toList()
+        }
+    }
+}
+
 object ExpectedResultLoader {
-    fun load(fixtureName: String): ExpectedResult? {
-        val path = resourceDir("defuddle-expected").resolve("$fixtureName.md")
+    fun load(fixtureName: String): ExpectedResult? = loadFrom(
+        resourceDirectory = "defuddle-expected",
+        fixtureName = fixtureName,
+    )
+
+    fun loadFrom(resourceDirectory: String, fixtureName: String): ExpectedResult? {
+        val path = resourceDir(resourceDirectory).resolve("$fixtureName.md")
         if (!Files.isRegularFile(path)) return null
         return parse(path.readText())
     }
