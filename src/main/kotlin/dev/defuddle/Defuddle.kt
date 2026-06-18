@@ -16,6 +16,11 @@ import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
 import dev.defuddle.removal.RemovalPipeline
 import dev.defuddle.removal.RemovalRecord
+import dev.defuddle.site.DefaultSiteExtractors
+import dev.defuddle.site.ProfileRemovalPipeline
+import dev.defuddle.site.SiteExtractionContext
+import dev.defuddle.site.SiteExtractor
+import dev.defuddle.site.SiteExtractorRegistry
 import dev.defuddle.standardize.HtmlStandardizer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +51,7 @@ data class DefuddleOptions(
     val separateMarkdown: Boolean = true,
     val debug: Boolean = false,
     val profile: Boolean = false,
+    val siteExtractors: List<SiteExtractor> = DefaultSiteExtractors.all,
 )
 
 data class DefuddleResult(
@@ -140,15 +146,24 @@ object Defuddle {
         options: DefuddleOptions,
         appliedExtractor: AppliedExtractor?,
     ): DefuddleResult {
+        val siteContext = SiteExtractionContext(
+            url = url,
+            host = url.hostOrNull(),
+            document = document,
+        )
+        val siteProfiles = SiteExtractorRegistry(options.siteExtractors).resolve(siteContext)
+        val removals = mutableListOf<RemovalRecord>()
+        ProfileRemovalPipeline.applyPreContentRemovals(document, siteProfiles, removals)
+
         val metaTags = MetadataExtractor.collectMetaTags(document)
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
         val detected = MainContentDetector.detect(
             document = document,
             options = options,
             schemaText = schemaOrg.contentText(),
+            preferredSelectors = siteProfiles.flatMap { it.contentSelectors },
         )
         val content = detected.element
-        val removals = mutableListOf<RemovalRecord>()
         stripUnsafe(content)
         val metadata = PageMetadataExtractor.extract(
             document = document,
@@ -158,6 +173,9 @@ object Defuddle {
             schemaOrg = schemaOrg,
         )
         RemovalPipeline.apply(content, options, removals, metadata.image)
+        ProfileRemovalPipeline.applyPostContentRemovals(content, siteProfiles, removals)
+        val contentSiteContext = siteContext.copy(document = content.ownerDocument() ?: document)
+        siteProfiles.forEach { it.postProcess(content, contentSiteContext, removals) }
         if (options.standardize) {
             HtmlStandardizer.apply(content, metadata.title)
         }
@@ -181,7 +199,7 @@ object Defuddle {
             schemaOrgData = schemaOrg.items,
             extractor = appliedExtractor?.name,
             variables = appliedExtractor?.result?.variables.orEmpty(),
-            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals),
+            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals, siteProfiles.map { it.id }),
         ).withExtractorMetadata(appliedExtractor)
     }
 
@@ -209,12 +227,19 @@ object Defuddle {
         detectionDebug: dev.defuddle.content.ContentDetectionDebug,
         schemaDiagnostics: List<String>,
         removals: List<RemovalRecord>,
+        siteExtractorIds: List<String>,
     ): Map<String, Any?> {
         val debug = mutableMapOf<String, Any?>(
             "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
         )
         if (options.debug) {
             debug["selectedContentSelector"] = detectionDebug.selectedSelector
+            if (siteExtractorIds.isNotEmpty()) {
+                debug["siteExtractorIds"] = siteExtractorIds
+            }
+            detectionDebug.profileContentSelector?.let {
+                debug["profileContentSelector"] = it
+            }
             debug["contentCandidates"] = detectionDebug.candidates.map {
                 mapOf(
                     "selector" to it.selector,
@@ -226,10 +251,17 @@ object Defuddle {
             }
             if (removals.isNotEmpty()) {
                 debug["removals"] = removals
+                val profileRemovals = removals.filter { it.step.startsWith("removeSite") }
+                if (profileRemovals.isNotEmpty()) {
+                    debug["profileRemovals"] = profileRemovals
+                }
             }
         }
         return debug
     }
+
+    private fun String.hostOrNull(): String? =
+        runCatching { URI(this).host?.lowercase() }.getOrNull()
 
     private fun promoteNoscriptImages(document: Document) {
         for (noscript in document.select("noscript").toList()) {

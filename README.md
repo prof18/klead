@@ -29,6 +29,27 @@ val removals = result.debug["removals"] as? List<*>
 removals?.forEach(::println)
 ```
 
+Custom site profiles can add domain-scoped content and removal selectors without
+making those selectors global:
+
+```kotlin
+object MySiteExtractor : SiteExtractor {
+    override val id = "my-site"
+    override val domains = setOf("example.com")
+    override val contentSelectors = listOf("article.story")
+    override val postContentRemoveSelectors = listOf(".related-widget")
+}
+
+val result = Defuddle.parseHtml(
+    html = html,
+    url = "https://example.com/story",
+    options = DefuddleOptions(
+        siteExtractors = DefaultSiteExtractors.all + MySiteExtractor,
+        debug = true,
+    ),
+)
+```
+
 ## Scope
 
 - Static HTML input plus source URL.
@@ -36,6 +57,8 @@ removals?.forEach(::println)
 - Cleaned HTML remains available as secondary/debug output.
 - `parseHtml` is a blocking compatibility wrapper; `parseHtmlAsync` runs parsing on `DefuddleOptions.parseDispatcher`, which defaults to `Dispatchers.Default`.
 - Network-capable extractors use suspend injected HTTP clients. No built-in HTTP client is shipped.
+- Domain-scoped site profiles can guide content selection and cleanup before the
+  generic fallback pipeline runs.
 - No JavaScript execution, WebView, browser DOM, GraalJS, Compose UI, or flexmark HTML-to-Markdown conversion in the production pipeline.
 - Math source data is preserved where practical, but MathML/LaTeX conversion and rendered math fidelity are out of scope.
 

@@ -1,0 +1,38 @@
+package dev.defuddle.site
+
+object DefaultSiteExtractors {
+    val all: List<SiteExtractor> = listOf(
+        MotorsportProfile,
+        MinuteMediaSiProfile,
+        PhoneArenaProfile,
+        AndroidAuthorityProfile,
+        RollingStoneProfile,
+        PopCultureProfile,
+        ValnetProfile,
+        VarietyProfile,
+        GameSpotProfile,
+        GamingOnLinuxProfile,
+        AxiosProfile,
+        BusinessInsiderProfile,
+        MashableProfile,
+        BBCProfile,
+        BuzzFeedProfile,
+        FortuneProfile,
+        EntrepreneurProfile,
+        FutureProfile,
+        ArsTechnicaProfile,
+        RollingStoneLayoutProfile,
+        BloggerProfile,
+        JetBrainsBlogProfile,
+        IlPostProfile,
+        SubstackProfile,
+        CitynewsProfile,
+        TechCrunchProfile,
+        VoxProfile,
+        PianetaBasketProfile,
+        MacRumorsProfile,
+        NASAProfile,
+        NineToFiveProfile,
+        WordPressFamilyProfile,
+    )
+}

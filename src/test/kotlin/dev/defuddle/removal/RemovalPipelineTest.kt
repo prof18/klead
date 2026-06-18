@@ -161,7 +161,7 @@ class RemovalPipelineTest {
                   </article>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/category-chips",
+            url = "https://www.ilmitte.com/category-chips",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -286,7 +286,7 @@ class RemovalPipelineTest {
                   </article>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/publisher-header-controls",
+            url = "https://arstechnica.com/publisher-header-controls",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual post content should stay"))
@@ -322,7 +322,7 @@ class RemovalPipelineTest {
                   </article>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/css-module-byline",
+            url = "https://www.macrumors.com/css-module-byline",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -363,7 +363,7 @@ class RemovalPipelineTest {
                   </article>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/techcrunch-chrome",
+            url = "https://techcrunch.com/techcrunch-chrome",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -532,7 +532,7 @@ class RemovalPipelineTest {
                   <p>The article conclusion should also stay after the newsletter signup is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/mailchimp-newsletter",
+            url = "https://www.ilmitte.com/mailchimp-newsletter",
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -681,7 +681,7 @@ class RemovalPipelineTest {
                   <p>The article conclusion should also stay after non-article widget chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/embedded-widgets",
+            url = "https://www.androidcentral.com/embedded-widgets",
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -706,7 +706,7 @@ class RemovalPipelineTest {
                   <p>The article conclusion should also stay after non-article audio player chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/audio-player",
+            url = "https://www.ilpost.it/audio-player",
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -743,7 +743,7 @@ class RemovalPipelineTest {
                   </article>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/social-source-chrome",
+            url = "https://www.entrepreneur.com/social-source-chrome",
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -775,7 +775,7 @@ class RemovalPipelineTest {
                   <p><a href="https://amzn.to/example">At $99</a>, it’s hard to go wrong.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/top-comment",
+            url = "https://9to5google.com/top-comment",
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -809,7 +809,7 @@ class RemovalPipelineTest {
                   </main>
                 </body></html>
             """.trimIndent(),
-            url = "https://example.com/wordpress-cover",
+            url = "https://9to5linux.com/wordpress-cover",
             options = DefuddleOptions(contentSelector = "main"),
         )
 
@@ -875,7 +875,7 @@ class RemovalPipelineTest {
                   </section>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/footer-recirculation",
+            url = "https://www.veneziatoday.it/footer-recirculation",
         )
 
         assertTrue(result.contentMarkdown.contains("The article body should stay"))
@@ -911,7 +911,7 @@ class RemovalPipelineTest {
                   </aside>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/right-rail-commerce",
+            url = "https://www.gamespot.com/articles/right-rail-commerce",
         )
 
         assertTrue(result.contentMarkdown.contains("The article body should stay"))
@@ -942,7 +942,7 @@ class RemovalPipelineTest {
                   <p>The article body after the inline card should also stay. It contains natural prose, useful punctuation, and enough words to prove the related module can be removed without truncating the story.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/inline-related-card",
+            url = "https://screenrant.com/inline-related-card",
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -986,7 +986,7 @@ class RemovalPipelineTest {
                   </aside>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/author-chrome",
+            url = "https://www.androidpolice.com/author-chrome",
         )
 
         val lines = result.contentMarkdown.lines().map { it.trim() }
@@ -1017,7 +1017,7 @@ class RemovalPipelineTest {
                   <p>The article conclusion should also stay after the author profile chrome is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/author-profile",
+            url = "https://www.pianetabasket.com/author-profile",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual story starts here"))
@@ -1047,7 +1047,7 @@ class RemovalPipelineTest {
                   </div>
                 </div>
             """.trimIndent(),
-            url = "https://example.com/mobile-meta",
+            url = "https://m.pianetabasket.com/mobile-meta",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual story starts here"))
@@ -1088,7 +1088,7 @@ class RemovalPipelineTest {
                   </article>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/event-info-square",
+            url = "https://www.veneziatoday.it/event-info-square",
         )
 
         val lines = result.contentMarkdown.lines().map { it.trim() }
@@ -1130,7 +1130,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/footer-chrome",
+            url = "https://9to5google.com/footer-chrome",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual story starts here"))
@@ -1173,7 +1173,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/category-author-chrome",
+            url = "https://www.basketuniverso.it/category-author-chrome",
         )
 
         val lines = result.contentMarkdown.lines().map { it.trim() }
@@ -1217,7 +1217,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/future-slices",
+            url = "https://www.androidcentral.com/future-slices",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual story starts here"))
@@ -1263,7 +1263,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/vox-style-article",
+            url = "https://www.theverge.com/vox-style-article",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual story starts here"))
@@ -1312,7 +1312,7 @@ class RemovalPipelineTest {
                   </section>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/business-insider-post-chrome",
+            url = "https://www.businessinsider.com/post-chrome",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual story starts here"))
@@ -1356,7 +1356,7 @@ class RemovalPipelineTest {
                   <p>The article conclusion should also stay after the article header controls are removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/entrepreneur-header-controls",
+            url = "https://www.entrepreneur.com/entrepreneur-header-controls",
         )
 
         assertTrue(result.contentMarkdown.contains("In some cases, the bonuses amount"))
@@ -1475,7 +1475,7 @@ class RemovalPipelineTest {
                   </div>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/publisher-chrome",
+            url = "https://fortune.com/publisher-chrome",
             options = DefuddleOptions(contentSelector = "main"),
         )
 
@@ -1526,7 +1526,7 @@ class RemovalPipelineTest {
                   </div>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/blogger-post",
+            url = "https://android-developers.googleblog.com/blogger-post",
             options = DefuddleOptions(contentSelector = "main"),
         )
 
@@ -1580,7 +1580,7 @@ class RemovalPipelineTest {
                   </div>
                 </main>
             """.trimIndent(),
-            url = "https://example.com/jetbrains-post",
+            url = "https://blog.jetbrains.com/kotlin/jetbrains-post",
             options = DefuddleOptions(contentSelector = "main"),
         )
 
@@ -1636,7 +1636,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/bbc-article",
+            url = "https://www.bbc.com/news/articles/example",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -1690,7 +1690,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/buzzfeed-post",
+            url = "https://www.buzzfeed.com/example/post",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -1734,7 +1734,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/rollingstone-article",
+            url = "https://www.rollingstone.com/rollingstone-article",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article intro should stay"))
@@ -1779,7 +1779,7 @@ class RemovalPipelineTest {
                   </section>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/gutenberg-footer",
+            url = "https://popculture.com/celebrity-news/example",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -1819,7 +1819,7 @@ class RemovalPipelineTest {
                   <p>The article conclusion should also stay after the display-card rating widget is removed.</p>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/valnet-display-card",
+            url = "https://screenrant.com/valnet-display-card",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -1852,7 +1852,7 @@ class RemovalPipelineTest {
                   </div>
                 </article>
             """.trimIndent(),
-            url = "https://example.com/comment-widget",
+            url = "https://variety.com/comment-widget",
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))

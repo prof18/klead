@@ -15,6 +15,7 @@ data class DetectedContent(
 data class ContentDetectionDebug(
     val selectedSelector: String,
     val candidates: List<ContentCandidateDebug>,
+    val profileContentSelector: String? = null,
 )
 
 data class ContentCandidateDebug(
@@ -45,11 +46,21 @@ object MainContentDetector {
         document: Document,
         options: DefuddleOptions = DefuddleOptions(),
         schemaText: String? = null,
+        preferredSelectors: List<String> = emptyList(),
     ): DetectedContent {
         options.contentSelector?.takeIf { it.isNotBlank() }?.let { selector ->
             document.selectFirstSafe(selector)?.let { element ->
                 return detected(element, selector, emptyList())
             }
+        }
+
+        detectPreferredContent(document, preferredSelectors)?.let { candidate ->
+            return detected(
+                element = candidate.element,
+                selector = candidate.selector,
+                candidates = listOf(candidate),
+                profileContentSelector = candidate.selector,
+            )
         }
 
         val candidates = entryPointSelectors.flatMapIndexed { index, selector ->
@@ -92,6 +103,32 @@ object MainContentDetector {
     ): Double {
         val priorityBonus = (entryPointSelectors.size - selectorIndex) * 30.0
         return ContentScorer.scoreElement(element).total + priorityBonus
+    }
+
+    private fun detectPreferredContent(
+        document: Document,
+        preferredSelectors: List<String>,
+    ): Candidate? {
+        for (selector in preferredSelectors.distinct().filter { it.isNotBlank() }) {
+            val candidate = document.selectSafe(selector)
+                .map { element -> element to ContentScorer.scoreElement(element) }
+                .filter { (_, score) -> score.passesPreferredSelectorGuard() }
+                .maxByOrNull { (_, score) -> score.total }
+                ?: continue
+            return Candidate(
+                element = candidate.first,
+                selector = selector,
+                score = candidate.second.total,
+            )
+        }
+        return null
+    }
+
+    private fun ContentScore.passesPreferredSelectorGuard(): Boolean {
+        if (wordCount >= PREFERRED_SELECTOR_MIN_WORDS) return true
+        return wordCount >= PREFERRED_SELECTOR_SHORT_MIN_WORDS &&
+            paragraphCount >= PREFERRED_SELECTOR_MIN_PARAGRAPHS &&
+            linkDensity <= PREFERRED_SELECTOR_MAX_LINK_DENSITY
     }
 
     private fun refineListingParent(
@@ -214,12 +251,14 @@ object MainContentDetector {
         element: Element,
         selector: String,
         candidates: List<Candidate>,
+        profileContentSelector: String? = null,
     ): DetectedContent =
         DetectedContent(
             element = element,
             selectedSelector = selector,
             debug = ContentDetectionDebug(
                 selectedSelector = selector,
+                profileContentSelector = profileContentSelector,
                 candidates = candidates.map {
                     ContentCandidateDebug(
                         selector = it.selector,
@@ -284,4 +323,8 @@ object MainContentDetector {
     private const val BROAD_REFINEMENT_MIN_WORDS = 50
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
     private const val BODY_REFINEMENT_MIN_WORDS = 80
+    private const val PREFERRED_SELECTOR_MIN_WORDS = 80
+    private const val PREFERRED_SELECTOR_SHORT_MIN_WORDS = 35
+    private const val PREFERRED_SELECTOR_MIN_PARAGRAPHS = 2
+    private const val PREFERRED_SELECTOR_MAX_LINK_DENSITY = 0.35
 }

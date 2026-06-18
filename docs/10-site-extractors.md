@@ -10,9 +10,73 @@ This is part of the broad port target, not an optional feature family. The work 
 
 - Generic extraction must work without site extractors.
 - Extractors should feed the same cleanup and Markdown pipeline where possible.
+- Domain/site profile selectors must stay scoped to matching hosts.
 - Async/network extractors must be behind options and suspend injected HTTP clients.
 - Do not let extractor work block core Markdown output.
 - Extractors that cannot be ported exactly must have a documented reason and fixture coverage for the closest practical behavior.
+
+## Domain-Scoped Profiles
+
+Site profiles are lightweight, synchronous selectors that run alongside the
+generic detector and cleanup pipeline. Use them for publisher-specific scars:
+branded widgets, exact layout classes, known recirculation modules, and strong
+content containers.
+
+```kotlin
+interface SiteExtractor {
+    val id: String
+    val domains: Set<String>
+    val priority: Int get() = 0
+
+    fun matches(context: SiteExtractionContext): Boolean
+
+    val contentSelectors: List<String> get() = emptyList()
+    val preContentRemoveSelectors: List<String> get() = emptyList()
+    val postContentRemoveSelectors: List<String> get() = emptyList()
+
+    fun postProcess(content: Element, context: SiteExtractionContext, debug: MutableList<RemovalRecord>) = Unit
+}
+```
+
+Default profiles are exposed through `DefaultSiteExtractors.all` and can be
+replaced or extended with `DefuddleOptions.siteExtractors`:
+
+```kotlin
+Defuddle.parseHtml(
+    html = html,
+    url = url,
+    options = DefuddleOptions(
+        siteExtractors = DefaultSiteExtractors.all + MySiteExtractor,
+    ),
+)
+```
+
+Pipeline order:
+
+1. Resolve matching profiles from the source URL host.
+2. Apply matching `preContentRemoveSelectors` to the working document.
+3. Try matching profile `contentSelectors` before generic scoring.
+4. Run the generic removal pipeline.
+5. Apply matching `postContentRemoveSelectors`.
+6. Run profile `postProcess`, standardization, and Markdown conversion.
+
+When `debug = true`, profile-aware runs can report:
+
+- `siteExtractorIds`
+- `profileContentSelector`
+- `profileRemovals`
+
+The initial built-in profile slice covers Motorsport, SI/MinuteMedia,
+PhoneArena, Android Authority, Rolling Stone, PopCulture, Valnet, GameSpot,
+GamingOnLinux, Axios, Business Insider, Mashable, BBC, BuzzFeed, Fortune,
+Entrepreneur, Future/Android Central, Variety, MacRumors,
+Citynews/VeneziaToday, TechCrunch, Ars Technica, Blogger/Google Blog,
+JetBrains Blog, Il Post, Substack, Vox, PianetaBasket, NASA, 9to5, and
+WordPress-family selectors that were previously global exact removals.
+
+The remaining global exact selectors are generic structural, comments,
+newsletter, metadata, byline, ad, share, and related-content rules. Treat new
+publisher-specific cleanup as profile-scoped by default.
 
 ## Registry
 
