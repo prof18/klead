@@ -30,7 +30,7 @@ class ReleaseDocsTest {
 
         assertTrue(knownDifferences.contains("Full exact Markdown parity", ignoreCase = true))
         assertTrue(markdownPolicy.contains("does not use flexmark", ignoreCase = true))
-        assertTrue(releaseScope.contains("injected HTTP client hooks", ignoreCase = true))
+        assertTrue(releaseScope.contains("fetching is out of scope", ignoreCase = true))
         assertTrue(securityPolicy.contains("does not execute JavaScript", ignoreCase = true))
     }
 

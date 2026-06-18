@@ -56,7 +56,7 @@ val result = Defuddle.parseHtml(
 - Clean Markdown is the primary output.
 - Cleaned HTML remains available as secondary/debug output.
 - `parseHtml` is a blocking compatibility wrapper; `parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
-- Network-capable extractors use suspend injected HTTP clients. No built-in HTTP client is shipped.
+- Fetching is out of scope; callers provide HTML and source URL.
 - Domain-scoped extractors can guide content selection and cleanup before the
   generic fallback pipeline runs.
 - No JavaScript execution, WebView, browser DOM, GraalJS, Compose UI, or flexmark HTML-to-Markdown conversion in the production pipeline.

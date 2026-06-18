@@ -11,7 +11,7 @@ This is part of the broad port target, not an optional feature family. The work 
 - Generic extraction must work without custom extractors.
 - Extractors should feed the same cleanup and Markdown pipeline where possible.
 - Domain-scoped selectors must stay scoped to matching hosts.
-- Async/network extractors must be behind options and suspend injected HTTP clients.
+- Fetching is out of scope; extractors operate on the provided HTML document.
 - Do not let extractor work block core Markdown output.
 - Extractors that cannot be ported exactly must have a documented reason and fixture coverage for the closest practical behavior.
 
@@ -36,7 +36,7 @@ interface Extractor {
     val preContentRemoveSelectors: List<String> get() = emptyList()
     val postContentRemoveSelectors: List<String> get() = emptyList()
 
-    suspend fun extract(context: ExtractorContext): ExtractorResult? = null
+    fun extract(context: ExtractorContext): ExtractorResult? = null
 
     fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) = Unit
 }
@@ -84,25 +84,18 @@ publisher-specific cleanup as extractor-scoped by default.
 
 ## Registry
 
-Implement a small registry:
-
-```kotlin
-interface DefuddleHttpClient {
-    suspend fun get(url: String): String
-}
-```
+Implement a small registry.
 
 The registry should:
 
 - preserve priority order
 - allow disabling extractors
 - expose extractor type in result
-- be testable without network
+- remain independent from network access
 
 `Defuddle.parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
 `Defuddle.parseHtml` remains a blocking compatibility wrapper around the suspend
-path. Injected HTTP clients should use their own non-blocking APIs or switch
-blocking I/O to an appropriate dispatcher internally.
+path. Fetching HTML belongs outside this library.
 
 ## Suggested Priority
 
@@ -116,10 +109,9 @@ Low-risk static extractors first:
 
 Port after static extractors are stable:
 
-- YouTube transcript fetching
-- Reddit comment fetching
-- X/Twitter async/oEmbed fallback
-- social/conversation extractors with fragile DOM assumptions
+- additional static site-specific selectors
+- social/conversation pages where useful content is present in the supplied HTML
+- fragile DOM assumptions only when fixture-backed
 
 ## Extractor Result
 
@@ -144,7 +136,7 @@ If extractor returns a content selector, run the normal pipeline against that co
 - `[x]` Static extractor can return direct content.
 - `[x]` Extractor variables appear in result.
 - `[x]` Extractor output still goes through Markdown writer.
-- `[x]` Network extractors use suspend injected HTTP clients and are controlled by options.
+- `[x]` Extractors operate only on supplied HTML and do not fetch.
 
 ## Acceptance Gate
 
@@ -155,5 +147,5 @@ If extractor returns a content selector, run the normal pipeline against that co
 - Registry interface.
 - One static extractor.
 - Fixture tests for that extractor.
-- Suspend async interface with fake HTTP client.
-- One network-backed extractor at a time.
+- Direct-content extractor using supplied HTML.
+- Keep fetching out of extractor implementations.

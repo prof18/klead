@@ -1,6 +1,5 @@
 package dev.defuddle.removal
 
-import dev.defuddle.DefuddleOptions
 import dev.defuddle.dom.removeSafely
 import dev.defuddle.dom.selectSafe
 import org.jsoup.nodes.Element
@@ -12,37 +11,39 @@ data class RemovalRecord(
     val preview: String,
 )
 
-object RemovalPipeline {
+internal data class RemovalPolicy(
+    val removeExactSelectors: Boolean = true,
+    val removePartialSelectors: Boolean = true,
+    val removeHiddenElements: Boolean = true,
+    val removeLowScoring: Boolean = true,
+    val removeContentPatterns: Boolean = true,
+)
+
+internal object RemovalPipeline {
     fun apply(
         content: Element,
-        options: DefuddleOptions,
         debug: MutableList<RemovalRecord>,
         metadataImage: String? = null,
+        policy: RemovalPolicy = RemovalPolicy(),
     ) {
-        if (options.removeHiddenElements) {
+        if (policy.removeHiddenElements) {
             removeHiddenElements(content, debug)
         }
-        if (options.removeExactSelectors) {
+        if (policy.removeExactSelectors) {
             removeExactSelectors(content, debug)
         }
-        if (options.removePartialSelectors) {
+        if (policy.removePartialSelectors) {
             removePartialSelectors(content, debug)
         }
-        if (options.removeLowScoring) {
+        if (policy.removeLowScoring) {
             removeLowScoringBlocks(content, debug)
         }
-        if (options.removeContentPatterns) {
+        if (policy.removeContentPatterns) {
             removeContentPatterns(content, debug)
         }
-        if (options.removeImages) {
-            removeImages(content, debug)
-        } else {
-            if (options.removeSmallImages) {
-                removeSmallImages(content, debug)
-            }
-            deduplicateImages(content, debug)
-            removeCoverImage(content, metadataImage, debug)
-        }
+        removeSmallImages(content, debug)
+        deduplicateImages(content, debug)
+        removeCoverImage(content, metadataImage, debug)
     }
 
     private fun removeHiddenElements(
@@ -394,16 +395,6 @@ object RemovalPipeline {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "local news follow prompt")
                 }
             }
-        }
-    }
-
-    private fun removeImages(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
-        for (element in content.select("picture, img").toList()) {
-            if (element.normalName() == "img" && element.parents().any { it.normalName() == "picture" }) continue
-            recordAndRemove(element, debug, "removeImages", element.normalName(), "removeImages option")
         }
     }
 

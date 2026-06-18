@@ -1,6 +1,5 @@
 package dev.defuddle
 
-import dev.defuddle.extractors.DefuddleHttpClient
 import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorResult
@@ -11,44 +10,31 @@ import kotlin.test.assertTrue
 
 class DefuddleCoroutineApiTest {
     @Test
-    fun `async parser uses suspend network extractor`() = runTest {
-        val calls = mutableListOf<String>()
-
-        val client = object : DefuddleHttpClient {
-            override suspend fun get(url: String): String {
-                calls += url
-                return "<article><p>Fetched async transcript.</p></article>"
-            }
-        }
+    fun `async parser can use direct content extractor`() = runTest {
         val extractor = object : Extractor {
-            override val id = "async-network-test"
+            override val id = "async-direct-test"
 
             override fun matches(context: ExtractorContext): Boolean =
-                context.url.orEmpty().contains("network.example")
+                context.url.orEmpty().contains("direct.example")
 
-            override suspend fun extract(context: ExtractorContext): ExtractorResult {
-                return ExtractorResult(
-                    contentHtml = context.httpClient?.get("${context.url}/transcript").orEmpty(),
-                )
-            }
+            override fun extract(context: ExtractorContext): ExtractorResult =
+                ExtractorResult(contentHtml = "<article><p>Direct async content.</p></article>")
         }
 
         val result = Defuddle.parseHtmlAsync(
             html = "<html><body></body></html>",
-            url = "https://network.example/watch/1",
+            url = "https://direct.example/story/1",
             options = DefuddleOptions(
-                httpClient = client,
                 extractors = listOf(extractor),
             ),
         )
 
-        assertEquals(listOf("https://network.example/watch/1/transcript"), calls)
-        assertEquals("async-network-test", result.extractor)
-        assertTrue(result.contentMarkdown.contains("Fetched async transcript."))
+        assertEquals("async-direct-test", result.extractor)
+        assertTrue(result.contentMarkdown.contains("Direct async content."))
     }
 
     @Test
-    fun `sync parser bridges suspend extractor for compatibility`() {
+    fun `sync parser uses direct content extractor`() {
         val result = Defuddle.parseHtml(
             html = "<html><body><p>Generic content should lose.</p></body></html>",
             url = "https://sync.example/article",
@@ -60,14 +46,14 @@ class DefuddleCoroutineApiTest {
                         override fun matches(context: ExtractorContext): Boolean =
                             context.url.orEmpty().contains("sync.example")
 
-                        override suspend fun extract(context: ExtractorContext): ExtractorResult =
-                            ExtractorResult(contentHtml = "<article><p>Suspend extractor content.</p></article>")
+                        override fun extract(context: ExtractorContext): ExtractorResult =
+                            ExtractorResult(contentHtml = "<article><p>Direct extractor content.</p></article>")
                     },
                 ),
             ),
         )
 
         assertEquals("sync-bridge-test", result.extractor)
-        assertTrue(result.contentMarkdown.contains("Suspend extractor content."))
+        assertTrue(result.contentMarkdown.contains("Direct extractor content."))
     }
 }

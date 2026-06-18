@@ -87,5 +87,5 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 ## Top Classified Gaps
 
 - Full exact Markdown parity across every upstream fixture is staged behind classified known differences.
-- Production network-backed site extractor coverage beyond the injected-client hook remains staged.
+- Network-backed extraction is out of scope for this library.
 - Math rendering/conversion fidelity is excluded by scope.

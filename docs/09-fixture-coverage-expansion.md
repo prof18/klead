@@ -81,7 +81,7 @@ Every failing fixture gets one reason:
 - standardization missing
 - Markdown writer missing
 - site extractor not yet ported
-- network/async behavior not yet ported
+- fetching excluded by scope
 - math rendering/conversion excluded by scope
 - acceptable Kotlin Markdown difference
 - upstream fixture import issue

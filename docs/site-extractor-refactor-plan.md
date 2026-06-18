@@ -10,8 +10,9 @@ The current model has one extension type:
 - `ExtractorRegistry`
 - `DefaultExtractors`
 
-Domain-scoped selectors, direct content extraction, network-backed extraction,
+Domain-scoped selectors, direct content extraction from the provided DOM,
 post-processing, priority, and disable-list behavior all flow through that one
-type. Use `DefuddleOptions.extractors` to replace or extend defaults.
+type. Use `DefuddleOptions.extractors` to replace or extend defaults. Fetching
+is out of scope.
 
 See [10 Extractors](10-site-extractors.md) for the maintained contract.

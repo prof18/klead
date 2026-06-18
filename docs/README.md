@@ -88,7 +88,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[~]` COMMIT-026 Schema.org fallback.
 - `[x]` COMMIT-027 Fixture allowlist expansion by one category.
 - `[x]` COMMIT-028 One static site extractor.
-- `[x]` COMMIT-029 One async/network extractor with injected HTTP client.
+- `[x]` COMMIT-029 Async parser entry point with internal dispatcher selection.
 - `[x]` COMMIT-030 Security tests.
 - `[x]` COMMIT-031 Benchmarks.
 - `[x]` COMMIT-032 Release docs and known differences.
@@ -145,12 +145,12 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-07 - complete - Added HTML standardization for duplicate headings, code blocks, lazy images, figures, callouts, simple footnotes, tables, math preservation, and empty wrappers.
 2026-06-14 - PHASE-08 - complete - Replaced the primitive private writer with a direct Kotlin Markdown writer for blocks, inline formatting, links, images, lists, blockquotes, fenced code, tables, callouts, footnotes, math preservation, and post-processing.
 2026-06-14 - PHASE-09 - in progress - Added full-corpus diagnostic fixture runner with zero unknown classifications, MVP relaxed allowlist, and documented fixture coverage report.
-2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, result variables, disable list, and injected HTTP client hook for network-backed extractors.
+2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, result variables, and disable list.
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
 2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
 2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Full exact Markdown parity remains a documented staged difference while diagnostic fixture coverage has zero unknown failures.
 2026-06-14 - PHASE-09 - complete - Closed the fixture expansion phase for this broad practical port with strict metadata fixtures, relaxed MVP fixtures, full diagnostic coverage, zero unknown diagnostic failures, and documented deferral of full exact Markdown parity.
-2026-06-15 - COMMIT-029 - complete - Converted network extractor plumbing to a real coroutine contract with `parseHtmlAsync`, suspend extractors, suspend injected HTTP clients, and internal dispatcher selection; `parseHtml` remains as a blocking compatibility wrapper.
+2026-06-15 - COMMIT-029 - complete - Added `parseHtmlAsync` with internal dispatcher selection; `parseHtml` remains as a blocking compatibility wrapper.
 2026-06-15 - PHASE-04/06 - complete - Added a FeedFlow reader-dump regression fixture for an ilpost article and fixed generic body-to-article refinement plus breadcrumb/recommendation clutter removal so reader Markdown excludes category/date breadcrumbs and bottom recommendation sections.
 2026-06-15 - PHASE-08 - complete - Added a FeedFlow reader-dump regression for WordPress-style captioned image wrappers and fixed block-level image Markdown rendering so body images are not dropped when they are direct children of non-figure containers.
 2026-06-15 - PHASE-06 - complete - Added a FeedFlow reader-dump regression for trailing article tag lists and removed generic trailing `Tag:`/`Tags:` blocks from reader Markdown.

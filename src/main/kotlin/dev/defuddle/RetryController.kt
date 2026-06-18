@@ -1,28 +1,30 @@
 package dev.defuddle
 
-data class RetryCandidate<T>(
+import dev.defuddle.removal.RemovalPolicy
+
+internal data class RetryCandidate<T>(
     val value: T,
     val wordCount: Int,
-    val options: DefuddleOptions,
+    val removalPolicy: RemovalPolicy,
 )
 
-object RetryController {
+internal object RetryController {
     fun <T> run(
-        initialOptions: DefuddleOptions,
-        parse: (DefuddleOptions) -> RetryCandidate<T>,
+        parse: (RemovalPolicy) -> RetryCandidate<T>,
     ): RetryCandidate<T> {
-        val default = parse(initialOptions)
+        val defaultPolicy = RemovalPolicy()
+        val default = parse(defaultPolicy)
         var best = default
 
         if (default.wordCount < 200) {
-            val withoutPartial = parse(initialOptions.copy(removePartialSelectors = false))
+            val withoutPartial = parse(defaultPolicy.copy(removePartialSelectors = false))
             if (withoutPartial.wordCount > default.wordCount * 2) {
                 best = withoutPartial
             }
         }
 
         if (best.wordCount < 50) {
-            val withoutHidden = parse(best.options.copy(removeHiddenElements = false))
+            val withoutHidden = parse(best.removalPolicy.copy(removeHiddenElements = false))
             if (withoutHidden.wordCount > best.wordCount) {
                 best = withoutHidden
             }
@@ -30,7 +32,7 @@ object RetryController {
 
         if (best.wordCount < 50) {
             val indexPageRetry = parse(
-                best.options.copy(
+                best.removalPolicy.copy(
                     removeLowScoring = false,
                     removePartialSelectors = false,
                     removeContentPatterns = false,

@@ -37,10 +37,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URI
 
-interface DefuddleHttpClient {
-    suspend fun get(url: String): String
-}
-
 interface Extractor {
     val id: String
     val domains: Set<String> get() = emptySet()
@@ -57,7 +53,7 @@ interface Extractor {
     val authorSelectors: List<String> get() = emptyList()
     val dateSelectors: List<String> get() = emptyList()
 
-    suspend fun extract(context: ExtractorContext): ExtractorResult? = null
+    fun extract(context: ExtractorContext): ExtractorResult? = null
 
     fun postProcess(
         content: Element,
@@ -70,7 +66,6 @@ data class ExtractorContext(
     val url: String?,
     val host: String?,
     val document: Document,
-    val httpClient: DefuddleHttpClient? = null,
 ) {
     fun hostMatches(domains: Set<String>): Boolean {
         val normalizedHosts = candidateHosts().map { it.lowercase().trim('.') }
@@ -129,7 +124,7 @@ class ExtractorRegistry(
             .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
             .toList()
 
-    suspend fun extract(
+    fun extract(
         context: ExtractorContext,
         disabledExtractors: Set<String> = emptySet(),
     ): AppliedExtractor? {

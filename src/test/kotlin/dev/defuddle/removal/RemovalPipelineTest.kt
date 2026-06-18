@@ -53,7 +53,7 @@ class RemovalPipelineTest {
         val article = document.selectFirst("article") ?: error("missing article")
 
         val debug = mutableListOf<RemovalRecord>()
-        RemovalPipeline.apply(article, DefuddleOptions(), debug)
+        RemovalPipeline.apply(article, debug)
 
         assertTrue(article.outerHtml().contains("<math>"))
         assertTrue(article.text().contains("Visible prose."))
@@ -501,10 +501,6 @@ class RemovalPipelineTest {
                 </article>
             """.trimIndent(),
             url = "https://example.com/newsletter-widget",
-            options = DefuddleOptions(
-                removeExactSelectors = false,
-                removePartialSelectors = false,
-            ),
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -1409,12 +1405,7 @@ class RemovalPipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/related-content-cards",
-            options = DefuddleOptions(
-                contentSelector = "main",
-                removeExactSelectors = false,
-                removePartialSelectors = false,
-                removeLowScoring = false,
-            ),
+            options = DefuddleOptions(contentSelector = "main"),
         )
 
         assertTrue(result.contentMarkdown.contains("The article deck should stay"))

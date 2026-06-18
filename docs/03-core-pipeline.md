@@ -40,29 +40,24 @@ Internal parse order:
 
 ## Options
 
-Implement defaults matching Defuddle where practical:
+Expose only parser behavior that callers should control:
 
-- `removeExactSelectors = true`
-- `removePartialSelectors = true`
-- `removeHiddenElements = true`
-- `removeLowScoring = true`
-- `removeSmallImages = true`
-- `removeImages = false`
-- `removeContentPatterns = true`
 - `standardize = true`
 - `markdown = true`
 - `separateMarkdown = true`
 - `debug = false`
 - `profile = false`
 
+Removal policy is internal. Callers should not choose which cleanup stages run.
+
 ## Retries
 
-Port Defuddle retry behavior:
+Port Defuddle retry behavior using internal removal policy variants:
 
-1. If default result word count is under 200, retry with `removePartialSelectors = false`.
+1. If default result word count is under 200, retry with partial-selector removal disabled.
 2. Use retry only if it more than doubles word count.
-3. If result is under 50, retry with `removeHiddenElements = false`.
-4. If still under 50, retry with `removeLowScoring = false`, `removePartialSelectors = false`, `removeContentPatterns = false`.
+3. If result is under 50, retry with hidden-element removal disabled.
+4. If still under 50, retry with low-scoring, partial-selector, and content-pattern removal disabled.
 
 Tests should not require full extraction implementation. Use fake internal parser hooks or small fixtures to prove retry decisions.
 

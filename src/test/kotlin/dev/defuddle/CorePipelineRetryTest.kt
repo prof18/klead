@@ -1,5 +1,6 @@
 package dev.defuddle
 
+import dev.defuddle.removal.RemovalPolicy
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -8,14 +9,14 @@ import kotlin.test.assertTrue
 class CorePipelineRetryTest {
     @Test
     fun `retry without partial selectors is used when it more than doubles short content`() {
-        val attempts = mutableListOf<DefuddleOptions>()
+        val attempts = mutableListOf<RemovalPolicy>()
 
-        val result = RetryController.run(DefuddleOptions()) { options ->
-            attempts += options
+        val result = RetryController.run { policy ->
+            attempts += policy
             RetryCandidate(
-                value = options.removePartialSelectors,
-                wordCount = if (options.removePartialSelectors) 120 else 260,
-                options = options,
+                value = policy.removePartialSelectors,
+                wordCount = if (policy.removePartialSelectors) 120 else 260,
+                removalPolicy = policy,
             )
         }
 
@@ -27,43 +28,43 @@ class CorePipelineRetryTest {
 
     @Test
     fun `hidden retry triggers when best content is under fifty words`() {
-        val attempts = mutableListOf<DefuddleOptions>()
+        val attempts = mutableListOf<RemovalPolicy>()
 
-        val result = RetryController.run(DefuddleOptions()) { options ->
-            attempts += options
+        val result = RetryController.run { policy ->
+            attempts += policy
             val wordCount = when {
-                !options.removeHiddenElements -> 90
-                !options.removePartialSelectors -> 45
+                !policy.removeHiddenElements -> 90
+                !policy.removePartialSelectors -> 45
                 else -> 30
             }
-            RetryCandidate(value = options, wordCount = wordCount, options = options)
+            RetryCandidate(value = policy, wordCount = wordCount, removalPolicy = policy)
         }
 
         assertEquals(90, result.wordCount)
         assertEquals(3, attempts.size)
-        assertFalse(result.options.removeHiddenElements)
+        assertFalse(result.removalPolicy.removeHiddenElements)
     }
 
     @Test
     fun `index page retry disables low scoring partial selectors and content patterns`() {
-        val attempts = mutableListOf<DefuddleOptions>()
+        val attempts = mutableListOf<RemovalPolicy>()
 
-        val result = RetryController.run(DefuddleOptions()) { options ->
-            attempts += options
-            val indexRetry = !options.removeLowScoring &&
-                !options.removePartialSelectors &&
-                !options.removeContentPatterns
+        val result = RetryController.run { policy ->
+            attempts += policy
+            val indexRetry = !policy.removeLowScoring &&
+                !policy.removePartialSelectors &&
+                !policy.removeContentPatterns
             RetryCandidate(
-                value = options,
+                value = policy,
                 wordCount = if (indexRetry) 80 else 20,
-                options = options,
+                removalPolicy = policy,
             )
         }
 
         assertEquals(80, result.wordCount)
         assertEquals(4, attempts.size)
-        assertFalse(result.options.removeLowScoring)
-        assertFalse(result.options.removePartialSelectors)
-        assertFalse(result.options.removeContentPatterns)
+        assertFalse(result.removalPolicy.removeLowScoring)
+        assertFalse(result.removalPolicy.removePartialSelectors)
+        assertFalse(result.removalPolicy.removeContentPatterns)
     }
 }

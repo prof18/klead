@@ -12,15 +12,14 @@ Included:
 - direct Markdown writer
 - upstream fixture harness and diagnostic coverage
 - one static site extractor: Wikipedia
-- suspend injected HTTP client hooks for network-backed extractors
 - security and robustness smoke coverage
 
 Excluded or staged:
 
+- fetching is out of scope; callers provide HTML and source URL
 - JavaScript execution
 - browser layout and computed styles
 - WebView, GraalJS, browser DOM, Compose/UI rendering
 - rendered math fidelity and MathML/LaTeX conversion
 - full exact Markdown parity for every upstream fixture
-- built-in HTTP client implementation
-- production network-backed site extractors beyond the injected-client hook
+- network-backed extraction

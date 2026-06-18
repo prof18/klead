@@ -16,7 +16,7 @@ Define the boundaries before code is written. This project is a broad Kotlin/JVM
 - Keep cleaned HTML as a secondary/debug output.
 - Use upstream Defuddle fixtures for regression coverage.
 - Keep behavior test-driven and observable.
-- Port the major Defuddle feature families, including site extractors and async fetch hooks where they are part of extraction behavior.
+- Port the major Defuddle feature families that operate on supplied static HTML, including site extractors.
 
 ## Out Of Scope
 
@@ -28,6 +28,7 @@ Define the boundaries before code is written. This project is a broad Kotlin/JVM
 - Full CSS cascade or `getComputedStyle` parity.
 - flexmark HTML-to-Markdown conversion in the core pipeline.
 - Exact byte-for-byte parity with Defuddle TypeScript serialization.
+- Fetching HTML or auxiliary remote content.
 - Math rendering fidelity.
 - MathML-to-LaTeX or LaTeX-to-MathML conversion.
 
@@ -87,11 +88,10 @@ The target is a full practical port of Defuddle's extraction behavior. Implement
 - Markdown output
 - upstream fixture coverage
 - site-specific extractors
-- async/network extractors through injected clients
 
 The explicit exception is math rendering/conversion. Preserve math source data when practical, but do not block the port on MathML-to-LaTeX, LaTeX-to-MathML, or rendered math fidelity.
 
-Client-rendered pages with no static content remain inherently limited without JavaScript execution. The port should handle async extractor fallbacks where Defuddle has them and where they can be implemented with injected HTTP clients.
+Client-rendered pages with no static content remain inherently limited without JavaScript execution or fetching. Callers are responsible for supplying the HTML to parse.
 
 ## TDD Checklist
 

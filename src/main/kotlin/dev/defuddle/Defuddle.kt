@@ -5,7 +5,6 @@ import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
 import dev.defuddle.extractors.AppliedExtractor
 import dev.defuddle.extractors.DefaultExtractors
-import dev.defuddle.extractors.DefuddleHttpClient
 import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorRegistry
@@ -15,6 +14,7 @@ import dev.defuddle.metadata.MetaTagItem
 import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
 import dev.defuddle.removal.RemovalPipeline
+import dev.defuddle.removal.RemovalPolicy
 import dev.defuddle.removal.RemovalRecord
 import dev.defuddle.site.ExtractorRemovalPipeline
 import dev.defuddle.standardize.HtmlStandardizer
@@ -32,14 +32,6 @@ data class DefuddleOptions(
     val contentSelector: String? = null,
     val extractors: List<Extractor> = DefaultExtractors.all,
     val disabledExtractors: Set<String> = emptySet(),
-    val httpClient: DefuddleHttpClient? = null,
-    val removeExactSelectors: Boolean = true,
-    val removePartialSelectors: Boolean = true,
-    val removeHiddenElements: Boolean = true,
-    val removeLowScoring: Boolean = true,
-    val removeSmallImages: Boolean = true,
-    val removeImages: Boolean = false,
-    val removeContentPatterns: Boolean = true,
     val standardize: Boolean = true,
     val markdown: Boolean = true,
     val separateMarkdown: Boolean = true,
@@ -90,7 +82,6 @@ object Defuddle {
                 url = url,
                 host = url.hostOrNull(),
                 document = document,
-                httpClient = options.httpClient,
             )
             val appliedExtractor = ExtractorRegistry(options.extractors).extract(
                 context = extractorContext,
@@ -104,17 +95,18 @@ object Defuddle {
                 ?.let { options.copy(contentSelector = it) }
                 ?: options
 
-            RetryController.run(effectiveOptions) { attemptOptions ->
+            RetryController.run { removalPolicy ->
                 val result = parseInternal(
                     document = parseDocument.cloneDocument(),
                     url = url,
-                    options = attemptOptions,
+                    options = effectiveOptions,
                     appliedExtractor = appliedExtractor,
+                    removalPolicy = removalPolicy,
                 )
                 RetryCandidate(
                     value = result,
                     wordCount = result.wordCount,
-                    options = attemptOptions,
+                    removalPolicy = removalPolicy,
                 )
             }.value
         }
@@ -140,12 +132,12 @@ object Defuddle {
         url: String,
         options: DefuddleOptions,
         appliedExtractor: AppliedExtractor?,
+        removalPolicy: RemovalPolicy,
     ): DefuddleResult {
         val extractorContext = ExtractorContext(
             url = url,
             host = url.hostOrNull(),
             document = document,
-            httpClient = options.httpClient,
         )
         val matchedExtractors = ExtractorRegistry(options.extractors).resolve(
             context = extractorContext,
@@ -171,7 +163,12 @@ object Defuddle {
             metaTags = metaTags,
             schemaOrg = schemaOrg,
         )
-        RemovalPipeline.apply(content, options, removals, metadata.image)
+        RemovalPipeline.apply(
+            content = content,
+            debug = removals,
+            metadataImage = metadata.image,
+            policy = removalPolicy,
+        )
         ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
         val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
         matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
