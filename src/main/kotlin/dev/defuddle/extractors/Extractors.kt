@@ -18,10 +18,6 @@ interface Extractor {
     val preContentRemoveSelectors: List<String> get() = emptyList()
     val postContentRemoveSelectors: List<String> get() = emptyList()
 
-    val titleSelectors: List<String> get() = emptyList()
-    val authorSelectors: List<String> get() = emptyList()
-    val dateSelectors: List<String> get() = emptyList()
-
     fun extract(context: ExtractorContext): ExtractorResult? = null
 
     fun postProcess(
@@ -76,10 +72,6 @@ data class ExtractorMetadata(
     val description: String? = null,
 )
 
-data class AppliedExtractor(
-    val result: ExtractorResult,
-)
-
 class ExtractorRegistry(
     private val extractors: List<Extractor> = DefaultExtractors.all,
 ) {
@@ -88,13 +80,11 @@ class ExtractorRegistry(
             .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
             .toList()
 
-    fun extract(context: ExtractorContext): AppliedExtractor? {
-        for (extractor in matchingExtractors(context)) {
+    fun extract(context: ExtractorContext): ExtractorResult? {
+        for (extractor in resolve(context)) {
             val result = extractor.extract(context)
             if (result != null) {
-                return AppliedExtractor(
-                    result = result,
-                )
+                return result
             }
         }
         return null

@@ -11,6 +11,22 @@ data class RemovalRecord(
     val preview: String,
 )
 
+internal fun recordAndRemove(
+    element: Element,
+    debug: MutableList<RemovalRecord>,
+    step: String,
+    selector: String?,
+    reason: String,
+) {
+    debug += RemovalRecord(
+        step = step,
+        selector = selector,
+        reason = reason,
+        preview = element.text().take(100),
+    )
+    element.removeSafely()
+}
+
 internal data class RemovalPolicy(
     val removeExactSelectors: Boolean = true,
     val removePartialSelectors: Boolean = true,
@@ -41,9 +57,7 @@ internal object RemovalPipeline {
         if (policy.removeContentPatterns) {
             removeContentPatterns(content, debug)
         }
-        removeSmallImages(content, debug)
-        deduplicateImages(content, debug)
-        removeCoverImage(content, metadataImage, debug)
+        ImageRemovalPipeline.apply(content, metadataImage, debug, ::partialHaystack)
     }
 
     private fun removeHiddenElements(
@@ -63,7 +77,7 @@ internal object RemovalPipeline {
         val style = element.attr("style").lowercase().replace(" ", "")
         if ("display:none" in style) return "display:none"
         if ("visibility:hidden" in style) return "visibility:hidden"
-        if (Regex("""(?:^|;)opacity:0(?:\.0+)?(?:;|$)""").containsMatchIn(style)) return "opacity:0"
+        if (OPACITY_ZERO_STYLE_PATTERN.containsMatchIn(style)) return "opacity:0"
         val classes = element.classNames()
         if (classes.any { it == "hidden" || it == "invisible" || it.endsWith(":hidden") || it.endsWith(":invisible") }) {
             return "hidden class"
@@ -392,74 +406,6 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun removeSmallImages(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
-        for (image in content.select("img").toList()) {
-            if (image.isSmallImage()) {
-                recordAndRemove(image, debug, "removeSmallImages", "img", "small image dimensions")
-            }
-        }
-    }
-
-    private fun deduplicateImages(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
-        val seen = mutableSetOf<String>()
-        for (image in content.select("img[src]").toList()) {
-            val key = image.imageKey() ?: continue
-            if (!seen.add(key)) {
-                recordAndRemove(image, debug, "deduplicateImages", "img[src]", "duplicate image")
-            }
-        }
-    }
-
-    private fun removeCoverImage(
-        content: Element,
-        metadataImage: String?,
-        debug: MutableList<RemovalRecord>,
-    ) {
-        val coverKey = metadataImage?.trim()?.takeIf { it.isNotBlank() } ?: return
-        for (image in content.select("img[src]").toList()) {
-            val key = image.imageKey() ?: continue
-            if (key == coverKey) {
-                val target = image.coverImageRemovalTarget(content)
-                if (!target.hasCoverImageHint(image)) continue
-                recordAndRemove(target, debug, "removeCoverImage", coverImageSelector(target), "duplicates metadata image")
-            }
-        }
-    }
-
-    private fun Element.coverImageRemovalTarget(root: Element): Element {
-        var target = this
-        var current = parent()
-        while (current != null && current != root && current.isVisualOnlyImageWrapper()) {
-            target = current
-            current = current.parent()
-        }
-        return target
-    }
-
-    private fun Element.isVisualOnlyImageWrapper(): Boolean {
-        if (normalName() !in VISUAL_IMAGE_WRAPPER_TAGS) return false
-        if (text().trim().isNotBlank()) return false
-        return children().all { child ->
-            child.normalName() in VISUAL_IMAGE_WRAPPER_TAGS ||
-                child.normalName() in VISUAL_IMAGE_LEAF_TAGS
-        }
-    }
-
-    private fun Element.hasCoverImageHint(image: Element): Boolean {
-        val hints = listOfNotNull(
-            partialHaystack(this),
-            parent()?.let(::partialHaystack),
-            partialHaystack(image),
-        ).joinToString(" ")
-        return COVER_IMAGE_HINTS.any { it in hints }
-    }
-
     private fun isProtected(element: Element): Boolean {
         val hints = partialHaystack(element)
         return element.`is`("pre, code, figure, picture, table, math, blockquote") ||
@@ -471,10 +417,10 @@ internal object RemovalPipeline {
     }
 
     private fun isLikelyProse(element: Element): Boolean {
-        val paragraphs = element.select("p").count { it.text().split(Regex("""\s+""")).size >= 8 }
+        val paragraphs = element.select("p").count { it.text().split(WHITESPACE_PATTERN).size >= 8 }
         if (paragraphs >= 1) return true
         val text = element.text()
-        val words = text.split(Regex("""\s+""")).count { it.isNotBlank() }
+        val words = text.split(WHITESPACE_PATTERN).count { it.isNotBlank() }
         return words >= 35 && text.count { it == '.' || it == ',' } >= 2
     }
 
@@ -486,7 +432,7 @@ internal object RemovalPipeline {
     }
 
     private fun isTrailingRecommendationHeading(element: Element): Boolean {
-        if (!element.normalName().matches(Regex("""h[1-6]"""))) return false
+        if (!HEADING_TAG_PATTERN.matches(element.normalName())) return false
         return RECOMMENDATION_HEADING_PATTERN.containsMatchIn(element.text().trim())
     }
 
@@ -612,7 +558,7 @@ internal object RemovalPipeline {
 
         val linkCount = element.select("a").size
         val tagLinkCount = element.select("""a[href*="/tag/"], a[rel~=tag]""").size
-        val wordCount = text.split(Regex("""\s+""")).count { it.isNotBlank() }
+        val wordCount = text.split(WHITESPACE_PATTERN).count { it.isNotBlank() }
 
         return tagLinkCount >= TRAILING_TAG_MIN_LINKS ||
             (linkCount >= TRAILING_TAG_MIN_LINKS && wordCount <= TRAILING_TAG_MAX_WORDS)
@@ -827,59 +773,11 @@ internal object RemovalPipeline {
         return element.select("a[href]").size >= 2
     }
 
-    private fun recordAndRemove(
-        element: Element,
-        debug: MutableList<RemovalRecord>,
-        step: String,
-        selector: String?,
-        reason: String,
-    ) {
-        debug += RemovalRecord(
-            step = step,
-            selector = selector,
-            reason = reason,
-            preview = element.text().take(100),
-        )
-        element.removeSafely()
-    }
-
-    private fun Element.imageKey(): String? =
-        absUrl("src").ifBlank { attr("src").trim() }.ifBlank { null }
-
-    private fun coverImageSelector(element: Element): String =
-        when {
-            element.id().isNotBlank() -> "#${element.id()}"
-            element.className().isNotBlank() -> ".${element.classNames().joinToString(".")}"
-            else -> element.normalName()
-        }
-
-    private fun Element.isSmallImage(): Boolean {
-        val width = dimension("width")
-        val height = dimension("height")
-        return width != null &&
-            height != null &&
-            width > 0 &&
-            height > 0 &&
-            width <= SMALL_IMAGE_MAX_DIMENSION &&
-            height <= SMALL_IMAGE_MAX_DIMENSION
-    }
-
-    private fun Element.dimension(name: String): Int? =
-        attr(name).dimensionValue()
-            ?: Regex("""$name\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
-                .find(attr("style"))
-                ?.groupValues
-                ?.getOrNull(1)
-                ?.toIntOrNull()
-
-    private fun String.dimensionValue(): Int? =
-        Regex("""^\s*(\d+)""").find(this)?.groupValues?.getOrNull(1)?.toIntOrNull()
-
     private fun String.collapseWhitespace(): String =
-        replace(Regex("""\s+"""), " ")
+        replace(WHITESPACE_PATTERN, " ")
 
     private fun String.wordCount(): Int =
-        split(Regex("""\s+""")).count { it.isNotBlank() }
+        split(WHITESPACE_PATTERN).count { it.isNotBlank() }
 
     private val EXACT_SELECTORS = listOf(
         "nav",
@@ -1139,28 +1037,6 @@ internal object RemovalPipeline {
         "upper-deck",
     )
 
-    private val VISUAL_IMAGE_WRAPPER_TAGS = setOf(
-        "a",
-        "div",
-        "figure",
-        "picture",
-        "span",
-    )
-
-    private val VISUAL_IMAGE_LEAF_TAGS = setOf(
-        "img",
-        "source",
-    )
-
-    private val COVER_IMAGE_HINTS = listOf(
-        "post-thumbnail",
-        "featured",
-        "hero",
-        "cover",
-        "wp-post-image",
-        "image-link",
-    )
-
     private val COMMENT_LINK_HINTS = listOf(
         "/thread",
         "/comment",
@@ -1182,6 +1058,8 @@ internal object RemovalPipeline {
 
     private val ORPHAN_SEPARATOR_TEXTS = setOf("/", "|")
 
+    private val OPACITY_ZERO_STYLE_PATTERN = Regex("""(?:^|;)opacity:0(?:\.0+)?(?:;|$)""")
+    private val WHITESPACE_PATTERN = Regex("""\s+""")
     private val HEADING_TAG_PATTERN = Regex("""h[1-6]""")
 
     private val SKELETON_RECIRCULATION_HINTS = listOf(
@@ -1232,5 +1110,4 @@ internal object RemovalPipeline {
     private const val RELATED_TERMS_MAX_LENGTH = 1_200
     private const val RELATED_TERMS_PROSE_WORD_GUARD = 14
     private const val RELATED_TERMS_MIN_LINKS = 2
-    private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

@@ -17,7 +17,22 @@ class ExtractorRegistryTest {
 
         val result = registry.extract(document.context("https://example.com"))
 
-        assertEquals("first", result?.result?.variables?.get("name"))
+        assertEquals("first", result?.variables?.get("name"))
+    }
+
+    @Test
+    fun `registry extracts direct content by priority`() {
+        val document = Jsoup.parse("<main></main>", "https://example.com")
+        val registry = ExtractorRegistry(
+            listOf(
+                namedExtractor("low", priority = 1),
+                namedExtractor("high", priority = 10),
+            ),
+        )
+
+        val result = registry.extract(document.context("https://example.com"))
+
+        assertEquals("high", result?.variables?.get("name"))
     }
 
     @Test
@@ -61,9 +76,10 @@ class ExtractorRegistryTest {
         assertFalse(result.contentMarkdown.contains("Ignored generic content."))
     }
 
-    private fun namedExtractor(name: String): Extractor =
+    private fun namedExtractor(name: String, priority: Int = 0): Extractor =
         object : Extractor {
             override val id = name
+            override val priority = priority
 
             override fun matches(context: ExtractorContext) = true
 

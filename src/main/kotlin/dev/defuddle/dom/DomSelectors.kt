@@ -34,15 +34,23 @@ fun Element.childrenMatching(selector: String): List<Element> =
 
 object SelectorDiagnostics {
     private val unsupported = linkedSetOf<String>()
+    private val lock = Any()
 
     fun recordUnsupported(selector: String) {
-        unsupported += selector
+        synchronized(lock) {
+            unsupported += selector
+        }
     }
 
-    fun unsupportedSelectors(): List<String> = unsupported.toList()
+    fun unsupportedSelectors(): List<String> =
+        synchronized(lock) {
+            unsupported.toList()
+        }
 
     fun clear() {
-        unsupported.clear()
+        synchronized(lock) {
+            unsupported.clear()
+        }
     }
 }
 

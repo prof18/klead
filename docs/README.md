@@ -65,7 +65,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-003 Fixture discovery and expected-output loader.
 - `[x]` COMMIT-004 jsoup selector safety wrappers.
 - `[x]` COMMIT-005 DOM mutation helpers.
-- `[ ]` COMMIT-006 Word count and text normalization.
+- `[x]` COMMIT-006 Word count and text normalization.
 - `[x]` COMMIT-007 Meta tag collection and minimal title extraction.
 - `[x]` COMMIT-008 Main content scoring unit tests and implementation.
 - `[x]` COMMIT-009 Main content selection over entry-point selectors.
@@ -85,7 +85,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-023 Image standardization.
 - `[x]` COMMIT-024 Code block standardization.
 - `[x]` COMMIT-025 Metadata completeness.
-- `[~]` COMMIT-026 Schema.org fallback.
+- `[x]` COMMIT-026 Schema.org fallback.
 - `[x]` COMMIT-027 Fixture allowlist expansion by one category.
 - `[x]` COMMIT-028 One static site extractor.
 - `[x]` COMMIT-029 Async parser entry point with internal dispatcher selection.
