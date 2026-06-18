@@ -10,14 +10,10 @@ Return:
 
 - title
 - description
-- domain
 - favicon
 - image
-- language
-- published
 - author
 - site
-- schema.org data
 - word count and parse time are filled by the parser, not metadata extractor
 
 ## Meta Tag Collection
@@ -89,20 +85,6 @@ Clean:
 - reject placeholders
 - avoid large comment/contributor lists
 
-## Date Extraction
-
-Sources:
-
-- schema date fields
-- `article:published_time`
-- `datePublished`
-- `pubdate`
-- `time[datetime]`
-- h1-adjacent date blocks
-- common date meta tags
-
-Normalize only when reliable. Do not invent timezone precision.
-
 ## Image And Favicon
 
 Image sources:
@@ -120,16 +102,6 @@ Favicon sources:
 
 Resolve relative URLs.
 
-## Language
-
-Sources:
-
-- `html[lang]`
-- content-language meta
-- `og:locale`
-- schema language fields
-- options language fallback
-
 ## TDD Checklist
 
 - `[x]` Placeholder values are rejected.
@@ -138,8 +110,6 @@ Sources:
 - `[x]` Multi-author citation tags join correctly.
 - `[x]` rel-author in bio container does not capture full bio.
 - `[x]` h1 sibling byline extracts author.
-- `[x]` h1 sibling date extracts published date.
-- `[x]` canonical URL determines domain.
 - `[x]` relative favicon resolves absolute.
 - `[x]` JSON-LD invalid syntax is ignored safely.
 - `[x]` `@graph` schema fields are found.
@@ -153,7 +123,6 @@ Sources:
 
 - Meta tag collector.
 - Schema.org extractor.
-- Title/domain/site extraction.
+- Title/site extraction.
 - Author extraction.
-- Date extraction.
-- Description/image/favicon/language extraction.
+- Description/image/favicon extraction.

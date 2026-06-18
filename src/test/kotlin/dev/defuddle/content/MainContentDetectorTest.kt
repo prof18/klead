@@ -1,6 +1,5 @@
 package dev.defuddle.content
 
-import dev.defuddle.DefuddleOptions
 import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -8,7 +7,7 @@ import kotlin.test.assertTrue
 
 class MainContentDetectorTest {
     @Test
-    fun `contentSelector override wins`() {
+    fun `extractor content selector wins`() {
         val document = Jsoup.parse(
             """
             <main><article id="article"><p>Article text should lose.</p></article></main>
@@ -18,11 +17,12 @@ class MainContentDetectorTest {
 
         val detected = MainContentDetector.detect(
             document = document,
-            options = DefuddleOptions(contentSelector = "#manual"),
+            extractorContentSelector = "#manual",
         )
 
         assertEquals("manual", detected.element.id())
         assertEquals("#manual", detected.selectedSelector)
+        assertEquals("#manual", detected.debug.extractorContentSelector)
     }
 
     @Test

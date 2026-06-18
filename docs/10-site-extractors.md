@@ -42,15 +42,15 @@ interface Extractor {
 }
 ```
 
-Default extractors are exposed through `DefaultExtractors.all` and can be
-replaced or extended with `DefuddleOptions.extractors`:
+Default extractors are always included. Custom extractors can be added with
+`DefuddleOptions.customExtractors`:
 
 ```kotlin
 Defuddle.parseHtml(
     html = html,
     url = url,
     options = DefuddleOptions(
-        extractors = DefaultExtractors.all + MyExtractor,
+        customExtractors = listOf(MyExtractor),
     ),
 )
 ```
@@ -89,8 +89,6 @@ Implement a small registry.
 The registry should:
 
 - preserve priority order
-- allow disabling extractors
-- expose extractor type in result
 - remain independent from network access
 
 `Defuddle.parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
@@ -121,7 +119,6 @@ Support:
 - content selector
 - title
 - author
-- published
 - site
 - description
 - variables

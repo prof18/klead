@@ -44,7 +44,7 @@ val result = Defuddle.parseHtml(
     html = html,
     url = "https://example.com/story",
     options = DefuddleOptions(
-        extractors = DefaultExtractors.all + MyExtractor,
+        customExtractors = listOf(MyExtractor),
         debug = true,
     ),
 )

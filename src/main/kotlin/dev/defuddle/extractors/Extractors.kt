@@ -103,36 +103,27 @@ data class ExtractorResult(
 data class ExtractorMetadata(
     val title: String? = null,
     val author: String? = null,
-    val published: String? = null,
     val site: String? = null,
     val description: String? = null,
 )
 
 data class AppliedExtractor(
-    val name: String,
     val result: ExtractorResult,
 )
 
 class ExtractorRegistry(
     private val extractors: List<Extractor> = DefaultExtractors.all,
 ) {
-    fun resolve(
-        context: ExtractorContext,
-        disabledExtractors: Set<String> = emptySet(),
-    ): List<Extractor> =
-        matchingExtractors(context, disabledExtractors)
+    fun resolve(context: ExtractorContext): List<Extractor> =
+        matchingExtractors(context)
             .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
             .toList()
 
-    fun extract(
-        context: ExtractorContext,
-        disabledExtractors: Set<String> = emptySet(),
-    ): AppliedExtractor? {
-        for (extractor in matchingExtractors(context, disabledExtractors)) {
+    fun extract(context: ExtractorContext): AppliedExtractor? {
+        for (extractor in matchingExtractors(context)) {
             val result = extractor.extract(context)
             if (result != null) {
                 return AppliedExtractor(
-                    name = extractor.id,
                     result = result,
                 )
             }
@@ -140,13 +131,9 @@ class ExtractorRegistry(
         return null
     }
 
-    private fun matchingExtractors(
-        context: ExtractorContext,
-        disabledExtractors: Set<String>,
-    ): Sequence<Extractor> =
+    private fun matchingExtractors(context: ExtractorContext): Sequence<Extractor> =
         extractors
             .asSequence()
-            .filterNot { it.id in disabledExtractors }
             .filter { it.matches(context) }
 }
 

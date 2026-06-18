@@ -4,13 +4,11 @@ import dev.defuddle.dom.cloneDocument
 import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
 import dev.defuddle.extractors.AppliedExtractor
-import dev.defuddle.extractors.DefaultExtractors
 import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorRegistry
 import dev.defuddle.markdown.DefuddleMarkdownWriter
 import dev.defuddle.content.MainContentDetector
-import dev.defuddle.metadata.MetaTagItem
 import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
 import dev.defuddle.removal.RemovalPipeline
@@ -29,14 +27,9 @@ import kotlin.math.max
 import kotlin.time.measureTimedValue
 
 data class DefuddleOptions(
-    val contentSelector: String? = null,
-    val extractors: List<Extractor> = DefaultExtractors.all,
-    val disabledExtractors: Set<String> = emptySet(),
-    val standardize: Boolean = true,
+    val customExtractors: List<Extractor> = emptyList(),
     val markdown: Boolean = true,
-    val separateMarkdown: Boolean = true,
     val debug: Boolean = false,
-    val profile: Boolean = false,
 )
 
 data class DefuddleResult(
@@ -44,18 +37,12 @@ data class DefuddleResult(
     val contentHtml: String,
     val title: String?,
     val description: String?,
-    val domain: String?,
     val favicon: String?,
     val image: String?,
-    val language: String?,
-    val published: String?,
     val author: String?,
     val site: String?,
     val wordCount: Int,
     val parseTimeMillis: Long,
-    val metaTags: List<MetaTagItem>,
-    val schemaOrgData: List<Map<String, Any?>>,
-    val extractor: String?,
     val variables: Map<String, String>,
     val debug: Map<String, Any?>,
 )
@@ -83,23 +70,16 @@ object Defuddle {
                 host = url.hostOrNull(),
                 document = document,
             )
-            val appliedExtractor = ExtractorRegistry(options.extractors).extract(
-                context = extractorContext,
-                disabledExtractors = options.disabledExtractors,
-            )
+            val appliedExtractor = ExtractorRegistry(options.effectiveExtractors()).extract(context = extractorContext)
             val parseDocument = appliedExtractor?.result?.contentHtml
                 ?.let { Jsoup.parseBodyFragment(it, url).also { parsed -> parsed.outputSettings().prettyPrint(false) } }
                 ?: document
-            val effectiveOptions = appliedExtractor?.result?.contentSelector
-                ?.takeIf { options.contentSelector == null }
-                ?.let { options.copy(contentSelector = it) }
-                ?: options
 
             RetryController.run { removalPolicy ->
                 val result = parseInternal(
                     document = parseDocument.cloneDocument(),
                     url = url,
-                    options = effectiveOptions,
+                    options = options,
                     appliedExtractor = appliedExtractor,
                     removalPolicy = removalPolicy,
                 )
@@ -113,7 +93,7 @@ object Defuddle {
 
         val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
         val debug = timed.value.debug.toMutableMap()
-        if (options.profile) {
+        if (options.debug) {
             debug["profileTimings"] = mapOf("parseHtml" to parseTimeMillis)
         }
         timed.value.copy(
@@ -139,10 +119,7 @@ object Defuddle {
             host = url.hostOrNull(),
             document = document,
         )
-        val matchedExtractors = ExtractorRegistry(options.extractors).resolve(
-            context = extractorContext,
-            disabledExtractors = options.disabledExtractors,
-        )
+        val matchedExtractors = ExtractorRegistry(options.effectiveExtractors()).resolve(context = extractorContext)
         val removals = mutableListOf<RemovalRecord>()
         ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
 
@@ -150,7 +127,7 @@ object Defuddle {
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
         val detected = MainContentDetector.detect(
             document = document,
-            options = options,
+            extractorContentSelector = appliedExtractor?.result?.contentSelector,
             schemaText = schemaOrg.contentText(),
             preferredSelectors = matchedExtractors.flatMap { it.contentSelectors },
         )
@@ -172,9 +149,7 @@ object Defuddle {
         ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
         val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
         matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
-        if (options.standardize) {
-            HtmlStandardizer.apply(content, metadata.title)
-        }
+        HtmlStandardizer.apply(content, metadata.title)
         val markdown = if (options.markdown) DefuddleMarkdownWriter.write(content, url) else ""
 
         return DefuddleResult(
@@ -182,18 +157,12 @@ object Defuddle {
             contentHtml = content.cleanOuterHtml(),
             title = metadata.title,
             description = metadata.description,
-            domain = metadata.domain,
             favicon = metadata.favicon,
             image = metadata.image,
-            language = metadata.language,
-            published = metadata.published,
             author = metadata.author,
             site = metadata.site,
             wordCount = countBodyWords(content),
             parseTimeMillis = 0,
-            metaTags = metaTags,
-            schemaOrgData = schemaOrg.items,
-            extractor = appliedExtractor?.name,
             variables = appliedExtractor?.result?.variables.orEmpty(),
             debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals, matchedExtractors.map { it.id }),
         ).withExtractorMetadata(appliedExtractor)
@@ -204,7 +173,6 @@ object Defuddle {
         return copy(
             title = metadata.title ?: title,
             description = metadata.description ?: description,
-            published = metadata.published ?: published,
             author = metadata.author ?: author,
             site = metadata.site ?: site,
         )
@@ -258,6 +226,9 @@ object Defuddle {
 
     private fun String.hostOrNull(): String? =
         runCatching { URI(this).host?.lowercase() }.getOrNull()
+
+    private fun DefuddleOptions.effectiveExtractors(): List<Extractor> =
+        customExtractors + dev.defuddle.extractors.DefaultExtractors.all
 
     private fun promoteNoscriptImages(document: Document) {
         for (noscript in document.select("noscript").toList()) {

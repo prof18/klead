@@ -14,7 +14,6 @@ class DefuddleApiTest {
             url = "https://example.com/empty",
         )
 
-        assertEquals("example.com", result.domain)
         assertEquals("", result.contentMarkdown)
         assertEquals(0, result.wordCount)
         assertTrue(result.parseTimeMillis >= 0)
@@ -44,7 +43,6 @@ class DefuddleApiTest {
 
         assertEquals("Document title", result.title)
         assertEquals("A short description", result.description)
-        assertEquals("example.com", result.domain)
         assertEquals(
             """
             # Readable title
@@ -94,26 +92,7 @@ class DefuddleApiTest {
 
         assertNotNull(result.contentMarkdown)
         assertNotNull(result.contentHtml)
-        assertNotNull(result.metaTags)
-        assertNotNull(result.schemaOrgData)
         assertNotNull(result.debug)
-    }
-
-    @Test
-    fun `content selector override is used by public parser`() {
-        val result = Defuddle.parseHtml(
-            html = """
-                <html><body>
-                  <article><p>Default article should lose.</p></article>
-                  <section id="manual"><p>Manual content should win.</p></section>
-                </body></html>
-            """.trimIndent(),
-            url = "https://example.com/manual",
-            options = DefuddleOptions(contentSelector = "#manual"),
-        )
-
-        assertTrue(result.contentMarkdown.contains("Manual content should win."))
-        assertFalse(result.contentMarkdown.contains("Default article should lose."))
     }
 
     @Test

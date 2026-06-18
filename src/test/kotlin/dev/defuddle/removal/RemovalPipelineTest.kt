@@ -2,6 +2,7 @@ package dev.defuddle.removal
 
 import dev.defuddle.Defuddle
 import dev.defuddle.DefuddleOptions
+import dev.defuddle.extractors.Extractor
 import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -806,7 +807,7 @@ class RemovalPipelineTest {
                 </body></html>
             """.trimIndent(),
             url = "https://9to5linux.com/wordpress-cover",
-            options = DefuddleOptions(contentSelector = "main"),
+            options = mainSelectorOptions(),
         )
 
         assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
@@ -1405,7 +1406,7 @@ class RemovalPipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/related-content-cards",
-            options = DefuddleOptions(contentSelector = "main"),
+            options = mainSelectorOptions(),
         )
 
         assertTrue(result.contentMarkdown.contains("The article deck should stay"))
@@ -1467,7 +1468,7 @@ class RemovalPipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://fortune.com/publisher-chrome",
-            options = DefuddleOptions(contentSelector = "main"),
+            options = mainSelectorOptions(),
         )
 
         val lines = result.contentMarkdown.lines().map { it.trim() }
@@ -1518,7 +1519,7 @@ class RemovalPipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://android-developers.googleblog.com/blogger-post",
-            options = DefuddleOptions(contentSelector = "main"),
+            options = mainSelectorOptions(),
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -1572,7 +1573,7 @@ class RemovalPipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://blog.jetbrains.com/kotlin/jetbrains-post",
-            options = DefuddleOptions(contentSelector = "main"),
+            options = mainSelectorOptions(),
         )
 
         assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
@@ -2100,5 +2101,13 @@ class RemovalPipelineTest {
         assertEquals("https://example.com/cover.png", result.image)
         assertFalse(result.contentHtml.contains("""alt="Cover""""))
         assertFalse(result.contentHtml.contains("""class="post-thumbnail""""))
+    }
+
+    private fun mainSelectorOptions(): DefuddleOptions =
+        DefuddleOptions(customExtractors = listOf(MainSelectorExtractor))
+
+    private object MainSelectorExtractor : Extractor {
+        override val id: String = "test-main-selector"
+        override val contentSelectors: List<String> = listOf("main")
     }
 }

@@ -5,7 +5,6 @@ import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DefuddleCoroutineApiTest {
@@ -25,11 +24,10 @@ class DefuddleCoroutineApiTest {
             html = "<html><body></body></html>",
             url = "https://direct.example/story/1",
             options = DefuddleOptions(
-                extractors = listOf(extractor),
+                customExtractors = listOf(extractor),
             ),
         )
 
-        assertEquals("async-direct-test", result.extractor)
         assertTrue(result.contentMarkdown.contains("Direct async content."))
     }
 
@@ -39,7 +37,7 @@ class DefuddleCoroutineApiTest {
             html = "<html><body><p>Generic content should lose.</p></body></html>",
             url = "https://sync.example/article",
             options = DefuddleOptions(
-                extractors = listOf(
+                customExtractors = listOf(
                     object : Extractor {
                         override val id = "sync-bridge-test"
 
@@ -53,7 +51,6 @@ class DefuddleCoroutineApiTest {
             ),
         )
 
-        assertEquals("sync-bridge-test", result.extractor)
         assertTrue(result.contentMarkdown.contains("Direct extractor content."))
     }
 }

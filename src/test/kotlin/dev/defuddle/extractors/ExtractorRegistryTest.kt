@@ -16,20 +16,7 @@ class ExtractorRegistryTest {
 
         val result = registry.extract(document.context("https://example.com"))
 
-        assertEquals("first", result?.name)
-    }
-
-    @Test
-    fun `disabled extractors are skipped`() {
-        val document = Jsoup.parse("<main></main>", "https://example.com")
-        val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
-
-        val result = registry.extract(
-            context = document.context("https://example.com"),
-            disabledExtractors = setOf("first"),
-        )
-
-        assertEquals("second", result?.name)
+        assertEquals("first", result?.result?.variables?.get("name"))
     }
 
     @Test
@@ -51,7 +38,7 @@ class ExtractorRegistryTest {
             html = "<html><body><p>Ignored generic content.</p></body></html>",
             url = "https://direct.example/article",
             options = DefuddleOptions(
-                extractors = listOf(
+                customExtractors = listOf(
                     object : Extractor {
                         override val id = "direct-test"
 
@@ -67,7 +54,6 @@ class ExtractorRegistryTest {
             ),
         )
 
-        assertEquals("direct-test", result.extractor)
         assertEquals("fixture", result.variables["source"])
         assertTrue(result.contentMarkdown.contains("## Direct Title"))
         assertTrue(result.contentMarkdown.contains("Direct **content**."))

@@ -19,7 +19,6 @@ class MetadataFixtureSubsetTest {
             assertEquals(expected.metadata["title"].emptyAsNull(), result.title.emptyAsNull(), "${case.name} title")
             assertEquals(expected.metadata["author"].emptyAsNull(), result.author.emptyAsNull(), "${case.name} author")
             assertEquals(expected.metadata["site"].emptyAsNull(), result.site.emptyAsNull(), "${case.name} site")
-            assertEquals(expected.metadata["published"].emptyAsNull(), result.published.emptyAsNull(), "${case.name} published")
         }
     }
 

@@ -9,7 +9,7 @@ This phase should not remove clutter yet except where needed for focused tests.
 ## Inputs
 
 - jsoup document clone
-- optional `contentSelector`
+- optional extractor-provided content selector
 - schema.org data
 - entry point selector constants
 - content scoring function
@@ -53,19 +53,20 @@ Port `ContentScorer.scoreElement` with tests for:
 
 ## Selection Algorithm
 
-1. If `contentSelector` is provided and matches, use it.
-2. Find all entry-point candidates.
-3. Score each candidate:
+1. If an extractor-provided content selector is available and matches, use it.
+2. Try matching extractor `contentSelectors` before generic scoring.
+3. Find all entry-point candidates.
+4. Score each candidate:
    - selector priority bonus
    - content score
-4. Sort by descending score.
-5. If only body matched, try table-layout content detection.
-6. Prefer higher-priority child candidates when:
+5. Sort by descending score.
+6. If only body matched, try table-layout content detection.
+7. Prefer higher-priority child candidates when:
    - child is contained by top candidate
    - child has meaningful content
    - there are not multiple sibling candidates indicating a listing page
-7. If no entry candidates, fallback to block scoring.
-8. If body is selected and schema text identifies a smaller matching element, use schema match.
+8. If no entry candidates, fallback to block scoring.
+9. If body is selected and schema text identifies a smaller matching element, use schema match.
 
 ## Table Layout Detection
 
@@ -87,7 +88,7 @@ When debug is enabled, include:
 
 ## TDD Checklist
 
-- `[x]` `contentSelector` override wins.
+- `[x]` extractor content selector wins.
 - `[x]` `article` beats `body`.
 - `[x]` child `article` can beat parent `main`.
 - `[x]` multiple article cards keep parent listing container.

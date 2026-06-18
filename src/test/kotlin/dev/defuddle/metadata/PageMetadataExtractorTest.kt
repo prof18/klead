@@ -65,7 +65,7 @@ class PageMetadataExtractorTest {
     }
 
     @Test
-    fun `h1 sibling byline and date are extracted`() {
+    fun `h1 sibling byline is extracted`() {
         val metadata = extract(
             """
             <html><body><article>
@@ -78,11 +78,10 @@ class PageMetadataExtractorTest {
         )
 
         assertEquals("Alan Turing", metadata.author)
-        assertEquals("2024-01-02T00:00:00+00:00", metadata.published)
     }
 
     @Test
-    fun `canonical url determines domain and relative favicon resolves`() {
+    fun `canonical url resolves relative favicon`() {
         val metadata = extract(
             """
             <html><head>
@@ -93,18 +92,17 @@ class PageMetadataExtractorTest {
             url = "https://amp.example.com/post",
         )
 
-        assertEquals("canonical.example.org", metadata.domain)
         assertEquals("https://canonical.example.org/favicon.svg", metadata.favicon)
     }
 
     @Test
-    fun `schema and meta values fill image language and description`() {
+    fun `schema and meta values fill image and description`() {
         val document = Jsoup.parse(
             """
             <html lang="en"><head>
               <meta name="description" content="Meta description">
               <meta property="og:image" content="/meta.png">
-              <script type="application/ld+json">{"@type":"Article","image":{"url":"/schema.png"},"inLanguage":"en-US"}</script>
+              <script type="application/ld+json">{"@type":"Article","image":{"url":"/schema.png"}}</script>
             </head><body><article><h1>Title</h1></article></body></html>
             """.trimIndent(),
             "https://example.com/post",
@@ -120,7 +118,6 @@ class PageMetadataExtractorTest {
 
         assertEquals("Meta description", metadata.description)
         assertEquals("https://example.com/schema.png", metadata.image)
-        assertEquals("en", metadata.language)
     }
 
     @Test

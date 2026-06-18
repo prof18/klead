@@ -11,8 +11,8 @@ The current model has one extension type:
 - `DefaultExtractors`
 
 Domain-scoped selectors, direct content extraction from the provided DOM,
-post-processing, priority, and disable-list behavior all flow through that one
-type. Use `DefuddleOptions.extractors` to replace or extend defaults. Fetching
-is out of scope.
+post-processing, and priority all flow through that one type. Defaults are
+always included, and `DefuddleOptions.customExtractors` adds project-specific
+extractors. Fetching is out of scope.
 
 See [10 Extractors](10-site-extractors.md) for the maintained contract.

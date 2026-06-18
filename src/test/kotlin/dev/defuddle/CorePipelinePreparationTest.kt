@@ -86,11 +86,11 @@ class CorePipelinePreparationTest {
     }
 
     @Test
-    fun `profile timings are present only when requested`() {
+    fun `profile timings are present when debug is requested`() {
         val result = Defuddle.parseHtml(
             html = "<html><body><article><p>Profile on.</p></article></body></html>",
             url = "https://example.com/profile-on",
-            options = DefuddleOptions(profile = true),
+            options = DefuddleOptions(debug = true),
         )
 
         val timings = result.debug["profileTimings"]

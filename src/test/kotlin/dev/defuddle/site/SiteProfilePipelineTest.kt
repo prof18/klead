@@ -31,7 +31,7 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(extractors = listOf(profile), debug = true),
+            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
         )
 
         assertTrue(result.contentMarkdown.contains("This preferred article paragraph"))
@@ -62,7 +62,7 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(extractors = listOf(profile), debug = true),
+            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
         )
 
         assertTrue(result.contentMarkdown.contains("The primary article paragraph"))
@@ -89,7 +89,7 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(extractors = listOf(profile), debug = true),
+            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
         )
 
         assertTrue(result.contentMarkdown.contains("This generic article paragraph"))
@@ -114,12 +114,12 @@ class SiteProfilePipelineTest {
         val matching = Defuddle.parseHtml(
             html = html,
             url = "https://example.com/story",
-            options = DefuddleOptions(extractors = listOf(profile), debug = true),
+            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
         )
         val unrelated = Defuddle.parseHtml(
             html = html,
             url = "https://unrelated.test/story",
-            options = DefuddleOptions(extractors = listOf(profile), debug = true),
+            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
         )
 
         assertFalse(matching.contentMarkdown.contains("Site-specific chrome"))
@@ -155,6 +155,25 @@ class SiteProfilePipelineTest {
         assertTrue(unrelated.contentMarkdown.contains("Related Roundup"))
         assertEquals(listOf("macrumors"), matching.debug["extractorIds"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
+    }
+
+    @Test
+    fun `custom extractors do not replace built in defaults`() {
+        val custom = TestExtractor(domains = setOf("custom.example"))
+        val result = Defuddle.parseHtml(
+            html = """
+                <article>
+                  <p>The actual article body should stay because it contains enough realistic prose for deterministic parsing.</p>
+                  <p>A second paragraph keeps the article body stable while a MacRumors-style linkback footer appears below it.</p>
+                  <div class="linkback">Related Roundup: <a href="/roundup/example">Example Product</a></div>
+                </article>
+            """.trimIndent(),
+            url = "https://www.macrumors.com/example",
+            options = DefuddleOptions(customExtractors = listOf(custom), debug = true),
+        )
+
+        assertFalse(result.contentMarkdown.contains("Related Roundup"))
+        assertEquals(listOf("macrumors"), result.debug["extractorIds"])
     }
 
     @Test
@@ -258,12 +277,12 @@ class SiteProfilePipelineTest {
         val matching = Defuddle.parseHtml(
             html = html,
             url = "https://android-developers.googleblog.com/example",
-            options = DefuddleOptions(contentSelector = "main", debug = true),
+            options = DefuddleOptions(debug = true),
         )
         val unrelated = Defuddle.parseHtml(
             html = html,
             url = "https://example.com/not-blogger",
-            options = DefuddleOptions(contentSelector = "main", debug = true),
+            options = DefuddleOptions(debug = true),
         )
 
         assertFalse(matching.contentMarkdown.contains("Link copied to clipboard"))

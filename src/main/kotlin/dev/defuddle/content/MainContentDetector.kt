@@ -1,6 +1,5 @@
 package dev.defuddle.content
 
-import dev.defuddle.DefuddleOptions
 import dev.defuddle.dom.selectFirstSafe
 import dev.defuddle.dom.selectSafe
 import org.jsoup.nodes.Document
@@ -44,13 +43,18 @@ object MainContentDetector {
 
     fun detect(
         document: Document,
-        options: DefuddleOptions = DefuddleOptions(),
+        extractorContentSelector: String? = null,
         schemaText: String? = null,
         preferredSelectors: List<String> = emptyList(),
     ): DetectedContent {
-        options.contentSelector?.takeIf { it.isNotBlank() }?.let { selector ->
+        extractorContentSelector?.takeIf { it.isNotBlank() }?.let { selector ->
             document.selectFirstSafe(selector)?.let { element ->
-                return detected(element, selector, emptyList())
+                return detected(
+                    element = element,
+                    selector = selector,
+                    candidates = emptyList(),
+                    extractorContentSelector = selector,
+                )
             }
         }
 

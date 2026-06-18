@@ -3,7 +3,6 @@ package dev.defuddle.metadata
 import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MetadataExtractorTest {
@@ -36,7 +35,6 @@ class MetadataExtractorTest {
                   "@context": "https://schema.org",
                   "@type": "Article",
                   "headline": "Schema headline",
-                  "datePublished": "2024-01-02",
                   "author": {"@type": "Person", "name": "Ada Lovelace"},
                   "publisher": {"@type": "Organization", "name": "Example Site"},
                   "image": {"url": "/image.png"}
@@ -90,19 +88,4 @@ class MetadataExtractorTest {
         assertTrue(schema.diagnostics.first().contains("Invalid JSON-LD"))
     }
 
-    @Test
-    fun `public parser exposes structured meta tags and schema data`() {
-        val result = dev.defuddle.Defuddle.parseHtml(
-            html = """
-                <html><head>
-                  <meta property="og:title" content="Public schema title">
-                  <script type="application/ld+json">{"@type":"Article","headline":"Public schema headline"}</script>
-                </head><body><article><p>Body text.</p></article></body></html>
-            """.trimIndent(),
-            url = "https://example.com",
-        )
-
-        assertTrue(result.metaTags.any { it.property == "og:title" && it.content == "Public schema title" })
-        assertNotNull(result.schemaOrgData.firstOrNull { it["headline"] == "Public schema headline" })
-    }
 }

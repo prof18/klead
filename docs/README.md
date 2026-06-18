@@ -66,7 +66,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` COMMIT-004 jsoup selector safety wrappers.
 - `[x]` COMMIT-005 DOM mutation helpers.
 - `[ ]` COMMIT-006 Word count and text normalization.
-- `[x]` COMMIT-007 Meta tag collection and minimal title/domain extraction.
+- `[x]` COMMIT-007 Meta tag collection and minimal title extraction.
 - `[x]` COMMIT-008 Main content scoring unit tests and implementation.
 - `[x]` COMMIT-009 Main content selection over entry-point selectors.
 - `[x]` COMMIT-010 Hidden element removal.
@@ -131,13 +131,13 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - COMMIT-004 - complete - Added safe selector wrappers with unsupported-selector diagnostics, case-insensitive attribute matching, `:scope >` direct-child handling, and known `:has` fallbacks.
 2026-06-14 - COMMIT-005 - complete - Added DOM mutation helpers, document cloning, and malformed fragment parsing while preserving text-node order and base URI.
 2026-06-14 - PHASE-03 - in progress - Added Defuddle-compatible option defaults and verified Markdown can be disabled while cleaned HTML remains available.
-2026-06-14 - PHASE-03 - in progress - Added document preparation for noscript image fallback promotion, unsafe element/attribute stripping, and opt-in profile timing debug output.
+2026-06-14 - PHASE-03 - in progress - Added document preparation for noscript image fallback promotion, unsafe element/attribute stripping, and debug timing output.
 2026-06-14 - PHASE-03 - complete - Added clone-based internal parse retries for short content: without partial selectors, without hidden-element removal, and index-page retry options.
 2026-06-14 - COMMIT-008 - complete - Added content scoring with word, paragraph, comma, link-density, image-density, content-hint, date, author, footnote, and nested-table factors.
-2026-06-14 - COMMIT-009 - complete - Added ordered entry-point main content detection, contentSelector override, listing-container safeguard, and debug candidate reporting.
+2026-06-14 - COMMIT-009 - complete - Added ordered entry-point main content detection, extractor selector override, listing-container safeguard, and debug candidate reporting.
 2026-06-14 - PHASE-04 - complete - Added table-layout main-cell detection, peripheral table safeguards, and schema-text body refinement in the main content detector.
 2026-06-14 - PHASE-05 - in progress - Added structured meta tag collection and JSON-LD schema.org extraction with arrays, `@graph`, nested fields, and invalid JSON diagnostics.
-2026-06-14 - COMMIT-007 - complete - Added page metadata extraction for cleaned titles, canonical domains, authors, dates, description, image, favicon, language, and public parser metadata fields.
+2026-06-14 - COMMIT-007 - complete - Added page metadata extraction for cleaned titles, canonical-site handling, authors, description, image, favicon, and public parser metadata fields.
 2026-06-14 - PHASE-05 - complete - Added strict upstream metadata fixture coverage for h1 sibling byline/date, placeholder fallbacks, and rel-author bio-container handling.
 2026-06-14 - COMMIT-010 - complete - Added hidden element removal with math-wrapper preservation and debug removal records.
 2026-06-14 - COMMIT-011..013 - complete - Added exact selector removal, partial selector removal with code/footnote/callout protections, low-scoring link-heavy block removal, and a trailing subscribe content pattern.
@@ -145,7 +145,7 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-07 - complete - Added HTML standardization for duplicate headings, code blocks, lazy images, figures, callouts, simple footnotes, tables, math preservation, and empty wrappers.
 2026-06-14 - PHASE-08 - complete - Replaced the primitive private writer with a direct Kotlin Markdown writer for blocks, inline formatting, links, images, lists, blockquotes, fenced code, tables, callouts, footnotes, math preservation, and post-processing.
 2026-06-14 - PHASE-09 - in progress - Added full-corpus diagnostic fixture runner with zero unknown classifications, MVP relaxed allowlist, and documented fixture coverage report.
-2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, result variables, and disable list.
+2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, and result variables.
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
 2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
 2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Full exact Markdown parity remains a documented staged difference while diagnostic fixture coverage has zero unknown failures.

@@ -4,18 +4,12 @@ import dev.defuddle.dom.resolveUrl
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URI
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 data class PageMetadata(
     val title: String?,
     val description: String?,
-    val domain: String?,
     val favicon: String?,
     val image: String?,
-    val language: String?,
-    val published: String?,
     val author: String?,
     val site: String?,
 )
@@ -43,11 +37,8 @@ object PageMetadataExtractor {
                 metaTags.firstContent("og:description"),
                 metaTags.firstContent("twitter:description"),
             ).firstNotNullOfOrNull(::cleanNonPlaceholder),
-            domain = domain,
             favicon = extractFavicon(document, metadataBaseUrl),
             image = extractImage(metaTags, schemaOrg, metadataBaseUrl),
-            language = extractLanguage(document, metaTags, schemaOrg),
-            published = extractPublished(document, content, metaTags, schemaOrg),
             author = extractAuthor(document, content, metaTags, schemaOrg),
             site = site,
         )
@@ -102,26 +93,6 @@ object PageMetadataExtractor {
         )
 
         return candidates.firstNotNullOfOrNull(::cleanAuthor)
-    }
-
-    private fun extractPublished(
-        document: Document,
-        content: Element?,
-        metaTags: List<MetaTagItem>,
-        schemaOrg: SchemaOrgResult,
-    ): String? {
-        val candidates = listOf(
-            schemaOrg.firstString("datePublished"),
-            schemaOrg.firstString("dateCreated"),
-            metaTags.firstContent("article:published_time"),
-            metaTags.firstContent("datePublished"),
-            metaTags.firstContent("pubdate"),
-            metaTags.firstContent("date"),
-            document.selectFirst("time[datetime]")?.attr("datetime"),
-            content?.selectFirst(".date, .published, .pubdate, [class*=date]")?.text(),
-            h1SiblingDate(content),
-        )
-        return candidates.firstNotNullOfOrNull { normalizeDate(cleanValue(it)) }
     }
 
     private fun extractImage(
@@ -192,15 +163,6 @@ object PageMetadataExtractor {
             ?.let { resolveUrl(baseUrl, it) }
             ?.ifBlank { null }
 
-    private fun extractLanguage(
-        document: Document,
-        metaTags: List<MetaTagItem>,
-        schemaOrg: SchemaOrgResult,
-    ): String? =
-        document.selectFirst("html")?.attr("lang")?.trim()?.ifBlank { null }
-            ?: metaTags.firstContent("content-language", "og:locale")
-            ?: schemaOrg.firstString("inLanguage")
-
     private fun h1SiblingByline(content: Element?): String? {
         val h1 = content?.selectFirst("h1") ?: return null
         val texts = h1AdjacentTexts(h1, limit = 4)
@@ -214,12 +176,6 @@ object PageMetadataExtractor {
                     text.length <= 140 &&
                     text.split(Regex("""\s+""")).size >= 2
             }
-    }
-
-    private fun h1SiblingDate(content: Element?): String? {
-        val h1 = content?.selectFirst("h1") ?: return null
-        return h1AdjacentTexts(h1, limit = 4)
-            .firstOrNull { DATE_HINT_REGEX.containsMatchIn(it) }
     }
 
     private fun h1AdjacentTexts(
@@ -284,20 +240,6 @@ object PageMetadataExtractor {
         return cleaned.takeUnless(::isPlaceholder)
     }
 
-    private fun normalizeDate(value: String?): String? {
-        val cleaned = value ?: return null
-        if (ISO_DATE_REGEX.matches(cleaned)) return cleaned
-        return runCatching {
-            val date = LocalDate.parse(cleaned.removeSuffix(","), MONTH_DATE_FORMATTER)
-            "${date}T00:00:00+00:00"
-        }.getOrElse {
-            runCatching {
-                val date = LocalDate.parse(cleaned.removeSuffix(","), DAY_MONTH_DATE_FORMATTER)
-                "${date}T00:00:00+00:00"
-            }.getOrDefault(cleaned)
-        }
-    }
-
     private fun isPlaceholder(value: String): Boolean =
         value.lowercase() in PLACEHOLDERS ||
             value == ".." ||
@@ -342,11 +284,4 @@ object PageMetadataExtractor {
         RegexOption.IGNORE_CASE,
     )
 
-    private val ISO_DATE_REGEX = Regex("""\d{4}-\d{2}-\d{2}(?:[T ].*)?""")
-
-    private val MONTH_DATE_FORMATTER: DateTimeFormatter =
-        DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.US)
-
-    private val DAY_MONTH_DATE_FORMATTER: DateTimeFormatter =
-        DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.US)
 }

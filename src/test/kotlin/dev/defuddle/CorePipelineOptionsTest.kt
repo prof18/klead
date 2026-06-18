@@ -10,11 +10,8 @@ class CorePipelineOptionsTest {
     fun `options default to Defuddle compatible pipeline settings`() {
         val options = DefuddleOptions()
 
-        assertTrue(options.standardize)
         assertTrue(options.markdown)
-        assertTrue(options.separateMarkdown)
         assertFalse(options.debug)
-        assertFalse(options.profile)
     }
 
     @Test
@@ -30,7 +27,7 @@ class CorePipelineOptionsTest {
     }
 
     @Test
-    fun `profile timings are omitted unless requested`() {
+    fun `profile timings are omitted unless debug is requested`() {
         val result = Defuddle.parseHtml(
             html = "<html><body><article><p>Profile off.</p></article></body></html>",
             url = "https://example.com/profile-off",

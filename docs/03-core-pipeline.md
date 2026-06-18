@@ -36,19 +36,17 @@ Internal parse order:
 12. Deduplicate images.
 13. Serialize content HTML.
 14. Count words.
-15. Build debug/profile result.
+15. Build result debug diagnostics.
 
 ## Options
 
 Expose only parser behavior that callers should control:
 
-- `standardize = true`
 - `markdown = true`
-- `separateMarkdown = true`
 - `debug = false`
-- `profile = false`
 
-Removal policy is internal. Callers should not choose which cleanup stages run.
+Removal and standardization policy are internal. Callers should not choose
+which cleanup or normalization stages run.
 
 ## Retries
 
@@ -96,7 +94,7 @@ After parse internals, strip:
 - `[x]` `srcSet` normalizes to `srcset`.
 - `[x]` noscript image fallback promotes real image.
 - `[x]` unsafe elements and attributes are stripped after schema extraction.
-- `[x]` profile timings are present only when requested.
+- `[x]` profile timings are present when debug is requested.
 
 ## Acceptance Gate
 

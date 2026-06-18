@@ -63,17 +63,12 @@ Minimum result fields:
 - `contentHtml`
 - `title`
 - `description`
-- `domain`
 - `favicon`
 - `image`
-- `language`
-- `published`
 - `author`
 - `site`
 - `wordCount`
 - `parseTimeMillis`
-- `metaTags`
-- `schemaOrgData`
 - `debug`
 
 ## Porting Boundaries
