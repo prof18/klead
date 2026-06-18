@@ -1,5 +1,6 @@
 package dev.defuddle
 
+import dev.defuddle.content.MainContentDetector
 import dev.defuddle.dom.cloneDocument
 import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
@@ -8,13 +9,11 @@ import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorRegistry
 import dev.defuddle.markdown.DefuddleMarkdownWriter
-import dev.defuddle.content.MainContentDetector
 import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
 import dev.defuddle.removal.RemovalPipeline
 import dev.defuddle.removal.RemovalPolicy
 import dev.defuddle.removal.RemovalRecord
-import dev.defuddle.site.ExtractorRemovalPipeline
 import dev.defuddle.standardize.HtmlStandardizer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -121,7 +120,7 @@ object Defuddle {
         )
         val matchedExtractors = ExtractorRegistry(options.effectiveExtractors()).resolve(context = extractorContext)
         val removals = mutableListOf<RemovalRecord>()
-        ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
+        _root_ide_package_.dev.defuddle.extractors.site.ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
 
         val metaTags = MetadataExtractor.collectMetaTags(document)
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
@@ -146,7 +145,7 @@ object Defuddle {
             metadataImage = metadata.image,
             policy = removalPolicy,
         )
-        ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
+        _root_ide_package_.dev.defuddle.extractors.site.ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
         val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
         matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
         HtmlStandardizer.apply(content, metadata.title)

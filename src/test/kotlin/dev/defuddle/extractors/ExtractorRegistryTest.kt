@@ -2,6 +2,7 @@ package dev.defuddle.extractors
 
 import dev.defuddle.Defuddle
 import dev.defuddle.DefuddleOptions
+import dev.defuddle.extractors.site.WikipediaExtractor
 import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
