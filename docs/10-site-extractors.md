@@ -50,6 +50,7 @@ Defuddle.parseHtml(
     html = html,
     url = url,
     options = DefuddleOptions(
+        outputs = setOf(DefuddleOutput.MARKDOWN),
         customExtractors = listOf(MyExtractor),
     ),
 )
@@ -121,7 +122,6 @@ Support:
 - author
 - site
 - description
-- variables
 
 If extractor returns a content selector, run the normal pipeline against that content root.
 
@@ -131,7 +131,6 @@ If extractor returns a content selector, run the normal pipeline against that co
 - `[x]` Disabled extractors are skipped.
 - `[x]` Static extractor can return content selector.
 - `[x]` Static extractor can return direct content.
-- `[x]` Extractor variables appear in result.
 - `[x]` Extractor output still goes through Markdown writer.
 - `[x]` Extractors operate only on supplied HTML and do not fetch.
 

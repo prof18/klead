@@ -51,25 +51,17 @@ The library should expose an API like:
 val result = Defuddle.parseHtml(
     html = html,
     url = url,
-    options = DefuddleOptions(markdown = true)
+    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN))
 )
 
-println(result.contentMarkdown)
+println(result.content.requireMarkdown())
 ```
 
 Minimum result fields:
 
-- `contentMarkdown`
-- `contentHtml`
-- `title`
-- `description`
-- `favicon`
-- `image`
-- `author`
-- `site`
-- `wordCount`
-- `parseTimeMillis`
-- `debug`
+- `content`
+- `metadata`
+- `debug` (`parseTimeMillis` is included here when debug mode is enabled)
 
 ## Porting Boundaries
 
@@ -93,7 +85,7 @@ Client-rendered pages with no static content remain inherently limited without J
 - `[x]` Test that public API can parse an empty HTML string without crashing.
 - `[x]` Test that public API can parse a minimal article and return Markdown.
 - `[x]` Test that unsupported browser/CSS behavior is documented and does not crash.
-- `[x]` Test that `contentHtml` remains available even when Markdown is the primary output.
+- `[x]` Test that HTML and Markdown outputs can be requested independently.
 
 ## Acceptance Gate
 

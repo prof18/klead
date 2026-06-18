@@ -55,7 +55,6 @@ data class ExtractorResult(
     val contentHtml: String? = null,
     val contentSelector: String? = null,
     val metadata: ExtractorMetadata = ExtractorMetadata(),
-    val variables: Map<String, String> = emptyMap(),
 )
 
 data class ExtractorMetadata(

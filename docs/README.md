@@ -145,7 +145,7 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-07 - complete - Added HTML standardization for duplicate headings, code blocks, lazy images, figures, callouts, simple footnotes, tables, math preservation, and empty wrappers.
 2026-06-14 - PHASE-08 - complete - Replaced the primitive private writer with a direct Kotlin Markdown writer for blocks, inline formatting, links, images, lists, blockquotes, fenced code, tables, callouts, footnotes, math preservation, and post-processing.
 2026-06-14 - PHASE-09 - in progress - Added full-corpus diagnostic fixture runner with zero unknown classifications, MVP relaxed allowlist, and documented fixture coverage report.
-2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, and result variables.
+2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, and extractor metadata overrides.
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
 2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
 2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Full exact Markdown parity remains a documented staged difference while diagnostic fixture coverage has zero unknown failures.

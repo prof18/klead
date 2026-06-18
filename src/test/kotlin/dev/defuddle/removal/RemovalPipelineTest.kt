@@ -1,8 +1,8 @@
 package dev.defuddle.removal
 
-import dev.defuddle.Defuddle
-import dev.defuddle.DefuddleOptions
 import dev.defuddle.extractors.Extractor
+import dev.defuddle.parseHtmlForTest
+import dev.defuddle.testOptions
 import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class RemovalPipelineTest {
     @Test
     fun `hidden inline styles and attributes are removed`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html><body><article>
                   <p>Visible article text with enough ordinary prose to avoid the short-page retry that intentionally disables hidden-element removal for sparse pages. This paragraph keeps the default removal attempt as the selected parse result while still leaving hidden clutter nearby for the removal pipeline to clean up. Additional visible sentences provide stable article length, realistic punctuation, and enough words for the retry controller to trust the cleaned default result.</p>
@@ -29,14 +29,14 @@ class RemovalPipelineTest {
             url = "https://example.com/hidden",
         )
 
-        assertTrue(result.contentMarkdown.contains("Visible article text"))
-        assertFalse(result.contentMarkdown.contains("Hidden attribute text."))
-        assertFalse(result.contentMarkdown.contains("Aria hidden text."))
-        assertFalse(result.contentMarkdown.contains("Display hidden text."))
-        assertFalse(result.contentMarkdown.contains("Visibility hidden text."))
-        assertFalse(result.contentMarkdown.contains("Opacity hidden text."))
-        assertFalse(result.contentMarkdown.contains("Class hidden text."))
-        assertFalse(result.contentMarkdown.contains("Variant invisible text."))
+        assertTrue(result.content.requireMarkdown().contains("Visible article text"))
+        assertFalse(result.content.requireMarkdown().contains("Hidden attribute text."))
+        assertFalse(result.content.requireMarkdown().contains("Aria hidden text."))
+        assertFalse(result.content.requireMarkdown().contains("Display hidden text."))
+        assertFalse(result.content.requireMarkdown().contains("Visibility hidden text."))
+        assertFalse(result.content.requireMarkdown().contains("Opacity hidden text."))
+        assertFalse(result.content.requireMarkdown().contains("Class hidden text."))
+        assertFalse(result.content.requireMarkdown().contains("Variant invisible text."))
     }
 
     @Test
@@ -62,7 +62,7 @@ class RemovalPipelineTest {
 
     @Test
     fun `debug records identify hidden removals`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>Visible debug text with enough ordinary prose to avoid the short-page retry that disables hidden-element removal. This keeps the removal record from the default parse attempt in the final result and makes the debug assertion deterministic. Additional visible sentences provide stable article length, realistic punctuation, and enough words for the retry controller to trust the cleaned default result.</p>
@@ -70,7 +70,7 @@ class RemovalPipelineTest {
                 </article>
             """.trimIndent(),
             url = "https://example.com/debug-hidden",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
         val removals = result.debug["removals"] as? List<*>
@@ -81,7 +81,7 @@ class RemovalPipelineTest {
 
     @Test
     fun `exact selectors remove obvious nav footer and ad blocks but preserve notes`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <nav>Navigation should go</nav>
@@ -94,15 +94,15 @@ class RemovalPipelineTest {
             url = "https://example.com/exact",
         )
 
-        assertFalse(result.contentMarkdown.contains("Navigation should go"))
-        assertFalse(result.contentMarkdown.contains("Advertisement should go"))
-        assertFalse(result.contentMarkdown.contains("Footer should go"))
-        assertTrue(result.contentMarkdown.contains("Footnote should stay."))
+        assertFalse(result.content.requireMarkdown().contains("Navigation should go"))
+        assertFalse(result.content.requireMarkdown().contains("Advertisement should go"))
+        assertFalse(result.content.requireMarkdown().contains("Footer should go"))
+        assertTrue(result.content.requireMarkdown().contains("Footnote should stay."))
     }
 
     @Test
     fun `exact selectors remove enfold hero caption and entry metadata`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main role="main">
                   <article>
@@ -132,18 +132,18 @@ class RemovalPipelineTest {
             url = "https://example.com/enfold",
         )
 
-        assertTrue(result.contentMarkdown.contains("Important article subtitle"))
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertFalse(result.contentMarkdown.contains("CC0_https"))
-        assertFalse(result.contentMarkdown.contains("12 Giugno 2026"))
-        assertFalse(result.contentMarkdown.contains("Cronaca"))
-        assertFalse(result.contentMarkdown.contains("katherina ricchi"))
-        assertFalse(result.contentMarkdown.contains("\n/\n"))
+        assertTrue(result.content.requireMarkdown().contains("Important article subtitle"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertFalse(result.content.requireMarkdown().contains("CC0_https"))
+        assertFalse(result.content.requireMarkdown().contains("12 Giugno 2026"))
+        assertFalse(result.content.requireMarkdown().contains("Cronaca"))
+        assertFalse(result.content.requireMarkdown().contains("katherina ricchi"))
+        assertFalse(result.content.requireMarkdown().contains("\n/\n"))
     }
 
     @Test
     fun `exact selectors remove WordPress category chip wrappers`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main role="main">
                   <article class="post-content">
@@ -165,15 +165,15 @@ class RemovalPipelineTest {
             url = "https://www.ilmitte.com/category-chips",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertFalse(result.contentMarkdown.contains("Apertura"))
-        assertFalse(result.contentMarkdown.contains("Politica"))
-        assertFalse(result.contentMarkdown.contains("Politica Tedesca"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertFalse(result.content.requireMarkdown().contains("Apertura"))
+        assertFalse(result.content.requireMarkdown().contains("Politica"))
+        assertFalse(result.content.requireMarkdown().contains("Politica Tedesca"))
     }
 
     @Test
     fun `content patterns remove opening article header chrome before hinted body`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article id="post">
@@ -201,19 +201,19 @@ class RemovalPipelineTest {
             url = "https://example.com/opening-header-chrome",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
-        assertFalse(result.contentMarkdown.contains("News"))
-        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("2 minute read"))
-        assertFalse(result.contentMarkdown.contains("Hero caption duplicated from the cover image"))
-        assertFalse(result.contentMarkdown.contains("Rumor Score"))
-        assertFalse(result.contentMarkdown.contains("Possible"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.content.requireMarkdown().contains("News"))
+        assertFalse(result.content.requireMarkdown().contains("Example title duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("2 minute read"))
+        assertFalse(result.content.requireMarkdown().contains("Hero caption duplicated from the cover image"))
+        assertFalse(result.content.requireMarkdown().contains("Rumor Score"))
+        assertFalse(result.content.requireMarkdown().contains("Possible"))
     }
 
     @Test
     fun `content patterns remove mega article header chrome before article content`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article>
@@ -240,20 +240,20 @@ class RemovalPipelineTest {
             url = "https://example.com/mega-header",
         )
 
-        val lines = result.contentMarkdown.lines().map { it.trim() }
+        val lines = result.content.requireMarkdown().lines().map { it.trim() }
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps the selected content stable"))
         assertFalse(lines.any { it == "charts" || it == "data visualization" || it == "on" || it == "Jun 4, 2026" })
-        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentHtml.contains("mega-header"))
-        assertFalse(result.contentHtml.contains("author-row"))
+        assertFalse(result.content.requireMarkdown().contains("Example title duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireHtml().contains("mega-header"))
+        assertFalse(result.content.requireHtml().contains("author-row"))
     }
 
     @Test
     fun `content patterns remove publisher header controls and author mini bio around post content`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article class="h-entry">
@@ -290,22 +290,22 @@ class RemovalPipelineTest {
             url = "https://arstechnica.com/publisher-header-controls",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual post content should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
-        assertFalse(result.contentMarkdown.contains("THE FALLOUT BEGINS"))
-        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("Deck text duplicated from the article description"))
-        assertFalse(result.contentMarkdown.contains("Jun 12, 2026"))
-        assertFalse(result.contentMarkdown.contains("Story text"))
-        assertFalse(result.contentMarkdown.contains("Size"))
-        assertFalse(result.contentMarkdown.contains("Links"))
-        assertFalse(result.contentMarkdown.contains("Example Author is a senior editor"))
-        assertFalse(result.contentMarkdown.contains("Photo of Example Author"))
+        assertTrue(result.content.requireMarkdown().contains("The actual post content should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.content.requireMarkdown().contains("THE FALLOUT BEGINS"))
+        assertFalse(result.content.requireMarkdown().contains("Example title duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("Deck text duplicated from the article description"))
+        assertFalse(result.content.requireMarkdown().contains("Jun 12, 2026"))
+        assertFalse(result.content.requireMarkdown().contains("Story text"))
+        assertFalse(result.content.requireMarkdown().contains("Size"))
+        assertFalse(result.content.requireMarkdown().contains("Links"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author is a senior editor"))
+        assertFalse(result.content.requireMarkdown().contains("Photo of Example Author"))
     }
 
     @Test
     fun `exact selectors remove css module byline and linkback roundup chrome`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article>
@@ -326,17 +326,17 @@ class RemovalPipelineTest {
             url = "https://www.macrumors.com/css-module-byline",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
-        assertFalse(result.contentMarkdown.contains("Monday June 15"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentMarkdown.contains("Related Roundup"))
-        assertFalse(result.contentMarkdown.contains("Example Product"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.content.requireMarkdown().contains("Monday June 15"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireMarkdown().contains("Related Roundup"))
+        assertFalse(result.content.requireMarkdown().contains("Example Product"))
     }
 
     @Test
     fun `exact selectors remove TechCrunch article chrome around entry content`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article>
@@ -367,21 +367,21 @@ class RemovalPipelineTest {
             url = "https://techcrunch.com/techcrunch-chrome",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
-        assertFalse(result.contentMarkdown.contains("In Brief"))
-        assertFalse(result.contentMarkdown.contains("Posted:"))
-        assertFalse(result.contentMarkdown.contains("7:45 AM PDT"))
-        assertFalse(result.contentMarkdown.contains("Image Credits"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentMarkdown.contains("Get an inside look"))
-        assertFalse(result.contentMarkdown.contains("Latest in Space"))
-        assertFalse(result.contentMarkdown.contains("Related latest article"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps the selected content stable"))
+        assertFalse(result.content.requireMarkdown().contains("In Brief"))
+        assertFalse(result.content.requireMarkdown().contains("Posted:"))
+        assertFalse(result.content.requireMarkdown().contains("7:45 AM PDT"))
+        assertFalse(result.content.requireMarkdown().contains("Image Credits"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireMarkdown().contains("Get an inside look"))
+        assertFalse(result.content.requireMarkdown().contains("Latest in Space"))
+        assertFalse(result.content.requireMarkdown().contains("Related latest article"))
     }
 
     @Test
     fun `partial selectors do not remove code blocks`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>Main prose stays with enough words to avoid short-page retry and make removal deterministic for this fixture.</p>
@@ -392,13 +392,13 @@ class RemovalPipelineTest {
             url = "https://example.com/partial",
         )
 
-        assertTrue(result.contentMarkdown.contains("""val related = "content""""))
-        assertFalse(result.contentMarkdown.contains("Related posts should go"))
+        assertTrue(result.content.requireMarkdown().contains("""val related = "content""""))
+        assertFalse(result.content.requireMarkdown().contains("Related posts should go"))
     }
 
     @Test
     fun `partial selectors preserve prose wrappers with clutter-looking utility classes`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <div class="[&_.visual-newsletter-fallback-image]:hidden">
@@ -415,14 +415,14 @@ class RemovalPipelineTest {
             url = "https://example.com/prose-utility-classes",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual story body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps this prose wrapper"))
-        assertFalse(result.contentMarkdown.contains("Related one"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps this prose wrapper"))
+        assertFalse(result.content.requireMarkdown().contains("Related one"))
     }
 
     @Test
     fun `breadcrumb wrappers are removed as navigation clutter`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <div class="article-breadcrumbs">
@@ -437,14 +437,14 @@ class RemovalPipelineTest {
             url = "https://example.com/breadcrumbs",
         )
 
-        assertTrue(result.contentMarkdown.contains("Main prose stays"))
-        assertFalse(result.contentMarkdown.contains("World"))
-        assertFalse(result.contentMarkdown.contains("Monday 15 June 2026"))
+        assertTrue(result.content.requireMarkdown().contains("Main prose stays"))
+        assertFalse(result.content.requireMarkdown().contains("World"))
+        assertFalse(result.content.requireMarkdown().contains("Monday 15 June 2026"))
     }
 
     @Test
     fun `low scoring removes link heavy related sections and preserves prose`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <section>
@@ -462,13 +462,13 @@ class RemovalPipelineTest {
             url = "https://example.com/low-score",
         )
 
-        assertTrue(result.contentMarkdown.contains("This prose section should stay"))
-        assertFalse(result.contentMarkdown.contains("Related one"))
+        assertTrue(result.content.requireMarkdown().contains("This prose section should stay"))
+        assertFalse(result.content.requireMarkdown().contains("Related one"))
     }
 
     @Test
     fun `content patterns remove trailing subscribe blocks but preserve final prose`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing subscription pattern removal deterministic while preserving the legitimate article ending. One more sentence keeps the cleaned article comfortably above the retry threshold.</p>
@@ -478,13 +478,13 @@ class RemovalPipelineTest {
             url = "https://example.com/subscribe",
         )
 
-        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
-        assertFalse(result.contentMarkdown.contains("Subscribe to our newsletter"))
+        assertTrue(result.content.requireMarkdown().contains("The final article paragraph should stay"))
+        assertFalse(result.content.requireMarkdown().contains("Subscribe to our newsletter"))
     }
 
     @Test
     fun `content patterns remove nested newsletter signup widgets while preserving prose`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes inline newsletter cleanup deterministic while preserving legitimate article text.</p>
@@ -504,17 +504,17 @@ class RemovalPipelineTest {
             url = "https://example.com/newsletter-widget",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Subscribe to our newsletter"))
-        assertFalse(result.contentMarkdown.contains("marketing emails"))
-        assertFalse(result.contentMarkdown.contains("Terms of Use"))
-        assertFalse(result.contentMarkdown.contains("unsubscribe anytime"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Subscribe to our newsletter"))
+        assertFalse(result.content.requireMarkdown().contains("marketing emails"))
+        assertFalse(result.content.requireMarkdown().contains("Terms of Use"))
+        assertFalse(result.content.requireMarkdown().contains("unsubscribe anytime"))
     }
 
     @Test
     fun `exact selectors remove WordPress Mailchimp newsletter blocks`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes inline Mailchimp cleanup deterministic while preserving legitimate article text.</p>
@@ -532,15 +532,15 @@ class RemovalPipelineTest {
             url = "https://www.ilmitte.com/mailchimp-newsletter",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("La newsletter del Mitte"))
-        assertFalse(result.contentMarkdown.contains("Notizie, novità"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("La newsletter del Mitte"))
+        assertFalse(result.content.requireMarkdown().contains("Notizie, novità"))
     }
 
     @Test
     fun `content patterns remove trailing recommendation blocks`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing recommendation pattern removal deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and the recommendation block is evaluated like a real article footer.</p>
@@ -554,14 +554,14 @@ class RemovalPipelineTest {
             url = "https://example.com/recommendations",
         )
 
-        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
-        assertFalse(result.contentMarkdown.contains("Recommended"))
-        assertFalse(result.contentMarkdown.contains("First unrelated story"))
+        assertTrue(result.content.requireMarkdown().contains("The final article paragraph should stay"))
+        assertFalse(result.content.requireMarkdown().contains("Recommended"))
+        assertFalse(result.content.requireMarkdown().contains("First unrelated story"))
     }
 
     @Test
     fun `content patterns remove orphaned trailing commerce headings after product lists`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The article conclusion should remain because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing commerce heading cleanup deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so low scoring product-list cleanup runs before trailing heading cleanup.</p>
@@ -576,14 +576,14 @@ class RemovalPipelineTest {
             url = "https://example.com/product-list-heading",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article conclusion should remain"))
-        assertFalse(result.contentMarkdown.contains("Best iPhone accessories"))
-        assertFalse(result.contentMarkdown.contains("AirPods Pro discount"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should remain"))
+        assertFalse(result.content.requireMarkdown().contains("Best iPhone accessories"))
+        assertFalse(result.content.requireMarkdown().contains("AirPods Pro discount"))
     }
 
     @Test
     fun `content patterns remove trailing tag lists`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing tag-list pattern removal deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and the tag block is evaluated like a real article footer.</p>
@@ -598,15 +598,15 @@ class RemovalPipelineTest {
             url = "https://example.com/tags",
         )
 
-        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
-        assertFalse(result.contentMarkdown.contains("Tags:"))
-        assertFalse(result.contentMarkdown.contains("/tag/kotlin/"))
-        assertFalse(result.contentMarkdown.contains("/tag/jvm/"))
+        assertTrue(result.content.requireMarkdown().contains("The final article paragraph should stay"))
+        assertFalse(result.content.requireMarkdown().contains("Tags:"))
+        assertFalse(result.content.requireMarkdown().contains("/tag/kotlin/"))
+        assertFalse(result.content.requireMarkdown().contains("/tag/jvm/"))
     }
 
     @Test
     fun `content patterns remove nested article footer tags and comment links`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <div class="article-body">
@@ -621,15 +621,15 @@ class RemovalPipelineTest {
             url = "https://example.com/footer-clutter",
         )
 
-        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
-        assertFalse(result.contentMarkdown.contains("Tag:"))
-        assertFalse(result.contentMarkdown.contains("United Kingdom"))
-        assertFalse(result.contentMarkdown.contains("8 comments"))
+        assertTrue(result.content.requireMarkdown().contains("The final article paragraph should stay"))
+        assertFalse(result.content.requireMarkdown().contains("Tag:"))
+        assertFalse(result.content.requireMarkdown().contains("United Kingdom"))
+        assertFalse(result.content.requireMarkdown().contains("8 comments"))
     }
 
     @Test
     fun `content patterns remove trailing comment prompt back to top and read more modules`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes trailing comment and recommendation cleanup deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and only footer clutter is removed.</p>
@@ -650,17 +650,17 @@ class RemovalPipelineTest {
             url = "https://example.com/footer-modules",
         )
 
-        assertTrue(result.contentMarkdown.contains("The final article paragraph should stay"))
-        assertFalse(result.contentMarkdown.contains("public display name"))
-        assertFalse(result.contentMarkdown.contains("Please logout"))
-        assertFalse(result.contentMarkdown.contains("Back To Top"))
-        assertFalse(result.contentMarkdown.contains("Read more"))
-        assertFalse(result.contentMarkdown.contains("First suggested story"))
+        assertTrue(result.content.requireMarkdown().contains("The final article paragraph should stay"))
+        assertFalse(result.content.requireMarkdown().contains("public display name"))
+        assertFalse(result.content.requireMarkdown().contains("Please logout"))
+        assertFalse(result.content.requireMarkdown().contains("Back To Top"))
+        assertFalse(result.content.requireMarkdown().contains("Read more"))
+        assertFalse(result.content.requireMarkdown().contains("First suggested story"))
     }
 
     @Test
     fun `exact selectors remove embedded video affiliate and gallery chrome while preserving article content`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes embedded widget cleanup deterministic while preserving legitimate article text. Additional sentences keep this fixture comfortably above the retry threshold, so the normal removal pipeline remains the selected result.</p>
@@ -681,20 +681,20 @@ class RemovalPipelineTest {
             url = "https://www.androidcentral.com/embedded-widgets",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Latest Videos From"))
-        assertFalse(result.contentMarkdown.contains("Today's best Example Phone deals"))
-        assertFalse(result.contentMarkdown.contains("250 million products"))
-        assertFalse(result.contentMarkdown.contains("Swipe to scroll horizontally"))
-        assertFalse(result.contentMarkdown.contains("Image 1 of 9"))
-        assertFalse(result.contentMarkdown.contains("Previous Next"))
-        assertFalse(result.contentMarkdown.contains("video-logo.svg"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Latest Videos From"))
+        assertFalse(result.content.requireMarkdown().contains("Today's best Example Phone deals"))
+        assertFalse(result.content.requireMarkdown().contains("250 million products"))
+        assertFalse(result.content.requireMarkdown().contains("Swipe to scroll horizontally"))
+        assertFalse(result.content.requireMarkdown().contains("Image 1 of 9"))
+        assertFalse(result.content.requireMarkdown().contains("Previous Next"))
+        assertFalse(result.content.requireMarkdown().contains("video-logo.svg"))
     }
 
     @Test
     fun `exact selectors remove embedded audio player chrome while preserving article content`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes embedded audio player cleanup deterministic while preserving legitimate article text.</p>
@@ -706,17 +706,17 @@ class RemovalPipelineTest {
             url = "https://www.ilpost.it/audio-player",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Caricamento player"))
-        assertFalse(result.contentMarkdown.contains("Loading player"))
-        assertFalse(result.contentHtml.contains("audio.mp3"))
-        assertFalse(result.contentHtml.contains("audio.ogg"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Caricamento player"))
+        assertFalse(result.content.requireMarkdown().contains("Loading player"))
+        assertFalse(result.content.requireHtml().contains("audio.mp3"))
+        assertFalse(result.content.requireHtml().contains("audio.ogg"))
     }
 
     @Test
     fun `exact selectors remove social source and read-next chrome while preserving story body`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article>
@@ -743,20 +743,20 @@ class RemovalPipelineTest {
             url = "https://www.entrepreneur.com/social-source-chrome",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("17 hours ago"))
-        assertFalse(result.contentMarkdown.contains("Technology"))
-        assertFalse(result.contentMarkdown.contains("Maria Curi"))
-        assertFalse(result.contentMarkdown.contains("Add Example on Google"))
-        assertFalse(result.contentMarkdown.contains("preferred source"))
-        assertFalse(result.contentMarkdown.contains("What to read next"))
-        assertFalse(result.contentMarkdown.contains("data:image/webp;base64"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("17 hours ago"))
+        assertFalse(result.content.requireMarkdown().contains("Technology"))
+        assertFalse(result.content.requireMarkdown().contains("Maria Curi"))
+        assertFalse(result.content.requireMarkdown().contains("Add Example on Google"))
+        assertFalse(result.content.requireMarkdown().contains("preferred source"))
+        assertFalse(result.content.requireMarkdown().contains("What to read next"))
+        assertFalse(result.content.requireMarkdown().contains("data:image/webp;base64"))
     }
 
     @Test
     fun `exact selectors remove embedded top comment module while preserving adjacent prose`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article class="post-content">
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
@@ -775,17 +775,19 @@ class RemovalPipelineTest {
             url = "https://9to5google.com/top-comment",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("[At $99](https://amzn.to/example), it’s hard to go wrong."))
-        assertFalse(result.contentMarkdown.contains("Top comment by"))
-        assertFalse(result.contentMarkdown.contains("Liked by 11 people"))
-        assertFalse(result.contentMarkdown.contains("Good_ole_pinocchio"))
-        assertFalse(result.contentMarkdown.contains("View all comments"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(
+            result.content.requireMarkdown().contains("[At $99](https://amzn.to/example), it’s hard to go wrong."),
+        )
+        assertFalse(result.content.requireMarkdown().contains("Top comment by"))
+        assertFalse(result.content.requireMarkdown().contains("Liked by 11 people"))
+        assertFalse(result.content.requireMarkdown().contains("Good_ole_pinocchio"))
+        assertFalse(result.content.requireMarkdown().contains("View all comments"))
     }
 
     @Test
     fun `exact selectors remove WordPress post thumbnail and social share strip while preserving article body`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html><head>
                   <meta property="og:image" content="https://example.com/cover.webp">
@@ -810,17 +812,17 @@ class RemovalPipelineTest {
             options = mainSelectorOptions(),
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Share this article"))
-        assertFalse(result.contentMarkdown.contains("![Cover]"))
-        assertFalse(result.contentHtml.contains("bm-social-top"))
-        assertFalse(result.contentHtml.contains("""class="post-thumbnail""""))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Share this article"))
+        assertFalse(result.content.requireMarkdown().contains("![Cover]"))
+        assertFalse(result.content.requireHtml().contains("bm-social-top"))
+        assertFalse(result.content.requireHtml().contains("""class="post-thumbnail""""))
     }
 
     @Test
     fun `content patterns remove ko-fi donation widgets while preserving article body`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
@@ -834,16 +836,16 @@ class RemovalPipelineTest {
             url = "https://example.com/donation-widget",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Enjoyed the article"))
-        assertFalse(result.contentMarkdown.contains("Buy Me a Coffee"))
-        assertFalse(result.contentMarkdown.contains("ko-fi.com"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Enjoyed the article"))
+        assertFalse(result.content.requireMarkdown().contains("Buy Me a Coffee"))
+        assertFalse(result.content.requireMarkdown().contains("ko-fi.com"))
     }
 
     @Test
     fun `exact selectors remove entry footer sidebar and footer recirculation modules`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <section class="entry">
@@ -875,22 +877,22 @@ class RemovalPipelineTest {
             url = "https://www.veneziatoday.it/footer-recirculation",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps this story body"))
-        assertFalse(result.contentMarkdown.contains("Download our app"))
-        assertFalse(result.contentMarkdown.contains("Riproduzione riservata"))
-        assertFalse(result.contentMarkdown.contains("Add as source"))
-        assertFalse(result.contentMarkdown.contains("Related story should go"))
-        assertFalse(result.contentMarkdown.contains("I più letti"))
-        assertFalse(result.contentMarkdown.contains("Popular story should go"))
-        assertFalse(result.contentMarkdown.contains("In Evidenza"))
-        assertFalse(result.contentMarkdown.contains("Highlighted story should go"))
-        assertFalse(result.contentMarkdown.contains("Potrebbe interessarti"))
+        assertTrue(result.content.requireMarkdown().contains("The article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps this story body"))
+        assertFalse(result.content.requireMarkdown().contains("Download our app"))
+        assertFalse(result.content.requireMarkdown().contains("Riproduzione riservata"))
+        assertFalse(result.content.requireMarkdown().contains("Add as source"))
+        assertFalse(result.content.requireMarkdown().contains("Related story should go"))
+        assertFalse(result.content.requireMarkdown().contains("I più letti"))
+        assertFalse(result.content.requireMarkdown().contains("Popular story should go"))
+        assertFalse(result.content.requireMarkdown().contains("In Evidenza"))
+        assertFalse(result.content.requireMarkdown().contains("Highlighted story should go"))
+        assertFalse(result.content.requireMarkdown().contains("Potrebbe interessarti"))
     }
 
     @Test
     fun `exact selectors remove article right rail commerce widgets`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <div class="article-body">
@@ -911,17 +913,17 @@ class RemovalPipelineTest {
             url = "https://www.gamespot.com/articles/right-rail-commerce",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps this story body"))
-        assertFalse(result.contentMarkdown.contains("Where to Buy"))
-        assertFalse(result.contentMarkdown.contains("Loading..."))
-        assertFalse(result.contentMarkdown.contains("GameSpot may get a commission"))
-        assertFalse(result.contentHtml.contains("right-rail"))
+        assertTrue(result.content.requireMarkdown().contains("The article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps this story body"))
+        assertFalse(result.content.requireMarkdown().contains("Where to Buy"))
+        assertFalse(result.content.requireMarkdown().contains("Loading..."))
+        assertFalse(result.content.requireMarkdown().contains("GameSpot may get a commission"))
+        assertFalse(result.content.requireHtml().contains("right-rail"))
     }
 
     @Test
     fun `exact selectors remove inline Valnet related article cards while preserving surrounding prose`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result instead of invoking short-page retries.</p>
@@ -942,18 +944,18 @@ class RemovalPipelineTest {
             url = "https://screenrant.com/inline-related-card",
         )
 
-        assertTrue(result.contentMarkdown.contains("The article introduction should stay"))
-        assertTrue(result.contentMarkdown.contains("The next real article section should stay"))
-        assertTrue(result.contentMarkdown.contains("The article body after the inline card should also stay"))
-        assertFalse(result.contentMarkdown.contains("Related story should go"))
-        assertFalse(result.contentMarkdown.contains("A recirculated article excerpt should go"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentHtml.contains("article-card-label"))
+        assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The next real article section should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article body after the inline card should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Related story should go"))
+        assertFalse(result.content.requireMarkdown().contains("A recirculated article excerpt should go"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireHtml().contains("article-card-label"))
     }
 
     @Test
     fun `exact selectors remove author header and article options chrome while preserving body`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <header>
@@ -986,21 +988,21 @@ class RemovalPipelineTest {
             url = "https://www.androidpolice.com/author-chrome",
         )
 
-        val lines = result.contentMarkdown.lines().map { it.trim() }
+        val lines = result.content.requireMarkdown().lines().map { it.trim() }
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("A second paragraph keeps the selected content stable"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("A second paragraph keeps the selected content stable"))
         assertFalse(lines.any { it == "By" || it == "Follow" || it == "Followed" })
-        assertFalse(result.contentMarkdown.contains("Rahul Naskar"))
-        assertFalse(result.contentMarkdown.contains("Published Jun 15"))
-        assertFalse(result.contentMarkdown.contains("I have eight years of experience covering Android"))
-        assertFalse(result.contentMarkdown.contains("Utilities"))
-        assertFalse(result.contentMarkdown.contains("Custom Launcher"))
+        assertFalse(result.content.requireMarkdown().contains("Rahul Naskar"))
+        assertFalse(result.content.requireMarkdown().contains("Published Jun 15"))
+        assertFalse(result.content.requireMarkdown().contains("I have eight years of experience covering Android"))
+        assertFalse(result.content.requireMarkdown().contains("Utilities"))
+        assertFalse(result.content.requireMarkdown().contains("Custom Launcher"))
     }
 
     @Test
     fun `exact selectors remove author profile boxes while preserving story`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when the author profile box below the short article is removed from the reader output.</p>
@@ -1017,17 +1019,17 @@ class RemovalPipelineTest {
             url = "https://www.pianetabasket.com/author-profile",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("autore"))
-        assertFalse(result.contentMarkdown.contains("Iacopo De Santis"))
-        assertFalse(result.contentMarkdown.contains("Editore di Pianeta Basket"))
-        assertFalse(result.contentMarkdown.contains("IacopoDeSantis"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("autore"))
+        assertFalse(result.content.requireMarkdown().contains("Iacopo De Santis"))
+        assertFalse(result.content.requireMarkdown().contains("Editore di Pianeta Basket"))
+        assertFalse(result.content.requireMarkdown().contains("IacopoDeSantis"))
     }
 
     @Test
     fun `exact selectors remove mobile article metadata while preserving story`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <div role="main">
                   <div class="testo">
@@ -1047,17 +1049,17 @@ class RemovalPipelineTest {
             url = "https://m.pianetabasket.com/mobile-meta",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertTrue(result.contentMarkdown.contains("![Story image]"))
-        assertFalse(result.contentMarkdown.contains("15.06.2026 09:05"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentMarkdown.contains("vedi letture"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertTrue(result.content.requireMarkdown().contains("![Story image]"))
+        assertFalse(result.content.requireMarkdown().contains("15.06.2026 09:05"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireMarkdown().contains("vedi letture"))
     }
 
     @Test
     fun `exact selectors remove Citynews event header and byline chrome while preserving body`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article class="l-entry l-entry--infos-square">
@@ -1088,21 +1090,21 @@ class RemovalPipelineTest {
             url = "https://www.veneziatoday.it/event-info-square",
         )
 
-        val lines = result.contentMarkdown.lines().map { it.trim() }
+        val lines = result.content.requireMarkdown().lines().map { it.trim() }
 
-        assertTrue(result.contentMarkdown.contains("The actual event article starts here"))
-        assertTrue(result.contentMarkdown.contains("The event article conclusion should also stay"))
-        assertTrue(result.contentMarkdown.contains("**Dove:** Piazza Marconi, Vigonovo"))
+        assertTrue(result.content.requireMarkdown().contains("The actual event article starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The event article conclusion should also stay"))
+        assertTrue(result.content.requireMarkdown().contains("**Dove:** Piazza Marconi, Vigonovo"))
         assertFalse(
             lines.any { it == "/" || it == "Dove" || it == "Quando" || it == "Prezzo" || it == "Altre informazioni" },
         )
         assertFalse(lines.any { it == "Piazza Marconi" || it == "Piazza Guglielmo Marconi" || it == "Redazione" })
-        assertFalse(result.contentMarkdown.contains("15 giugno 2026 9:57"))
+        assertFalse(result.content.requireMarkdown().contains("15 giugno 2026 9:57"))
     }
 
     @Test
     fun `content cleanup removes post footer source follow and promo modules while preserving story`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article class="post-content">
                   <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when publisher footer chrome is removed from the reader output.</p>
@@ -1132,20 +1134,20 @@ class RemovalPipelineTest {
             url = "https://9to5google.com/footer-chrome",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The story conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("More on Google Pixel"))
-        assertFalse(result.contentMarkdown.contains("Related one"))
-        assertFalse(result.contentMarkdown.contains("Follow Ben"))
-        assertFalse(result.contentMarkdown.contains("preferred source on Google"))
-        assertFalse(result.contentMarkdown.contains("FTC: We use income earning"))
-        assertFalse(result.contentMarkdown.contains("You’re reading Example News"))
-        assertFalse(result.contentMarkdown.contains("subscribe to our YouTube channel"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The story conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("More on Google Pixel"))
+        assertFalse(result.content.requireMarkdown().contains("Related one"))
+        assertFalse(result.content.requireMarkdown().contains("Follow Ben"))
+        assertFalse(result.content.requireMarkdown().contains("preferred source on Google"))
+        assertFalse(result.content.requireMarkdown().contains("FTC: We use income earning"))
+        assertFalse(result.content.requireMarkdown().contains("You’re reading Example News"))
+        assertFalse(result.content.requireMarkdown().contains("subscribe to our YouTube channel"))
     }
 
     @Test
     fun `exact selectors remove category chips and author latest posts boxes while preserving story`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <div class="post-cats-list">
@@ -1175,19 +1177,19 @@ class RemovalPipelineTest {
             url = "https://www.basketuniverso.it/category-author-chrome",
         )
 
-        val lines = result.contentMarkdown.lines().map { it.trim() }
+        val lines = result.content.requireMarkdown().lines().map { it.trim() }
 
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
         assertFalse(lines.any { it == "Basketball" || it == "News" || it == "About" || it == "Latest Posts" })
-        assertFalse(result.contentMarkdown.contains("Roberto Caporilli"))
-        assertFalse(result.contentMarkdown.contains("Latest posts by"))
-        assertFalse(result.contentMarkdown.contains("Old recirculated story"))
+        assertFalse(result.content.requireMarkdown().contains("Roberto Caporilli"))
+        assertFalse(result.content.requireMarkdown().contains("Latest posts by"))
+        assertFalse(result.content.requireMarkdown().contains("Old recirculated story"))
     }
 
     @Test
     fun `exact selectors remove future newsletter author bio and popular box slices`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when Future-style newsletter, author bio, and latest-article slices are removed from the reader output.</p>
@@ -1219,18 +1221,18 @@ class RemovalPipelineTest {
             url = "https://www.androidcentral.com/future-slices",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Get the latest news from Example"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentMarkdown.contains("News Writer & Reviewer"))
-        assertFalse(result.contentMarkdown.contains("LATEST ARTICLES"))
-        assertFalse(result.contentMarkdown.contains("First latest article"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Get the latest news from Example"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireMarkdown().contains("News Writer & Reviewer"))
+        assertFalse(result.content.requireMarkdown().contains("LATEST ARTICLES"))
+        assertFalse(result.content.requireMarkdown().contains("First latest article"))
     }
 
     @Test
     fun `content cleanup removes Vox-style article lede package author and follow modules`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <div class="duet--article--lede">
@@ -1265,19 +1267,19 @@ class RemovalPipelineTest {
             url = "https://www.theverge.com/vox-style-article",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Header summary text"))
-        assertFalse(result.contentMarkdown.contains("Part Of"))
-        assertFalse(result.contentMarkdown.contains("Let me see some ID"))
-        assertFalse(result.contentMarkdown.contains("Example Writer"))
-        assertFalse(result.contentMarkdown.contains("Follow topics and authors"))
-        assertFalse(result.contentMarkdown.contains("personalized homepage"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Header summary text"))
+        assertFalse(result.content.requireMarkdown().contains("Part Of"))
+        assertFalse(result.content.requireMarkdown().contains("Let me see some ID"))
+        assertFalse(result.content.requireMarkdown().contains("Example Writer"))
+        assertFalse(result.content.requireMarkdown().contains("Follow topics and authors"))
+        assertFalse(result.content.requireMarkdown().contains("personalized homepage"))
     }
 
     @Test
     fun `exact selectors remove Business Insider post chrome while preserving story`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main role="main">
                   <section class="post-byline subtle" data-component-type="post-byline">
@@ -1314,20 +1316,20 @@ class RemovalPipelineTest {
             url = "https://www.businessinsider.com/post-chrome",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("By"))
-        assertFalse(result.contentMarkdown.contains("Example Writer"))
-        assertFalse(result.contentMarkdown.contains("currently following this author"))
-        assertFalse(result.contentMarkdown.contains("2026-06-15T17:19:08.464Z"))
-        assertFalse(result.contentMarkdown.contains("Related video"))
-        assertFalse(result.contentMarkdown.contains("real-life consequences of AI"))
-        assertFalse(result.contentMarkdown.contains("HOME"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("By"))
+        assertFalse(result.content.requireMarkdown().contains("Example Writer"))
+        assertFalse(result.content.requireMarkdown().contains("currently following this author"))
+        assertFalse(result.content.requireMarkdown().contains("2026-06-15T17:19:08.464Z"))
+        assertFalse(result.content.requireMarkdown().contains("Related video"))
+        assertFalse(result.content.requireMarkdown().contains("real-life consequences of AI"))
+        assertFalse(result.content.requireMarkdown().contains("HOME"))
     }
 
     @Test
     fun `content cleanup removes Entrepreneur header controls while preserving deck and story`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <header>
@@ -1358,22 +1360,22 @@ class RemovalPipelineTest {
             url = "https://www.entrepreneur.com/entrepreneur-header-controls",
         )
 
-        assertTrue(result.contentMarkdown.contains("In some cases, the bonuses amount"))
-        assertTrue(result.contentMarkdown.contains("Key Takeaways"))
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertFalse(result.contentMarkdown.contains("By"))
-        assertFalse(result.contentMarkdown.contains("Example Writer"))
-        assertFalse(result.contentMarkdown.contains("edited by"))
-        assertFalse(result.contentMarkdown.contains("Example Editor"))
-        assertFalse(result.contentMarkdown.contains("Jun 15, 2026"))
-        assertFalse(result.contentMarkdown.contains("Add Example"))
-        assertFalse(result.contentMarkdown.contains("Comment"))
-        assertFalse(result.contentMarkdown.contains("Listen to this post"))
+        assertTrue(result.content.requireMarkdown().contains("In some cases, the bonuses amount"))
+        assertTrue(result.content.requireMarkdown().contains("Key Takeaways"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertFalse(result.content.requireMarkdown().contains("By"))
+        assertFalse(result.content.requireMarkdown().contains("Example Writer"))
+        assertFalse(result.content.requireMarkdown().contains("edited by"))
+        assertFalse(result.content.requireMarkdown().contains("Example Editor"))
+        assertFalse(result.content.requireMarkdown().contains("Jun 15, 2026"))
+        assertFalse(result.content.requireMarkdown().contains("Add Example"))
+        assertFalse(result.content.requireMarkdown().contains("Comment"))
+        assertFalse(result.content.requireMarkdown().contains("Listen to this post"))
     }
 
     @Test
     fun `content cleanup removes related content card runs after story prose`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <div class="page-container tw:border-b">
@@ -1411,20 +1413,20 @@ class RemovalPipelineTest {
             options = mainSelectorOptions(),
         )
 
-        assertTrue(result.contentMarkdown.contains("The article deck should stay"))
-        assertTrue(result.contentMarkdown.contains("The actual story starts here"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.lines().map { it.trim() }.any { it == "/" })
-        assertFalse(result.contentMarkdown.contains("Related Content"))
-        assertFalse(result.contentMarkdown.contains("5 Things Companies Get Wrong About Agentic AI"))
-        assertFalse(result.contentMarkdown.contains("Dean Guida"))
-        assertFalse(result.contentMarkdown.contains("Mark Zuckerberg Admits Meta Made Mistakes"))
-        assertFalse(result.contentHtml.contains("is-entire-card-clickable"))
+        assertTrue(result.content.requireMarkdown().contains("The article deck should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The actual story starts here"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().lines().map { it.trim() }.any { it == "/" })
+        assertFalse(result.content.requireMarkdown().contains("Related Content"))
+        assertFalse(result.content.requireMarkdown().contains("5 Things Companies Get Wrong About Agentic AI"))
+        assertFalse(result.content.requireMarkdown().contains("Dean Guida"))
+        assertFalse(result.content.requireMarkdown().contains("Mark Zuckerberg Admits Meta Made Mistakes"))
+        assertFalse(result.content.requireHtml().contains("is-entire-card-clickable"))
     }
 
     @Test
     fun `content cleanup removes trending author bio and skeleton recirculation modules`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <div class="container-ft">
@@ -1473,25 +1475,25 @@ class RemovalPipelineTest {
             options = mainSelectorOptions(),
         )
 
-        val lines = result.contentMarkdown.lines().map { it.trim() }
+        val lines = result.content.requireMarkdown().lines().map { it.trim() }
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Trending"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Trending"))
         assertFalse(lines.any { it == "# 1" || it == "# 2" || it == "# 3" })
         assertFalse(lines.any { it == "North America" || it == "Animals" })
-        assertFalse(result.contentMarkdown.contains("About the Author"))
-        assertFalse(result.contentMarkdown.contains("The Associated Press"))
-        assertFalse(result.contentMarkdown.contains("Right Arrow Button Icon"))
-        assertFalse(result.contentMarkdown.contains("Latest in North America"))
-        assertFalse(result.contentMarkdown.contains("Most Popular"))
-        assertFalse(result.contentMarkdown.contains("Lorem ipsum dolor sit amet"))
-        assertFalse(result.contentMarkdown.contains("Fortune Editors"))
+        assertFalse(result.content.requireMarkdown().contains("About the Author"))
+        assertFalse(result.content.requireMarkdown().contains("The Associated Press"))
+        assertFalse(result.content.requireMarkdown().contains("Right Arrow Button Icon"))
+        assertFalse(result.content.requireMarkdown().contains("Latest in North America"))
+        assertFalse(result.content.requireMarkdown().contains("Most Popular"))
+        assertFalse(result.content.requireMarkdown().contains("Lorem ipsum dolor sit amet"))
+        assertFalse(result.content.requireMarkdown().contains("Fortune Editors"))
     }
 
     @Test
     fun `content cleanup removes copied tooltip blogger byline and pager chrome`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <div class="adb-detail">
@@ -1524,21 +1526,21 @@ class RemovalPipelineTest {
             options = mainSelectorOptions(),
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertTrue(result.contentMarkdown.contains("hero.png"))
-        assertFalse(result.contentMarkdown.contains("Link copied to clipboard"))
-        assertFalse(result.contentMarkdown.contains("Posted by Android XR Team"))
-        assertFalse(result.contentMarkdown.contains("Newer post"))
-        assertFalse(result.contentMarkdown.contains("Older post"))
-        assertFalse(result.contentMarkdown.trim().endsWith("---"))
-        assertFalse(result.contentHtml.contains("copy-tooltip"))
-        assertFalse(result.contentHtml.contains("blog-pager"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertTrue(result.content.requireMarkdown().contains("hero.png"))
+        assertFalse(result.content.requireMarkdown().contains("Link copied to clipboard"))
+        assertFalse(result.content.requireMarkdown().contains("Posted by Android XR Team"))
+        assertFalse(result.content.requireMarkdown().contains("Newer post"))
+        assertFalse(result.content.requireMarkdown().contains("Older post"))
+        assertFalse(result.content.requireMarkdown().trim().endsWith("---"))
+        assertFalse(result.content.requireHtml().contains("copy-tooltip"))
+        assertFalse(result.content.requireHtml().contains("blog-pager"))
     }
 
     @Test
     fun `content cleanup removes JetBrains product masthead author chrome and discovery links`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <div class="top-page">
@@ -1578,26 +1580,26 @@ class RemovalPipelineTest {
             options = mainSelectorOptions(),
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Kotlin logo"))
-        assertFalse(result.contentMarkdown.contains("A concise multiplatform language"))
-        assertFalse(result.contentMarkdown.contains("News"))
-        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentMarkdown.contains("Prev post"))
-        assertFalse(result.contentMarkdown.contains("Next post"))
-        assertFalse(result.contentMarkdown.contains("Open table of contents"))
-        assertFalse(result.contentMarkdown.contains("Discover more"))
-        assertFalse(result.contentMarkdown.contains("Related KotlinConf article"))
-        assertFalse(result.contentHtml.contains("top-page"))
-        assertFalse(result.contentHtml.contains("author-post"))
-        assertFalse(result.contentHtml.contains("content__pagination"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Kotlin logo"))
+        assertFalse(result.content.requireMarkdown().contains("A concise multiplatform language"))
+        assertFalse(result.content.requireMarkdown().contains("News"))
+        assertFalse(result.content.requireMarkdown().contains("Example title duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireMarkdown().contains("Prev post"))
+        assertFalse(result.content.requireMarkdown().contains("Next post"))
+        assertFalse(result.content.requireMarkdown().contains("Open table of contents"))
+        assertFalse(result.content.requireMarkdown().contains("Discover more"))
+        assertFalse(result.content.requireMarkdown().contains("Related KotlinConf article"))
+        assertFalse(result.content.requireHtml().contains("top-page"))
+        assertFalse(result.content.requireHtml().contains("author-post"))
+        assertFalse(result.content.requireHtml().contains("content__pagination"))
     }
 
     @Test
     fun `content cleanup removes BBC headline byline placeholders and social footer`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <div data-component="headline-block">
@@ -1633,27 +1635,27 @@ class RemovalPipelineTest {
             url = "https://www.bbc.com/news/articles/example",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertTrue(result.contentMarkdown.contains("![Real hero image](https://example.com/hero.jpg)"))
-        assertTrue(result.contentMarkdown.contains("Real hero caption should stay."))
-        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("15 hours ago"))
-        assertFalse(result.contentMarkdown.contains("Example Reporter"))
-        assertFalse(result.contentMarkdown.contains("Second Reporter"))
-        assertFalse(result.contentMarkdown.contains("grey-placeholder"))
-        assertFalse(result.contentMarkdown.contains("image unavailable"))
-        assertFalse(result.contentMarkdown.contains("Do you have a story suggestion"))
-        assertFalse(result.contentMarkdown.contains("Follow Essex news on"))
-        assertFalse(result.contentMarkdown.contains("BBC Sounds"))
-        assertFalse(result.contentHtml.contains("""data-component="headline-block""""))
-        assertFalse(result.contentHtml.contains("""data-component="byline-block""""))
-        assertFalse(result.contentHtml.contains("hide-when-no-script"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertTrue(result.content.requireMarkdown().contains("![Real hero image](https://example.com/hero.jpg)"))
+        assertTrue(result.content.requireMarkdown().contains("Real hero caption should stay."))
+        assertFalse(result.content.requireMarkdown().contains("Example title duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("15 hours ago"))
+        assertFalse(result.content.requireMarkdown().contains("Example Reporter"))
+        assertFalse(result.content.requireMarkdown().contains("Second Reporter"))
+        assertFalse(result.content.requireMarkdown().contains("grey-placeholder"))
+        assertFalse(result.content.requireMarkdown().contains("image unavailable"))
+        assertFalse(result.content.requireMarkdown().contains("Do you have a story suggestion"))
+        assertFalse(result.content.requireMarkdown().contains("Follow Essex news on"))
+        assertFalse(result.content.requireMarkdown().contains("BBC Sounds"))
+        assertFalse(result.content.requireHtml().contains("""data-component="headline-block""""))
+        assertFalse(result.content.requireHtml().contains("""data-component="byline-block""""))
+        assertFalse(result.content.requireHtml().contains("hide-when-no-script"))
     }
 
     @Test
     fun `content cleanup removes BuzzFeed post header byline bio and comments wrapper`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <header class="postHead_postHead__xEyos postHead">
@@ -1687,24 +1689,24 @@ class RemovalPipelineTest {
             url = "https://www.buzzfeed.com/example/post",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("World Cup 2026 badge"))
-        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("Example dek duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("Posted 27 minutes ago"))
-        assertFalse(result.contentMarkdown.contains("Example Author"))
-        assertFalse(result.contentMarkdown.contains("BuzzFeed Staff"))
-        assertFalse(result.contentMarkdown.contains("culture editor here at BuzzFeed"))
-        assertFalse(result.contentMarkdown.contains("Comments"))
-        assertFalse(result.contentHtml.contains("postHead"))
-        assertFalse(result.contentHtml.contains("headline-byline"))
-        assertFalse(result.contentHtml.contains("reactions-title"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("World Cup 2026 badge"))
+        assertFalse(result.content.requireMarkdown().contains("Example title duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("Example dek duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("Posted 27 minutes ago"))
+        assertFalse(result.content.requireMarkdown().contains("Example Author"))
+        assertFalse(result.content.requireMarkdown().contains("BuzzFeed Staff"))
+        assertFalse(result.content.requireMarkdown().contains("culture editor here at BuzzFeed"))
+        assertFalse(result.content.requireMarkdown().contains("Comments"))
+        assertFalse(result.content.requireHtml().contains("postHead"))
+        assertFalse(result.content.requireHtml().contains("headline-byline"))
+        assertFalse(result.content.requireHtml().contains("reactions-title"))
     }
 
     @Test
     fun `exact selectors remove article header chrome and in article recirculation`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <header class="a-article-grid__header">
@@ -1731,23 +1733,23 @@ class RemovalPipelineTest {
             url = "https://www.rollingstone.com/rollingstone-article",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article intro should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertTrue(result.contentHtml.contains("""class="a-article-grid__featured-media""""))
-        assertFalse(result.contentMarkdown.contains("Loose Lips"))
-        assertFalse(result.contentMarkdown.contains("Example title duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("Example dek duplicated from metadata"))
-        assertFalse(result.contentMarkdown.contains("June 15, 2026"))
-        assertFalse(result.contentMarkdown.contains("Trending Stories"))
-        assertFalse(result.contentMarkdown.contains("Jelly Roll Files for Divorce From Bunnie Xo"))
-        assertFalse(result.contentHtml.contains("a-article-grid__header"))
-        assertFalse(result.contentHtml.contains("a-article-grid__author"))
-        assertFalse(result.contentHtml.contains("trending-in-article"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article intro should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertTrue(result.content.requireHtml().contains("""class="a-article-grid__featured-media""""))
+        assertFalse(result.content.requireMarkdown().contains("Loose Lips"))
+        assertFalse(result.content.requireMarkdown().contains("Example title duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("Example dek duplicated from metadata"))
+        assertFalse(result.content.requireMarkdown().contains("June 15, 2026"))
+        assertFalse(result.content.requireMarkdown().contains("Trending Stories"))
+        assertFalse(result.content.requireMarkdown().contains("Jelly Roll Files for Divorce From Bunnie Xo"))
+        assertFalse(result.content.requireHtml().contains("a-article-grid__header"))
+        assertFalse(result.content.requireHtml().contains("a-article-grid__author"))
+        assertFalse(result.content.requireHtml().contains("trending-in-article"))
     }
 
     @Test
     fun `exact selectors remove Gutenberg article footer sidebar newsletter and video chrome`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <div class="entry-content">
@@ -1776,22 +1778,22 @@ class RemovalPipelineTest {
             url = "https://popculture.com/celebrity-news/example",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Videos by PopCulture.com"))
-        assertFalse(result.contentMarkdown.contains("Next Article"))
-        assertFalse(result.contentMarkdown.contains("More Celebrity"))
-        assertFalse(result.contentMarkdown.contains("Your inbox just got relevant"))
-        assertFalse(result.contentMarkdown.contains("Most Viewed"))
-        assertFalse(result.contentHtml.contains("wp-block-savage-platform-primis-video"))
-        assertFalse(result.contentHtml.contains("entry-footer"))
-        assertFalse(result.contentHtml.contains("entry-aside"))
-        assertFalse(result.contentHtml.contains("wp-block-savage-platform-beehiiv-form"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Videos by PopCulture.com"))
+        assertFalse(result.content.requireMarkdown().contains("Next Article"))
+        assertFalse(result.content.requireMarkdown().contains("More Celebrity"))
+        assertFalse(result.content.requireMarkdown().contains("Your inbox just got relevant"))
+        assertFalse(result.content.requireMarkdown().contains("Most Viewed"))
+        assertFalse(result.content.requireHtml().contains("wp-block-savage-platform-primis-video"))
+        assertFalse(result.content.requireHtml().contains("entry-footer"))
+        assertFalse(result.content.requireHtml().contains("entry-aside"))
+        assertFalse(result.content.requireHtml().contains("wp-block-savage-platform-beehiiv-form"))
     }
 
     @Test
     fun `exact selectors remove Valnet display card rating widgets`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
@@ -1816,22 +1818,22 @@ class RemovalPipelineTest {
             url = "https://screenrant.com/valnet-display-card",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Your Rating"))
-        assertFalse(result.contentMarkdown.contains("10 stars"))
-        assertFalse(result.contentMarkdown.contains("Rate Now"))
-        assertFalse(result.contentMarkdown.contains("Leave a Review"))
-        assertFalse(result.contentMarkdown.contains("Your comment has not been saved"))
-        assertFalse(result.contentMarkdown.contains("Example Show"))
-        assertFalse(result.contentMarkdown.contains("Powered by ScreenRant"))
-        assertFalse(result.contentHtml.contains("""class="display-card"""))
-        assertFalse(result.contentHtml.contains("data-include-community-rating"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Your Rating"))
+        assertFalse(result.content.requireMarkdown().contains("10 stars"))
+        assertFalse(result.content.requireMarkdown().contains("Rate Now"))
+        assertFalse(result.content.requireMarkdown().contains("Leave a Review"))
+        assertFalse(result.content.requireMarkdown().contains("Your comment has not been saved"))
+        assertFalse(result.content.requireMarkdown().contains("Example Show"))
+        assertFalse(result.content.requireMarkdown().contains("Powered by ScreenRant"))
+        assertFalse(result.content.requireHtml().contains("""class="display-card"""))
+        assertFalse(result.content.requireHtml().contains("data-include-community-rating"))
     }
 
     @Test
     fun `exact selectors remove comment jump links and loading placeholders`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p>
@@ -1849,19 +1851,19 @@ class RemovalPipelineTest {
             url = "https://variety.com/comment-widget",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertFalse(result.contentMarkdown.contains("Jump to Comments"))
-        assertFalse(result.contentMarkdown.contains("Loading comments"))
-        assertFalse(result.contentMarkdown.contains("JavaScript is required to load the comments"))
-        assertFalse(result.contentHtml.contains("o-comments-link"))
-        assertFalse(result.contentHtml.contains("comments-loading"))
-        assertFalse(result.contentHtml.contains("article-comments"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertFalse(result.content.requireMarkdown().contains("Jump to Comments"))
+        assertFalse(result.content.requireMarkdown().contains("Loading comments"))
+        assertFalse(result.content.requireMarkdown().contains("JavaScript is required to load the comments"))
+        assertFalse(result.content.requireHtml().contains("o-comments-link"))
+        assertFalse(result.content.requireHtml().contains("comments-loading"))
+        assertFalse(result.content.requireHtml().contains("article-comments"))
     }
 
     @Test
     fun `exact selectors remove Android Authority source and comment chrome`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <div><p>Affiliate links on Android Authority may earn us a commission. <a href="/external-links/">Learn more.</a></p></div>
@@ -1885,22 +1887,22 @@ class RemovalPipelineTest {
             url = "https://www.androidauthority.com/example",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("![Hero](https://example.com/hero.jpg)"))
-        assertFalse(result.contentMarkdown.contains("Affiliate links on Android Authority"))
-        assertFalse(result.contentMarkdown.contains("Mobile"))
-        assertFalse(result.contentMarkdown.contains("The Android 17-based update brings critical display"))
-        assertFalse(result.contentMarkdown.contains("Add AndroidAuthority on Google"))
-        assertFalse(result.contentMarkdown.contains("Follow us on Google Discover"))
-        assertFalse(result.contentMarkdown.contains("Don’t want to miss the best"))
-        assertFalse(result.contentMarkdown.contains("preferred source in Google Search"))
-        assertFalse(result.contentMarkdown.contains("Thank you for being part of our community"))
-        assertFalse(result.contentMarkdown.contains("Comment Policy"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("![Hero](https://example.com/hero.jpg)"))
+        assertFalse(result.content.requireMarkdown().contains("Affiliate links on Android Authority"))
+        assertFalse(result.content.requireMarkdown().contains("Mobile"))
+        assertFalse(result.content.requireMarkdown().contains("The Android 17-based update brings critical display"))
+        assertFalse(result.content.requireMarkdown().contains("Add AndroidAuthority on Google"))
+        assertFalse(result.content.requireMarkdown().contains("Follow us on Google Discover"))
+        assertFalse(result.content.requireMarkdown().contains("Don’t want to miss the best"))
+        assertFalse(result.content.requireMarkdown().contains("preferred source in Google Search"))
+        assertFalse(result.content.requireMarkdown().contains("Thank you for being part of our community"))
+        assertFalse(result.content.requireMarkdown().contains("Comment Policy"))
     }
 
     @Test
     fun `exact selectors remove PhoneArena article chrome while preserving story`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p><strong>The phone is still a force to be reckoned with.</strong></p>
@@ -1939,28 +1941,28 @@ class RemovalPipelineTest {
             url = "https://www.phonearena.com/news/example_id1",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("The article conclusion should also stay"))
-        assertTrue(result.contentMarkdown.contains("![Hero](https://example.com/hero.jpg)"))
-        assertTrue(result.contentMarkdown.contains("The phone is still a force"))
-        assertFalse(result.contentMarkdown.contains("Preslav Mladenov"))
-        assertFalse(result.contentMarkdown.contains("Published: Jun 16"))
-        assertFalse(result.contentMarkdown.contains("We may earn a commission"))
-        assertFalse(result.contentMarkdown.contains("Follow us on Google News"))
-        assertFalse(result.contentMarkdown.contains("View Full Bio"))
-        assertFalse(result.contentMarkdown.contains("Latest Discussions"))
-        assertFalse(result.contentMarkdown.contains("Galaxy A16 5G Takeover"))
-        assertFalse(result.contentMarkdown.contains("Discover more from the community"))
-        assertFalse(result.contentMarkdown.contains("Explore Related Devices"))
-        assertFalse(result.contentHtml.contains("content-header-widgets"))
-        assertFalse(result.contentHtml.contains("content-author-byline"))
-        assertFalse(result.contentHtml.contains("discussions-latest"))
-        assertFalse(result.contentHtml.contains("phone-links"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("The article conclusion should also stay"))
+        assertTrue(result.content.requireMarkdown().contains("![Hero](https://example.com/hero.jpg)"))
+        assertTrue(result.content.requireMarkdown().contains("The phone is still a force"))
+        assertFalse(result.content.requireMarkdown().contains("Preslav Mladenov"))
+        assertFalse(result.content.requireMarkdown().contains("Published: Jun 16"))
+        assertFalse(result.content.requireMarkdown().contains("We may earn a commission"))
+        assertFalse(result.content.requireMarkdown().contains("Follow us on Google News"))
+        assertFalse(result.content.requireMarkdown().contains("View Full Bio"))
+        assertFalse(result.content.requireMarkdown().contains("Latest Discussions"))
+        assertFalse(result.content.requireMarkdown().contains("Galaxy A16 5G Takeover"))
+        assertFalse(result.content.requireMarkdown().contains("Discover more from the community"))
+        assertFalse(result.content.requireMarkdown().contains("Explore Related Devices"))
+        assertFalse(result.content.requireHtml().contains("content-header-widgets"))
+        assertFalse(result.content.requireHtml().contains("content-author-byline"))
+        assertFalse(result.content.requireHtml().contains("discussions-latest"))
+        assertFalse(result.content.requireHtml().contains("phone-links"))
     }
 
     @Test
     fun `exact selectors remove SI source recirculation author and breadcrumb chrome`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <header>
@@ -2002,23 +2004,23 @@ class RemovalPipelineTest {
             url = "https://www.si.com/nfl/draft/onsi/late-round-expert/example",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("Sources familiar with the Seahawks confirm Stephens"))
-        assertFalse(result.contentMarkdown.contains("Justin Melo"))
-        assertFalse(result.contentMarkdown.contains("Add us as a preferred source"))
-        assertFalse(result.contentMarkdown.contains("Loading recommendations"))
-        assertFalse(result.contentMarkdown.contains("Published"))
-        assertFalse(result.contentMarkdown.contains("Modified"))
-        assertFalse(result.contentMarkdown.contains("Follow JustinM"))
-        assertFalse(result.contentMarkdown.contains("Late-Round Expert"))
-        assertFalse(result.contentHtml.contains("google-news-widget"))
-        assertFalse(result.contentHtml.contains("data-mm-recirc"))
-        assertFalse(result.contentHtml.contains("author-bio"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("Sources familiar with the Seahawks confirm Stephens"))
+        assertFalse(result.content.requireMarkdown().contains("Justin Melo"))
+        assertFalse(result.content.requireMarkdown().contains("Add us as a preferred source"))
+        assertFalse(result.content.requireMarkdown().contains("Loading recommendations"))
+        assertFalse(result.content.requireMarkdown().contains("Published"))
+        assertFalse(result.content.requireMarkdown().contains("Modified"))
+        assertFalse(result.content.requireMarkdown().contains("Follow JustinM"))
+        assertFalse(result.content.requireMarkdown().contains("Late-Round Expert"))
+        assertFalse(result.content.requireHtml().contains("google-news-widget"))
+        assertFalse(result.content.requireHtml().contains("data-mm-recirc"))
+        assertFalse(result.content.requireHtml().contains("author-bio"))
     }
 
     @Test
     fun `exact selectors remove Motorsport story footer widgets while preserving article prose`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article class="ms-page">
@@ -2052,24 +2054,24 @@ class RemovalPipelineTest {
             url = "https://www.motorsport.com/f1/news/example/10830609/",
         )
 
-        assertTrue(result.contentMarkdown.contains("The actual article body should stay"))
-        assertTrue(result.contentMarkdown.contains("So it's part of the learning process"))
-        assertFalse(result.contentMarkdown.contains("Photos from Barcelona"))
-        assertFalse(result.contentMarkdown.contains("Share Or Save This Story"))
-        assertFalse(result.contentMarkdown.contains("Previous article"))
-        assertFalse(result.contentMarkdown.contains("Top Comments"))
-        assertFalse(result.contentMarkdown.contains("More from"))
-        assertFalse(result.contentMarkdown.contains("Latest news"))
-        assertFalse(result.contentMarkdown.contains("Discover prime content"))
-        assertFalse(result.contentMarkdown.contains("Subscribe and access Motorsport.com"))
-        assertFalse(result.contentHtml.contains("ms-article-end"))
-        assertFalse(result.contentHtml.contains("ms-inarticle-widgets"))
-        assertFalse(result.contentHtml.contains("adblock-content-blocked"))
+        assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"))
+        assertTrue(result.content.requireMarkdown().contains("So it's part of the learning process"))
+        assertFalse(result.content.requireMarkdown().contains("Photos from Barcelona"))
+        assertFalse(result.content.requireMarkdown().contains("Share Or Save This Story"))
+        assertFalse(result.content.requireMarkdown().contains("Previous article"))
+        assertFalse(result.content.requireMarkdown().contains("Top Comments"))
+        assertFalse(result.content.requireMarkdown().contains("More from"))
+        assertFalse(result.content.requireMarkdown().contains("Latest news"))
+        assertFalse(result.content.requireMarkdown().contains("Discover prime content"))
+        assertFalse(result.content.requireMarkdown().contains("Subscribe and access Motorsport.com"))
+        assertFalse(result.content.requireHtml().contains("ms-article-end"))
+        assertFalse(result.content.requireHtml().contains("ms-inarticle-widgets"))
+        assertFalse(result.content.requireHtml().contains("adblock-content-blocked"))
     }
 
     @Test
     fun `duplicate images are removed after first occurrence`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>Article prose has enough words to keep the default cleaned parse result. It describes the image context clearly and avoids short retry paths with stable text.</p>
@@ -2080,13 +2082,13 @@ class RemovalPipelineTest {
             url = "https://example.com/images",
         )
 
-        assertTrue(result.contentHtml.contains("""alt="First""""))
-        assertFalse(result.contentHtml.contains("""alt="Duplicate""""))
+        assertTrue(result.content.requireHtml().contains("""alt="First""""))
+        assertFalse(result.content.requireHtml().contains("""alt="Duplicate""""))
     }
 
     @Test
     fun `cover image duplicating metadata image is removed`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html><head>
                   <meta property="og:image" content="https://example.com/cover.png">
@@ -2100,13 +2102,12 @@ class RemovalPipelineTest {
             url = "https://example.com/article",
         )
 
-        assertEquals("https://example.com/cover.png", result.image)
-        assertFalse(result.contentHtml.contains("""alt="Cover""""))
-        assertFalse(result.contentHtml.contains("""class="post-thumbnail""""))
+        assertEquals("https://example.com/cover.png", result.metadata.image)
+        assertFalse(result.content.requireHtml().contains("""alt="Cover""""))
+        assertFalse(result.content.requireHtml().contains("""class="post-thumbnail""""))
     }
 
-    private fun mainSelectorOptions(): DefuddleOptions =
-        DefuddleOptions(customExtractors = listOf(MainSelectorExtractor))
+    private fun mainSelectorOptions() = testOptions(customExtractors = listOf(MainSelectorExtractor))
 
     private object MainSelectorExtractor : Extractor {
         override val id: String = "test-main-selector"

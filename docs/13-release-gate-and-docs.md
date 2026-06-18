@@ -19,8 +19,12 @@ Prepare a usable internal release of the Kotlin Markdown extractor with clear co
 Include:
 
 ```kotlin
-val result = Defuddle.parseHtml(html, url)
-println(result.contentMarkdown)
+val result = Defuddle.parseHtml(
+    html = html,
+    url = url,
+    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+)
+println(result.content.requireMarkdown())
 ```
 
 Include debug:
@@ -29,10 +33,14 @@ Include debug:
 val result = Defuddle.parseHtml(
     html = html,
     url = url,
-    options = DefuddleOptions(debug = true)
+    options = DefuddleOptions(
+        outputs = setOf(DefuddleOutput.MARKDOWN),
+        debug = true,
+    )
 )
 
 val removals = result.debug["removals"] as? List<*>
+val parseTimeMillis = result.debug["parseTimeMillis"] as? Long
 removals?.forEach(::println)
 ```
 

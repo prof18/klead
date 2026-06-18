@@ -1,6 +1,6 @@
 package dev.defuddle.fixtures
 
-import dev.defuddle.Defuddle
+import dev.defuddle.parseHtmlForTest
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -88,7 +88,7 @@ object FixtureCoverage {
 
         for (case in cases) {
             case.categories.forEach { categories[it] = categories.getOrDefault(it, 0) + 1 }
-            val result = runCatching { Defuddle.parseHtml(case.rawHtml, case.sourceUrl) }
+            val result = runCatching { parseHtmlForTest(case.rawHtml, case.sourceUrl) }
             val failure = result.exceptionOrNull()
                 ?.let { classify(case) }
                 ?: classifyOutput(case, result.getOrThrow())
@@ -108,7 +108,7 @@ object FixtureCoverage {
     }
 
     private fun classifyOutput(case: FixtureCase, result: dev.defuddle.DefuddleResult): FixtureFailureReason? {
-        if (result.contentMarkdown.isBlank() && case.category != FixtureCategory.MATH) {
+        if (result.content.requireMarkdown().isBlank() && case.category != FixtureCategory.MATH) {
             return classify(case)
         }
         val expected = case.expectedMarkdown?.markdownBody
@@ -117,7 +117,7 @@ object FixtureCoverage {
             ?.firstOrNull { it.isNotBlank() && !it.startsWith("#") && !it.startsWith("|") }
         if (firstExpectedLine != null && firstExpectedLine.length > 24) {
             val probe = firstExpectedLine.take(80)
-            if (!result.contentMarkdown.contains(probe.take(32))) {
+            if (!result.content.requireMarkdown().contains(probe.take(32))) {
                 return classify(case)
             }
         }

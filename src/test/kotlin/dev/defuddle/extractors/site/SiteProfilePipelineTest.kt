@@ -1,8 +1,8 @@
 package dev.defuddle.extractors.site
 
-import dev.defuddle.Defuddle
-import dev.defuddle.DefuddleOptions
 import dev.defuddle.extractors.Extractor
+import dev.defuddle.parseHtmlForTest
+import dev.defuddle.testOptions
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -17,7 +17,7 @@ class SiteProfilePipelineTest {
             domains = setOf("example.com"),
         )
 
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <section class="preferred-story">
@@ -31,11 +31,11 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
+            options = testOptions(customExtractors = listOf(profile), debug = true),
         )
 
-        assertTrue(result.contentMarkdown.contains("This preferred article paragraph"))
-        assertFalse(result.contentMarkdown.contains("Unrelated recommendation text"))
+        assertTrue(result.content.requireMarkdown().contains("This preferred article paragraph"))
+        assertFalse(result.content.requireMarkdown().contains("Unrelated recommendation text"))
         assertEquals(".preferred-story", result.debug["selectedContentSelector"])
         assertEquals(".preferred-story", result.debug["extractorContentSelector"])
     }
@@ -47,7 +47,7 @@ class SiteProfilePipelineTest {
             domains = setOf("example.com"),
         )
 
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <article>
@@ -62,11 +62,11 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
+            options = testOptions(customExtractors = listOf(profile), debug = true),
         )
 
-        assertTrue(result.contentMarkdown.contains("The primary article paragraph"))
-        assertFalse(result.contentMarkdown.contains("Teaser article paragraph"))
+        assertTrue(result.content.requireMarkdown().contains("The primary article paragraph"))
+        assertFalse(result.content.requireMarkdown().contains("Teaser article paragraph"))
         assertEquals("article", result.debug["selectedContentSelector"])
         assertEquals("article", result.debug["extractorContentSelector"])
     }
@@ -78,7 +78,7 @@ class SiteProfilePipelineTest {
             domains = setOf("example.com"),
         )
 
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <main>
                   <section class="weak-preferred">Tiny promo</section>
@@ -89,11 +89,11 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
+            options = testOptions(customExtractors = listOf(profile), debug = true),
         )
 
-        assertTrue(result.contentMarkdown.contains("This generic article paragraph"))
-        assertFalse(result.contentMarkdown.contains("Tiny promo"))
+        assertTrue(result.content.requireMarkdown().contains("This generic article paragraph"))
+        assertFalse(result.content.requireMarkdown().contains("Tiny promo"))
         assertEquals("article", result.debug["selectedContentSelector"])
         assertFalse(result.debug.containsKey("extractorContentSelector"))
     }
@@ -111,19 +111,19 @@ class SiteProfilePipelineTest {
             </article>
         """.trimIndent()
 
-        val matching = Defuddle.parseHtml(
+        val matching = parseHtmlForTest(
             html = html,
             url = "https://example.com/story",
-            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
+            options = testOptions(customExtractors = listOf(profile), debug = true),
         )
-        val unrelated = Defuddle.parseHtml(
+        val unrelated = parseHtmlForTest(
             html = html,
             url = "https://unrelated.test/story",
-            options = DefuddleOptions(customExtractors = listOf(profile), debug = true),
+            options = testOptions(customExtractors = listOf(profile), debug = true),
         )
 
-        assertFalse(matching.contentMarkdown.contains("Site-specific chrome"))
-        assertTrue(unrelated.contentMarkdown.contains("Site-specific chrome"))
+        assertFalse(matching.content.requireMarkdown().contains("Site-specific chrome"))
+        assertTrue(unrelated.content.requireMarkdown().contains("Site-specific chrome"))
         assertEquals(listOf("test-profile"), matching.debug["extractorIds"])
         assertNotNull(matching.debug["extractorRemovals"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
@@ -140,19 +140,19 @@ class SiteProfilePipelineTest {
             </article>
         """.trimIndent()
 
-        val matching = Defuddle.parseHtml(
+        val matching = parseHtmlForTest(
             html = html,
             url = "https://www.macrumors.com/example",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
-        val unrelated = Defuddle.parseHtml(
+        val unrelated = parseHtmlForTest(
             html = html,
             url = "https://example.com/not-macrumors",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
-        assertFalse(matching.contentMarkdown.contains("Related Roundup"))
-        assertTrue(unrelated.contentMarkdown.contains("Related Roundup"))
+        assertFalse(matching.content.requireMarkdown().contains("Related Roundup"))
+        assertTrue(unrelated.content.requireMarkdown().contains("Related Roundup"))
         assertEquals(listOf("macrumors"), matching.debug["extractorIds"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
@@ -160,7 +160,7 @@ class SiteProfilePipelineTest {
     @Test
     fun `custom extractors do not replace built in defaults`() {
         val custom = TestExtractor(domains = setOf("custom.example"))
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <article>
                   <p>The actual article body should stay because it contains enough realistic prose for deterministic parsing.</p>
@@ -169,10 +169,10 @@ class SiteProfilePipelineTest {
                 </article>
             """.trimIndent(),
             url = "https://www.macrumors.com/example",
-            options = DefuddleOptions(customExtractors = listOf(custom), debug = true),
+            options = testOptions(customExtractors = listOf(custom), debug = true),
         )
 
-        assertFalse(result.contentMarkdown.contains("Related Roundup"))
+        assertFalse(result.content.requireMarkdown().contains("Related Roundup"))
         assertEquals(listOf("macrumors"), result.debug["extractorIds"])
     }
 
@@ -190,19 +190,19 @@ class SiteProfilePipelineTest {
             </main>
         """.trimIndent()
 
-        val matching = Defuddle.parseHtml(
+        val matching = parseHtmlForTest(
             html = html,
             url = "https://www.veneziatoday.it/example",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
-        val unrelated = Defuddle.parseHtml(
+        val unrelated = parseHtmlForTest(
             html = html,
             url = "https://example.com/not-citynews",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
-        assertFalse(matching.contentMarkdown.contains("Riproduzione riservata"))
-        assertTrue(unrelated.contentMarkdown.contains("Riproduzione riservata"))
+        assertFalse(matching.content.requireMarkdown().contains("Riproduzione riservata"))
+        assertTrue(unrelated.content.requireMarkdown().contains("Riproduzione riservata"))
         assertEquals(listOf("citynews"), matching.debug["extractorIds"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
@@ -217,19 +217,19 @@ class SiteProfilePipelineTest {
             </article>
         """.trimIndent()
 
-        val matching = Defuddle.parseHtml(
+        val matching = parseHtmlForTest(
             html = html,
             url = "https://techcrunch.com/example",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
-        val unrelated = Defuddle.parseHtml(
+        val unrelated = parseHtmlForTest(
             html = html,
             url = "https://example.com/not-techcrunch",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
-        assertFalse(matching.contentMarkdown.contains("TechCrunch event promo"))
-        assertTrue(unrelated.contentMarkdown.contains("TechCrunch event promo"))
+        assertFalse(matching.content.requireMarkdown().contains("TechCrunch event promo"))
+        assertTrue(unrelated.content.requireMarkdown().contains("TechCrunch event promo"))
         assertEquals(listOf("techcrunch"), matching.debug["extractorIds"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
@@ -246,19 +246,19 @@ class SiteProfilePipelineTest {
             </article>
         """.trimIndent()
 
-        val matching = Defuddle.parseHtml(
+        val matching = parseHtmlForTest(
             html = html,
             url = "https://arstechnica.com/example",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
-        val unrelated = Defuddle.parseHtml(
+        val unrelated = parseHtmlForTest(
             html = html,
             url = "https://example.com/not-ars",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
-        assertFalse(matching.contentMarkdown.contains("Story text Size Links"))
-        assertTrue(unrelated.contentMarkdown.contains("Story text Size Links"))
+        assertFalse(matching.content.requireMarkdown().contains("Story text Size Links"))
+        assertTrue(unrelated.content.requireMarkdown().contains("Story text Size Links"))
         assertEquals(listOf("ars-technica"), matching.debug["extractorIds"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
@@ -274,21 +274,21 @@ class SiteProfilePipelineTest {
             </main>
         """.trimIndent()
 
-        val matching = Defuddle.parseHtml(
+        val matching = parseHtmlForTest(
             html = html,
             url = "https://android-developers.googleblog.com/example",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
-        val unrelated = Defuddle.parseHtml(
+        val unrelated = parseHtmlForTest(
             html = html,
             url = "https://example.com/not-blogger",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
-        assertFalse(matching.contentMarkdown.contains("Link copied to clipboard"))
-        assertFalse(matching.contentMarkdown.contains("Older post"))
-        assertTrue(unrelated.contentMarkdown.contains("Link copied to clipboard"))
-        assertTrue(unrelated.contentMarkdown.contains("Older post"))
+        assertFalse(matching.content.requireMarkdown().contains("Link copied to clipboard"))
+        assertFalse(matching.content.requireMarkdown().contains("Older post"))
+        assertTrue(unrelated.content.requireMarkdown().contains("Link copied to clipboard"))
+        assertTrue(unrelated.content.requireMarkdown().contains("Older post"))
         assertEquals(listOf("blogger"), matching.debug["extractorIds"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
@@ -304,21 +304,21 @@ class SiteProfilePipelineTest {
             </article>
         """.trimIndent()
 
-        val matching = Defuddle.parseHtml(
+        val matching = parseHtmlForTest(
             html = html,
             url = "https://www.gamingonlinux.com/example",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
-        val unrelated = Defuddle.parseHtml(
+        val unrelated = parseHtmlForTest(
             html = html,
             url = "https://example.com/not-gamingonlinux",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
-        assertFalse(matching.contentMarkdown.contains("Article taken from"))
-        assertFalse(matching.contentMarkdown.contains("4 Likes"))
-        assertTrue(unrelated.contentMarkdown.contains("Article taken from"))
-        assertTrue(unrelated.contentMarkdown.contains("4 Likes"))
+        assertFalse(matching.content.requireMarkdown().contains("Article taken from"))
+        assertFalse(matching.content.requireMarkdown().contains("4 Likes"))
+        assertTrue(unrelated.content.requireMarkdown().contains("Article taken from"))
+        assertTrue(unrelated.content.requireMarkdown().contains("4 Likes"))
         assertEquals(listOf("gamingonlinux"), matching.debug["extractorIds"])
         assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
@@ -340,15 +340,15 @@ class SiteProfilePipelineTest {
         )
 
         for (url in urls) {
-            val result = Defuddle.parseHtml(
+            val result = parseHtmlForTest(
                 html = html,
                 url = url,
-                options = DefuddleOptions(debug = true),
+                options = testOptions(debug = true),
             )
 
-            assertTrue(result.contentMarkdown.contains("The actual article body should stay"), url)
-            assertFalse(result.contentMarkdown.contains("Substack comments chrome"), url)
-            assertFalse(result.contentMarkdown.contains("Substack top posts chrome"), url)
+            assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"), url)
+            assertFalse(result.content.requireMarkdown().contains("Substack comments chrome"), url)
+            assertFalse(result.content.requireMarkdown().contains("Substack top posts chrome"), url)
             assertTrue((result.debug["extractorIds"] as List<*>).contains("substack"), url)
         }
     }
@@ -421,19 +421,19 @@ class SiteProfilePipelineTest {
                 </article>
             """.trimIndent()
 
-            val matching = Defuddle.parseHtml(
+            val matching = parseHtmlForTest(
                 html = html,
                 url = case.url,
-                options = DefuddleOptions(debug = true),
+                options = testOptions(debug = true),
             )
-            val unrelated = Defuddle.parseHtml(
+            val unrelated = parseHtmlForTest(
                 html = html,
                 url = "https://example.com/not-profile",
-                options = DefuddleOptions(debug = true),
+                options = testOptions(debug = true),
             )
 
-            assertFalse(matching.contentMarkdown.contains(case.removedText), case.profileId)
-            assertTrue(unrelated.contentMarkdown.contains(case.removedText), case.profileId)
+            assertFalse(matching.content.requireMarkdown().contains(case.removedText), case.profileId)
+            assertTrue(unrelated.content.requireMarkdown().contains(case.removedText), case.profileId)
             assertTrue((matching.debug["extractorIds"] as List<*>).contains(case.profileId), case.profileId)
             assertFalse(unrelated.debug.containsKey("extractorIds"), case.profileId)
         }

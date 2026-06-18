@@ -26,78 +26,96 @@ import java.net.URI
 import kotlin.math.max
 import kotlin.time.measureTimedValue
 
-data class DefuddleOptions(
-    val customExtractors: List<Extractor> = emptyList(),
-    val markdown: Boolean = true,
-    val debug: Boolean = false,
-)
+enum class DefuddleOutput {
+    HTML,
+    MARKDOWN,
+}
 
-data class DefuddleResult(
-    val contentMarkdown: String,
-    val contentHtml: String,
+data class DefuddleOptions(
+    val outputs: Set<DefuddleOutput>,
+    val customExtractors: List<Extractor> = emptyList(),
+    val debug: Boolean = false,
+) {
+    init {
+        require(outputs.isNotEmpty()) { "At least one Defuddle output must be requested." }
+    }
+}
+
+data class DefuddleContent(val html: String?, val markdown: String?) {
+    init {
+        require(html != null || markdown != null) { "At least one content output must be present." }
+    }
+
+    fun requireHtml(): String = checkNotNull(html) { "HTML output was not requested." }
+
+    fun requireMarkdown(): String = checkNotNull(markdown) { "Markdown output was not requested." }
+}
+
+data class DefuddleMetadata(
     val title: String?,
     val description: String?,
     val favicon: String?,
     val image: String?,
     val author: String?,
     val site: String?,
-    val wordCount: Int,
-    val parseTimeMillis: Long,
-    val variables: Map<String, String>,
-    val debug: Map<String, Any?>,
 )
 
+data class DefuddleResult(val content: DefuddleContent, val metadata: DefuddleMetadata, val debug: Map<String, Any?>)
+
 object Defuddle {
-    fun parseHtml(html: String, url: String, options: DefuddleOptions = DefuddleOptions()): DefuddleResult =
-        runBlocking {
-            parseHtmlAsync(html = html, url = url, options = options)
-        }
+    private data class ParsedResult(val result: DefuddleResult, val wordCount: Int)
 
-    suspend fun parseHtmlAsync(
-        html: String,
-        url: String,
-        options: DefuddleOptions = DefuddleOptions(),
-    ): DefuddleResult = withContext(Dispatchers.Default) {
-        val timed = measureTimedValue {
-            val document = Jsoup.parse(html, url)
-            document.outputSettings().prettyPrint(false)
-            prepareDocument(document)
-            val extractorContext = ExtractorContext(
-                url = url,
-                host = url.hostOrNull(),
-                document = document,
-            )
-            val extractorResult = ExtractorRegistry(options.effectiveExtractors()).extract(context = extractorContext)
-            val parseDocument = extractorResult?.contentHtml
-                ?.let { Jsoup.parseBodyFragment(it, url).also { parsed -> parsed.outputSettings().prettyPrint(false) } }
-                ?: document
-
-            RetryController.run { removalPolicy ->
-                val result = parseInternal(
-                    document = parseDocument.cloneDocument(),
-                    url = url,
-                    options = options,
-                    extractorResult = extractorResult,
-                    removalPolicy = removalPolicy,
-                )
-                RetryCandidate(
-                    value = result,
-                    wordCount = result.wordCount,
-                    removalPolicy = removalPolicy,
-                )
-            }.value
-        }
-
-        val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
-        val debug = timed.value.debug.toMutableMap()
-        if (options.debug) {
-            debug["profileTimings"] = mapOf("parseHtml" to parseTimeMillis)
-        }
-        timed.value.copy(
-            parseTimeMillis = parseTimeMillis,
-            debug = debug,
-        )
+    fun parseHtml(html: String, url: String, options: DefuddleOptions): DefuddleResult = runBlocking {
+        parseHtmlAsync(html = html, url = url, options = options)
     }
+
+    suspend fun parseHtmlAsync(html: String, url: String, options: DefuddleOptions): DefuddleResult =
+        withContext(Dispatchers.Default) {
+            val timed = measureTimedValue {
+                val document = Jsoup.parse(html, url)
+                document.outputSettings().prettyPrint(false)
+                prepareDocument(document)
+                val extractorContext = ExtractorContext(
+                    url = url,
+                    host = url.hostOrNull(),
+                    document = document,
+                )
+                val extractorResult = ExtractorRegistry(options.effectiveExtractors()).extract(
+                    context = extractorContext,
+                )
+                val parseDocument = extractorResult?.contentHtml
+                    ?.let { contentHtml ->
+                        Jsoup.parseBodyFragment(contentHtml, url).also { parsed ->
+                            parsed.outputSettings().prettyPrint(false)
+                        }
+                    }
+                    ?: document
+
+                RetryController.run { removalPolicy ->
+                    val result = parseInternal(
+                        document = parseDocument.cloneDocument(),
+                        url = url,
+                        options = options,
+                        extractorResult = extractorResult,
+                        removalPolicy = removalPolicy,
+                    )
+                    RetryCandidate(
+                        value = result.result,
+                        wordCount = result.wordCount,
+                        removalPolicy = removalPolicy,
+                    )
+                }.value
+            }
+
+            val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
+            val debug = timed.value.debug.toMutableMap()
+            if (options.debug) {
+                debug["parseTimeMillis"] = parseTimeMillis
+            }
+            timed.value.copy(
+                debug = debug,
+            )
+        }
 
     private fun parseInternal(
         document: Document,
@@ -105,7 +123,7 @@ object Defuddle {
         options: DefuddleOptions,
         extractorResult: ExtractorResult?,
         removalPolicy: RemovalPolicy,
-    ): DefuddleResult {
+    ): ParsedResult {
         val extractorContext = ExtractorContext(
             url = url,
             host = url.hostOrNull(),
@@ -142,37 +160,47 @@ object Defuddle {
         val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
         matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
         HtmlStandardizer.apply(content, metadata.title)
-        val markdown = if (options.markdown) DefuddleMarkdownWriter.write(content, url) else ""
+        val requestedHtml = DefuddleOutput.HTML in options.outputs
+        val requestedMarkdown = DefuddleOutput.MARKDOWN in options.outputs
+        val html = if (requestedHtml) content.cleanOuterHtml() else null
+        val markdown = if (requestedMarkdown) DefuddleMarkdownWriter.write(content, url) else null
+        val wordCount = countBodyWords(content)
 
-        return DefuddleResult(
-            contentMarkdown = markdown,
-            contentHtml = content.cleanOuterHtml(),
-            title = metadata.title,
-            description = metadata.description,
-            favicon = metadata.favicon,
-            image = metadata.image,
-            author = metadata.author,
-            site = metadata.site,
-            wordCount = countBodyWords(content),
-            parseTimeMillis = 0,
-            variables = extractorResult?.variables.orEmpty(),
-            debug = buildDebug(
-                options,
-                detected.debug,
-                schemaOrg.diagnostics,
-                removals,
-                matchedExtractors.map { it.id },
-            ),
-        ).withExtractorMetadata(extractorResult)
+        return ParsedResult(
+            result = DefuddleResult(
+                content = DefuddleContent(
+                    html = html,
+                    markdown = markdown,
+                ),
+                metadata = DefuddleMetadata(
+                    title = metadata.title,
+                    description = metadata.description,
+                    favicon = metadata.favicon,
+                    image = metadata.image,
+                    author = metadata.author,
+                    site = metadata.site,
+                ),
+                debug = buildDebug(
+                    options,
+                    detected.debug,
+                    schemaOrg.diagnostics,
+                    removals,
+                    matchedExtractors.map { it.id },
+                ),
+            ).withExtractorMetadata(extractorResult),
+            wordCount = wordCount,
+        )
     }
 
     private fun DefuddleResult.withExtractorMetadata(extractorResult: ExtractorResult?): DefuddleResult {
-        val metadata = extractorResult?.metadata ?: return this
+        val extractorMetadata = extractorResult?.metadata ?: return this
         return copy(
-            title = metadata.title ?: title,
-            description = metadata.description ?: description,
-            author = metadata.author ?: author,
-            site = metadata.site ?: site,
+            metadata = metadata.copy(
+                title = extractorMetadata.title ?: metadata.title,
+                description = extractorMetadata.description ?: metadata.description,
+                author = extractorMetadata.author ?: metadata.author,
+                site = extractorMetadata.site ?: metadata.site,
+            ),
         )
     }
 

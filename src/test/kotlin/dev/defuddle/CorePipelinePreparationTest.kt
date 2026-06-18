@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class CorePipelinePreparationTest {
     @Test
     fun `srcSet attributes normalize to srcset before serialization`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html><body><article>
                   <img src="/small.png" srcSet="/small.png 1x, /large.png 2x">
@@ -17,13 +17,13 @@ class CorePipelinePreparationTest {
             url = "https://example.com/article",
         )
 
-        assertTrue(result.contentHtml.contains("srcset="))
-        assertFalse(result.contentHtml.contains("srcSet="))
+        assertTrue(result.content.requireHtml().contains("srcset="))
+        assertFalse(result.content.requireHtml().contains("srcSet="))
     }
 
     @Test
     fun `noscript image fallback promotes real image before noscript stripping`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html><body><article>
                   <img src="data:image/svg+xml;base64,placeholder">
@@ -33,13 +33,13 @@ class CorePipelinePreparationTest {
             url = "https://example.com/article",
         )
 
-        assertTrue(result.contentHtml.contains("""src="/real.png""""))
-        assertFalse(result.contentHtml.contains("<noscript"))
+        assertTrue(result.content.requireHtml().contains("""src="/real.png""""))
+        assertFalse(result.content.requireHtml().contains("<noscript"))
     }
 
     @Test
     fun `unsafe elements and attributes are stripped from content html`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html><body><article>
                   <p onclick="steal()">Safe text</p>
@@ -54,19 +54,19 @@ class CorePipelinePreparationTest {
             url = "https://example.com/article",
         )
 
-        assertTrue(result.contentHtml.contains("Safe text"))
-        assertFalse(result.contentHtml.contains("onclick"))
-        assertFalse(result.contentHtml.contains("javascript:"))
-        assertFalse(result.contentHtml.contains("data:text/html"))
-        assertFalse(result.contentHtml.contains("<iframe"))
-        assertFalse(result.contentHtml.contains("<style"))
-        assertFalse(result.contentHtml.contains("<script"))
-        assertFalse(result.contentHtml.contains("srcdoc"))
+        assertTrue(result.content.requireHtml().contains("Safe text"))
+        assertFalse(result.content.requireHtml().contains("onclick"))
+        assertFalse(result.content.requireHtml().contains("javascript:"))
+        assertFalse(result.content.requireHtml().contains("data:text/html"))
+        assertFalse(result.content.requireHtml().contains("<iframe"))
+        assertFalse(result.content.requireHtml().contains("<style"))
+        assertFalse(result.content.requireHtml().contains("<script"))
+        assertFalse(result.content.requireHtml().contains("srcdoc"))
     }
 
     @Test
     fun `trusted youtube iframe is preserved as cleaned html and markdown link`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html><body><article>
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
@@ -77,29 +77,35 @@ class CorePipelinePreparationTest {
             url = "https://example.com/article",
         )
 
-        assertTrue(result.contentHtml.contains("""src="https://www.youtube-nocookie.com/embed/1hKyYaBzko8""""))
         assertTrue(
-            result.contentHtml.contains("""data-defuddle-video-url="https://www.youtube.com/watch?v=1hKyYaBzko8""""),
+            result.content.requireHtml().contains("""src="https://www.youtube-nocookie.com/embed/1hKyYaBzko8""""),
         )
-        assertFalse(result.contentHtml.contains("evil.example"))
-        assertFalse(result.contentHtml.contains("onclick"))
-        assertFalse(result.contentHtml.contains("srcdoc"))
         assertTrue(
-            result.contentMarkdown.contains("[Dwarf Fortress trailer](https://www.youtube.com/watch?v=1hKyYaBzko8)"),
+            result.content.requireHtml().contains(
+                """data-defuddle-video-url="https://www.youtube.com/watch?v=1hKyYaBzko8"""",
+            ),
+        )
+        assertFalse(result.content.requireHtml().contains("evil.example"))
+        assertFalse(result.content.requireHtml().contains("onclick"))
+        assertFalse(result.content.requireHtml().contains("srcdoc"))
+        assertTrue(
+            result.content.requireMarkdown().contains(
+                "[Dwarf Fortress trailer](https://www.youtube.com/watch?v=1hKyYaBzko8)",
+            ),
         )
     }
 
     @Test
-    fun `profile timings are present when debug is requested`() {
-        val result = Defuddle.parseHtml(
+    fun `parse timing is present when debug is requested`() {
+        val result = parseHtmlForTest(
             html = "<html><body><article><p>Profile on.</p></article></body></html>",
             url = "https://example.com/profile-on",
-            options = DefuddleOptions(debug = true),
+            options = testOptions(debug = true),
         )
 
-        val timings = result.debug["profileTimings"]
-        assertNotNull(timings)
-        assertTrue(timings is Map<*, *>)
-        assertTrue(timings.containsKey("parseHtml"))
+        val parseTimeMillis = result.debug["parseTimeMillis"]
+        assertNotNull(parseTimeMillis)
+        assertTrue(parseTimeMillis is Long)
+        assertTrue(parseTimeMillis >= 0)
     }
 }

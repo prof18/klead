@@ -10,9 +10,13 @@ class ReadmeExampleTest {
         val html = "<article><h1>Example</h1><p>Body text.</p></article>"
         val url = "https://example.com/article"
 
-        val result = Defuddle.parseHtml(html = html, url = url)
+        val result = Defuddle.parseHtml(
+            html = html,
+            url = url,
+            options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+        )
 
-        assertTrue(result.contentMarkdown.contains("Body text."))
+        assertTrue(result.content.requireMarkdown().contains("Body text."))
     }
 
     @Test
@@ -28,7 +32,10 @@ class ReadmeExampleTest {
         val result = Defuddle.parseHtml(
             html = html,
             url = url,
-            options = DefuddleOptions(debug = true),
+            options = DefuddleOptions(
+                outputs = setOf(DefuddleOutput.MARKDOWN),
+                debug = true,
+            ),
         )
 
         val removals = result.debug["removals"] as? List<*>

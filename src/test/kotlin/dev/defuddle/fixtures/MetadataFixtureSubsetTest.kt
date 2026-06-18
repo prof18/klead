@@ -1,6 +1,6 @@
 package dev.defuddle.fixtures
 
-import dev.defuddle.Defuddle
+import dev.defuddle.parseHtmlForTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -14,11 +14,23 @@ class MetadataFixtureSubsetTest {
 
         for (case in cases) {
             val expected = case.expectedMarkdown ?: error("missing expected metadata for ${case.name}")
-            val result = Defuddle.parseHtml(case.rawHtml, case.sourceUrl)
+            val result = parseHtmlForTest(case.rawHtml, case.sourceUrl)
 
-            assertEquals(expected.metadata["title"].emptyAsNull(), result.title.emptyAsNull(), "${case.name} title")
-            assertEquals(expected.metadata["author"].emptyAsNull(), result.author.emptyAsNull(), "${case.name} author")
-            assertEquals(expected.metadata["site"].emptyAsNull(), result.site.emptyAsNull(), "${case.name} site")
+            assertEquals(
+                expected.metadata["title"].emptyAsNull(),
+                result.metadata.title.emptyAsNull(),
+                "${case.name} title",
+            )
+            assertEquals(
+                expected.metadata["author"].emptyAsNull(),
+                result.metadata.author.emptyAsNull(),
+                "${case.name} author",
+            )
+            assertEquals(
+                expected.metadata["site"].emptyAsNull(),
+                result.metadata.site.emptyAsNull(),
+                "${case.name} site",
+            )
         }
     }
 

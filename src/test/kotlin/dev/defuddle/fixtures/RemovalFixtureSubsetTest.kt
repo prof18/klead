@@ -1,6 +1,6 @@
 package dev.defuddle.fixtures
 
-import dev.defuddle.Defuddle
+import dev.defuddle.parseHtmlForTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -11,17 +11,17 @@ class RemovalFixtureSubsetTest {
         val cases = FixtureLoader.loadAll().associateBy { it.name }
 
         val hiddenNodes = cases.getValue("hidden--nodes")
-        val hiddenNodesResult = Defuddle.parseHtml(hiddenNodes.rawHtml, hiddenNodes.sourceUrl)
-        assertTrue(hiddenNodesResult.contentMarkdown.contains("Lorem ipsum dolor sit amet"))
-        assertFalse(hiddenNodesResult.contentHtml.contains("display: none"))
-        assertFalse(hiddenNodesResult.contentHtml.contains("hidden=\"hidden\""))
+        val hiddenNodesResult = parseHtmlForTest(hiddenNodes.rawHtml, hiddenNodes.sourceUrl)
+        assertTrue(hiddenNodesResult.content.requireMarkdown().contains("Lorem ipsum dolor sit amet"))
+        assertFalse(hiddenNodesResult.content.requireHtml().contains("display: none"))
+        assertFalse(hiddenNodesResult.content.requireHtml().contains("hidden=\"hidden\""))
 
         val visibility = cases.getValue("hidden--visibility")
-        val visibilityResult = Defuddle.parseHtml(visibility.rawHtml, visibility.sourceUrl)
-        assertTrue(visibilityResult.contentMarkdown.contains("Tempor incididunt ut labore"))
-        assertTrue(visibilityResult.contentMarkdown.contains("Duis aute irure dolor"))
-        assertFalse(visibilityResult.contentMarkdown.contains("consectetur adipisicing elit"))
-        assertFalse(visibilityResult.contentHtml.contains("<object"))
-        assertFalse(visibilityResult.contentHtml.contains("<embed"))
+        val visibilityResult = parseHtmlForTest(visibility.rawHtml, visibility.sourceUrl)
+        assertTrue(visibilityResult.content.requireMarkdown().contains("Tempor incididunt ut labore"))
+        assertTrue(visibilityResult.content.requireMarkdown().contains("Duis aute irure dolor"))
+        assertFalse(visibilityResult.content.requireMarkdown().contains("consectetur adipisicing elit"))
+        assertFalse(visibilityResult.content.requireHtml().contains("<object"))
+        assertFalse(visibilityResult.content.requireHtml().contains("<embed"))
     }
 }

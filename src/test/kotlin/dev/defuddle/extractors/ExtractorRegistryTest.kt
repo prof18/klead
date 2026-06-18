@@ -1,8 +1,8 @@
 package dev.defuddle.extractors
 
-import dev.defuddle.Defuddle
-import dev.defuddle.DefuddleOptions
 import dev.defuddle.extractors.site.WikipediaExtractor
+import dev.defuddle.parseHtmlForTest
+import dev.defuddle.testOptions
 import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +17,7 @@ class ExtractorRegistryTest {
 
         val result = registry.extract(document.context("https://example.com"))
 
-        assertEquals("first", result?.variables?.get("name"))
+        assertEquals("first", result?.metadata?.site)
     }
 
     @Test
@@ -32,7 +32,7 @@ class ExtractorRegistryTest {
 
         val result = registry.extract(document.context("https://example.com"))
 
-        assertEquals("high", result?.variables?.get("name"))
+        assertEquals("high", result?.metadata?.site)
     }
 
     @Test
@@ -49,11 +49,11 @@ class ExtractorRegistryTest {
     }
 
     @Test
-    fun `direct content extractor goes through markdown writer and variables appear in result`() {
-        val result = Defuddle.parseHtml(
+    fun `direct content extractor goes through markdown writer`() {
+        val result = parseHtmlForTest(
             html = "<html><body><p>Ignored generic content.</p></body></html>",
             url = "https://direct.example/article",
-            options = DefuddleOptions(
+            options = testOptions(
                 customExtractors = listOf(
                     object : Extractor {
                         override val id = "direct-test"
@@ -63,17 +63,15 @@ class ExtractorRegistryTest {
 
                         override fun extract(context: ExtractorContext) = ExtractorResult(
                             contentHtml = "<article><h2>Direct Title</h2><p>Direct <strong>content</strong>.</p></article>",
-                            variables = mapOf("source" to "fixture"),
                         )
                     },
                 ),
             ),
         )
 
-        assertEquals("fixture", result.variables["source"])
-        assertTrue(result.contentMarkdown.contains("## Direct Title"))
-        assertTrue(result.contentMarkdown.contains("Direct **content**."))
-        assertFalse(result.contentMarkdown.contains("Ignored generic content."))
+        assertTrue(result.content.requireMarkdown().contains("## Direct Title"))
+        assertTrue(result.content.requireMarkdown().contains("Direct **content**."))
+        assertFalse(result.content.requireMarkdown().contains("Ignored generic content."))
     }
 
     private fun namedExtractor(name: String, priority: Int = 0): Extractor = object : Extractor {
@@ -82,7 +80,7 @@ class ExtractorRegistryTest {
 
         override fun matches(context: ExtractorContext) = true
 
-        override fun extract(context: ExtractorContext) = ExtractorResult(variables = mapOf("name" to name))
+        override fun extract(context: ExtractorContext) = ExtractorResult(metadata = ExtractorMetadata(site = name))
     }
 
     private fun org.jsoup.nodes.Document.context(url: String): ExtractorContext =

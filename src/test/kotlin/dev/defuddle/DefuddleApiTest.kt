@@ -12,11 +12,11 @@ class DefuddleApiTest {
         val result = Defuddle.parseHtml(
             html = "",
             url = "https://example.com/empty",
+            options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
         )
 
-        assertEquals("", result.contentMarkdown)
-        assertEquals(0, result.wordCount)
-        assertTrue(result.parseTimeMillis >= 0)
+        assertEquals("", result.content.requireMarkdown())
+        assertFalse(result.debug.containsKey("parseTimeMillis"))
     }
 
     @Test
@@ -39,10 +39,11 @@ class DefuddleApiTest {
                 </html>
             """.trimIndent(),
             url = "https://example.com/articles/readable",
+            options = DefuddleOptions(outputs = setOf(DefuddleOutput.HTML, DefuddleOutput.MARKDOWN)),
         )
 
-        assertEquals("Document title", result.title)
-        assertEquals("A short description", result.description)
+        assertEquals("Document title", result.metadata.title)
+        assertEquals("A short description", result.metadata.description)
         assertEquals(
             """
             # Readable title
@@ -51,11 +52,10 @@ class DefuddleApiTest {
 
             This is the second paragraph.
             """.trimIndent() + "\n",
-            result.contentMarkdown,
+            result.content.requireMarkdown(),
         )
-        assertTrue(result.contentHtml.contains("<article>"))
-        assertFalse(result.contentHtml.contains("<script"))
-        assertEquals(10, result.wordCount)
+        assertTrue(result.content.requireHtml().contains("<article>"))
+        assertFalse(result.content.requireHtml().contains("<script"))
     }
 
     @Test
@@ -72,10 +72,11 @@ class DefuddleApiTest {
                 </html>
             """.trimIndent(),
             url = "https://example.com/css",
+            options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
         )
 
-        assertTrue(result.contentMarkdown.contains("Visible static text."))
-        assertFalse(result.contentMarkdown.contains("not executed"))
+        assertTrue(result.content.requireMarkdown().contains("Visible static text."))
+        assertFalse(result.content.requireMarkdown().contains("not executed"))
         assertEquals(
             "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
             result.debug["unsupportedBrowserBehavior"],
@@ -87,11 +88,12 @@ class DefuddleApiTest {
         val result = Defuddle.parseHtml(
             html = "<html><body><p>Body text.</p></body></html>",
             url = "https://example.com",
-            options = DefuddleOptions(markdown = true),
+            options = DefuddleOptions(outputs = setOf(DefuddleOutput.HTML, DefuddleOutput.MARKDOWN)),
         )
 
-        assertNotNull(result.contentMarkdown)
-        assertNotNull(result.contentHtml)
+        assertNotNull(result.content.markdown)
+        assertNotNull(result.content.html)
+        assertNotNull(result.metadata)
         assertNotNull(result.debug)
     }
 
@@ -100,7 +102,10 @@ class DefuddleApiTest {
         val result = Defuddle.parseHtml(
             html = "<html><body><article><p>Debug article.</p></article></body></html>",
             url = "https://example.com/debug",
-            options = DefuddleOptions(debug = true),
+            options = DefuddleOptions(
+                outputs = setOf(DefuddleOutput.MARKDOWN),
+                debug = true,
+            ),
         )
 
         assertEquals("article", result.debug["selectedContentSelector"])
@@ -132,11 +137,14 @@ class DefuddleApiTest {
                 </html>
             """.trimIndent(),
             url = "https://example.com/schema-body",
-            options = DefuddleOptions(debug = true),
+            options = DefuddleOptions(
+                outputs = setOf(DefuddleOutput.MARKDOWN),
+                debug = true,
+            ),
         )
 
-        assertTrue(result.contentMarkdown.contains("Schema body marker belongs"))
-        assertFalse(result.contentMarkdown.contains("Unrelated body content"))
+        assertTrue(result.content.requireMarkdown().contains("Schema body marker belongs"))
+        assertFalse(result.content.requireMarkdown().contains("Unrelated body content"))
         assertEquals("schema-text", result.debug["selectedContentSelector"])
     }
 }

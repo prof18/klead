@@ -42,7 +42,7 @@ Internal parse order:
 
 Expose only parser behavior that callers should control:
 
-- `markdown = true`
+- `outputs = setOf(DefuddleOutput.MARKDOWN)` or another explicit non-empty output set
 - `debug = false`
 
 Removal and standardization policy are internal. Callers should not choose
@@ -94,12 +94,12 @@ After parse internals, strip:
 - `[x]` `srcSet` normalizes to `srcset`.
 - `[x]` noscript image fallback promotes real image.
 - `[x]` unsafe elements and attributes are stripped after schema extraction.
-- `[x]` profile timings are present when debug is requested.
+- `[x]` parse timing is present when debug is requested.
 
 ## Acceptance Gate
 
-- `[x]` A simple article fixture returns non-empty `contentHtml`.
-- `[x]` `contentMarkdown` can be empty or primitive at this phase, but the field exists when requested.
+- `[x]` A simple article fixture returns non-empty `content.html` when HTML is requested.
+- `[x]` `content.markdown` can be empty or primitive at this phase, but the field exists when requested.
 - `[x]` Retry behavior has unit coverage.
 
 ## Commit Slices

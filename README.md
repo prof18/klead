@@ -5,15 +5,35 @@ Kotlin/JVM port of Defuddle focused on static HTML extraction and clean Markdown
 ## Usage
 
 ```kotlin
-val result = Defuddle.parseHtml(html = html, url = url)
-println(result.contentMarkdown)
+val result = Defuddle.parseHtml(
+    html = html,
+    url = url,
+    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+)
+println(result.content.requireMarkdown())
 ```
 
 Coroutine entry point:
 
 ```kotlin
-val result = Defuddle.parseHtmlAsync(html = html, url = url)
-println(result.contentMarkdown)
+val result = Defuddle.parseHtmlAsync(
+    html = html,
+    url = url,
+    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+)
+println(result.content.requireMarkdown())
+```
+
+Request only the outputs you need:
+
+```kotlin
+val result = Defuddle.parseHtml(
+    html = html,
+    url = url,
+    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+)
+
+println(result.content.markdown)
 ```
 
 Debug output:
@@ -22,10 +42,14 @@ Debug output:
 val result = Defuddle.parseHtml(
     html = html,
     url = url,
-    options = DefuddleOptions(debug = true),
+    options = DefuddleOptions(
+        outputs = setOf(DefuddleOutput.MARKDOWN),
+        debug = true,
+    ),
 )
 
 val removals = result.debug["removals"] as? List<*>
+val parseTimeMillis = result.debug["parseTimeMillis"] as? Long
 removals?.forEach(::println)
 ```
 
@@ -44,6 +68,7 @@ val result = Defuddle.parseHtml(
     html = html,
     url = "https://example.com/story",
     options = DefuddleOptions(
+        outputs = setOf(DefuddleOutput.MARKDOWN),
         customExtractors = listOf(MyExtractor),
         debug = true,
     ),
@@ -54,7 +79,7 @@ val result = Defuddle.parseHtml(
 
 - Static HTML input plus source URL.
 - Clean Markdown is the primary output.
-- Cleaned HTML remains available as secondary/debug output.
+- Cleaned HTML is available when requested through `DefuddleOptions.outputs`.
 - `parseHtml` is a blocking compatibility wrapper; `parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
 - Fetching is out of scope; callers provide HTML and source URL.
 - Domain-scoped extractors can guide content selection and cleanup before the

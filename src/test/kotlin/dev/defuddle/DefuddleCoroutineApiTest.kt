@@ -23,11 +23,12 @@ class DefuddleCoroutineApiTest {
             html = "<html><body></body></html>",
             url = "https://direct.example/story/1",
             options = DefuddleOptions(
+                outputs = setOf(DefuddleOutput.MARKDOWN),
                 customExtractors = listOf(extractor),
             ),
         )
 
-        assertTrue(result.contentMarkdown.contains("Direct async content."))
+        assertTrue(result.content.requireMarkdown().contains("Direct async content."))
     }
 
     @Test
@@ -36,6 +37,7 @@ class DefuddleCoroutineApiTest {
             html = "<html><body><p>Generic content should lose.</p></body></html>",
             url = "https://sync.example/article",
             options = DefuddleOptions(
+                outputs = setOf(DefuddleOutput.MARKDOWN),
                 customExtractors = listOf(
                     object : Extractor {
                         override val id = "sync-bridge-test"
@@ -50,6 +52,6 @@ class DefuddleCoroutineApiTest {
             ),
         )
 
-        assertTrue(result.contentMarkdown.contains("Direct extractor content."))
+        assertTrue(result.content.requireMarkdown().contains("Direct extractor content."))
     }
 }
