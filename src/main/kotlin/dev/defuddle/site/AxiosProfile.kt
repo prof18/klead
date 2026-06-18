@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object AxiosProfile : SiteExtractor {
+object AxiosProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "axios"
     override val domains: Set<String> = setOf("axios.com")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object TechCrunchProfile : SiteExtractor {
+object TechCrunchProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "techcrunch"
     override val domains: Set<String> = setOf("techcrunch.com")
     override val postContentRemoveSelectors: List<String> = listOf(

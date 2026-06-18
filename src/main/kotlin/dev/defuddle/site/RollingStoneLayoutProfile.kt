@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object RollingStoneLayoutProfile : SiteExtractor {
+object RollingStoneLayoutProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "rolling-stone-layout"
     override val domains: Set<String> = setOf("rollingstone.com")
     override val postContentRemoveSelectors: List<String> = listOf(

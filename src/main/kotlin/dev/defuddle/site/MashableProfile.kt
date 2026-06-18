@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object MashableProfile : SiteExtractor {
+object MashableProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "mashable"
     override val domains: Set<String> = setOf("mashable.com")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object ValnetProfile : SiteExtractor {
+object ValnetProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "valnet"
     override val domains: Set<String> = setOf("screenrant.com", "androidpolice.com", "polygon.com")
     override val postContentRemoveSelectors: List<String> = listOf(

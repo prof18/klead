@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object BBCProfile : SiteExtractor {
+object BBCProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "bbc"
     override val domains: Set<String> = setOf("bbc.com")
     override val postContentRemoveSelectors: List<String> = listOf(

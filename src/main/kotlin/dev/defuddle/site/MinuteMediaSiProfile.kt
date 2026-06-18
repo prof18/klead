@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object MinuteMediaSiProfile : SiteExtractor {
+object MinuteMediaSiProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "minute-media-si"
     override val domains: Set<String> = setOf("si.com")
     override val contentSelectors: List<String> = listOf(

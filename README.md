@@ -29,11 +29,11 @@ val removals = result.debug["removals"] as? List<*>
 removals?.forEach(::println)
 ```
 
-Custom site profiles can add domain-scoped content and removal selectors without
+Custom extractors can add domain-scoped content and removal selectors without
 making those selectors global:
 
 ```kotlin
-object MySiteExtractor : SiteExtractor {
+object MyExtractor : Extractor {
     override val id = "my-site"
     override val domains = setOf("example.com")
     override val contentSelectors = listOf("article.story")
@@ -44,7 +44,7 @@ val result = Defuddle.parseHtml(
     html = html,
     url = "https://example.com/story",
     options = DefuddleOptions(
-        siteExtractors = DefaultSiteExtractors.all + MySiteExtractor,
+        extractors = DefaultExtractors.all + MyExtractor,
         debug = true,
     ),
 )
@@ -55,9 +55,9 @@ val result = Defuddle.parseHtml(
 - Static HTML input plus source URL.
 - Clean Markdown is the primary output.
 - Cleaned HTML remains available as secondary/debug output.
-- `parseHtml` is a blocking compatibility wrapper; `parseHtmlAsync` runs parsing on `DefuddleOptions.parseDispatcher`, which defaults to `Dispatchers.Default`.
+- `parseHtml` is a blocking compatibility wrapper; `parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
 - Network-capable extractors use suspend injected HTTP clients. No built-in HTTP client is shipped.
-- Domain-scoped site profiles can guide content selection and cleanup before the
+- Domain-scoped extractors can guide content selection and cleanup before the
   generic fallback pipeline runs.
 - No JavaScript execution, WebView, browser DOM, GraalJS, Compose UI, or flexmark HTML-to-Markdown conversion in the production pipeline.
 - Math source data is preserved where practical, but MathML/LaTeX conversion and rendered math fidelity are out of scope.

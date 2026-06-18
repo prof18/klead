@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object GamingOnLinuxProfile : SiteExtractor {
+object GamingOnLinuxProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "gamingonlinux"
     override val domains: Set<String> = setOf("gamingonlinux.com")
     override val postContentRemoveSelectors: List<String> = listOf(

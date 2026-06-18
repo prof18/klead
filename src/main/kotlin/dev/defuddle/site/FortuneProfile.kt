@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object FortuneProfile : SiteExtractor {
+object FortuneProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "fortune"
     override val domains: Set<String> = setOf("fortune.com")
     override val postContentRemoveSelectors: List<String> = listOf(

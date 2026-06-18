@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object NineToFiveProfile : SiteExtractor {
+object NineToFiveProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "nine-to-five"
     override val domains: Set<String> = setOf("9to5google.com", "9to5mac.com", "9to5linux.com")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object PianetaBasketProfile : SiteExtractor {
+object PianetaBasketProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "pianetabasket"
     override val domains: Set<String> = setOf("pianetabasket.com")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object EntrepreneurProfile : SiteExtractor {
+object EntrepreneurProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "entrepreneur"
     override val domains: Set<String> = setOf("entrepreneur.com")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -15,7 +15,7 @@ data class DetectedContent(
 data class ContentDetectionDebug(
     val selectedSelector: String,
     val candidates: List<ContentCandidateDebug>,
-    val profileContentSelector: String? = null,
+    val extractorContentSelector: String? = null,
 )
 
 data class ContentCandidateDebug(
@@ -59,7 +59,7 @@ object MainContentDetector {
                 element = candidate.element,
                 selector = candidate.selector,
                 candidates = listOf(candidate),
-                profileContentSelector = candidate.selector,
+                extractorContentSelector = candidate.selector,
             )
         }
 
@@ -251,14 +251,14 @@ object MainContentDetector {
         element: Element,
         selector: String,
         candidates: List<Candidate>,
-        profileContentSelector: String? = null,
+        extractorContentSelector: String? = null,
     ): DetectedContent =
         DetectedContent(
             element = element,
             selectedSelector = selector,
             debug = ContentDetectionDebug(
                 selectedSelector = selector,
-                profileContentSelector = profileContentSelector,
+                extractorContentSelector = extractorContentSelector,
                 candidates = candidates.map {
                     ContentCandidateDebug(
                         selector = it.selector,

@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object MotorsportProfile : SiteExtractor {
+object MotorsportProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "motorsport"
     override val domains: Set<String> = setOf("motorsport.com")
     override val contentSelectors: List<String> = listOf(

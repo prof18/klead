@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object PopCultureProfile : SiteExtractor {
+object PopCultureProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "popculture"
     override val domains: Set<String> = setOf("popculture.com")
     override val postContentRemoveSelectors: List<String> = listOf(

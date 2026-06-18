@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object NASAProfile : SiteExtractor {
+object NASAProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "nasa"
     override val domains: Set<String> = setOf("science.nasa.gov")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -1,50 +1,46 @@
 package dev.defuddle.site
 
+import dev.defuddle.extractors.Extractor
+import dev.defuddle.extractors.ExtractorContext
+import dev.defuddle.extractors.ExtractorRegistry
 import org.jsoup.Jsoup
+import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SiteExtractorRegistryTest {
+class ExtractorMatchingTest {
     @Test
     fun `registry matches host and subdomains by priority`() {
-        val low = TestSiteExtractor(id = "low", domains = setOf("example.com"), priority = 1)
-        val high = TestSiteExtractor(id = "high", domains = setOf("example.com"), priority = 10)
-        val other = TestSiteExtractor(id = "other", domains = setOf("other.com"))
-        val context = SiteExtractionContext(
-            url = "https://www.example.com/story",
-            host = "www.example.com",
-            document = Jsoup.parse("<article><p>Story</p></article>"),
-        )
+        val low = TestExtractor(id = "low", domains = setOf("example.com"), priority = 1)
+        val high = TestExtractor(id = "high", domains = setOf("example.com"), priority = 10)
+        val other = TestExtractor(id = "other", domains = setOf("other.com"))
+        val context = context("https://www.example.com/story", "<article><p>Story</p></article>")
 
-        val resolved = SiteExtractorRegistry(listOf(low, high, other)).resolve(context)
+        val resolved = ExtractorRegistry(listOf(low, high, other)).resolve(context)
 
         assertEquals(listOf("high", "low"), resolved.map { it.id })
     }
 
     @Test
     fun `registry ignores unrelated hosts`() {
-        val registry = SiteExtractorRegistry(
-            listOf(TestSiteExtractor(id = "profile", domains = setOf("example.com"))),
+        val registry = ExtractorRegistry(
+            listOf(TestExtractor(id = "profile", domains = setOf("example.com"))),
         )
-        val context = SiteExtractionContext(
-            url = "https://unrelated.test/story",
-            host = "unrelated.test",
-            document = Jsoup.parse("<article><p>Story</p></article>"),
-        )
+        val context = context("https://unrelated.test/story", "<article><p>Story</p></article>")
 
         assertTrue(registry.resolve(context).isEmpty())
     }
 
     @Test
     fun `registry can match canonical url host when source host is synthetic`() {
-        val registry = SiteExtractorRegistry(
-            listOf(TestSiteExtractor(id = "profile", domains = setOf("example.com"))),
+        val registry = ExtractorRegistry(
+            listOf(TestExtractor(id = "profile", domains = setOf("example.com"))),
         )
         val document = Jsoup.parse(
             """<html><head><link rel="canonical" href="https://www.example.com/story"></head></html>""",
         )
-        val context = SiteExtractionContext(
+        val context = ExtractorContext(
             url = "https://example.com-story-fixture",
             host = "example.com-story-fixture",
             document = document,
@@ -55,9 +51,16 @@ class SiteExtractorRegistryTest {
         assertEquals(listOf("profile"), resolved.map { it.id })
     }
 
-    private data class TestSiteExtractor(
+    private data class TestExtractor(
         override val id: String,
         override val domains: Set<String>,
         override val priority: Int = 0,
-    ) : SiteExtractor
+    ) : Extractor
+
+    private fun context(url: String, html: String): ExtractorContext =
+        ExtractorContext(
+            url = url,
+            host = URI(url).host,
+            document = Jsoup.parse(html),
+        )
 }

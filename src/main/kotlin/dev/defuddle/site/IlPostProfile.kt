@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object IlPostProfile : SiteExtractor {
+object IlPostProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "ilpost"
     override val domains: Set<String> = setOf("ilpost.it")
     override val postContentRemoveSelectors: List<String> = listOf(

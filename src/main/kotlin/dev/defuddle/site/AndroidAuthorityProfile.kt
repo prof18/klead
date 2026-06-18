@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object AndroidAuthorityProfile : SiteExtractor {
+object AndroidAuthorityProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "android-authority"
     override val domains: Set<String> = setOf("androidauthority.com")
     override val postContentRemoveSelectors: List<String> = listOf(

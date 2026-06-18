@@ -16,13 +16,8 @@ import dev.defuddle.metadata.MetadataExtractor
 import dev.defuddle.metadata.PageMetadataExtractor
 import dev.defuddle.removal.RemovalPipeline
 import dev.defuddle.removal.RemovalRecord
-import dev.defuddle.site.DefaultSiteExtractors
-import dev.defuddle.site.ProfileRemovalPipeline
-import dev.defuddle.site.SiteExtractionContext
-import dev.defuddle.site.SiteExtractor
-import dev.defuddle.site.SiteExtractorRegistry
+import dev.defuddle.site.ExtractorRemovalPipeline
 import dev.defuddle.standardize.HtmlStandardizer
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -38,7 +33,6 @@ data class DefuddleOptions(
     val extractors: List<Extractor> = DefaultExtractors.all,
     val disabledExtractors: Set<String> = emptySet(),
     val httpClient: DefuddleHttpClient? = null,
-    val parseDispatcher: CoroutineDispatcher = Dispatchers.Default,
     val removeExactSelectors: Boolean = true,
     val removePartialSelectors: Boolean = true,
     val removeHiddenElements: Boolean = true,
@@ -51,7 +45,6 @@ data class DefuddleOptions(
     val separateMarkdown: Boolean = true,
     val debug: Boolean = false,
     val profile: Boolean = false,
-    val siteExtractors: List<SiteExtractor> = DefaultSiteExtractors.all,
 )
 
 data class DefuddleResult(
@@ -88,18 +81,20 @@ object Defuddle {
         html: String,
         url: String,
         options: DefuddleOptions = DefuddleOptions(),
-    ): DefuddleResult = withContext(options.parseDispatcher) {
+    ): DefuddleResult = withContext(Dispatchers.Default) {
         val timed = measureTimedValue {
             val document = Jsoup.parse(html, url)
             document.outputSettings().prettyPrint(false)
             prepareDocument(document)
-            val appliedExtractor = ExtractorRegistry(options.extractors).extract(
-                document = document,
+            val extractorContext = ExtractorContext(
                 url = url,
-                context = ExtractorContext(
-                    httpClient = options.httpClient,
-                    disabledExtractors = options.disabledExtractors,
-                ),
+                host = url.hostOrNull(),
+                document = document,
+                httpClient = options.httpClient,
+            )
+            val appliedExtractor = ExtractorRegistry(options.extractors).extract(
+                context = extractorContext,
+                disabledExtractors = options.disabledExtractors,
             )
             val parseDocument = appliedExtractor?.result?.contentHtml
                 ?.let { Jsoup.parseBodyFragment(it, url).also { parsed -> parsed.outputSettings().prettyPrint(false) } }
@@ -146,14 +141,18 @@ object Defuddle {
         options: DefuddleOptions,
         appliedExtractor: AppliedExtractor?,
     ): DefuddleResult {
-        val siteContext = SiteExtractionContext(
+        val extractorContext = ExtractorContext(
             url = url,
             host = url.hostOrNull(),
             document = document,
+            httpClient = options.httpClient,
         )
-        val siteProfiles = SiteExtractorRegistry(options.siteExtractors).resolve(siteContext)
+        val matchedExtractors = ExtractorRegistry(options.extractors).resolve(
+            context = extractorContext,
+            disabledExtractors = options.disabledExtractors,
+        )
         val removals = mutableListOf<RemovalRecord>()
-        ProfileRemovalPipeline.applyPreContentRemovals(document, siteProfiles, removals)
+        ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
 
         val metaTags = MetadataExtractor.collectMetaTags(document)
         val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
@@ -161,7 +160,7 @@ object Defuddle {
             document = document,
             options = options,
             schemaText = schemaOrg.contentText(),
-            preferredSelectors = siteProfiles.flatMap { it.contentSelectors },
+            preferredSelectors = matchedExtractors.flatMap { it.contentSelectors },
         )
         val content = detected.element
         stripUnsafe(content)
@@ -173,9 +172,9 @@ object Defuddle {
             schemaOrg = schemaOrg,
         )
         RemovalPipeline.apply(content, options, removals, metadata.image)
-        ProfileRemovalPipeline.applyPostContentRemovals(content, siteProfiles, removals)
-        val contentSiteContext = siteContext.copy(document = content.ownerDocument() ?: document)
-        siteProfiles.forEach { it.postProcess(content, contentSiteContext, removals) }
+        ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
+        val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
+        matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
         if (options.standardize) {
             HtmlStandardizer.apply(content, metadata.title)
         }
@@ -199,7 +198,7 @@ object Defuddle {
             schemaOrgData = schemaOrg.items,
             extractor = appliedExtractor?.name,
             variables = appliedExtractor?.result?.variables.orEmpty(),
-            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals, siteProfiles.map { it.id }),
+            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals, matchedExtractors.map { it.id }),
         ).withExtractorMetadata(appliedExtractor)
     }
 
@@ -227,18 +226,18 @@ object Defuddle {
         detectionDebug: dev.defuddle.content.ContentDetectionDebug,
         schemaDiagnostics: List<String>,
         removals: List<RemovalRecord>,
-        siteExtractorIds: List<String>,
+        extractorIds: List<String>,
     ): Map<String, Any?> {
         val debug = mutableMapOf<String, Any?>(
             "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
         )
         if (options.debug) {
             debug["selectedContentSelector"] = detectionDebug.selectedSelector
-            if (siteExtractorIds.isNotEmpty()) {
-                debug["siteExtractorIds"] = siteExtractorIds
+            if (extractorIds.isNotEmpty()) {
+                debug["extractorIds"] = extractorIds
             }
-            detectionDebug.profileContentSelector?.let {
-                debug["profileContentSelector"] = it
+            detectionDebug.extractorContentSelector?.let {
+                debug["extractorContentSelector"] = it
             }
             debug["contentCandidates"] = detectionDebug.candidates.map {
                 mapOf(
@@ -251,9 +250,9 @@ object Defuddle {
             }
             if (removals.isNotEmpty()) {
                 debug["removals"] = removals
-                val profileRemovals = removals.filter { it.step.startsWith("removeSite") }
-                if (profileRemovals.isNotEmpty()) {
-                    debug["profileRemovals"] = profileRemovals
+                val extractorRemovals = removals.filter { it.step.startsWith("removeExtractor") }
+                if (extractorRemovals.isNotEmpty()) {
+                    debug["extractorRemovals"] = extractorRemovals
                 }
             }
         }

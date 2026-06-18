@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object FutureProfile : SiteExtractor {
+object FutureProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "future"
     override val domains: Set<String> = setOf("androidcentral.com")
     override val postContentRemoveSelectors: List<String> = listOf(

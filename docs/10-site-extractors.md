@@ -1,4 +1,4 @@
-# 10 Site Extractors
+# 10 Extractors
 
 ## Goal
 
@@ -8,65 +8,69 @@ This is part of the broad port target, not an optional feature family. The work 
 
 ## Policy
 
-- Generic extraction must work without site extractors.
+- Generic extraction must work without custom extractors.
 - Extractors should feed the same cleanup and Markdown pipeline where possible.
-- Domain/site profile selectors must stay scoped to matching hosts.
+- Domain-scoped selectors must stay scoped to matching hosts.
 - Async/network extractors must be behind options and suspend injected HTTP clients.
 - Do not let extractor work block core Markdown output.
 - Extractors that cannot be ported exactly must have a documented reason and fixture coverage for the closest practical behavior.
 
-## Domain-Scoped Profiles
+## Unified Extractor Type
 
-Site profiles are lightweight, synchronous selectors that run alongside the
-generic detector and cleanup pipeline. Use them for publisher-specific scars:
-branded widgets, exact layout classes, known recirculation modules, and strong
-content containers.
+Extractors are the single extension type. They can provide lightweight
+domain-scoped selectors that run alongside the generic detector and cleanup
+pipeline, or they can return direct extracted content for pages that need
+special handling. Use selector hooks for publisher-specific scars: branded
+widgets, exact layout classes, known recirculation modules, and strong content
+containers.
 
 ```kotlin
-interface SiteExtractor {
+interface Extractor {
     val id: String
-    val domains: Set<String>
+    val domains: Set<String> get() = emptySet()
     val priority: Int get() = 0
 
-    fun matches(context: SiteExtractionContext): Boolean
+    fun matches(context: ExtractorContext): Boolean
 
     val contentSelectors: List<String> get() = emptyList()
     val preContentRemoveSelectors: List<String> get() = emptyList()
     val postContentRemoveSelectors: List<String> get() = emptyList()
 
-    fun postProcess(content: Element, context: SiteExtractionContext, debug: MutableList<RemovalRecord>) = Unit
+    suspend fun extract(context: ExtractorContext): ExtractorResult? = null
+
+    fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) = Unit
 }
 ```
 
-Default profiles are exposed through `DefaultSiteExtractors.all` and can be
-replaced or extended with `DefuddleOptions.siteExtractors`:
+Default extractors are exposed through `DefaultExtractors.all` and can be
+replaced or extended with `DefuddleOptions.extractors`:
 
 ```kotlin
 Defuddle.parseHtml(
     html = html,
     url = url,
     options = DefuddleOptions(
-        siteExtractors = DefaultSiteExtractors.all + MySiteExtractor,
+        extractors = DefaultExtractors.all + MyExtractor,
     ),
 )
 ```
 
 Pipeline order:
 
-1. Resolve matching profiles from the source URL host.
+1. Resolve matching extractors from the source URL host and DOM signals.
 2. Apply matching `preContentRemoveSelectors` to the working document.
-3. Try matching profile `contentSelectors` before generic scoring.
+3. Try matching extractor `contentSelectors` before generic scoring.
 4. Run the generic removal pipeline.
 5. Apply matching `postContentRemoveSelectors`.
-6. Run profile `postProcess`, standardization, and Markdown conversion.
+6. Run extractor `postProcess`, standardization, and Markdown conversion.
 
-When `debug = true`, profile-aware runs can report:
+When `debug = true`, extractor-aware runs can report:
 
-- `siteExtractorIds`
-- `profileContentSelector`
-- `profileRemovals`
+- `extractorIds`
+- `extractorContentSelector`
+- `extractorRemovals`
 
-The initial built-in profile slice covers Motorsport, SI/MinuteMedia,
+The initial built-in extractor slice covers Motorsport, SI/MinuteMedia,
 PhoneArena, Android Authority, Rolling Stone, PopCulture, Valnet, GameSpot,
 GamingOnLinux, Axios, Business Insider, Mashable, BBC, BuzzFeed, Fortune,
 Entrepreneur, Future/Android Central, Variety, MacRumors,
@@ -76,7 +80,7 @@ WordPress-family selectors that were previously global exact removals.
 
 The remaining global exact selectors are generic structural, comments,
 newsletter, metadata, byline, ad, share, and related-content rules. Treat new
-publisher-specific cleanup as profile-scoped by default.
+publisher-specific cleanup as extractor-scoped by default.
 
 ## Registry
 
@@ -85,11 +89,6 @@ Implement a small registry:
 ```kotlin
 interface DefuddleHttpClient {
     suspend fun get(url: String): String
-}
-
-interface Extractor {
-    fun canExtract(document: Document, url: String): Boolean
-    suspend fun extract(document: Document, url: String, context: ExtractorContext): ExtractorResult
 }
 ```
 
@@ -100,7 +99,10 @@ The registry should:
 - expose extractor type in result
 - be testable without network
 
-`Defuddle.parseHtmlAsync` runs the parse on `DefuddleOptions.parseDispatcher`, defaulting to `Dispatchers.Default`. `Defuddle.parseHtml` remains a blocking compatibility wrapper around the suspend path. Injected HTTP clients should use their own non-blocking APIs or switch blocking I/O to an appropriate dispatcher internally.
+`Defuddle.parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
+`Defuddle.parseHtml` remains a blocking compatibility wrapper around the suspend
+path. Injected HTTP clients should use their own non-blocking APIs or switch
+blocking I/O to an appropriate dispatcher internally.
 
 ## Suggested Priority
 

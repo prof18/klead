@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object WordPressFamilyProfile : SiteExtractor {
+object WordPressFamilyProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "wordpress-family"
     override val domains: Set<String> = setOf("berlinomagazine.com", "ilmitte.com", "basketuniverso.it")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -15,7 +15,7 @@ class ExtractorRegistryTest {
         val document = Jsoup.parse("<main></main>", "https://example.com")
         val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
 
-        val result = registry.extract(document, "https://example.com", ExtractorContext())
+        val result = registry.extract(document.context("https://example.com"))
 
         assertEquals("first", result?.name)
     }
@@ -26,9 +26,8 @@ class ExtractorRegistryTest {
         val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
 
         val result = registry.extract(
-            document = document,
-            url = "https://example.com",
-            context = ExtractorContext(disabledExtractors = setOf("first")),
+            context = document.context("https://example.com"),
+            disabledExtractors = setOf("first"),
         )
 
         assertEquals("second", result?.name)
@@ -41,10 +40,10 @@ class ExtractorRegistryTest {
             "https://en.wikipedia.org/wiki/Test",
         )
 
-        val result = WikipediaExtractor.extract(document, "https://en.wikipedia.org/wiki/Test", ExtractorContext())
+        val result = WikipediaExtractor.extract(document.context("https://en.wikipedia.org/wiki/Test"))
 
-        assertEquals("#mw-content-text", result.contentSelector)
-        assertEquals("Wikipedia", result.metadata.site)
+        assertEquals("#mw-content-text", result?.contentSelector)
+        assertEquals("Wikipedia", result?.metadata?.site)
     }
 
     @Test
@@ -55,16 +54,12 @@ class ExtractorRegistryTest {
             options = DefuddleOptions(
                 extractors = listOf(
                     object : Extractor {
-                        override val name = "direct-test"
+                        override val id = "direct-test"
 
-                        override fun canExtract(document: org.jsoup.nodes.Document, url: String) =
-                            url.contains("direct.example")
+                        override fun matches(context: ExtractorContext): Boolean =
+                            context.url.orEmpty().contains("direct.example")
 
-                        override suspend fun extract(
-                            document: org.jsoup.nodes.Document,
-                            url: String,
-                            context: ExtractorContext,
-                        ) = ExtractorResult(
+                        override suspend fun extract(context: ExtractorContext) = ExtractorResult(
                             contentHtml = "<article><h2>Direct Title</h2><p>Direct <strong>content</strong>.</p></article>",
                             variables = mapOf("source" to "fixture"),
                         )
@@ -96,17 +91,13 @@ class ExtractorRegistryTest {
                 httpClient = client,
                 extractors = listOf(
                     object : Extractor {
-                        override val name = "network-test"
+                        override val id = "network-test"
 
-                        override fun canExtract(document: org.jsoup.nodes.Document, url: String) =
-                            url.contains("network.example")
+                        override fun matches(context: ExtractorContext): Boolean =
+                            context.url.orEmpty().contains("network.example")
 
-                        override suspend fun extract(
-                            document: org.jsoup.nodes.Document,
-                            url: String,
-                            context: ExtractorContext,
-                        ): ExtractorResult {
-                            val html = context.httpClient?.get("$url/transcript").orEmpty()
+                        override suspend fun extract(context: ExtractorContext): ExtractorResult {
+                            val html = context.httpClient?.get("${context.url}/transcript").orEmpty()
                             return ExtractorResult(contentHtml = html)
                         }
                     },
@@ -121,14 +112,13 @@ class ExtractorRegistryTest {
 
     private fun namedExtractor(name: String): Extractor =
         object : Extractor {
-            override val name = name
+            override val id = name
 
-            override fun canExtract(document: org.jsoup.nodes.Document, url: String) = true
+            override fun matches(context: ExtractorContext) = true
 
-            override suspend fun extract(
-                document: org.jsoup.nodes.Document,
-                url: String,
-                context: ExtractorContext,
-            ) = ExtractorResult(variables = mapOf("name" to name))
+            override suspend fun extract(context: ExtractorContext) = ExtractorResult(variables = mapOf("name" to name))
         }
+
+    private fun org.jsoup.nodes.Document.context(url: String): ExtractorContext =
+        ExtractorContext(url = url, host = java.net.URI(url).host, document = this)
 }

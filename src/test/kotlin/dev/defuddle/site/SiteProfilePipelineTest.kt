@@ -2,6 +2,7 @@ package dev.defuddle.site
 
 import dev.defuddle.Defuddle
 import dev.defuddle.DefuddleOptions
+import dev.defuddle.extractors.Extractor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -11,7 +12,7 @@ import kotlin.test.assertTrue
 class SiteProfilePipelineTest {
     @Test
     fun `profile content selector beats noisy generic main`() {
-        val profile = TestSiteExtractor(
+        val profile = TestExtractor(
             contentSelectors = listOf(".preferred-story"),
             domains = setOf("example.com"),
         )
@@ -30,18 +31,18 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(siteExtractors = listOf(profile), debug = true),
+            options = DefuddleOptions(extractors = listOf(profile), debug = true),
         )
 
         assertTrue(result.contentMarkdown.contains("This preferred article paragraph"))
         assertFalse(result.contentMarkdown.contains("Unrelated recommendation text"))
         assertEquals(".preferred-story", result.debug["selectedContentSelector"])
-        assertEquals(".preferred-story", result.debug["profileContentSelector"])
+        assertEquals(".preferred-story", result.debug["extractorContentSelector"])
     }
 
     @Test
     fun `profile content selector chooses strongest matching element`() {
-        val profile = TestSiteExtractor(
+        val profile = TestExtractor(
             contentSelectors = listOf("article"),
             domains = setOf("example.com"),
         )
@@ -61,18 +62,18 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(siteExtractors = listOf(profile), debug = true),
+            options = DefuddleOptions(extractors = listOf(profile), debug = true),
         )
 
         assertTrue(result.contentMarkdown.contains("The primary article paragraph"))
         assertFalse(result.contentMarkdown.contains("Teaser article paragraph"))
         assertEquals("article", result.debug["selectedContentSelector"])
-        assertEquals("article", result.debug["profileContentSelector"])
+        assertEquals("article", result.debug["extractorContentSelector"])
     }
 
     @Test
     fun `weak profile content selector falls back to generic scoring`() {
-        val profile = TestSiteExtractor(
+        val profile = TestExtractor(
             contentSelectors = listOf(".weak-preferred"),
             domains = setOf("example.com"),
         )
@@ -88,18 +89,18 @@ class SiteProfilePipelineTest {
                 </main>
             """.trimIndent(),
             url = "https://example.com/story",
-            options = DefuddleOptions(siteExtractors = listOf(profile), debug = true),
+            options = DefuddleOptions(extractors = listOf(profile), debug = true),
         )
 
         assertTrue(result.contentMarkdown.contains("This generic article paragraph"))
         assertFalse(result.contentMarkdown.contains("Tiny promo"))
         assertEquals("article", result.debug["selectedContentSelector"])
-        assertFalse(result.debug.containsKey("profileContentSelector"))
+        assertFalse(result.debug.containsKey("extractorContentSelector"))
     }
 
     @Test
     fun `profile selectors only run for matching host and are reported in debug`() {
-        val profile = TestSiteExtractor(
+        val profile = TestExtractor(
             postContentRemoveSelectors = listOf(".site-chrome"),
             domains = setOf("example.com"),
         )
@@ -113,20 +114,20 @@ class SiteProfilePipelineTest {
         val matching = Defuddle.parseHtml(
             html = html,
             url = "https://example.com/story",
-            options = DefuddleOptions(siteExtractors = listOf(profile), debug = true),
+            options = DefuddleOptions(extractors = listOf(profile), debug = true),
         )
         val unrelated = Defuddle.parseHtml(
             html = html,
             url = "https://unrelated.test/story",
-            options = DefuddleOptions(siteExtractors = listOf(profile), debug = true),
+            options = DefuddleOptions(extractors = listOf(profile), debug = true),
         )
 
         assertFalse(matching.contentMarkdown.contains("Site-specific chrome"))
         assertTrue(unrelated.contentMarkdown.contains("Site-specific chrome"))
-        assertEquals(listOf("test-profile"), matching.debug["siteExtractorIds"])
-        assertNotNull(matching.debug["profileRemovals"])
-        assertFalse(unrelated.debug.containsKey("siteExtractorIds"))
-        assertFalse(unrelated.debug.containsKey("profileRemovals"))
+        assertEquals(listOf("test-profile"), matching.debug["extractorIds"])
+        assertNotNull(matching.debug["extractorRemovals"])
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
+        assertFalse(unrelated.debug.containsKey("extractorRemovals"))
     }
 
     @Test
@@ -152,8 +153,8 @@ class SiteProfilePipelineTest {
 
         assertFalse(matching.contentMarkdown.contains("Related Roundup"))
         assertTrue(unrelated.contentMarkdown.contains("Related Roundup"))
-        assertEquals(listOf("macrumors"), matching.debug["siteExtractorIds"])
-        assertFalse(unrelated.debug.containsKey("siteExtractorIds"))
+        assertEquals(listOf("macrumors"), matching.debug["extractorIds"])
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
 
     @Test
@@ -183,8 +184,8 @@ class SiteProfilePipelineTest {
 
         assertFalse(matching.contentMarkdown.contains("Riproduzione riservata"))
         assertTrue(unrelated.contentMarkdown.contains("Riproduzione riservata"))
-        assertEquals(listOf("citynews"), matching.debug["siteExtractorIds"])
-        assertFalse(unrelated.debug.containsKey("siteExtractorIds"))
+        assertEquals(listOf("citynews"), matching.debug["extractorIds"])
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
 
     @Test
@@ -210,8 +211,8 @@ class SiteProfilePipelineTest {
 
         assertFalse(matching.contentMarkdown.contains("TechCrunch event promo"))
         assertTrue(unrelated.contentMarkdown.contains("TechCrunch event promo"))
-        assertEquals(listOf("techcrunch"), matching.debug["siteExtractorIds"])
-        assertFalse(unrelated.debug.containsKey("siteExtractorIds"))
+        assertEquals(listOf("techcrunch"), matching.debug["extractorIds"])
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
 
     @Test
@@ -239,8 +240,8 @@ class SiteProfilePipelineTest {
 
         assertFalse(matching.contentMarkdown.contains("Story text Size Links"))
         assertTrue(unrelated.contentMarkdown.contains("Story text Size Links"))
-        assertEquals(listOf("ars-technica"), matching.debug["siteExtractorIds"])
-        assertFalse(unrelated.debug.containsKey("siteExtractorIds"))
+        assertEquals(listOf("ars-technica"), matching.debug["extractorIds"])
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
 
     @Test
@@ -269,8 +270,8 @@ class SiteProfilePipelineTest {
         assertFalse(matching.contentMarkdown.contains("Older post"))
         assertTrue(unrelated.contentMarkdown.contains("Link copied to clipboard"))
         assertTrue(unrelated.contentMarkdown.contains("Older post"))
-        assertEquals(listOf("blogger"), matching.debug["siteExtractorIds"])
-        assertFalse(unrelated.debug.containsKey("siteExtractorIds"))
+        assertEquals(listOf("blogger"), matching.debug["extractorIds"])
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
 
     @Test
@@ -299,8 +300,8 @@ class SiteProfilePipelineTest {
         assertFalse(matching.contentMarkdown.contains("4 Likes"))
         assertTrue(unrelated.contentMarkdown.contains("Article taken from"))
         assertTrue(unrelated.contentMarkdown.contains("4 Likes"))
-        assertEquals(listOf("gamingonlinux"), matching.debug["siteExtractorIds"])
-        assertFalse(unrelated.debug.containsKey("siteExtractorIds"))
+        assertEquals(listOf("gamingonlinux"), matching.debug["extractorIds"])
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
 
     @Test
@@ -329,7 +330,7 @@ class SiteProfilePipelineTest {
             assertTrue(result.contentMarkdown.contains("The actual article body should stay"), url)
             assertFalse(result.contentMarkdown.contains("Substack comments chrome"), url)
             assertFalse(result.contentMarkdown.contains("Substack top posts chrome"), url)
-            assertTrue((result.debug["siteExtractorIds"] as List<*>).contains("substack"), url)
+            assertTrue((result.debug["extractorIds"] as List<*>).contains("substack"), url)
         }
     }
 
@@ -414,17 +415,17 @@ class SiteProfilePipelineTest {
 
             assertFalse(matching.contentMarkdown.contains(case.removedText), case.profileId)
             assertTrue(unrelated.contentMarkdown.contains(case.removedText), case.profileId)
-            assertTrue((matching.debug["siteExtractorIds"] as List<*>).contains(case.profileId), case.profileId)
-            assertFalse(unrelated.debug.containsKey("siteExtractorIds"), case.profileId)
+            assertTrue((matching.debug["extractorIds"] as List<*>).contains(case.profileId), case.profileId)
+            assertFalse(unrelated.debug.containsKey("extractorIds"), case.profileId)
         }
     }
 
-    private data class TestSiteExtractor(
+    private data class TestExtractor(
         override val id: String = "test-profile",
         override val domains: Set<String>,
         override val contentSelectors: List<String> = emptyList(),
         override val postContentRemoveSelectors: List<String> = emptyList(),
-    ) : SiteExtractor
+    ) : Extractor
 
     private data class ProfileIsolationCase(
         val url: String,

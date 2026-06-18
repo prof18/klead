@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object BloggerProfile : SiteExtractor {
+object BloggerProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "blogger"
     override val domains: Set<String> = setOf("googleblog.com", "blogspot.com")
     override val postContentRemoveSelectors: List<String> = listOf(

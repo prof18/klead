@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object BuzzFeedProfile : SiteExtractor {
+object BuzzFeedProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "buzzfeed"
     override val domains: Set<String> = setOf("buzzfeed.com")
     override val postContentRemoveSelectors: List<String> = listOf(

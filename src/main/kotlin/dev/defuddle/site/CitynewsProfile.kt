@@ -1,6 +1,6 @@
 package dev.defuddle.site
 
-object CitynewsProfile : SiteExtractor {
+object CitynewsProfile : dev.defuddle.extractors.Extractor {
     override val id: String = "citynews"
     override val domains: Set<String> = setOf("veneziatoday.it")
     override val postContentRemoveSelectors: List<String> = listOf(
