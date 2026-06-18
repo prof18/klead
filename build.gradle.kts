@@ -5,7 +5,7 @@ plugins {
     id("dev.detekt") version "2.0.0-alpha.5"
 }
 
-group = "dev.defuddle"
+group = "com.prof18"
 version = "0.1.0-SNAPSHOT"
 
 kotlin {

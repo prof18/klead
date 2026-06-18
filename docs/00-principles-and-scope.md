@@ -2,7 +2,7 @@
 
 ## Goal
 
-Define the boundaries before code is written. This project is a broad Kotlin/JVM port of Defuddle extraction for desktop use, but the deliverable is Markdown, not a UI.
+Define the boundaries before code is written. This project is a broad Kotlin/JVM article extraction library for desktop use, but the deliverable is Markdown, not a UI.
 
 ## In Scope
 
@@ -16,7 +16,7 @@ Define the boundaries before code is written. This project is a broad Kotlin/JVM
 - Keep cleaned HTML as a secondary/debug output.
 - Use upstream Defuddle fixtures for regression coverage.
 - Keep behavior test-driven and observable.
-- Port the major Defuddle feature families that operate on supplied static HTML, including site extractors.
+- Implement the major extraction feature families that operate on supplied static HTML, including site extractors.
 
 ## Out Of Scope
 
@@ -49,10 +49,10 @@ The library should expose an API like:
 
 ```kotlin
 suspend fun renderArticle(html: String, url: String): String {
-    val result = Defuddle.parseHtml(
+    val result = Klead.parseHtml(
         html = html,
         url = url,
-        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN))
+        options = KleadOptions(outputs = setOf(KleadOutput.MARKDOWN))
     )
 
     return result.content.requireMarkdown()
@@ -67,7 +67,7 @@ Minimum result fields:
 
 ## Porting Boundaries
 
-The target is a full practical port of Defuddle's extraction behavior. Implementation can be staged, but the endpoint should cover the majority of upstream behavior:
+The target is a practical Kotlin extraction library. Implementation can be staged, but the endpoint should cover the majority of relevant upstream Defuddle behavior:
 
 - generic article extraction
 - metadata extraction

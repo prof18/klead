@@ -20,10 +20,10 @@ Include:
 
 ```kotlin
 suspend fun renderArticle(html: String, url: String): String {
-    val result = Defuddle.parseHtml(
+    val result = Klead.parseHtml(
         html = html,
         url = url,
-        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+        options = KleadOptions(outputs = setOf(KleadOutput.MARKDOWN)),
     )
     return result.content.requireMarkdown()
 }
@@ -33,11 +33,11 @@ Include debug:
 
 ```kotlin
 suspend fun renderWithDebug(html: String, url: String) {
-    val result = Defuddle.parseHtml(
+    val result = Klead.parseHtml(
         html = html,
         url = url,
-        options = DefuddleOptions(
-            outputs = setOf(DefuddleOutput.MARKDOWN),
+        options = KleadOptions(
+            outputs = setOf(KleadOutput.MARKDOWN),
             debug = true,
         )
     )

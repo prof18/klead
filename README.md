@@ -1,15 +1,15 @@
-# Defuddle Kotlin
+# Klead
 
-Kotlin/JVM port of Defuddle focused on static HTML extraction and clean Markdown output.
+Kotlin/JVM library for turning static article HTML into clean Markdown.
 
 ## Usage
 
 ```kotlin
 suspend fun renderArticle(html: String, url: String): String {
-    val result = Defuddle.parseHtml(
+    val result = Klead.parseHtml(
         html = html,
         url = url,
-        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+        options = KleadOptions(outputs = setOf(KleadOutput.MARKDOWN)),
     )
     return result.content.requireMarkdown()
 }
@@ -19,10 +19,10 @@ Request only the outputs you need:
 
 ```kotlin
 suspend fun renderMarkdown(html: String, url: String): String? {
-    val result = Defuddle.parseHtml(
+    val result = Klead.parseHtml(
         html = html,
         url = url,
-        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+        options = KleadOptions(outputs = setOf(KleadOutput.MARKDOWN)),
     )
     return result.content.markdown
 }
@@ -32,11 +32,11 @@ Debug output:
 
 ```kotlin
 suspend fun renderWithDebug(html: String, url: String) {
-    val result = Defuddle.parseHtml(
+    val result = Klead.parseHtml(
         html = html,
         url = url,
-        options = DefuddleOptions(
-            outputs = setOf(DefuddleOutput.MARKDOWN),
+        options = KleadOptions(
+            outputs = setOf(KleadOutput.MARKDOWN),
             debug = true,
         ),
     )
@@ -59,11 +59,11 @@ object MyExtractor : Extractor {
 }
 
 suspend fun renderStory(html: String): String {
-    val result = Defuddle.parseHtml(
+    val result = Klead.parseHtml(
         html = html,
         url = "https://example.com/story",
-        options = DefuddleOptions(
-            outputs = setOf(DefuddleOutput.MARKDOWN),
+        options = KleadOptions(
+            outputs = setOf(KleadOutput.MARKDOWN),
             customExtractors = listOf(MyExtractor),
             debug = true,
         ),
@@ -76,7 +76,7 @@ suspend fun renderStory(html: String): String {
 
 - Static HTML input plus source URL.
 - Clean Markdown is the primary output.
-- Cleaned HTML is available when requested through `DefuddleOptions.outputs`.
+- Cleaned HTML is available when requested through `KleadOptions.outputs`.
 - `parseHtml` is suspending only and runs CPU-heavy parsing on an internal dispatcher.
 - Blocking callers own their blocking boundary, for example by calling the suspend API from their own `runBlocking` scope.
 - Fetching is out of scope; callers provide HTML and source URL.

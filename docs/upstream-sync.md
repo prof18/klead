@@ -26,11 +26,11 @@ Do not edit files under `src/test/resources/defuddle-fixtures/` or `src/test/res
 After syncing, run:
 
 ```sh
-./gradlew test -q --console=plain --tests dev.defuddle.fixtures.FixtureCoverageTest
+./gradlew test -q --console=plain --tests com.prof18.klead.fixtures.FixtureCoverageTest
 ```
 
 Classify new failures before changing parser code or Kotlin expected outputs.
 
 ## Programmatic Sync Helper
 
-The test-scoped `dev.defuddle.fixtures.FixtureSync` helper can sync from an already-cloned upstream checkout into local fixture directories and generate a Markdown report. It is covered by `FixtureSyncTest` and is not part of the shippable library artifact.
+The test-scoped `com.prof18.klead.fixtures.FixtureSync` helper can sync from an already-cloned upstream checkout into local fixture directories and generate a Markdown report. It is covered by `FixtureSyncTest` and is not part of the shippable library artifact.

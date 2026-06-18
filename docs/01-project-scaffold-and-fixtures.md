@@ -2,7 +2,7 @@
 
 ## Goal
 
-Create a Kotlin/JVM project that can run tests and load upstream Defuddle fixtures before any real extraction logic is ported.
+Create a Kotlin/JVM project that can run tests and load upstream Defuddle fixtures before any real extraction logic is implemented.
 
 ## Deliverables
 
@@ -16,13 +16,13 @@ Create a Kotlin/JVM project that can run tests and load upstream Defuddle fixtur
 ## Suggested Project Layout
 
 ```text
-defuddle-kotlin/
+klead/
   build.gradle.kts
   settings.gradle.kts
   README.md
   docs/
-  src/main/kotlin/dev/defuddle/
-  src/test/kotlin/dev/defuddle/
+  src/main/kotlin/com/prof18/klead/
+  src/test/kotlin/com/prof18/klead/
   src/test/resources/defuddle-fixtures/
   src/test/resources/defuddle-expected/
   src/test/resources/kotlin-expected/

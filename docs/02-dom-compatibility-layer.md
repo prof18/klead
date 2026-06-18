@@ -2,9 +2,9 @@
 
 ## Goal
 
-Build a jsoup compatibility layer that gives the rest of the port stable DOM operations similar to the browser APIs used by Defuddle.
+Build a jsoup compatibility layer that gives the extractor pipeline stable DOM operations similar to the browser APIs used by upstream Defuddle.
 
-Do this before porting extraction logic.
+Do this before implementing extraction logic.
 
 ## Required Helpers
 
@@ -48,7 +48,7 @@ URL helpers:
 
 ## Selector Compatibility
 
-Defuddle uses browser-like selectors that may not map one-to-one to jsoup.
+Upstream Defuddle uses browser-like selectors that may not map one-to-one to jsoup.
 
 Support or safely fallback:
 
@@ -83,7 +83,7 @@ TDD cases:
 
 ## `:scope` Handling
 
-Known Defuddle patterns:
+Known upstream patterns:
 
 - `:scope > a[href]`
 - `:scope > img`
@@ -101,7 +101,7 @@ TDD cases:
 
 ## `:has` Handling
 
-Known Defuddle patterns:
+Known upstream patterns:
 
 - `audio:not([src]):not(:has(source))`
 - `video:not([src]):not(:has(source))`

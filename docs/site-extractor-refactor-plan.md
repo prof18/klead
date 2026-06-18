@@ -12,7 +12,7 @@ The current model has one extension type:
 
 Domain-scoped selectors, direct content extraction from the provided DOM,
 post-processing, and priority all flow through that one type. Defaults are
-always included, and `DefuddleOptions.customExtractors` adds project-specific
+always included, and `KleadOptions.customExtractors` adds project-specific
 extractors. Fetching is out of scope.
 
 See [10 Extractors](10-site-extractors.md) for the maintained contract.

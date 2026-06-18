@@ -42,7 +42,7 @@ Internal parse order:
 
 Expose only parser behavior that callers should control:
 
-- `outputs = setOf(DefuddleOutput.MARKDOWN)` or another explicit non-empty output set
+- `outputs = setOf(KleadOutput.MARKDOWN)` or another explicit non-empty output set
 - `debug = false`
 
 Removal and standardization policy are internal. Callers should not choose
@@ -50,7 +50,7 @@ which cleanup or normalization stages run.
 
 ## Retries
 
-Port Defuddle retry behavior using internal removal policy variants:
+Implement upstream-inspired retry behavior using internal removal policy variants:
 
 1. If default result word count is under 200, retry with partial-selector removal disabled.
 2. Use retry only if it more than doubles word count.

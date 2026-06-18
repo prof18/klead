@@ -2,9 +2,9 @@
 
 ## Goal
 
-Port Defuddle's site-specific extractors after the generic extractor and Markdown writer are stable.
+Implement site-specific extractors after the generic extractor and Markdown writer are stable.
 
-This is part of the broad port target, not an optional feature family. The work can be staged by extractor risk and value.
+This is part of the broad extraction target, not an optional feature family. The work can be staged by extractor risk and value.
 
 ## Policy
 
@@ -43,15 +43,15 @@ interface Extractor {
 ```
 
 Default extractors are always included. Custom extractors can be added with
-`DefuddleOptions.customExtractors`:
+`KleadOptions.customExtractors`:
 
 ```kotlin
 suspend fun renderWithExtractor(html: String, url: String) {
-    Defuddle.parseHtml(
+    Klead.parseHtml(
         html = html,
         url = url,
-        options = DefuddleOptions(
-            outputs = setOf(DefuddleOutput.MARKDOWN),
+        options = KleadOptions(
+            outputs = setOf(KleadOutput.MARKDOWN),
             customExtractors = listOf(MyExtractor),
         ),
     )
@@ -94,7 +94,7 @@ The registry should:
 - preserve priority order
 - remain independent from network access
 
-`Defuddle.parseHtml` is suspending only and runs CPU-heavy parsing on an
+`Klead.parseHtml` is suspending only and runs CPU-heavy parsing on an
 internal dispatcher. Fetching HTML belongs outside this library, and callers own
 any blocking boundary they need around the suspend API.
 

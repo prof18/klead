@@ -1,0 +1,12 @@
+package com.prof18.klead.internal.extractors.site
+
+internal object GamingOnLinuxProfile : com.prof18.klead.extractors.Extractor {
+    override val id: String = "gamingonlinux"
+    override val domains: Set<String> = setOf("gamingonlinux.com")
+    override val postContentRemoveSelectors: List<String> = listOf(
+        ".hidden_message",
+        ".article_likes",
+        ".social-media-comments",
+        ".rules-reminder",
+    )
+}

@@ -4,7 +4,7 @@
 
 Generate clean Markdown directly from standardized jsoup DOM with Kotlin code.
 
-Do not use flexmark HTML-to-Markdown conversion. Prior flexmark output was unclean for this use case, and Defuddle needs custom rules.
+Do not use flexmark HTML-to-Markdown conversion. Prior flexmark output was unclean for this use case, and article extraction needs custom rules.
 
 ## Writer Contract
 
@@ -30,7 +30,7 @@ Properties:
 
 ```text
 markdown/
-  DefuddleMarkdownWriter.kt
+  KleadMarkdownWriter.kt
   MarkdownContext.kt
   MarkdownEscapes.kt
   MarkdownBlocks.kt
@@ -97,8 +97,8 @@ Support:
 - `figure`
 - `figcaption`
 - `table`
-- Defuddle callout DOM
-- Defuddle footnote DOM
+- Defuddle-style callout DOM
+- Defuddle-style footnote DOM
 - generic `div`, `section`, `article`, `main`
 
 Rules:

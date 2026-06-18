@@ -1,8 +1,8 @@
-# Defuddle Kotlin Migration
+# Klead Implementation Plan
 
-This folder is the execution plan for building a Kotlin/JVM port of Defuddle that outputs clean Markdown.
+This folder is the execution plan for building Klead, a Kotlin/JVM library that outputs clean Markdown.
 
-The project goal is a broad feature port of Defuddle's extraction behavior, with Markdown generation as the primary output. Compose, WebView, and UI rendering are out of scope for this repository unless a later product decision adds an example app.
+The project goal is broad article extraction behavior, with Markdown generation as the primary output. Compose, WebView, and UI rendering are out of scope for this repository unless a later product decision adds an example app.
 
 ## How To Use This Folder
 
@@ -36,7 +36,7 @@ Small commits are preferred. A commit may be smaller than a phase when it comple
 - `[x]` SCOPE-008 Use upstream Defuddle fixtures as the regression oracle.
 - `[x]` SCOPE-009 Use TDD for every ported behavior.
 - `[x]` SCOPE-010 Compose rendering is out of scope.
-- `[x]` SCOPE-011 Port the major Defuddle feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
+- `[x]` SCOPE-011 Implement the major extraction feature families, including metadata, removals, standardization, Markdown, fixture coverage, and site extractors.
 - `[x]` SCOPE-012 Math content should be preserved when practical, but MathML/LaTeX conversion and math rendering fidelity are out of scope.
 
 ## Phase Index
@@ -109,7 +109,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` DONE-002 The library extracts metadata and main content.
 - `[x]` DONE-003 The library outputs clean Markdown without flexmark HTML-to-Markdown.
 - `[x]` DONE-004 Upstream Defuddle fixtures are pinned and runnable.
-- `[x]` DONE-005 Major Defuddle feature families are implemented, excluding math rendering/conversion.
+- `[x]` DONE-005 Major extraction feature families are implemented, excluding math rendering/conversion.
 - `[x]` DONE-006 Fixture failures are green or documented as intentional known differences.
 - `[x]` DONE-007 Security sanitization tests pass.
 - `[x]` DONE-008 Performance is acceptable for a desktop JVM app.
@@ -130,7 +130,7 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-02 - in progress - Added basic jsoup element helpers and URL helpers; selector safety and mutation helpers remain.
 2026-06-14 - COMMIT-004 - complete - Added safe selector wrappers with unsupported-selector diagnostics, case-insensitive attribute matching, `:scope >` direct-child handling, and known `:has` fallbacks.
 2026-06-14 - COMMIT-005 - complete - Added DOM mutation helpers, document cloning, and malformed fragment parsing while preserving text-node order and base URI.
-2026-06-14 - PHASE-03 - in progress - Added Defuddle-compatible option defaults and verified Markdown can be disabled while cleaned HTML remains available.
+2026-06-14 - PHASE-03 - in progress - Added explicit option defaults and verified Markdown can be disabled while cleaned HTML remains available.
 2026-06-14 - PHASE-03 - in progress - Added document preparation for noscript image fallback promotion, unsafe element/attribute stripping, and debug timing output.
 2026-06-14 - PHASE-03 - complete - Added clone-based internal parse retries for short content: without partial selectors, without hidden-element removal, and index-page retry options.
 2026-06-14 - COMMIT-008 - complete - Added content scoring with word, paragraph, comma, link-density, image-density, content-hint, date, author, footnote, and nested-table factors.
@@ -168,7 +168,7 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-15 - PHASE-06 - complete - Added a BasketUniverso FeedFlow reader-dump regression and removed generic WordPress category chips plus Author Bio Box latest-posts modules from reader Markdown.
 2026-06-15 - PHASE-06 - complete - Added a mobile Pianeta Basket FeedFlow reader-dump regression and removed opening article metadata blocks with date/byline/read-count chrome from reader Markdown.
 2026-06-15 - PHASE-06/08 - complete - Added 20 Percent Berlin/Substack FeedFlow reader-dump regressions, fixed Markdown image rendering for transformed `srcset` URLs containing commas, and removed Substack discussion/top-posts/ready-for-more footer modules generically.
-2026-06-15 - PHASE-06 - complete - Added a Berlino Magazine FeedFlow reader-dump regression and removed Enfold/WordPress cover copyright captions plus entry date/category/author metadata strips from reader Markdown; dump metadata showed Defuddle parse time at 17 ms, so the observed reader delay likely sits outside the library parse path.
+2026-06-15 - PHASE-06 - complete - Added a Berlino Magazine FeedFlow reader-dump regression and removed Enfold/WordPress cover copyright captions plus entry date/category/author metadata strips from reader Markdown; dump metadata showed Klead parse time at 17 ms, so the observed reader delay likely sits outside the library parse path.
 2026-06-15 - PHASE-06 - complete - Added an il Mitte FeedFlow reader-dump regression and removed Jannah/TieLabs WordPress category-chip wrappers from opening article Markdown.
 2026-06-15 - PHASE-06 - complete - Added an il Mitte FeedFlow reader-dump regression and removed inline WordPress/Mailchimp newsletter widgets from article Markdown with generic Mailchimp selectors.
 2026-06-15 - PHASE-06 - complete - Added a VeneziaToday event-page FeedFlow reader-dump regression and removed Citynews event info-square headers plus byline chrome before article prose.

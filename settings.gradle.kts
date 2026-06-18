@@ -12,4 +12,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "defuddle-kotlin"
+rootProject.name = "klead"
