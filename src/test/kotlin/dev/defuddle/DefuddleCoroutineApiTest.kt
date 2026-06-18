@@ -3,23 +3,25 @@ package dev.defuddle
 import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
 import dev.defuddle.extractors.ExtractorResult
+import dev.defuddle.internal.DefuddleParser
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class DefuddleCoroutineApiTest {
     @Test
-    fun `async parser can use direct content extractor`() = runTest {
+    fun `suspend parser can use direct content extractor`() = runTest {
         val extractor = object : Extractor {
-            override val id = "async-direct-test"
+            override val id = "suspend-direct-test"
 
             override fun matches(context: ExtractorContext): Boolean = context.url.orEmpty().contains("direct.example")
 
             override fun extract(context: ExtractorContext): ExtractorResult =
-                ExtractorResult(contentHtml = "<article><p>Direct async content.</p></article>")
+                ExtractorResult(contentHtml = "<article><p>Direct suspend content.</p></article>")
         }
 
-        val result = Defuddle.parseHtmlAsync(
+        val result = Defuddle.parseHtml(
             html = "<html><body></body></html>",
             url = "https://direct.example/story/1",
             options = DefuddleOptions(
@@ -28,30 +30,31 @@ class DefuddleCoroutineApiTest {
             ),
         )
 
-        assertTrue(result.content.requireMarkdown().contains("Direct async content."))
+        assertTrue(result.content.requireMarkdown().contains("Direct suspend content."))
     }
 
     @Test
-    fun `sync parser uses direct content extractor`() {
-        val result = Defuddle.parseHtml(
+    fun `internal parser dispatcher can be injected for tests`() = runTest {
+        val result = DefuddleParser.parseHtml(
             html = "<html><body><p>Generic content should lose.</p></body></html>",
-            url = "https://sync.example/article",
+            url = "https://dispatcher.example/article",
             options = DefuddleOptions(
                 outputs = setOf(DefuddleOutput.MARKDOWN),
                 customExtractors = listOf(
                     object : Extractor {
-                        override val id = "sync-bridge-test"
+                        override val id = "dispatcher-bridge-test"
 
                         override fun matches(context: ExtractorContext): Boolean =
-                            context.url.orEmpty().contains("sync.example")
+                            context.url.orEmpty().contains("dispatcher.example")
 
                         override fun extract(context: ExtractorContext): ExtractorResult =
-                            ExtractorResult(contentHtml = "<article><p>Direct extractor content.</p></article>")
+                            ExtractorResult(contentHtml = "<article><p>Injected dispatcher content.</p></article>")
                     },
                 ),
             ),
+            parserDispatcher = StandardTestDispatcher(testScheduler),
         )
 
-        assertTrue(result.content.requireMarkdown().contains("Direct extractor content."))
+        assertTrue(result.content.requireMarkdown().contains("Injected dispatcher content."))
     }
 }

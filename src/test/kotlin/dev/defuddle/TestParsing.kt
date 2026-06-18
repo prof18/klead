@@ -1,6 +1,10 @@
 package dev.defuddle
 
 import dev.defuddle.extractors.Extractor
+import dev.defuddle.internal.DefuddleParser
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 
 internal val TestOutputs = setOf(DefuddleOutput.HTML, DefuddleOutput.MARKDOWN)
 
@@ -14,11 +18,21 @@ internal fun testOptions(
     debug = debug,
 )
 
-internal fun parseHtmlForTest(html: String, url: String, options: DefuddleOptions = testOptions()): DefuddleResult =
-    Defuddle.parseHtml(html = html, url = url, options = options)
+internal fun parseHtmlForTest(html: String, url: String, options: DefuddleOptions = testOptions()): DefuddleResult {
+    var parsed: DefuddleResult? = null
+    runTest {
+        parsed = parseHtmlWithTestDispatcher(html = html, url = url, options = options)
+    }
+    return checkNotNull(parsed)
+}
 
-internal suspend fun parseHtmlAsyncForTest(
+internal suspend fun TestScope.parseHtmlWithTestDispatcher(
     html: String,
     url: String,
     options: DefuddleOptions = testOptions(),
-): DefuddleResult = Defuddle.parseHtmlAsync(html = html, url = url, options = options)
+): DefuddleResult = DefuddleParser.parseHtml(
+    html = html,
+    url = url,
+    options = options,
+    parserDispatcher = StandardTestDispatcher(testScheduler),
+)

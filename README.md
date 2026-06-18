@@ -5,52 +5,46 @@ Kotlin/JVM port of Defuddle focused on static HTML extraction and clean Markdown
 ## Usage
 
 ```kotlin
-val result = Defuddle.parseHtml(
-    html = html,
-    url = url,
-    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
-)
-println(result.content.requireMarkdown())
-```
-
-Coroutine entry point:
-
-```kotlin
-val result = Defuddle.parseHtmlAsync(
-    html = html,
-    url = url,
-    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
-)
-println(result.content.requireMarkdown())
+suspend fun renderArticle(html: String, url: String): String {
+    val result = Defuddle.parseHtml(
+        html = html,
+        url = url,
+        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+    )
+    return result.content.requireMarkdown()
+}
 ```
 
 Request only the outputs you need:
 
 ```kotlin
-val result = Defuddle.parseHtml(
-    html = html,
-    url = url,
-    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
-)
-
-println(result.content.markdown)
+suspend fun renderMarkdown(html: String, url: String): String? {
+    val result = Defuddle.parseHtml(
+        html = html,
+        url = url,
+        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+    )
+    return result.content.markdown
+}
 ```
 
 Debug output:
 
 ```kotlin
-val result = Defuddle.parseHtml(
-    html = html,
-    url = url,
-    options = DefuddleOptions(
-        outputs = setOf(DefuddleOutput.MARKDOWN),
-        debug = true,
-    ),
-)
+suspend fun renderWithDebug(html: String, url: String) {
+    val result = Defuddle.parseHtml(
+        html = html,
+        url = url,
+        options = DefuddleOptions(
+            outputs = setOf(DefuddleOutput.MARKDOWN),
+            debug = true,
+        ),
+    )
 
-val removals = result.debug["removals"] as? List<*>
-val parseTimeMillis = result.debug["parseTimeMillis"] as? Long
-removals?.forEach(::println)
+    val removals = result.debug["removals"] as? List<*>
+    val parseTimeMillis = result.debug["parseTimeMillis"] as? Long
+    removals?.forEach(::println)
+}
 ```
 
 Custom extractors can add domain-scoped content and removal selectors without
@@ -64,15 +58,18 @@ object MyExtractor : Extractor {
     override val postContentRemoveSelectors = listOf(".related-widget")
 }
 
-val result = Defuddle.parseHtml(
-    html = html,
-    url = "https://example.com/story",
-    options = DefuddleOptions(
-        outputs = setOf(DefuddleOutput.MARKDOWN),
-        customExtractors = listOf(MyExtractor),
-        debug = true,
-    ),
-)
+suspend fun renderStory(html: String): String {
+    val result = Defuddle.parseHtml(
+        html = html,
+        url = "https://example.com/story",
+        options = DefuddleOptions(
+            outputs = setOf(DefuddleOutput.MARKDOWN),
+            customExtractors = listOf(MyExtractor),
+            debug = true,
+        ),
+    )
+    return result.content.requireMarkdown()
+}
 ```
 
 ## Scope
@@ -80,7 +77,8 @@ val result = Defuddle.parseHtml(
 - Static HTML input plus source URL.
 - Clean Markdown is the primary output.
 - Cleaned HTML is available when requested through `DefuddleOptions.outputs`.
-- `parseHtml` is a blocking compatibility wrapper; `parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
+- `parseHtml` is suspending only and runs CPU-heavy parsing on an internal dispatcher.
+- Blocking callers own their blocking boundary, for example by calling the suspend API from their own `runBlocking` scope.
 - Fetching is out of scope; callers provide HTML and source URL.
 - Domain-scoped extractors can guide content selection and cleanup before the
   generic fallback pipeline runs.

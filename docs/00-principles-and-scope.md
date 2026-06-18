@@ -48,13 +48,15 @@ Define the boundaries before code is written. This project is a broad Kotlin/JVM
 The library should expose an API like:
 
 ```kotlin
-val result = Defuddle.parseHtml(
-    html = html,
-    url = url,
-    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN))
-)
+suspend fun renderArticle(html: String, url: String): String {
+    val result = Defuddle.parseHtml(
+        html = html,
+        url = url,
+        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN))
+    )
 
-println(result.content.requireMarkdown())
+    return result.content.requireMarkdown()
+}
 ```
 
 Minimum result fields:

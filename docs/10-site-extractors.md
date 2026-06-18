@@ -46,14 +46,16 @@ Default extractors are always included. Custom extractors can be added with
 `DefuddleOptions.customExtractors`:
 
 ```kotlin
-Defuddle.parseHtml(
-    html = html,
-    url = url,
-    options = DefuddleOptions(
-        outputs = setOf(DefuddleOutput.MARKDOWN),
-        customExtractors = listOf(MyExtractor),
-    ),
-)
+suspend fun renderWithExtractor(html: String, url: String) {
+    Defuddle.parseHtml(
+        html = html,
+        url = url,
+        options = DefuddleOptions(
+            outputs = setOf(DefuddleOutput.MARKDOWN),
+            customExtractors = listOf(MyExtractor),
+        ),
+    )
+}
 ```
 
 Pipeline order:
@@ -92,9 +94,9 @@ The registry should:
 - preserve priority order
 - remain independent from network access
 
-`Defuddle.parseHtmlAsync` runs CPU-heavy parsing on an internal dispatcher.
-`Defuddle.parseHtml` remains a blocking compatibility wrapper around the suspend
-path. Fetching HTML belongs outside this library.
+`Defuddle.parseHtml` is suspending only and runs CPU-heavy parsing on an
+internal dispatcher. Fetching HTML belongs outside this library, and callers own
+any blocking boundary they need around the suspend API.
 
 ## Suggested Priority
 

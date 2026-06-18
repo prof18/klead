@@ -19,29 +19,33 @@ Prepare a usable internal release of the Kotlin Markdown extractor with clear co
 Include:
 
 ```kotlin
-val result = Defuddle.parseHtml(
-    html = html,
-    url = url,
-    options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
-)
-println(result.content.requireMarkdown())
+suspend fun renderArticle(html: String, url: String): String {
+    val result = Defuddle.parseHtml(
+        html = html,
+        url = url,
+        options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
+    )
+    return result.content.requireMarkdown()
+}
 ```
 
 Include debug:
 
 ```kotlin
-val result = Defuddle.parseHtml(
-    html = html,
-    url = url,
-    options = DefuddleOptions(
-        outputs = setOf(DefuddleOutput.MARKDOWN),
-        debug = true,
+suspend fun renderWithDebug(html: String, url: String) {
+    val result = Defuddle.parseHtml(
+        html = html,
+        url = url,
+        options = DefuddleOptions(
+            outputs = setOf(DefuddleOutput.MARKDOWN),
+            debug = true,
+        )
     )
-)
 
-val removals = result.debug["removals"] as? List<*>
-val parseTimeMillis = result.debug["parseTimeMillis"] as? Long
-removals?.forEach(::println)
+    val removals = result.debug["removals"] as? List<*>
+    val parseTimeMillis = result.debug["parseTimeMillis"] as? Long
+    removals?.forEach(::println)
+}
 ```
 
 Include known limitation notes:

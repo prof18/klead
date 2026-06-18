@@ -18,7 +18,7 @@ class CorePipelineOptionsTest {
 
     @Test
     fun `html can be requested without markdown`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = "<html><body><article><p>Only HTML output.</p></article></body></html>",
             url = "https://example.com/no-markdown",
             options = DefuddleOptions(outputs = setOf(DefuddleOutput.HTML)),
@@ -33,7 +33,7 @@ class CorePipelineOptionsTest {
 
     @Test
     fun `markdown can be requested without html`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = "<html><body><article><p>Only Markdown output.</p></article></body></html>",
             url = "https://example.com/no-html",
             options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
@@ -55,7 +55,7 @@ class CorePipelineOptionsTest {
 
     @Test
     fun `parse timing is omitted unless debug is requested`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = "<html><body><article><p>Profile off.</p></article></body></html>",
             url = "https://example.com/profile-off",
             options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),

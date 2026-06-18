@@ -1,7 +1,7 @@
 package dev.defuddle
 
-import dev.defuddle.dom.SelectorDiagnostics
-import dev.defuddle.dom.selectSafe
+import dev.defuddle.internal.dom.SelectorDiagnostics
+import dev.defuddle.internal.dom.selectSafe
 import org.jsoup.Jsoup
 import kotlin.system.measureTimeMillis
 import kotlin.test.Test

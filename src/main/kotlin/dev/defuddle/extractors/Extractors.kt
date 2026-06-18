@@ -1,7 +1,6 @@
 package dev.defuddle.extractors
 
-import dev.defuddle.extractors.site.WikipediaExtractor
-import dev.defuddle.removal.RemovalRecord
+import dev.defuddle.RemovalRecord
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URI
@@ -63,61 +62,3 @@ data class ExtractorMetadata(
     val site: String? = null,
     val description: String? = null,
 )
-
-class ExtractorRegistry(private val extractors: List<Extractor> = DefaultExtractors.all) {
-    fun resolve(context: ExtractorContext): List<Extractor> = matchingExtractors(context)
-        .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
-        .toList()
-
-    fun extract(context: ExtractorContext): ExtractorResult? {
-        for (extractor in resolve(context)) {
-            val result = extractor.extract(context)
-            if (result != null) {
-                return result
-            }
-        }
-        return null
-    }
-
-    private fun matchingExtractors(context: ExtractorContext): Sequence<Extractor> = extractors
-        .asSequence()
-        .filter { it.matches(context) }
-}
-
-object DefaultExtractors {
-    val all: List<Extractor> = listOf(
-        WikipediaExtractor,
-        dev.defuddle.extractors.site.MotorsportProfile,
-        dev.defuddle.extractors.site.MinuteMediaSiProfile,
-        dev.defuddle.extractors.site.PhoneArenaProfile,
-        dev.defuddle.extractors.site.AndroidAuthorityProfile,
-        dev.defuddle.extractors.site.RollingStoneProfile,
-        dev.defuddle.extractors.site.PopCultureProfile,
-        dev.defuddle.extractors.site.ValnetProfile,
-        dev.defuddle.extractors.site.VarietyProfile,
-        dev.defuddle.extractors.site.GameSpotProfile,
-        dev.defuddle.extractors.site.GamingOnLinuxProfile,
-        dev.defuddle.extractors.site.AxiosProfile,
-        dev.defuddle.extractors.site.BusinessInsiderProfile,
-        dev.defuddle.extractors.site.MashableProfile,
-        dev.defuddle.extractors.site.BBCProfile,
-        dev.defuddle.extractors.site.BuzzFeedProfile,
-        dev.defuddle.extractors.site.FortuneProfile,
-        dev.defuddle.extractors.site.EntrepreneurProfile,
-        dev.defuddle.extractors.site.FutureProfile,
-        dev.defuddle.extractors.site.ArsTechnicaProfile,
-        dev.defuddle.extractors.site.RollingStoneLayoutProfile,
-        dev.defuddle.extractors.site.BloggerProfile,
-        dev.defuddle.extractors.site.JetBrainsBlogProfile,
-        dev.defuddle.extractors.site.IlPostProfile,
-        dev.defuddle.extractors.site.SubstackProfile,
-        dev.defuddle.extractors.site.CitynewsProfile,
-        dev.defuddle.extractors.site.TechCrunchProfile,
-        dev.defuddle.extractors.site.VoxProfile,
-        dev.defuddle.extractors.site.PianetaBasketProfile,
-        dev.defuddle.extractors.site.MacRumorsProfile,
-        dev.defuddle.extractors.site.NASAProfile,
-        dev.defuddle.extractors.site.NineToFiveProfile,
-        dev.defuddle.extractors.site.WordPressFamilyProfile,
-    )
-}

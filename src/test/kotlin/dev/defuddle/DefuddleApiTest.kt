@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 class DefuddleApiTest {
     @Test
     fun `empty html parses without crashing`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = "",
             url = "https://example.com/empty",
             options = DefuddleOptions(outputs = setOf(DefuddleOutput.MARKDOWN)),
@@ -21,7 +21,7 @@ class DefuddleApiTest {
 
     @Test
     fun `minimal article returns markdown as primary content and html as debug output`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <!doctype html>
                 <html>
@@ -60,7 +60,7 @@ class DefuddleApiTest {
 
     @Test
     fun `unsupported browser css behavior is documented and does not crash`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html>
                   <body>
@@ -85,7 +85,7 @@ class DefuddleApiTest {
 
     @Test
     fun `result exposes expected contract fields`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = "<html><body><p>Body text.</p></body></html>",
             url = "https://example.com",
             options = DefuddleOptions(outputs = setOf(DefuddleOutput.HTML, DefuddleOutput.MARKDOWN)),
@@ -99,7 +99,7 @@ class DefuddleApiTest {
 
     @Test
     fun `debug mode reports selected content selector`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = "<html><body><article><p>Debug article.</p></article></body></html>",
             url = "https://example.com/debug",
             options = DefuddleOptions(
@@ -114,7 +114,7 @@ class DefuddleApiTest {
 
     @Test
     fun `schema article body refines public parser body fallback`() {
-        val result = Defuddle.parseHtml(
+        val result = parseHtmlForTest(
             html = """
                 <html>
                   <head>
