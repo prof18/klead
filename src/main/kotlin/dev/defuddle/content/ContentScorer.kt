@@ -61,8 +61,7 @@ object ContentScorer {
     private fun footnoteSignalBonus(element: Element): Double =
         if (element.selectFirst("sup[id*=fn], a[href^=#fn], .footnote, .footnotes") == null) 0.0 else 8.0
 
-    private fun nestedTablePenalty(element: Element): Double =
-        element.select("table table").size * 40.0
+    private fun nestedTablePenalty(element: Element): Double = element.select("table table").size * 40.0
 
     private fun linkDensity(element: Element): Double {
         val textLength = element.text().length
@@ -71,11 +70,7 @@ object ContentScorer {
         return linkTextLength.toDouble() / textLength
     }
 
-    private fun imageDensity(
-        element: Element,
-        wordCount: Int,
-        paragraphCount: Int,
-    ): Double {
+    private fun imageDensity(element: Element, wordCount: Int, paragraphCount: Int): Double {
         val imageCount = element.select("img, picture, figure").size
         if (imageCount == 0) return 0.0
         val contentUnits = max(1.0, paragraphCount + wordCount / 120.0)

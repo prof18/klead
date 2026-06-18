@@ -22,8 +22,7 @@ class MetadataFixtureSubsetTest {
         }
     }
 
-    private fun String?.emptyAsNull(): String? =
-        this?.takeIf { it.isNotBlank() }
+    private fun String?.emptyAsNull(): String? = this?.takeIf { it.isNotBlank() }
 
     private companion object {
         val STRICT_METADATA_FIXTURES = setOf(

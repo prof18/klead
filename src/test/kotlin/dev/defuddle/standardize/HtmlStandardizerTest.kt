@@ -95,11 +95,15 @@ class HtmlStandardizerTest {
 
     @Test
     fun `simple data table preserved and layout table flattened`() {
-        val data = article("""<article><table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table></article>""")
+        val data = article(
+            """<article><table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table></article>""",
+        )
         HtmlStandardizer.apply(data, title = null)
         assertNotNull(data.selectFirst("table"))
 
-        val layout = article("""<article><table class="layout"><tr><td><p>Layout text.</p></td></tr></table></article>""")
+        val layout = article(
+            """<article><table class="layout"><tr><td><p>Layout text.</p></td></tr></table></article>""",
+        )
         HtmlStandardizer.apply(layout, title = null)
         assertFalse(layout.outerHtml().contains("<table"))
         assertTrue(layout.text().contains("Layout text."))
@@ -107,7 +111,9 @@ class HtmlStandardizerTest {
 
     @Test
     fun `math data latex and readable fallback are preserved`() {
-        val article = article("""<article><span class="math" data-latex="x^2"><math><mi>x</mi></math></span></article>""")
+        val article = article(
+            """<article><span class="math" data-latex="x^2"><math><mi>x</mi></math></span></article>""",
+        )
 
         HtmlStandardizer.apply(article, title = null)
 

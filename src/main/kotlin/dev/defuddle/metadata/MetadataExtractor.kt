@@ -9,16 +9,9 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import org.jsoup.nodes.Document
 
-data class MetaTagItem(
-    val name: String?,
-    val property: String?,
-    val content: String?,
-)
+data class MetaTagItem(val name: String?, val property: String?, val content: String?)
 
-data class SchemaOrgResult(
-    val items: List<Map<String, Any?>>,
-    val diagnostics: List<String>,
-) {
+data class SchemaOrgResult(val items: List<Map<String, Any?>>, val diagnostics: List<String>) {
     fun firstString(path: String): String? {
         val keys = path.split(".")
         for (item in items) {
@@ -30,22 +23,18 @@ data class SchemaOrgResult(
 }
 
 object MetadataExtractor {
-    fun collectMetaTags(document: Document): List<MetaTagItem> =
-        document.select("meta").mapNotNull { meta ->
-            val name = meta.attr("name").trim().ifBlank { null }
-            val property = meta.attr("property").trim().ifBlank { null }
-            val content = meta.attr("content").trim().ifBlank { null }
-            if (content == null || (name == null && property == null)) {
-                null
-            } else {
-                MetaTagItem(name = name, property = property, content = content)
-            }
+    fun collectMetaTags(document: Document): List<MetaTagItem> = document.select("meta").mapNotNull { meta ->
+        val name = meta.attr("name").trim().ifBlank { null }
+        val property = meta.attr("property").trim().ifBlank { null }
+        val content = meta.attr("content").trim().ifBlank { null }
+        if (content == null || (name == null && property == null)) {
+            null
+        } else {
+            MetaTagItem(name = name, property = property, content = content)
         }
+    }
 
-    fun extractSchemaOrg(
-        document: Document,
-        debug: Boolean,
-    ): SchemaOrgResult {
+    fun extractSchemaOrg(document: Document, debug: Boolean): SchemaOrgResult {
         val items = mutableListOf<Map<String, Any?>>()
         val diagnostics = mutableListOf<String>()
 
@@ -68,12 +57,10 @@ object MetadataExtractor {
         )
     }
 
-    private fun flattenJsonLd(
-        element: JsonElement,
-        output: MutableList<Map<String, Any?>>,
-    ) {
+    private fun flattenJsonLd(element: JsonElement, output: MutableList<Map<String, Any?>>) {
         when (element) {
             is JsonArray -> element.forEach { flattenJsonLd(it, output) }
+
             is JsonObject -> {
                 val graph = element["@graph"]
                 if (graph != null) {
@@ -83,6 +70,7 @@ object MetadataExtractor {
                     output += element.toKotlinMap()
                 }
             }
+
             else -> Unit
         }
     }
@@ -90,13 +78,12 @@ object MetadataExtractor {
     private fun JsonObject.toKotlinMap(): Map<String, Any?> =
         entries.associate { (key, value) -> key to value.toKotlinValue() }
 
-    private fun JsonElement.toKotlinValue(): Any? =
-        when (this) {
-            is JsonNull -> null
-            is JsonPrimitive -> contentOrNull
-            is JsonArray -> map { it.toKotlinValue() }
-            is JsonObject -> toKotlinMap()
-        }
+    private fun JsonElement.toKotlinValue(): Any? = when (this) {
+        is JsonNull -> null
+        is JsonPrimitive -> contentOrNull
+        is JsonArray -> map { it.toKotlinValue() }
+        is JsonObject -> toKotlinMap()
+    }
 
     private val JSON = Json {
         ignoreUnknownKeys = true
@@ -109,9 +96,11 @@ private fun Map<String, Any?>.findPath(keys: List<String>): Any? {
     for (key in keys) {
         current = when (current) {
             is Map<*, *> -> current[key]
+
             is List<*> -> current.firstNotNullOfOrNull { item ->
                 (item as? Map<*, *>)?.get(key)
             }
+
             else -> return null
         }
     }

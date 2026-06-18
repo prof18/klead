@@ -77,16 +77,11 @@ object FixtureCoverage {
         "table-layout--single-column",
     )
 
-    fun runRelaxed(cases: List<FixtureCase>): FixtureCoverageReport =
-        run(cases, relaxed = true)
+    fun runRelaxed(cases: List<FixtureCase>): FixtureCoverageReport = run(cases)
 
-    fun runDiagnostic(cases: List<FixtureCase>): FixtureCoverageReport =
-        run(cases, relaxed = false)
+    fun runDiagnostic(cases: List<FixtureCase>): FixtureCoverageReport = run(cases)
 
-    private fun run(
-        cases: List<FixtureCase>,
-        relaxed: Boolean,
-    ): FixtureCoverageReport {
+    private fun run(cases: List<FixtureCase>): FixtureCoverageReport {
         var passed = 0
         val failures = mutableMapOf<FixtureFailureReason, Int>()
         val categories = mutableMapOf<FixtureCategory, Int>()
@@ -96,7 +91,7 @@ object FixtureCoverage {
             val result = runCatching { Defuddle.parseHtml(case.rawHtml, case.sourceUrl) }
             val failure = result.exceptionOrNull()
                 ?.let { classify(case) }
-                ?: classifyOutput(case, result.getOrThrow(), relaxed)
+                ?: classifyOutput(case, result.getOrThrow())
             if (failure == null) {
                 passed++
             } else {
@@ -112,11 +107,7 @@ object FixtureCoverage {
         )
     }
 
-    private fun classifyOutput(
-        case: FixtureCase,
-        result: dev.defuddle.DefuddleResult,
-        relaxed: Boolean,
-    ): FixtureFailureReason? {
+    private fun classifyOutput(case: FixtureCase, result: dev.defuddle.DefuddleResult): FixtureFailureReason? {
         if (result.contentMarkdown.isBlank() && case.category != FixtureCategory.MATH) {
             return classify(case)
         }
@@ -133,23 +124,34 @@ object FixtureCoverage {
         return null
     }
 
-    private fun classify(case: FixtureCase): FixtureFailureReason =
-        when (case.category) {
-            FixtureCategory.METADATA -> FixtureFailureReason.METADATA_BUG
-            FixtureCategory.MATH -> FixtureFailureReason.MATH_RENDERING_EXCLUDED
-            FixtureCategory.CODE_BLOCKS,
-            FixtureCategory.CODEBLOCKS -> FixtureFailureReason.STANDARDIZATION_MISSING
-            FixtureCategory.ELEMENTS,
-            FixtureCategory.CUSTOM_ELEMENTS -> FixtureFailureReason.STANDARDIZATION_MISSING
-            FixtureCategory.FOOTNOTES -> FixtureFailureReason.MARKDOWN_WRITER_MISSING
-            FixtureCategory.CONTENT_PATTERNS,
-            FixtureCategory.HIDDEN,
-            FixtureCategory.SCORING -> FixtureFailureReason.REMOVAL_BUG
-            FixtureCategory.EXTRACTOR -> FixtureFailureReason.SITE_EXTRACTOR_NOT_PORTED
-            FixtureCategory.COMMENTS,
-            FixtureCategory.LISTING -> FixtureFailureReason.SITE_EXTRACTOR_NOT_PORTED
-            else -> FixtureFailureReason.ACCEPTABLE_KOTLIN_MARKDOWN_DIFFERENCE
-        }
+    private fun classify(case: FixtureCase): FixtureFailureReason = when (case.category) {
+        FixtureCategory.METADATA -> FixtureFailureReason.METADATA_BUG
+
+        FixtureCategory.MATH -> FixtureFailureReason.MATH_RENDERING_EXCLUDED
+
+        FixtureCategory.CODE_BLOCKS,
+        FixtureCategory.CODEBLOCKS,
+        -> FixtureFailureReason.STANDARDIZATION_MISSING
+
+        FixtureCategory.ELEMENTS,
+        FixtureCategory.CUSTOM_ELEMENTS,
+        -> FixtureFailureReason.STANDARDIZATION_MISSING
+
+        FixtureCategory.FOOTNOTES -> FixtureFailureReason.MARKDOWN_WRITER_MISSING
+
+        FixtureCategory.CONTENT_PATTERNS,
+        FixtureCategory.HIDDEN,
+        FixtureCategory.SCORING,
+        -> FixtureFailureReason.REMOVAL_BUG
+
+        FixtureCategory.EXTRACTOR -> FixtureFailureReason.SITE_EXTRACTOR_NOT_PORTED
+
+        FixtureCategory.COMMENTS,
+        FixtureCategory.LISTING,
+        -> FixtureFailureReason.SITE_EXTRACTOR_NOT_PORTED
+
+        else -> FixtureFailureReason.ACCEPTABLE_KOTLIN_MARKDOWN_DIFFERENCE
+    }
 
     private val FixtureCase.category: FixtureCategory
         get() = categories.first()

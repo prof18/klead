@@ -78,11 +78,15 @@ class CorePipelinePreparationTest {
         )
 
         assertTrue(result.contentHtml.contains("""src="https://www.youtube-nocookie.com/embed/1hKyYaBzko8""""))
-        assertTrue(result.contentHtml.contains("""data-defuddle-video-url="https://www.youtube.com/watch?v=1hKyYaBzko8""""))
+        assertTrue(
+            result.contentHtml.contains("""data-defuddle-video-url="https://www.youtube.com/watch?v=1hKyYaBzko8""""),
+        )
         assertFalse(result.contentHtml.contains("evil.example"))
         assertFalse(result.contentHtml.contains("onclick"))
         assertFalse(result.contentHtml.contains("srcdoc"))
-        assertTrue(result.contentMarkdown.contains("[Dwarf Fortress trailer](https://www.youtube.com/watch?v=1hKyYaBzko8)"))
+        assertTrue(
+            result.contentMarkdown.contains("[Dwarf Fortress trailer](https://www.youtube.com/watch?v=1hKyYaBzko8)"),
+        )
     }
 
     @Test

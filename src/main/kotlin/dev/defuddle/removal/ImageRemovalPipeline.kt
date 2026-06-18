@@ -14,10 +14,7 @@ internal object ImageRemovalPipeline {
         removeCoverImage(content, metadataImage, debug, hintFor)
     }
 
-    private fun removeSmallImages(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeSmallImages(content: Element, debug: MutableList<RemovalRecord>) {
         for (image in content.select("img").toList()) {
             if (image.isSmallImage()) {
                 recordAndRemove(image, debug, "removeSmallImages", "img", "small image dimensions")
@@ -25,10 +22,7 @@ internal object ImageRemovalPipeline {
         }
     }
 
-    private fun deduplicateImages(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun deduplicateImages(content: Element, debug: MutableList<RemovalRecord>) {
         val seen = mutableSetOf<String>()
         for (image in content.select("img[src]").toList()) {
             val key = image.imageKey() ?: continue
@@ -50,7 +44,13 @@ internal object ImageRemovalPipeline {
             if (key == coverKey) {
                 val target = image.coverImageRemovalTarget(content)
                 if (!target.hasCoverImageHint(image, hintFor)) continue
-                recordAndRemove(target, debug, "removeCoverImage", coverImageSelector(target), "duplicates metadata image")
+                recordAndRemove(
+                    target,
+                    debug,
+                    "removeCoverImage",
+                    coverImageSelector(target),
+                    "duplicates metadata image",
+                )
             }
         }
     }
@@ -74,10 +74,7 @@ internal object ImageRemovalPipeline {
         }
     }
 
-    private fun Element.hasCoverImageHint(
-        image: Element,
-        hintFor: (Element) -> String,
-    ): Boolean {
+    private fun Element.hasCoverImageHint(image: Element, hintFor: (Element) -> String): Boolean {
         val hints = listOfNotNull(
             hintFor(this),
             parent()?.let(hintFor),
@@ -86,15 +83,13 @@ internal object ImageRemovalPipeline {
         return COVER_IMAGE_HINTS.any { it in hints }
     }
 
-    private fun Element.imageKey(): String? =
-        absUrl("src").ifBlank { attr("src").trim() }.ifBlank { null }
+    private fun Element.imageKey(): String? = absUrl("src").ifBlank { attr("src").trim() }.ifBlank { null }
 
-    private fun coverImageSelector(element: Element): String =
-        when {
-            element.id().isNotBlank() -> "#${element.id()}"
-            element.className().isNotBlank() -> ".${element.classNames().joinToString(".")}"
-            else -> element.normalName()
-        }
+    private fun coverImageSelector(element: Element): String = when {
+        element.id().isNotBlank() -> "#${element.id()}"
+        element.className().isNotBlank() -> ".${element.classNames().joinToString(".")}"
+        else -> element.normalName()
+    }
 
     private fun Element.isSmallImage(): Boolean {
         val width = dimension("width")
@@ -107,13 +102,12 @@ internal object ImageRemovalPipeline {
             height <= SMALL_IMAGE_MAX_DIMENSION
     }
 
-    private fun Element.dimension(name: String): Int? =
-        attr(name).dimensionValue()
-            ?: Regex("""$name\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
-                .find(attr("style"))
-                ?.groupValues
-                ?.getOrNull(1)
-                ?.toIntOrNull()
+    private fun Element.dimension(name: String): Int? = attr(name).dimensionValue()
+        ?: Regex("""$name\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
+            .find(attr("style"))
+            ?.groupValues
+            ?.getOrNull(1)
+            ?.toIntOrNull()
 
     private fun String.dimensionValue(): Int? =
         DIMENSION_VALUE_PATTERN.find(this)?.groupValues?.getOrNull(1)?.toIntOrNull()

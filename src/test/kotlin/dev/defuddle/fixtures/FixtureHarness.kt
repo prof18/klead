@@ -1,7 +1,6 @@
 package dev.defuddle.fixtures
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -23,10 +22,7 @@ data class FixtureCase(
     val categories: Set<FixtureCategory>,
 )
 
-data class ExpectedResult(
-    val metadata: Map<String, String>,
-    val markdownBody: String,
-)
+data class ExpectedResult(val metadata: Map<String, String>, val markdownBody: String)
 
 enum class FixtureCategory {
     CALLOUTS,
@@ -87,10 +83,7 @@ object FixtureLoader {
         }
     }
 
-    fun extractUrl(
-        fixtureName: String,
-        html: String,
-    ): String {
+    fun extractUrl(fixtureName: String, html: String): String {
         val match = FRONTMATTER_REGEX.find(html)
         if (match != null) {
             val parsedUrl = runCatching {
@@ -157,36 +150,31 @@ object ExpectedResultLoader {
         )
     }
 
-    private fun parseMetadata(jsonText: String): Map<String, String> =
-        runCatching {
-            Json.parseToJsonElement(jsonText)
-                .jsonObject
-                .entries
-                .mapNotNull { (key, value) ->
-                    val primitive = value as? JsonPrimitive
-                    val content = primitive?.content?.takeIf { it.isNotBlank() }
-                    if (content == null) null else key to content
-                }
-                .toMap()
-        }.getOrDefault(emptyMap())
+    private fun parseMetadata(jsonText: String): Map<String, String> = runCatching {
+        Json.parseToJsonElement(jsonText)
+            .jsonObject
+            .entries
+            .mapNotNull { (key, value) ->
+                val primitive = value as? JsonPrimitive
+                val content = primitive?.content?.takeIf { it.isNotBlank() }
+                if (content == null) null else key to content
+            }
+            .toMap()
+    }.getOrDefault(emptyMap())
 
     private const val JSON_PREAMBLE_START = "```json\n"
     private const val JSON_PREAMBLE_END = "\n```"
 }
 
 object MarkdownNormalizer {
-    fun minimal(markdown: String): String =
-        markdown
-            .normalizeLineEndings()
-            .lines()
-            .joinToString("\n") { it.trimEnd() }
-            .trimEnd()
+    fun minimal(markdown: String): String = markdown
+        .normalizeLineEndings()
+        .lines()
+        .joinToString("\n") { it.trimEnd() }
+        .trimEnd()
 }
 
-data class FixtureDiagnosticReport(
-    val totalFixtures: Int,
-    val categoryCounts: Map<FixtureCategory, Int>,
-)
+data class FixtureDiagnosticReport(val totalFixtures: Int, val categoryCounts: Map<FixtureCategory, Int>)
 
 object FixtureDiagnostics {
     fun report(cases: List<FixtureCase>): FixtureDiagnosticReport {
@@ -207,5 +195,4 @@ private fun resourceDir(name: String): Path {
     return Path.of(URI(resource.toString()))
 }
 
-private fun String.normalizeLineEndings(): String =
-    replace("\r\n", "\n").replace('\r', '\n')
+private fun String.normalizeLineEndings(): String = replace("\r\n", "\n").replace('\r', '\n')

@@ -1,6 +1,5 @@
 package dev.defuddle.fixtures
 
-import dev.defuddle.sync.FixtureSync
 import java.nio.file.Files
 import kotlin.io.path.createDirectories
 import kotlin.io.path.readText

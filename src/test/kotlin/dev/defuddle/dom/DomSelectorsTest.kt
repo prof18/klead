@@ -49,17 +49,29 @@ class DomSelectorsTest {
 
         assertEquals(listOf("direct-link"), article.selectSafe(":scope > a[href]").map { it.idSafe() })
         assertEquals(listOf("cell"), article.selectSafe(":scope > table > tbody > tr > td").map { it.idSafe() })
-        assertEquals(listOf("direct-link", "hero"), article.selectSafe(":scope > a[href], :scope > img").map { it.idSafe() })
+        assertEquals(
+            listOf("direct-link", "hero"),
+            article.selectSafe(":scope > a[href], :scope > img").map { it.idSafe() },
+        )
     }
 
     @Test
     fun `known has selector fallbacks work`() {
         val article = fixtureArticle()
 
-        assertEquals(listOf("empty-audio"), article.selectSafe("audio:not([src]):not(:has(source))").map { it.idSafe() })
+        assertEquals(
+            listOf("empty-audio"),
+            article.selectSafe("audio:not([src]):not(:has(source))").map { it.idSafe() },
+        )
         assertEquals(listOf("image-span"), article.selectSafe("span:has(img)").map { it.idSafe() })
-        assertEquals(listOf("figure", "caption-paragraph"), article.selectSafe("""figure, p:has([class*="caption"])""").map { it.idSafe() })
-        assertEquals(listOf("plain-header"), article.selectSafe("header:not(:has(p + p)):not(:has(img))").map { it.idSafe() })
+        assertEquals(
+            listOf("figure", "caption-paragraph"),
+            article.selectSafe("""figure, p:has([class*="caption"])""").map { it.idSafe() },
+        )
+        assertEquals(
+            listOf("plain-header"),
+            article.selectSafe("header:not(:has(p + p)):not(:has(img))").map { it.idSafe() },
+        )
     }
 
     private fun fixtureArticle() = Jsoup.parse(

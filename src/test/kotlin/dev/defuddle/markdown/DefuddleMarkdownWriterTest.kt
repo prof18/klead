@@ -65,7 +65,9 @@ class DefuddleMarkdownWriterTest {
 
     @Test
     fun `images choose largest srcset`() {
-        val markdown = render("""<article><p><img alt="Hero" src="/small.png" srcset="/small.png 320w, /large.png 960w"></p></article>""")
+        val markdown = render(
+            """<article><p><img alt="Hero" src="/small.png" srcset="/small.png 320w, /large.png 960w"></p></article>""",
+        )
 
         assertEquals("![Hero](https://example.com/large.png)\n", markdown)
     }
@@ -146,7 +148,9 @@ class DefuddleMarkdownWriterTest {
 
     @Test
     fun `fenced code preserves content and post processing does not trim code`() {
-        val markdown = render("""<article><pre><code data-lang="kotlin">fun main() {  ${"\n"}  println("hi")  ${"\n"}}</code></pre></article>""")
+        val markdown = render(
+            """<article><pre><code data-lang="kotlin">fun main() {  ${"\n"}  println("hi")  ${"\n"}}</code></pre></article>""",
+        )
 
         assertTrue(markdown.contains("```kotlin\nfun main() {  \n  println(\"hi\")  \n}\n```"))
     }
@@ -162,10 +166,14 @@ class DefuddleMarkdownWriterTest {
 
     @Test
     fun `simple tables render as GFM and complex tables fall back to text`() {
-        val simple = render("""<article><table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table></article>""")
+        val simple = render(
+            """<article><table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table></article>""",
+        )
         assertEquals("| A | B |\n| --- | --- |\n| 1 | 2 |\n", simple)
 
-        val noOpSpans = render("""<article><table><tr><th colspan="1">A</th><th rowspan="1">B</th></tr><tr><td colspan="1">1</td><td rowspan="1">2</td></tr></table></article>""")
+        val noOpSpans = render(
+            """<article><table><tr><th colspan="1">A</th><th rowspan="1">B</th></tr><tr><td colspan="1">1</td><td rowspan="1">2</td></tr></table></article>""",
+        )
         assertEquals("| A | B |\n| --- | --- |\n| 1 | 2 |\n", noOpSpans)
 
         val complex = render("""<article><table><tr><td colspan="2">Wide cell</td></tr></table></article>""")
@@ -248,9 +256,8 @@ class DefuddleMarkdownWriterTest {
         )
     }
 
-    private fun render(html: String): String =
-        DefuddleMarkdownWriter.write(
-            root = Jsoup.parse(html, "https://example.com/base/").selectFirst("article") ?: error("missing article"),
-            baseUrl = "https://example.com/base/",
-        )
+    private fun render(html: String): String = DefuddleMarkdownWriter.write(
+        root = Jsoup.parse(html, "https://example.com/base/").selectFirst("article") ?: error("missing article"),
+        baseUrl = "https://example.com/base/",
+    )
 }

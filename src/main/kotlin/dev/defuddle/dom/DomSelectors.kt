@@ -14,11 +14,9 @@ fun Element.selectSafe(selector: String): List<Element> {
     return results
 }
 
-fun Element.selectFirstSafe(selector: String): Element? =
-    selectSafe(selector).firstOrNull()
+fun Element.selectFirstSafe(selector: String): Element? = selectSafe(selector).firstOrNull()
 
-fun Element.matchesSafe(selector: String): Boolean =
-    selector.splitSelectorList().any { matchesSingleSafe(it) }
+fun Element.matchesSafe(selector: String): Boolean = selector.splitSelectorList().any { matchesSingleSafe(it) }
 
 fun Element.closestSafe(selector: String): Element? {
     var current: Element? = this
@@ -29,8 +27,7 @@ fun Element.closestSafe(selector: String): Element? {
     return null
 }
 
-fun Element.childrenMatching(selector: String): List<Element> =
-    childrenElements().filter { it.matchesSafe(selector) }
+fun Element.childrenMatching(selector: String): List<Element> = childrenElements().filter { it.matchesSafe(selector) }
 
 object SelectorDiagnostics {
     private val unsupported = linkedSetOf<String>()
@@ -42,10 +39,9 @@ object SelectorDiagnostics {
         }
     }
 
-    fun unsupportedSelectors(): List<String> =
-        synchronized(lock) {
-            unsupported.toList()
-        }
+    fun unsupportedSelectors(): List<String> = synchronized(lock) {
+        unsupported.toList()
+    }
 
     fun clear() {
         synchronized(lock) {
@@ -102,30 +98,30 @@ private fun Element.selectScopeDirect(selector: String): List<Element> {
     return current
 }
 
-private fun Element.knownHasFallback(selector: String): List<Element>? =
-    when (selector) {
-        "audio:not([src]):not(:has(source))" -> select("audio")
-            .filter { !it.hasAttr("src") && it.selectFirst("source") == null }
-        "video:not([src]):not(:has(source))" -> select("video")
-            .filter { !it.hasAttr("src") && it.selectFirst("source") == null }
-        "header:not(:has(p + p)):not(:has(img))" -> select("header")
-            .filter { it.selectFirst("p + p") == null && it.selectFirst("img") == null }
-        "span:has(img)" -> select("span")
-            .filter { it.selectFirst("img") != null }
-        """p:has([class*="caption"])""" -> select("p")
-            .filter { paragraph ->
-                paragraph.descendants().any { descendant ->
-                    descendant.classNameSafe().contains("caption", ignoreCase = true)
-                }
-            }
-        else -> null
-    }
+private fun Element.knownHasFallback(selector: String): List<Element>? = when (selector) {
+    "audio:not([src]):not(:has(source))" -> select("audio")
+        .filter { !it.hasAttr("src") && it.selectFirst("source") == null }
 
-private data class CaseInsensitiveAttributeSelector(
-    val attr: String,
-    val operator: String,
-    val value: String,
-)
+    "video:not([src]):not(:has(source))" -> select("video")
+        .filter { !it.hasAttr("src") && it.selectFirst("source") == null }
+
+    "header:not(:has(p + p)):not(:has(img))" -> select("header")
+        .filter { it.selectFirst("p + p") == null && it.selectFirst("img") == null }
+
+    "span:has(img)" -> select("span")
+        .filter { it.selectFirst("img") != null }
+
+    """p:has([class*="caption"])""" -> select("p")
+        .filter { paragraph ->
+            paragraph.descendants().any { descendant ->
+                descendant.classNameSafe().contains("caption", ignoreCase = true)
+            }
+        }
+
+    else -> null
+}
+
+private data class CaseInsensitiveAttributeSelector(val attr: String, val operator: String, val value: String)
 
 private fun Element.matches(selector: CaseInsensitiveAttributeSelector): Boolean {
     val attrValue = attr(selector.attr)
@@ -164,12 +160,19 @@ private fun String.splitSelectorList(): List<String> {
     forEachIndexed { index, char ->
         when {
             quote != null && char == quote -> quote = null
+
             quote != null -> Unit
+
             char == '"' || char == '\'' -> quote = char
+
             char == '[' -> squareDepth++
+
             char == ']' -> squareDepth--
+
             char == '(' -> parenDepth++
+
             char == ')' -> parenDepth--
+
             char == ',' && squareDepth == 0 && parenDepth == 0 -> {
                 parts += substring(start, index).trim()
                 start = index + 1

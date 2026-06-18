@@ -43,7 +43,9 @@ class DomMutationsTest {
 
     @Test
     fun `transferChildrenTo moves children in order`() {
-        val document = Jsoup.parse("""<article><div id="source">one <em>two</em></div><div id="target">zero </div></article>""")
+        val document = Jsoup.parse(
+            """<article><div id="source">one <em>two</em></div><div id="target">zero </div></article>""",
+        )
         val source = document.selectFirst("#source") ?: error("missing source")
         val target = document.selectFirst("#target") ?: error("missing target")
 
@@ -55,7 +57,9 @@ class DomMutationsTest {
 
     @Test
     fun `replaceChildrenWith uses cloned source children`() {
-        val document = Jsoup.parse("""<article><div id="source">one <em>two</em></div><div id="target"><p>old</p></div></article>""")
+        val document = Jsoup.parse(
+            """<article><div id="source">one <em>two</em></div><div id="target"><p>old</p></div></article>""",
+        )
         val source = document.selectFirst("#source") ?: error("missing source")
         val target = document.selectFirst("#target") ?: error("missing target")
 

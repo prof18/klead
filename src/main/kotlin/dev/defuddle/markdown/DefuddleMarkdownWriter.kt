@@ -8,18 +8,13 @@ import org.jsoup.nodes.TextNode
 import java.net.URI
 
 object DefuddleMarkdownWriter {
-    fun write(
-        root: Element,
-        baseUrl: String,
-    ): String {
+    fun write(root: Element, baseUrl: String): String {
         val renderer = Renderer(baseUrl)
         return renderer.write(root)
     }
 }
 
-private class Renderer(
-    private val baseUrl: String,
-) {
+private class Renderer(private val baseUrl: String) {
     private val footnotes = linkedMapOf<String, String>()
 
     fun write(root: Element): String {
@@ -33,102 +28,103 @@ private class Renderer(
         return postProcess(withFootnotes)
     }
 
-    private fun renderBlocks(
-        nodes: List<Node>,
-        listDepth: Int,
-    ): String =
+    private fun renderBlocks(nodes: List<Node>, listDepth: Int): String =
         nodes.mapNotNull { renderBlock(it, listDepth).takeIf(String::isNotBlank) }
             .joinToString("\n\n")
 
-    private fun renderBlock(
-        node: Node,
-        listDepth: Int,
-    ): String =
+    private fun renderBlock(node: Node, listDepth: Int): String = when (node) {
+        is TextNode -> escapeInline(node.text()).trim()
+        is Element -> renderElementBlock(node, listDepth)
+        else -> ""
+    }
+
+    private fun renderElementBlock(element: Element, listDepth: Int): String = when (element.normalName()) {
+        "h1", "h2", "h3", "h4", "h5", "h6" -> {
+            val level = element.normalName().removePrefix("h").toInt()
+            val text = renderInline(element).trim()
+            if (text.isBlank()) "" else "${"#".repeat(level)} $text"
+        }
+
+        "p" -> renderInline(element).trim()
+
+        "blockquote" -> blockquote(renderBlocks(element.childNodes(), listDepth))
+
+        "ul" -> renderList(element, ordered = false, listDepth = listDepth)
+
+        "ol" -> renderList(element, ordered = true, listDepth = listDepth)
+
+        "li" -> renderInline(element).trim()
+
+        "pre" -> renderCodeBlock(element)
+
+        "hr" -> "---"
+
+        "img" -> renderImage(element)
+
+        "picture" -> element.select("img").firstOrNull()?.let { renderImage(it) }.orEmpty()
+
+        "figure" -> renderFigure(element, listDepth)
+
+        "table" -> renderTable(element)
+
+        "iframe" -> renderEmbeddedMedia(element)
+
+        "section" -> if (element.hasAttr("data-footnotes")) "" else renderBlocks(element.childNodes(), listDepth)
+
+        "div" -> if (element.hasClass("callout") || element.hasAttr("data-callout")) {
+            renderCallout(element, listDepth)
+        } else {
+            renderBlocks(element.childNodes(), listDepth)
+        }
+
+        "article", "main" -> renderBlocks(element.childNodes(), listDepth)
+
+        else -> renderBlocks(element.childNodes(), listDepth).ifBlank { renderInline(element).trim() }
+    }
+
+    private fun renderInline(element: Element): String = renderInlineNodes(element.childNodes(), inLink = false)
+
+    private fun renderInlineNodes(nodes: List<Node>, inLink: Boolean): String = nodes.joinToString("") { node ->
         when (node) {
-            is TextNode -> escapeInline(node.text()).trim()
-            is Element -> renderElementBlock(node, listDepth)
+            is TextNode -> escapeInline(node.text())
+            is Element -> renderInlineElement(node, inLink)
             else -> ""
         }
+    }.replace(Regex("""[ \t]+"""), " ")
 
-    private fun renderElementBlock(
-        element: Element,
-        listDepth: Int,
-    ): String =
-        when (element.normalName()) {
-            "h1", "h2", "h3", "h4", "h5", "h6" -> {
-                val level = element.normalName().removePrefix("h").toInt()
-                val text = renderInline(element).trim()
-                if (text.isBlank()) "" else "${"#".repeat(level)} $text"
-            }
-            "p" -> renderInline(element).trim()
-            "blockquote" -> blockquote(renderBlocks(element.childNodes(), listDepth))
-            "ul" -> renderList(element, ordered = false, listDepth = listDepth)
-            "ol" -> renderList(element, ordered = true, listDepth = listDepth)
-            "li" -> renderInline(element).trim()
-            "pre" -> renderCodeBlock(element)
-            "hr" -> "---"
-            "img" -> renderImage(element)
-            "picture" -> element.select("img").firstOrNull()?.let { renderImage(it) }.orEmpty()
-            "figure" -> renderFigure(element, listDepth)
-            "table" -> renderTable(element)
-            "iframe" -> renderEmbeddedMedia(element)
-            "section" -> if (element.hasAttr("data-footnotes")) "" else renderBlocks(element.childNodes(), listDepth)
-            "div" -> if (element.hasClass("callout") || element.hasAttr("data-callout")) {
-                renderCallout(element, listDepth)
-            } else {
-                renderBlocks(element.childNodes(), listDepth)
-            }
-            "article", "main" -> renderBlocks(element.childNodes(), listDepth)
-            else -> renderBlocks(element.childNodes(), listDepth).ifBlank { renderInline(element).trim() }
-        }
+    private fun renderInlineElement(element: Element, inLink: Boolean): String = when (element.normalName()) {
+        "strong", "b" -> renderDelimitedInline(element, inLink, "**")
 
-    private fun renderInline(element: Element): String =
-        renderInlineNodes(element.childNodes(), inLink = false)
+        "em", "i" -> renderDelimitedInline(element, inLink, "*")
 
-    private fun renderInlineNodes(
-        nodes: List<Node>,
-        inLink: Boolean,
-    ): String =
-        nodes.joinToString("") { node ->
-            when (node) {
-                is TextNode -> escapeInline(node.text())
-                is Element -> renderInlineElement(node, inLink)
-                else -> ""
-            }
-        }.replace(Regex("""[ \t]+"""), " ")
+        "code" -> codeSpan(element.wholeText().ifBlank { element.text() })
 
-    private fun renderInlineElement(
-        element: Element,
-        inLink: Boolean,
-    ): String =
-        when (element.normalName()) {
-            "strong", "b" -> renderDelimitedInline(element, inLink, "**")
-            "em", "i" -> renderDelimitedInline(element, inLink, "*")
-            "code" -> codeSpan(element.wholeText().ifBlank { element.text() })
-            "a" -> renderLink(element, inLink)
-            "img" -> renderImage(element)
-            "br" -> "  \n"
-            "sup" -> renderFootnoteReference(element) ?: renderInlineNodes(element.childNodes(), inLink)
-            "sub", "span", "mark", "ins", "small" -> renderMath(element) ?: renderInlineNodes(element.childNodes(), inLink)
-            "del", "s" -> renderDelimitedInline(element, inLink, "~~")
-            "math" -> element.text()
-            else -> renderInlineNodes(element.childNodes(), inLink)
-        }
+        "a" -> renderLink(element, inLink)
 
-    private fun renderDelimitedInline(
-        element: Element,
-        inLink: Boolean,
-        delimiter: String,
-    ): String {
+        "img" -> renderImage(element)
+
+        "br" -> "  \n"
+
+        "sup" -> renderFootnoteReference(element) ?: renderInlineNodes(element.childNodes(), inLink)
+
+        "sub", "span", "mark", "ins", "small" -> renderMath(
+            element,
+        ) ?: renderInlineNodes(element.childNodes(), inLink)
+
+        "del", "s" -> renderDelimitedInline(element, inLink, "~~")
+
+        "math" -> element.text()
+
+        else -> renderInlineNodes(element.childNodes(), inLink)
+    }
+
+    private fun renderDelimitedInline(element: Element, inLink: Boolean, delimiter: String): String {
         val parts = renderInlineNodes(element.childNodes(), inLink).splitInlineWhitespace()
         if (parts.body.isBlank()) return parts.original
         return "${parts.leading}$delimiter${parts.body}$delimiter${parts.trailing}"
     }
 
-    private fun renderLink(
-        element: Element,
-        inLink: Boolean,
-    ): String {
+    private fun renderLink(element: Element, inLink: Boolean): String {
         val parts = renderLinkTextNodes(element.childNodes()).splitInlineWhitespace()
         val text = parts.body
         val href = element.attr("href").trim()
@@ -139,22 +135,20 @@ private class Renderer(
         return "${parts.leading}[$text](${escapeDestination(url)})${parts.trailing}"
     }
 
-    private fun renderLinkTextNodes(nodes: List<Node>): String =
-        nodes.joinToString("") { node ->
-            when (node) {
-                is TextNode -> escapeInline(node.text())
-                is Element -> renderLinkTextElement(node)
-                else -> ""
-            }
-        }.replace(Regex("""[ \t]+"""), " ")
-
-    private fun renderLinkTextElement(element: Element): String =
-        when (element.normalName()) {
-            "br" -> " "
-            "img" -> escapeInline(element.attr("alt").ifBlank { element.attr("title") })
-            "math" -> escapeInline(element.text())
-            else -> renderLinkTextNodes(element.childNodes())
+    private fun renderLinkTextNodes(nodes: List<Node>): String = nodes.joinToString("") { node ->
+        when (node) {
+            is TextNode -> escapeInline(node.text())
+            is Element -> renderLinkTextElement(node)
+            else -> ""
         }
+    }.replace(Regex("""[ \t]+"""), " ")
+
+    private fun renderLinkTextElement(element: Element): String = when (element.normalName()) {
+        "br" -> " "
+        "img" -> escapeInline(element.attr("alt").ifBlank { element.attr("title") })
+        "math" -> escapeInline(element.text())
+        else -> renderLinkTextNodes(element.childNodes())
+    }
 
     private fun renderImage(element: Element): String {
         val sources = listOfNotNull(
@@ -191,11 +185,7 @@ private class Renderer(
         return "[${escapeInline(title)}](${escapeDestination(url)})"
     }
 
-    private fun renderList(
-        element: Element,
-        ordered: Boolean,
-        listDepth: Int,
-    ): String {
+    private fun renderList(element: Element, ordered: Boolean, listDepth: Int): String {
         var number = element.attr("start").toIntOrNull() ?: 1
         return element.children().filter { it.normalName() == "li" }.mapNotNull { item ->
             val indent = "  ".repeat(listDepth)
@@ -215,10 +205,9 @@ private class Renderer(
         }.joinToString("\n")
     }
 
-    private fun blockquote(markdown: String): String =
-        markdown.lines().joinToString("\n") { line ->
-            if (line.isBlank()) ">" else "> $line"
-        }
+    private fun blockquote(markdown: String): String = markdown.lines().joinToString("\n") { line ->
+        if (line.isBlank()) ">" else "> $line"
+    }
 
     private fun renderCodeBlock(element: Element): String {
         val code = element.selectFirst("code")
@@ -231,10 +220,7 @@ private class Renderer(
         return "$fence$language\n$text$fence"
     }
 
-    private fun renderFigure(
-        element: Element,
-        listDepth: Int,
-    ): String {
+    private fun renderFigure(element: Element, listDepth: Int): String {
         val imageMarkdown = element.select("img").joinToString("\n") { renderImage(it) }.trim()
         val caption = element.select("figcaption").firstOrNull()?.let { renderInline(it).trim() }
         return listOfNotNull(
@@ -264,10 +250,7 @@ private class Renderer(
         }
     }
 
-    private fun renderCallout(
-        element: Element,
-        listDepth: Int,
-    ): String {
+    private fun renderCallout(element: Element, listDepth: Int): String {
         val type = element.attr("data-callout").ifBlank { "note" }.lowercase()
         val title = element.selectFirst(".callout-title-inner")?.text()?.trim()?.ifBlank { null }
         val content = element.selectFirst(".callout-content") ?: element
@@ -302,26 +285,26 @@ private class Renderer(
         return if (display) "$$\n$latex\n$$" else "$$latex$"
     }
 
-    private fun largestSrcsetUrl(srcset: String): String? =
-        srcset.split(SRCSET_DELIMITER)
-            .mapNotNull { candidate ->
-                val parts = candidate.trim().split(Regex("""\s+"""))
-                val url = parts.firstOrNull()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                val width = parts.getOrNull(1)?.removeSuffix("w")?.toIntOrNull() ?: 0
-                url to width
-            }
-            .maxByOrNull { it.second }
-            ?.first
+    private fun largestSrcsetUrl(srcset: String): String? = srcset.split(srcsetDelimiter)
+        .mapNotNull { candidate ->
+            val parts = candidate.trim().split(Regex("""\s+"""))
+            val url = parts.firstOrNull()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val width = parts.getOrNull(1)?.removeSuffix("w")?.toIntOrNull() ?: 0
+            url to width
+        }
+        .maxByOrNull { it.second }
+        ?.first
 
     private fun videoWatchUrlFromEmbed(src: String): String? {
-        val uri = runCatching { URI(src) }.getOrNull() ?: return null
-        val host = uri.host?.lowercase()?.removePrefix("www.") ?: return null
-        if (host != "youtube.com" && host != "youtube-nocookie.com") return null
-        val path = uri.rawPath.orEmpty()
-        if (!path.startsWith("/embed/")) return null
-        val id = path.removePrefix("/embed/").substringBefore('/')
-        if (!YOUTUBE_ID.matches(id)) return null
-        return "https://www.youtube.com/watch?v=$id"
+        val uri = runCatching { URI(src) }.getOrNull()
+        val host = uri?.host?.lowercase()?.removePrefix("www.")
+        val path = uri?.rawPath.orEmpty()
+        val id = path.takeIf { host in youtubeEmbedHosts && it.startsWith("/embed/") }
+            ?.removePrefix("/embed/")
+            ?.substringBefore('/')
+            ?.takeIf(youtubeId::matches)
+
+        return id?.let { "https://www.youtube.com/watch?v=$it" }
     }
 
     private fun codeSpan(text: String): String {
@@ -341,35 +324,31 @@ private class Renderer(
         return languageClass?.removePrefix("language-")
     }
 
-    private fun escapeInline(text: String): String =
-        text
-            .replace('\u00A0', ' ')
-            .replace('\u202F', ' ')
-            .replace("\\", "\\\\")
-            .replace("`", "\\`")
-            .replace("*", "\\*")
-            .replace("_", "\\_")
-            .replace("[", "\\[")
-            .replace("]", "\\]")
+    private fun escapeInline(text: String): String = text
+        .replace('\u00A0', ' ')
+        .replace('\u202F', ' ')
+        .replace("\\", "\\\\")
+        .replace("`", "\\`")
+        .replace("*", "\\*")
+        .replace("_", "\\_")
+        .replace("[", "\\[")
+        .replace("]", "\\]")
 
     private fun escapeDestination(url: String): String {
         val escaped = url.replace("(", "\\(").replace(")", "\\)")
         return if (escaped.any { it.isWhitespace() }) "<$escaped>" else escaped
     }
 
-    private fun String.escapeTableCell(): String =
-        replace("|", "\\|").replace("\n", " ").trim()
+    private fun String.escapeTableCell(): String = replace("|", "\\|").replace("\n", " ").trim()
 
-    private fun Element.hasComplexSpan(): Boolean =
-        hasComplexSpan("rowspan") || hasComplexSpan("colspan")
+    private fun Element.hasComplexSpan(): Boolean = hasComplexSpan("rowspan") || hasComplexSpan("colspan")
 
     private fun Element.hasComplexSpan(name: String): Boolean {
         if (!hasAttr(name)) return false
         return attr(name).trim().toIntOrNull() != 1
     }
 
-    private fun String.normalizeFinalNewline(): String =
-        replace("\r\n", "\n").replace('\r', '\n').trimEnd('\n') + "\n"
+    private fun String.normalizeFinalNewline(): String = replace("\r\n", "\n").replace('\r', '\n').trimEnd('\n') + "\n"
 
     private fun String.splitInlineWhitespace(): InlineWhitespace {
         val firstBodyIndex = indexOfFirst { !it.isWhitespace() }
@@ -403,8 +382,9 @@ private class Renderer(
         return result.joinToString("\n").trimEnd() + "\n"
     }
 
-    private val SRCSET_DELIMITER = Regex(""",\s+""")
-    private val YOUTUBE_ID = Regex("""[A-Za-z0-9_-]{6,32}""")
+    private val srcsetDelimiter = Regex(""",\s+""")
+    private val youtubeId = Regex("""[A-Za-z0-9_-]{6,32}""")
+    private val youtubeEmbedHosts = setOf("youtube.com", "youtube-nocookie.com")
 
     private data class InlineWhitespace(
         val original: String,

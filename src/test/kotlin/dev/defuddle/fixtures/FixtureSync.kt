@@ -1,4 +1,4 @@
-package dev.defuddle.sync
+package dev.defuddle.fixtures
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -56,10 +56,7 @@ object FixtureSync {
         return report
     }
 
-    private fun syncDirectory(
-        upstreamDir: Path,
-        destinationDir: Path,
-    ): DirectoryChanges {
+    private fun syncDirectory(upstreamDir: Path, destinationDir: Path): DirectoryChanges {
         destinationDir.createDirectories()
         val upstreamFiles = listRegularFiles(upstreamDir).associateBy { it.relativeTo(upstreamDir).toString() }
         val destinationFiles = listRegularFiles(destinationDir).associateBy { it.relativeTo(destinationDir).toString() }
@@ -90,29 +87,24 @@ object FixtureSync {
         return DirectoryChanges(added.sorted(), removed.sorted(), changed.sorted())
     }
 
-    private fun listRegularFiles(directory: Path): List<Path> =
-        Files.walk(directory).use { stream ->
-            stream.filter { it.isRegularFile() }.toList()
-        }
+    private fun listRegularFiles(directory: Path): List<Path> = Files.walk(directory).use { stream ->
+        stream.filter { it.isRegularFile() }.toList()
+    }
 
-    private fun FixtureSyncReport.toMarkdown(): String =
-        buildString {
-            appendLine("# Defuddle Fixture Sync Report")
-            appendLine()
-            appendLine("- Previous SHA: `${previousSha ?: "none"}`")
-            appendLine("- New SHA: `$newSha`")
-            appendSection("Added fixtures", addedFixtures)
-            appendSection("Removed fixtures", removedFixtures)
-            appendSection("Changed fixtures", changedFixtures)
-            appendSection("Added expected files", addedExpected)
-            appendSection("Removed expected files", removedExpected)
-            appendSection("Changed expected files", changedExpected)
-        }
+    private fun FixtureSyncReport.toMarkdown(): String = buildString {
+        appendLine("# Defuddle Fixture Sync Report")
+        appendLine()
+        appendLine("- Previous SHA: `${previousSha ?: "none"}`")
+        appendLine("- New SHA: `$newSha`")
+        appendSection("Added fixtures", addedFixtures)
+        appendSection("Removed fixtures", removedFixtures)
+        appendSection("Changed fixtures", changedFixtures)
+        appendSection("Added expected files", addedExpected)
+        appendSection("Removed expected files", removedExpected)
+        appendSection("Changed expected files", changedExpected)
+    }
 
-    private fun StringBuilder.appendSection(
-        title: String,
-        values: List<String>,
-    ) {
+    private fun StringBuilder.appendSection(title: String, values: List<String>) {
         appendLine()
         appendLine("## $title")
         if (values.isEmpty()) {
@@ -123,9 +115,5 @@ object FixtureSync {
         }
     }
 
-    private data class DirectoryChanges(
-        val added: List<String>,
-        val removed: List<String>,
-        val changed: List<String>,
-    )
+    private data class DirectoryChanges(val added: List<String>, val removed: List<String>, val changed: List<String>)
 }

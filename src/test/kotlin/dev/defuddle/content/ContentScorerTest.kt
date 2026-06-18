@@ -27,15 +27,21 @@ class ContentScorerTest {
 
     @Test
     fun `content class and id increase score`() {
-        val generic = article("""<div><p>This paragraph has enough readable words to compare against content hints.</p></div>""")
-        val hinted = article("""<div id="article-content" class="post-content"><p>This paragraph has enough readable words to compare against content hints.</p></div>""")
+        val generic = article(
+            """<div><p>This paragraph has enough readable words to compare against content hints.</p></div>""",
+        )
+        val hinted = article(
+            """<div id="article-content" class="post-content"><p>This paragraph has enough readable words to compare against content hints.</p></div>""",
+        )
 
         assertTrue(ContentScorer.scoreElement(hinted).total > ContentScorer.scoreElement(generic).total)
     }
 
     @Test
     fun `date author and footnote signals increase score`() {
-        val plain = article("""<section><p>Readable words appear in a plain section with no article signals.</p></section>""")
+        val plain = article(
+            """<section><p>Readable words appear in a plain section with no article signals.</p></section>""",
+        )
         val signaled = article(
             """
             <section>
@@ -52,7 +58,9 @@ class ContentScorerTest {
 
     @Test
     fun `image density and nested tables penalize score`() {
-        val plain = article("""<article><p>This article has readable text and no heavy layout distractions.</p></article>""")
+        val plain = article(
+            """<article><p>This article has readable text and no heavy layout distractions.</p></article>""",
+        )
         val noisy = article(
             """
             <article>
@@ -68,7 +76,9 @@ class ContentScorerTest {
 
     @Test
     fun `link density reduces score`() {
-        val plain = article("""<article><p>This article body has useful words without sending readers elsewhere.</p></article>""")
+        val plain = article(
+            """<article><p>This article body has useful words without sending readers elsewhere.</p></article>""",
+        )
         val linked = article(
             """
             <article>

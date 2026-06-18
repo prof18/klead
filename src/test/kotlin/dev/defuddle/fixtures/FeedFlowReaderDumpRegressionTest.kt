@@ -257,7 +257,9 @@ class FeedFlowReaderDumpRegressionTest {
         )
         assertFalse(result.contentMarkdown.contains("iPhone 18 Pro buyers should watch out for a repeat problem"))
         assertFalse(result.contentMarkdown.contains("2 minute read"))
-        assertFalse(result.contentMarkdown.contains("iPhone 17 Pro Max in Cosmic Orange, without the color-change issue"))
+        assertFalse(
+            result.contentMarkdown.contains("iPhone 17 Pro Max in Cosmic Orange, without the color-change issue"),
+        )
         assertFalse(result.contentHtml.contains("river-score-wrap"))
         assertFalse(result.contentHtml.contains("article-aux"))
     }
@@ -277,10 +279,23 @@ class FeedFlowReaderDumpRegressionTest {
         assertTrue(result.contentMarkdown.contains("CVE-2026-35273"))
         assertTrue(result.contentMarkdown.contains("9.8 0-day exploited for 2 weeks"))
         assertFalse(result.contentMarkdown.contains("THE FALLOUT BEGINS"))
-        assertFalse(result.contentMarkdown.contains("PeopleSoft 0-day affecting hundreds of organizations steals gigabytes of data"))
-        assertFalse(result.contentMarkdown.contains("Vulnerability in the Oracle-owned PeopleSoft software is about as critical as they come"))
+        assertFalse(
+            result.contentMarkdown.contains(
+                "PeopleSoft 0-day affecting hundreds of organizations steals gigabytes of data",
+            ),
+        )
+        assertFalse(
+            result.contentMarkdown.contains(
+                "Vulnerability in the Oracle-owned PeopleSoft software is about as critical as they come",
+            ),
+        )
         assertFalse(result.contentMarkdown.contains("Jun 12, 2026 3:26 pm"))
-        assertFalse(lines.any { it == "Dan Goodin" || it == "Story text" || it == "Size" || it == "Links" || it == "47" || it == "|" })
+        assertFalse(
+            lines.any {
+                it == "Dan Goodin" || it == "Story text" || it == "Size" || it == "Links" || it == "47" ||
+                    it == "|"
+            },
+        )
         assertFalse(result.contentMarkdown.contains("Dan Goodin is Senior Security Editor"))
         assertFalse(result.contentMarkdown.contains("Photo of Dan Goodin"))
         assertFalse(result.contentHtml.contains("text-settings-dropdown-story"))
@@ -365,10 +380,26 @@ class FeedFlowReaderDumpRegressionTest {
             url = FixtureLoader.extractUrl(fixtureName, html),
         )
 
-        assertTrue(result.contentMarkdown.contains("[now sitting down at $179 shipped](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20)"))
-        assertTrue(result.contentMarkdown.contains("- AirPods Pro 3 [$179 (Reg. $249)](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20)"))
-        assertTrue(result.contentMarkdown.contains("- AirPods 4 [$99 (Reg. $129)](https://www.amazon.com/dp/B0DGHMNQ5Z/?tag=toysj-20&th=1)"))
-        assertTrue(result.contentMarkdown.contains("- AirPods Max 2 [$499 (Reg. $549)](https://www.amazon.com/dp/B0GSS4SGZR/?tag=toysj-20)"))
+        assertTrue(
+            result.contentMarkdown.contains(
+                "[now sitting down at $179 shipped](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20)",
+            ),
+        )
+        assertTrue(
+            result.contentMarkdown.contains(
+                "- AirPods Pro 3 [$179 (Reg. $249)](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20)",
+            ),
+        )
+        assertTrue(
+            result.contentMarkdown.contains(
+                "- AirPods 4 [$99 (Reg. $129)](https://www.amazon.com/dp/B0DGHMNQ5Z/?tag=toysj-20&th=1)",
+            ),
+        )
+        assertTrue(
+            result.contentMarkdown.contains(
+                "- AirPods Max 2 [$499 (Reg. $549)](https://www.amazon.com/dp/B0GSS4SGZR/?tag=toysj-20)",
+            ),
+        )
         assertFalse(result.contentMarkdown.contains("**]("))
         assertFalse(result.contentMarkdown.contains("[**"))
         assertFalse(Regex("""(^|[^!])\[\]\(""").containsMatchIn(result.contentMarkdown))
@@ -402,7 +433,9 @@ class FeedFlowReaderDumpRegressionTest {
         val lines = result.contentMarkdown.lines().map { it.trim() }
 
         assertTrue(result.contentMarkdown.contains("SpaceX’s historic IPO just got super-sized"))
-        assertTrue(result.contentMarkdown.contains("Funds will also be used to expand SpaceX’s AI compute infrastructure"))
+        assertTrue(
+            result.contentMarkdown.contains("Funds will also be used to expand SpaceX’s AI compute infrastructure"),
+        )
         assertTrue(result.contentMarkdown.contains("![Tesla and SpaceX CEO Elon Musk attends"))
         assertFalse(lines.any { it == "In Brief" || it == "Posted:" || it == "Sean O'Kane" })
         assertFalse(result.contentMarkdown.contains("7:45 AM PDT · June 15, 2026"))
@@ -480,7 +513,9 @@ class FeedFlowReaderDumpRegressionTest {
         assertTrue(result.contentMarkdown.contains("Programma"))
         assertTrue(result.contentMarkdown.contains("**Dove:** Piazza Marconi, Vigonovo"))
         assertTrue(result.contentMarkdown.contains("**Ingresso:** gratuito"))
-        assertFalse(lines.any { it == "/" || it == "Dove" || it == "Quando" || it == "Prezzo" || it == "Altre informazioni" })
+        assertFalse(
+            lines.any { it == "/" || it == "Dove" || it == "Quando" || it == "Prezzo" || it == "Altre informazioni" },
+        )
         assertFalse(lines.any { it == "Piazza Marconi" || it == "Piazza Guglielmo Marconi" || it == "Redazione" })
         assertFalse(result.contentMarkdown.contains("15 giugno 2026 9:57"))
         assertFalse(result.contentMarkdown.contains("![Avatar]"))
@@ -553,7 +588,9 @@ class FeedFlowReaderDumpRegressionTest {
         assertTrue(result.contentMarkdown.contains("Tra i nomi che stanno scaldando l’ambiente del Partizan"))
         assertTrue(result.contentMarkdown.contains("Derek Willis"))
         assertTrue(result.contentMarkdown.contains("Joan Peñarroya"))
-        assertTrue(result.contentMarkdown.contains("![Partizan Belgrado interessato all'ex Brindisi e Venezia Derek Willis]"))
+        assertTrue(
+            result.contentMarkdown.contains("![Partizan Belgrado interessato all'ex Brindisi e Venezia Derek Willis]"),
+        )
         assertFalse(result.contentMarkdown.contains("15.06.2026 09:05"))
         assertFalse(result.contentMarkdown.contains("Redazione Pianetabasket.com"))
         assertFalse(result.contentMarkdown.contains("vedi letture"))
@@ -846,7 +883,11 @@ class FeedFlowReaderDumpRegressionTest {
         assertTrue(result.contentMarkdown.contains("**SAVE $100:**"))
         assertTrue(result.contentMarkdown.contains("Amazon's slashed the price of most colors"))
         assertTrue(result.contentMarkdown.contains("open earbuds like the"))
-        assertTrue(result.contentMarkdown.contains("![bose ultra open earbuds against a pink and purple patterned background]"))
+        assertTrue(
+            result.contentMarkdown.contains(
+                "![bose ultra open earbuds against a pink and purple patterned background]",
+            ),
+        )
         assertFalse(result.contentMarkdown.contains("Hannah Hoolihan is a freelance writer with Mashable"))
         assertFalse(result.contentMarkdown.contains("Read Full Bio"))
         assertFalse(result.contentMarkdown.contains("Mashable Image"))
@@ -894,7 +935,11 @@ class FeedFlowReaderDumpRegressionTest {
 
         assertTrue(result.contentMarkdown.contains("The aftermath of a supernova"))
         assertTrue(result.contentMarkdown.contains("The galaxy M83, located about 15 million light-years from Earth"))
-        assertTrue(result.contentMarkdown.contains("NASA's Marshall Space Flight Center in Huntsville, Alabama, manages the Chandra program"))
+        assertTrue(
+            result.contentMarkdown.contains(
+                "NASA's Marshall Space Flight Center in Huntsville, Alabama, manages the Chandra program",
+            ),
+        )
         assertFalse(result.contentMarkdown.contains("About the Author"))
         assertFalse(result.contentMarkdown.contains("## Lee Mohon"))
         assertFalse(result.contentMarkdown.contains("## Share"))
@@ -904,7 +949,9 @@ class FeedFlowReaderDumpRegressionTest {
         assertFalse(result.contentMarkdown.contains("Explore More"))
         assertFalse(result.contentMarkdown.contains("Discover More Topics From NASA"))
         assertFalse(result.contentMarkdown.contains("NASA’s Chandra Discovers Possible Supernova Remnant"))
-        assertFalse(result.contentMarkdown.contains("Chandra X-ray Observatory is the world's most powerful X-ray telescope"))
+        assertFalse(
+            result.contentMarkdown.contains("Chandra X-ray Observatory is the world's most powerful X-ray telescope"),
+        )
         assertFalse(result.contentHtml.contains("hds-about-the-author"))
         assertFalse(result.contentHtml.contains("wp-block-nasa-blocks-credits-and-details"))
         assertFalse(result.contentHtml.contains("hds-related-articles"))
@@ -970,8 +1017,15 @@ class FeedFlowReaderDumpRegressionTest {
         assertTrue(result.contentMarkdown.contains("Which Kotlin versions are supported?"))
         assertTrue(result.contentMarkdown.contains("How a release line evolves"))
         assertFalse(result.contentMarkdown.contains("Kotlin logo"))
-        assertFalse(lines.any { it == "Kotlin" || it == "A concise multiplatform language developed by JetBrains" || it == "News" })
-        assertFalse(result.contentMarkdown.contains("# Introducing a Security Support Policy for the Kotlin Standard Library"))
+        assertFalse(
+            lines.any {
+                it == "Kotlin" || it == "A concise multiplatform language developed by JetBrains" ||
+                    it == "News"
+            },
+        )
+        assertFalse(
+            result.contentMarkdown.contains("# Introducing a Security Support Policy for the Kotlin Standard Library"),
+        )
         assertFalse(result.contentMarkdown.contains("Anton Yalyshev"))
         assertFalse(result.contentMarkdown.contains("Prev post"))
         assertFalse(result.contentMarkdown.contains("Next post"))
@@ -999,7 +1053,9 @@ class FeedFlowReaderDumpRegressionTest {
         assertTrue(result.contentMarkdown.contains("A schoolgirl said it was \"great fun\""))
         assertTrue(result.contentMarkdown.contains("O'Riordan said she was juggling exam revision with filming."))
         assertFalse(result.contentMarkdown.contains("# 'Idris Elba punched me and it was great fun'"))
-        assertFalse(lines.any { it == "15 hours ago" || it == "Henry Godfrey-Evans" || it == "Lois Worrow" || it == "," })
+        assertFalse(
+            lines.any { it == "15 hours ago" || it == "Henry Godfrey-Evans" || it == "Lois Worrow" || it == "," },
+        )
         assertFalse(result.contentMarkdown.contains("grey-placeholder.png"))
         assertFalse(result.contentMarkdown.contains("image unavailable"))
         assertFalse(result.contentMarkdown.contains("Do you have a story suggestion"))
@@ -1026,7 +1082,9 @@ class FeedFlowReaderDumpRegressionTest {
         assertTrue(result.contentMarkdown.contains("ranch dressing should be a human right"))
         assertFalse(result.contentMarkdown.contains("World Cup 2026 badge"))
         assertFalse(result.contentMarkdown.contains("# “Ranch Dressing Should Be A Human Right”"))
-        assertFalse(result.contentMarkdown.take(500).contains("I came for football and accidentally got a geography lesson"))
+        assertFalse(
+            result.contentMarkdown.take(500).contains("I came for football and accidentally got a geography lesson"),
+        )
         assertFalse(result.contentMarkdown.contains("Posted"))
         assertFalse(result.contentMarkdown.contains("27 minutes ago"))
         assertFalse(result.contentMarkdown.contains("Morgan Sloss"))
@@ -1098,11 +1156,21 @@ class FeedFlowReaderDumpRegressionTest {
 
         val lines = result.contentMarkdown.lines().map { it.trim() }.filter { it.isNotBlank() }
 
-        assertTrue(result.contentMarkdown.contains("[Madonna](https://www.rollingstone.com/t/madonna/) and [Sabrina Carpenter]"))
+        assertTrue(
+            result.contentMarkdown.contains(
+                "[Madonna](https://www.rollingstone.com/t/madonna/) and [Sabrina Carpenter]",
+            ),
+        )
         assertTrue(result.contentMarkdown.contains("Directed by Torso, the visual is set in an enormous club space"))
-        assertTrue(result.contentMarkdown.contains("[Madonna & Sabrina Carpenter - Bring Your Love (Official Video)](https://www.youtube.com/watch?v=EHrt-gFgvXo)"))
+        assertTrue(
+            result.contentMarkdown.contains(
+                "[Madonna & Sabrina Carpenter - Bring Your Love (Official Video)](https://www.youtube.com/watch?v=EHrt-gFgvXo)",
+            ),
+        )
         assertTrue(result.contentMarkdown.contains("video looks to be an extended version"))
-        assertFalse(lines.any { it == "Loose Lips" || it == "Confessions II" || it == "single" || it == "June 15, 2026" })
+        assertFalse(
+            lines.any { it == "Loose Lips" || it == "Confessions II" || it == "single" || it == "June 15, 2026" },
+        )
         assertFalse(result.contentMarkdown.contains("## Trending Stories"))
         assertFalse(result.contentMarkdown.contains("Jelly Roll Files for Divorce From Bunnie Xo"))
         assertFalse(result.contentMarkdown.contains("Melanie Martinez Pays Tribute"))
@@ -1149,8 +1217,14 @@ class FeedFlowReaderDumpRegressionTest {
             url = FixtureLoader.extractUrl(fixtureName, html),
         )
 
-        assertTrue(result.contentMarkdown.contains("[Gilmore Girls](https://screenrant.com/db/tv-show/gilmore-girls/) is about to say goodbye"))
-        assertTrue(result.contentMarkdown.contains("Wherever the show lands, there will be droves of eager fans waiting"))
+        assertTrue(
+            result.contentMarkdown.contains(
+                "[Gilmore Girls](https://screenrant.com/db/tv-show/gilmore-girls/) is about to say goodbye",
+            ),
+        )
+        assertTrue(
+            result.contentMarkdown.contains("Wherever the show lands, there will be droves of eager fans waiting"),
+        )
         assertFalse(result.contentMarkdown.contains("### Your Rating"))
         assertFalse(result.contentMarkdown.contains("10 stars"))
         assertFalse(result.contentMarkdown.contains("Rate Now"))
@@ -1196,7 +1270,9 @@ class FeedFlowReaderDumpRegressionTest {
         )
 
         assertTrue(result.contentMarkdown.contains("Samsung has released the third One UI 9 beta"))
-        assertTrue(result.contentMarkdown.contains("The changelog for the update notes the following bugs have been fixed"))
+        assertTrue(
+            result.contentMarkdown.contains("The changelog for the update notes the following bugs have been fixed"),
+        )
         assertTrue(result.contentMarkdown.contains("This update is already live in practically all beta regions"))
         assertFalse(result.contentMarkdown.contains("Affiliate links on Android Authority"))
         assertFalse(result.contentMarkdown.contains("Mobile"))

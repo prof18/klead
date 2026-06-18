@@ -13,8 +13,7 @@ class DefuddleCoroutineApiTest {
         val extractor = object : Extractor {
             override val id = "async-direct-test"
 
-            override fun matches(context: ExtractorContext): Boolean =
-                context.url.orEmpty().contains("direct.example")
+            override fun matches(context: ExtractorContext): Boolean = context.url.orEmpty().contains("direct.example")
 
             override fun extract(context: ExtractorContext): ExtractorResult =
                 ExtractorResult(contentHtml = "<article><p>Direct async content.</p></article>")

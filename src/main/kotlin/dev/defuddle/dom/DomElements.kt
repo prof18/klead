@@ -18,8 +18,6 @@ fun Element.innerHtmlStable(): String = html().trim()
 
 fun Element.childrenElements(): List<Element> = children().toList()
 
-fun Element.descendants(): List<Element> =
-    select("*").filterNot { it === this }
+fun Element.descendants(): List<Element> = select("*").filterNot { it === this }
 
-internal fun String.normalizeSpace(): String =
-    replace(Regex("""\s+"""), " ").trim()
+internal fun String.normalizeSpace(): String = replace(Regex("""\s+"""), " ").trim()

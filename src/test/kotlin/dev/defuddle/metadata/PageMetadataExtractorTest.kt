@@ -150,10 +150,7 @@ class PageMetadataExtractorTest {
         assertNull(metadata.author)
     }
 
-    private fun extract(
-        html: String,
-        url: String = "https://example.com/article",
-    ): PageMetadata {
+    private fun extract(html: String, url: String = "https://example.com/article"): PageMetadata {
         val document = Jsoup.parse(html, url)
         val schema = MetadataExtractor.extractSchemaOrg(document, debug = false)
         return PageMetadataExtractor.extract(

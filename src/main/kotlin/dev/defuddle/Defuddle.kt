@@ -6,8 +6,8 @@ import dev.defuddle.dom.isDangerousUrl
 import dev.defuddle.dom.parseFragment
 import dev.defuddle.extractors.Extractor
 import dev.defuddle.extractors.ExtractorContext
-import dev.defuddle.extractors.ExtractorResult
 import dev.defuddle.extractors.ExtractorRegistry
+import dev.defuddle.extractors.ExtractorResult
 import dev.defuddle.extractors.site.ExtractorRemovalPipeline
 import dev.defuddle.markdown.DefuddleMarkdownWriter
 import dev.defuddle.metadata.MetadataExtractor
@@ -48,13 +48,10 @@ data class DefuddleResult(
 )
 
 object Defuddle {
-    fun parseHtml(
-        html: String,
-        url: String,
-        options: DefuddleOptions = DefuddleOptions(),
-    ): DefuddleResult = runBlocking {
-        parseHtmlAsync(html = html, url = url, options = options)
-    }
+    fun parseHtml(html: String, url: String, options: DefuddleOptions = DefuddleOptions()): DefuddleResult =
+        runBlocking {
+            parseHtmlAsync(html = html, url = url, options = options)
+        }
 
     suspend fun parseHtmlAsync(
         html: String,
@@ -159,7 +156,13 @@ object Defuddle {
             wordCount = countBodyWords(content),
             parseTimeMillis = 0,
             variables = extractorResult?.variables.orEmpty(),
-            debug = buildDebug(options, detected.debug, schemaOrg.diagnostics, removals, matchedExtractors.map { it.id }),
+            debug = buildDebug(
+                options,
+                detected.debug,
+                schemaOrg.diagnostics,
+                removals,
+                matchedExtractors.map { it.id },
+            ),
         ).withExtractorMetadata(extractorResult)
     }
 
@@ -173,9 +176,8 @@ object Defuddle {
         )
     }
 
-    private fun dev.defuddle.metadata.SchemaOrgResult.contentText(): String? =
-        firstString("articleBody")
-            ?: firstString("text")
+    private fun dev.defuddle.metadata.SchemaOrgResult.contentText(): String? = firstString("articleBody")
+        ?: firstString("text")
 
     private fun prepareDocument(document: Document) {
         promoteNoscriptImages(document)
@@ -189,7 +191,8 @@ object Defuddle {
         extractorIds: List<String>,
     ): Map<String, Any?> {
         val debug = mutableMapOf<String, Any?>(
-            "unsupportedBrowserBehavior" to "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
+            "unsupportedBrowserBehavior" to
+                "Browser layout, JavaScript execution, and CSS generated content are unsupported.",
         )
         if (options.debug) {
             debug["selectedContentSelector"] = detectionDebug.selectedSelector
@@ -219,8 +222,7 @@ object Defuddle {
         return debug
     }
 
-    private fun String.hostOrNull(): String? =
-        runCatching { URI(this).host?.lowercase() }.getOrNull()
+    private fun String.hostOrNull(): String? = runCatching { URI(this).host?.lowercase() }.getOrNull()
 
     private fun DefuddleOptions.effectiveExtractors(): List<Extractor> =
         customExtractors + dev.defuddle.extractors.DefaultExtractors.all

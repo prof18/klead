@@ -6,10 +6,7 @@ import org.jsoup.nodes.TextNode
 import java.net.URI
 
 object HtmlStandardizer {
-    fun apply(
-        content: Element,
-        title: String?,
-    ) {
+    fun apply(content: Element, title: String?) {
         normalizeVideoEmbeds(content)
         normalizeCallouts(content)
         normalizeHeadings(content, title)
@@ -20,10 +17,7 @@ object HtmlStandardizer {
         removeEmptyWrappers(content)
     }
 
-    private fun normalizeHeadings(
-        content: Element,
-        title: String?,
-    ) {
+    private fun normalizeHeadings(content: Element, title: String?) {
         val firstHeading = content.selectFirst("h1, h2")
         if (title != null && firstHeading?.text()?.isDuplicateTitle(title) == true) {
             firstHeading.remove()
@@ -33,17 +27,15 @@ object HtmlStandardizer {
         }
     }
 
-    private fun String.isDuplicateTitle(title: String): Boolean =
-        comparableTitle() == title.comparableTitle()
+    private fun String.isDuplicateTitle(title: String): Boolean = comparableTitle() == title.comparableTitle()
 
-    private fun String.comparableTitle(): String =
-        trim()
-            .replace('’', '\'')
-            .replace('‘', '\'')
-            .replace('“', '"')
-            .replace('”', '"')
-            .replace(Regex("""\s+"""), " ")
-            .lowercase()
+    private fun String.comparableTitle(): String = trim()
+        .replace('’', '\'')
+        .replace('‘', '\'')
+        .replace('“', '"')
+        .replace('”', '"')
+        .replace(Regex("""\s+"""), " ")
+        .lowercase()
 
     private fun normalizeCodeBlocks(content: Element) {
         content.select("pre").forEach { pre ->
@@ -84,7 +76,11 @@ object HtmlStandardizer {
 
         content.select(".hidden_video[data-video-id]").forEach { placeholder ->
             val video = youtubeVideoFromId(placeholder.attr("data-video-id"))
-                ?: trustedVideoFromUrl(placeholder.selectFirst("""a[href*="youtube.com/watch"], a[href*="youtu.be/"]""")?.attr("href").orEmpty())
+                ?: trustedVideoFromUrl(
+                    placeholder.selectFirst(
+                        """a[href*="youtube.com/watch"], a[href*="youtu.be/"]""",
+                    )?.attr("href").orEmpty(),
+                )
                 ?: return@forEach
             val iframe = Element("iframe")
             applyVideoAttributes(iframe, video, video.defaultTitle)
@@ -92,16 +88,15 @@ object HtmlStandardizer {
         }
     }
 
-    private fun applyVideoAttributes(
-        iframe: Element,
-        video: VideoEmbed,
-        title: String,
-    ) {
+    private fun applyVideoAttributes(iframe: Element, video: VideoEmbed, title: String) {
         iframe.attr("src", video.embedUrl)
         iframe.attr("title", title.ifBlank { video.defaultTitle })
         iframe.attr("loading", "lazy")
         iframe.attr("allowfullscreen", "")
-        iframe.attr("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share")
+        iframe.attr(
+            "allow",
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+        )
         iframe.attr("data-defuddle-video-url", video.watchUrl)
     }
 
@@ -164,22 +159,21 @@ object HtmlStandardizer {
         val attrs = listOf(element.className(), element.attr("data-lang"), element.attr("data-language"))
         for (attr in attrs) {
             LANGUAGE_REGEX.find(attr)?.let { return it.groupValues[1].lowercase() }
-            attr.takeIf { it.isNotBlank() && it.length <= 24 && it.all { char -> char.isLetterOrDigit() || char in "+#_-" } }
+            attr.takeIf {
+                it.isNotBlank() && it.length <= 24 &&
+                    it.all { char -> char.isLetterOrDigit() || char in "+#_-" }
+            }
                 ?.let { return it.lowercase() }
         }
         return null
     }
 
-    private fun firstAttr(
-        element: Element,
-        vararg names: String,
-    ): String? =
+    private fun firstAttr(element: Element, vararg names: String): String? =
         names.firstNotNullOfOrNull { name -> element.attr(name).trim().ifBlank { null } }
 
-    private fun isPlaceholderImage(src: String): Boolean =
-        src.isBlank() ||
-            src.startsWith("data:image/svg", ignoreCase = true) ||
-            src.startsWith("data:image/gif", ignoreCase = true)
+    private fun isPlaceholderImage(src: String): Boolean = src.isBlank() ||
+        src.startsWith("data:image/svg", ignoreCase = true) ||
+        src.startsWith("data:image/gif", ignoreCase = true)
 
     private fun trustedVideoFromUrl(url: String): VideoEmbed? {
         val uri = runCatching { URI(url.trim()) }.getOrNull() ?: return null
@@ -188,23 +182,28 @@ object HtmlStandardizer {
         val host = uri.host?.lowercase()?.removePrefix("www.") ?: return null
         val path = uri.rawPath.orEmpty()
 
-        if (host == "youtube.com" || host == "youtube-nocookie.com") {
-            if (path.startsWith("/embed/")) {
-                return youtubeVideoFromId(path.removePrefix("/embed/").substringBefore('/'))
+        return when {
+            host in YOUTUBE_EMBED_HOSTS && path.startsWith("/embed/") -> {
+                youtubeVideoFromId(path.removePrefix("/embed/").substringBefore('/'))
             }
-            if (path == "/watch") {
-                return youtubeVideoFromId(uri.rawQuery.orEmpty().split('&').firstNotNullOfOrNull { part ->
-                    val pieces = part.split('=', limit = 2)
-                    pieces.takeIf { it.size == 2 && it[0] == "v" }?.get(1)
-                }.orEmpty())
-            }
-        }
-        if (host == "youtu.be") {
-            return youtubeVideoFromId(path.trim('/').substringBefore('/'))
-        }
 
-        return null
+            host in YOUTUBE_EMBED_HOSTS && path == "/watch" -> {
+                youtubeVideoFromId(youtubeWatchIdFromQuery(uri.rawQuery.orEmpty()))
+            }
+
+            host == "youtu.be" -> {
+                youtubeVideoFromId(path.trim('/').substringBefore('/'))
+            }
+
+            else -> null
+        }
     }
+
+    private fun youtubeWatchIdFromQuery(query: String): String = query.split('&')
+        .firstNotNullOfOrNull { part ->
+            val pieces = part.split('=', limit = 2)
+            pieces.takeIf { it.size == 2 && it[0] == "v" }?.get(1)
+        }.orEmpty()
 
     private fun youtubeVideoFromId(rawId: String): VideoEmbed? {
         val id = rawId.trim()
@@ -219,10 +218,7 @@ object HtmlStandardizer {
     private val LANGUAGE_REGEX = Regex("""(?:^|\s)language-([A-Za-z0-9_+#-]+)(?:\s|$)""")
     private val CALLOUT_MARKER = Regex("""\[!(\w+)]""")
     private val YOUTUBE_ID = Regex("""[A-Za-z0-9_-]{6,32}""")
+    private val YOUTUBE_EMBED_HOSTS = setOf("youtube.com", "youtube-nocookie.com")
 
-    private data class VideoEmbed(
-        val embedUrl: String,
-        val watchUrl: String,
-        val defaultTitle: String,
-    )
+    private data class VideoEmbed(val embedUrl: String, val watchUrl: String, val defaultTitle: String)
 }

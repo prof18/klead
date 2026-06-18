@@ -57,10 +57,9 @@ class ExtractorMatchingTest {
         override val priority: Int = 0,
     ) : Extractor
 
-    private fun context(url: String, html: String): ExtractorContext =
-        ExtractorContext(
-            url = url,
-            host = URI(url).host,
-            document = Jsoup.parse(html),
-        )
+    private fun context(url: String, html: String): ExtractorContext = ExtractorContext(
+        url = url,
+        host = URI(url).host,
+        document = Jsoup.parse(html),
+    )
 }

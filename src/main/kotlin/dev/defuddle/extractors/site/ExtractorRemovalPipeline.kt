@@ -7,19 +7,11 @@ import dev.defuddle.removal.RemovalRecord
 import org.jsoup.nodes.Element
 
 internal object ExtractorRemovalPipeline {
-    fun applyPreContentRemovals(
-        root: Element,
-        extractors: List<Extractor>,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    fun applyPreContentRemovals(root: Element, extractors: List<Extractor>, debug: MutableList<RemovalRecord>) {
         apply(root, extractors, debug, SelectorPhase.PreContent)
     }
 
-    fun applyPostContentRemovals(
-        content: Element,
-        extractors: List<Extractor>,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    fun applyPostContentRemovals(content: Element, extractors: List<Extractor>, debug: MutableList<RemovalRecord>) {
         apply(content, extractors, debug, SelectorPhase.PostContent)
     }
 
@@ -44,10 +36,7 @@ internal object ExtractorRemovalPipeline {
         }
     }
 
-    private enum class SelectorPhase(
-        val step: String,
-        val selectors: (Extractor) -> List<String>,
-    ) {
+    private enum class SelectorPhase(val step: String, val selectors: (Extractor) -> List<String>) {
         PreContent("removeExtractorPreContentSelectors", Extractor::preContentRemoveSelectors),
         PostContent("removeExtractorSelectors", Extractor::postContentRemoveSelectors),
     }

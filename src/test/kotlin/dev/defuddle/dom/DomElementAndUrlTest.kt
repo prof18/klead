@@ -47,7 +47,10 @@ class DomElementAndUrlTest {
         assertEquals("https://example.com/articles/current/next.html", link.absUrlOrEmpty("href"))
         assertEquals("https://example.com/image.png", image.absUrlOrEmpty("src"))
         assertEquals("https://example.com/assets/photo.jpg", resolveUrl("https://example.com/a/b", "/assets/photo.jpg"))
-        assertEquals("https://example.com/a/relative/photo.jpg", resolveUrl("https://example.com/a/b", "relative/photo.jpg"))
+        assertEquals(
+            "https://example.com/a/relative/photo.jpg",
+            resolveUrl("https://example.com/a/b", "relative/photo.jpg"),
+        )
     }
 
     @Test

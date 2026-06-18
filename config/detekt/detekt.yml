@@ -1,0 +1,51 @@
+config:
+  validation: true
+  warningsAsErrors: true
+
+complexity:
+  ComplexCondition:
+    allowedConditions: 4
+  CyclomaticComplexMethod:
+    allowedComplexity: 30
+  LargeClass:
+    active: true
+    allowedLines: 1200
+    excludes:
+      - '**/src/test/**'
+  LongMethod:
+    active: true
+    allowedLines: 90
+    excludes:
+      - '**/src/test/**'
+  TooManyFunctions:
+    ignorePrivate: true
+    ignoreInternal: true
+    allowedFunctionsPerFile: 20
+    allowedFunctionsPerClass: 40
+    allowedFunctionsPerObject: 20
+
+ktlint:
+  active: true
+  code_style: ktlint_official
+  autoCorrect: true
+  MaximumLineLength:
+    active: false
+
+naming:
+  MatchingDeclarationName:
+    active: true
+    excludes:
+      - '**/src/test/**'
+
+style:
+  LoopWithTooManyJumpStatements:
+    active: false
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: false
+  ReturnCount:
+    max: 5
+    excludedFunctions:
+      - cleanAuthor
+      - hiddenReason

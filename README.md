@@ -67,10 +67,12 @@ val result = Defuddle.parseHtml(
 Configured Gradle gates:
 
 ```sh
+./gradlew detekt -q --console=plain
 ./gradlew test -q --console=plain
 ./gradlew check -q --console=plain
 ```
 
-`lint` and `detekt` are not configured in this project.
+`check` includes Detekt, tests, and documentation checks. Detekt builds on its
+default Kotlin rule configuration and adds ktlint formatting rules.
 
 See [docs/README.md](docs/README.md) for the implementation plan and [docs/fixture-coverage.md](docs/fixture-coverage.md) for current fixture coverage.

@@ -76,15 +76,14 @@ class ExtractorRegistryTest {
         assertFalse(result.contentMarkdown.contains("Ignored generic content."))
     }
 
-    private fun namedExtractor(name: String, priority: Int = 0): Extractor =
-        object : Extractor {
-            override val id = name
-            override val priority = priority
+    private fun namedExtractor(name: String, priority: Int = 0): Extractor = object : Extractor {
+        override val id = name
+        override val priority = priority
 
-            override fun matches(context: ExtractorContext) = true
+        override fun matches(context: ExtractorContext) = true
 
-            override fun extract(context: ExtractorContext) = ExtractorResult(variables = mapOf("name" to name))
-        }
+        override fun extract(context: ExtractorContext) = ExtractorResult(variables = mapOf("name" to name))
+    }
 
     private fun org.jsoup.nodes.Document.context(url: String): ExtractorContext =
         ExtractorContext(url = url, host = java.net.URI(url).host, document = this)

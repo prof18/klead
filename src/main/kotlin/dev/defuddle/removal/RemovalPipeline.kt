@@ -4,12 +4,7 @@ import dev.defuddle.dom.removeSafely
 import dev.defuddle.dom.selectSafe
 import org.jsoup.nodes.Element
 
-data class RemovalRecord(
-    val step: String,
-    val selector: String?,
-    val reason: String,
-    val preview: String,
-)
+data class RemovalRecord(val step: String, val selector: String?, val reason: String, val preview: String)
 
 internal fun recordAndRemove(
     element: Element,
@@ -60,10 +55,7 @@ internal object RemovalPipeline {
         ImageRemovalPipeline.apply(content, metadataImage, debug, ::partialHaystack)
     }
 
-    private fun removeHiddenElements(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeHiddenElements(content: Element, debug: MutableList<RemovalRecord>) {
         for (element in content.select("*").toList()) {
             val reason = hiddenReason(element) ?: continue
             if (isMathWrapper(element)) continue
@@ -79,7 +71,12 @@ internal object RemovalPipeline {
         if ("visibility:hidden" in style) return "visibility:hidden"
         if (OPACITY_ZERO_STYLE_PATTERN.containsMatchIn(style)) return "opacity:0"
         val classes = element.classNames()
-        if (classes.any { it == "hidden" || it == "invisible" || it.endsWith(":hidden") || it.endsWith(":invisible") }) {
+        if (classes.any {
+                it == "hidden" || it == "invisible" || it.endsWith(
+                    ":hidden",
+                ) || it.endsWith(":invisible")
+            }
+        ) {
             return "hidden class"
         }
         return null
@@ -94,17 +91,13 @@ internal object RemovalPipeline {
             "mathjax" in className
     }
 
-    private fun hiddenSelector(element: Element): String =
-        when {
-            element.id().isNotBlank() -> "#${element.id()}"
-            element.className().isNotBlank() -> "${element.tagName()}.${element.classNames().joinToString(".")}"
-            else -> element.tagName()
-        }
+    private fun hiddenSelector(element: Element): String = when {
+        element.id().isNotBlank() -> "#${element.id()}"
+        element.className().isNotBlank() -> "${element.tagName()}.${element.classNames().joinToString(".")}"
+        else -> element.tagName()
+    }
 
-    private fun removeExactSelectors(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeExactSelectors(content: Element, debug: MutableList<RemovalRecord>) {
         for (selector in EXACT_SELECTORS) {
             for (element in content.selectSafe(selector).toList()) {
                 if (isProtected(element) && selector !in PROTECTED_EXACT_SELECTOR_OVERRIDES) continue
@@ -113,10 +106,7 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun removePartialSelectors(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removePartialSelectors(content: Element, debug: MutableList<RemovalRecord>) {
         for (element in content.select("*").toList()) {
             if (isProtected(element) || isLikelyProse(element)) continue
             val haystack = partialHaystack(element)
@@ -126,10 +116,7 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun removeLowScoringBlocks(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeLowScoringBlocks(content: Element, debug: MutableList<RemovalRecord>) {
         for (element in content.select("section, aside, div, ul, ol").toList()) {
             if (isProtected(element) || isLikelyProse(element)) continue
             val text = element.text()
@@ -142,10 +129,7 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun removeContentPatterns(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeContentPatterns(content: Element, debug: MutableList<RemovalRecord>) {
         removeOpeningArticleHeaderBlocks(content, debug)
         removeRecommendationSiblingRuns(content, debug)
         removeNestedArticleFooterBlocks(content, debug)
@@ -196,10 +180,7 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun removeOpeningArticleHeaderBlocks(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeOpeningArticleHeaderBlocks(content: Element, debug: MutableList<RemovalRecord>) {
         for (article in openingArticleCandidates(content)) {
             val header = article.firstSubstantiveChild() ?: continue
             if (header.normalName() != "header") continue
@@ -225,10 +206,7 @@ internal object RemovalPipeline {
         return candidates
     }
 
-    private fun removeRecommendationSiblingRuns(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeRecommendationSiblingRuns(content: Element, debug: MutableList<RemovalRecord>) {
         for (headingBlock in content.select("h1, h2, h3, h4, h5, h6, div, section").toList()) {
             if (!headingBlock.isAttachedTo(content)) continue
             if (!isRecommendationSectionHeadingBlock(headingBlock)) continue
@@ -270,8 +248,7 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun Element.isAttachedTo(root: Element): Boolean =
-        this === root || parents().any { it === root }
+    private fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
 
     private fun Element.enclosingRecommendationBlock(root: Element): Element? {
         var current = parent()
@@ -293,11 +270,10 @@ internal object RemovalPipeline {
         return firstChild === headingBlock || headingBlock.parents().any { it === firstChild }
     }
 
-    private fun Element.firstSubstantiveChild(): Element? =
-        children().firstOrNull { child ->
-            child.normalName() !in NON_SUBSTANTIVE_OPENING_TAGS &&
-                child.text().isNotBlank()
-        }
+    private fun Element.firstSubstantiveChild(): Element? = children().firstOrNull { child ->
+        child.normalName() !in NON_SUBSTANTIVE_OPENING_TAGS &&
+            child.text().isNotBlank()
+    }
 
     private fun Element.hasArticleBodySiblingAfter(header: Element): Boolean {
         var afterHeader = false
@@ -329,76 +305,100 @@ internal object RemovalPipeline {
         return OPENING_ARTICLE_HEADER_HINTS.any { it in hints }
     }
 
-    private fun removeNestedArticleFooterBlocks(
-        content: Element,
-        debug: MutableList<RemovalRecord>,
-    ) {
+    private fun removeNestedArticleFooterBlocks(content: Element, debug: MutableList<RemovalRecord>) {
         for (element in content.select("aside, div, p, section, ul, ol, hr").toList()) {
             if (isProtected(element)) continue
             when {
                 isOrphanSeparatorBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "orphan separator block")
                 }
+
                 isTrailingDividerBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "trailing divider")
                 }
+
                 isSkeletonRecirculationBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "skeleton recirculation block")
                 }
+
                 isPostedByBylineBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "posted-by byline strip")
                 }
+
                 isRecommendationSectionHeadingBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "orphan recommendation heading")
                 }
+
                 isAboutAuthorFooterBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "about-author footer block")
                 }
+
                 isArticleFooterDetailsBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article details footer block")
                 }
+
                 isRelatedTermsBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "related terms footer block")
                 }
+
                 isTagListBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer tag list")
                 }
+
                 isCommentCountBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment count")
                 }
+
                 isBackToTopBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer back-to-top control")
                 }
+
                 isCommentPromptBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment prompt")
                 }
+
                 isReadyForMoreBlock(element) -> {
-                    recordAndRemove(element, debug, "removeContentPatterns", null, "article footer subscription call to action")
+                    recordAndRemove(
+                        element,
+                        debug,
+                        "removeContentPatterns",
+                        null,
+                        "article footer subscription call to action",
+                    )
                 }
+
                 isMobileAppPromoBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "mobile app promo")
                 }
+
                 isNewsletterSignupBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "newsletter signup")
                 }
+
                 isDonationWidgetBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "donation widget")
                 }
+
                 isBylineMetadataStrip(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "byline metadata strip")
                 }
+
                 isArticlePackageBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "article package card")
                 }
+
                 isInlineAuthorBioBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "inline author bio")
                 }
+
                 isFollowTopicsBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "follow topics prompt")
                 }
+
                 isStorySuggestionBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "story suggestion prompt")
                 }
+
                 isLocalNewsFollowBlock(element) -> {
                     recordAndRemove(element, debug, "removeContentPatterns", null, "local news follow prompt")
                 }
@@ -503,9 +503,8 @@ internal object RemovalPipeline {
         return true
     }
 
-    private fun Element.hasSubstantiveContent(): Boolean =
-        text().trim().isNotBlank() ||
-            select("img, picture, figure, table, pre, code, math, p, h1, h2, h3, h4, h5, h6").isNotEmpty()
+    private fun Element.hasSubstantiveContent(): Boolean = text().trim().isNotBlank() ||
+        select("img, picture, figure, table, pre, code, math, p, h1, h2, h3, h4, h5, h6").isNotEmpty()
 
     private fun isSkeletonRecirculationBlock(element: Element): Boolean {
         val text = element.text().trim().collapseWhitespace()
@@ -520,7 +519,12 @@ internal object RemovalPipeline {
                 !LOREM_PLACEHOLDER_PATTERN.containsMatchIn(paragraphText)
         }
         if (nonPlaceholderProseCount > 0) return false
-        if (element.select("[data-cy=article-content], article.article-content, .article-content").isNotEmpty()) return false
+        if (element.select(
+                "[data-cy=article-content], article.article-content, .article-content",
+            ).isNotEmpty()
+        ) {
+            return false
+        }
 
         val hints = "${partialHaystack(element)} ${element.select("*").joinToString(" ") { partialHaystack(it) }}"
         val hasSkeletonHint = SKELETON_RECIRCULATION_HINTS.any { it in hints }
@@ -604,7 +608,10 @@ internal object RemovalPipeline {
         val text = element.text().trim().collapseWhitespace()
         if (text.isBlank() || text.length > RELATED_TERMS_MAX_LENGTH) return false
         if (!RELATED_TERMS_PATTERN.containsMatchIn(text)) return false
-        if (element.select("p").any { it.text().trim().collapseWhitespace().wordCount() >= RELATED_TERMS_PROSE_WORD_GUARD }) {
+        if (element.select(
+                "p",
+            ).any { it.text().trim().collapseWhitespace().wordCount() >= RELATED_TERMS_PROSE_WORD_GUARD }
+        ) {
             return false
         }
 
@@ -773,11 +780,9 @@ internal object RemovalPipeline {
         return element.select("a[href]").size >= 2
     }
 
-    private fun String.collapseWhitespace(): String =
-        replace(WHITESPACE_PATTERN, " ")
+    private fun String.collapseWhitespace(): String = replace(WHITESPACE_PATTERN, " ")
 
-    private fun String.wordCount(): Int =
-        split(WHITESPACE_PATTERN).count { it.isNotBlank() }
+    private fun String.wordCount(): Int = split(WHITESPACE_PATTERN).count { it.isNotBlank() }
 
     private val EXACT_SELECTORS = listOf(
         "nav",

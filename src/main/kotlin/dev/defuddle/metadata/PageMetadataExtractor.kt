@@ -94,11 +94,7 @@ object PageMetadataExtractor {
         return candidates.firstNotNullOfOrNull(::cleanAuthor)
     }
 
-    private fun extractImage(
-        metaTags: List<MetaTagItem>,
-        schemaOrg: SchemaOrgResult,
-        baseUrl: String,
-    ): String? {
+    private fun extractImage(metaTags: List<MetaTagItem>, schemaOrg: SchemaOrgResult, baseUrl: String): String? {
         val raw = schemaOrg.primaryArticleImage()
             ?: metaTags.firstContent("og:image", "twitter:image")
             ?: schemaOrg.firstString("image.url")
@@ -110,7 +106,14 @@ object PageMetadataExtractor {
         val articleTypes = setOf("article", "newsarticle", "blogposting", "reportageNewsArticle".lowercase())
         val pageTypes = setOf("webpage")
         val primary = items.firstNotNullOfOrNull { item ->
-            if (item.hasType(articleTypes)) imageValue(item["image"], items) ?: imageValue(item["primaryImageOfPage"], items) else null
+            if (item.hasType(
+                    articleTypes,
+                )
+            ) {
+                imageValue(item["image"], items) ?: imageValue(item["primaryImageOfPage"], items)
+            } else {
+                null
+            }
         }
         if (primary != null) return primary
 
@@ -135,28 +138,24 @@ object PageMetadataExtractor {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun imageValue(
-        value: Any?,
-        items: List<Map<String, Any?>>,
-    ): String? =
-        when (value) {
-            is String -> value.takeIf { it.isNotBlank() }
-            is Map<*, *> -> {
-                val map = value as Map<String, Any?>
-                (map["url"] as? String)?.takeIf { it.isNotBlank() }
-                    ?: (map["contentUrl"] as? String)?.takeIf { it.isNotBlank() }
-                    ?: (map["@id"] as? String)
-                        ?.let { id -> items.firstOrNull { it["@id"] == id } }
-                        ?.let { imageValue(it, items) }
-            }
-            is List<*> -> value.firstNotNullOfOrNull { imageValue(it, items) }
-            else -> null
+    private fun imageValue(value: Any?, items: List<Map<String, Any?>>): String? = when (value) {
+        is String -> value.takeIf { it.isNotBlank() }
+
+        is Map<*, *> -> {
+            val map = value as Map<String, Any?>
+            (map["url"] as? String)?.takeIf { it.isNotBlank() }
+                ?: (map["contentUrl"] as? String)?.takeIf { it.isNotBlank() }
+                ?: (map["@id"] as? String)
+                    ?.let { id -> items.firstOrNull { it["@id"] == id } }
+                    ?.let { imageValue(it, items) }
         }
 
-    private fun extractFavicon(
-        document: Document,
-        baseUrl: String,
-    ): String? =
+        is List<*> -> value.firstNotNullOfOrNull { imageValue(it, items) }
+
+        else -> null
+    }
+
+    private fun extractFavicon(document: Document, baseUrl: String): String? =
         document.selectFirst("link[rel~=(?i)^(shortcut icon|icon)$]")
             ?.attr("href")
             ?.let { resolveUrl(baseUrl, it) }
@@ -177,23 +176,15 @@ object PageMetadataExtractor {
             }
     }
 
-    private fun h1AdjacentTexts(
-        h1: Element,
-        limit: Int,
-    ): List<String> =
-        h1.nextElementSiblings()
-            .take(limit)
-            .flatMap { sibling ->
-                val childTexts = sibling.children().map { it.text().trim() }.filter { it.isNotBlank() }
-                childTexts.ifEmpty { listOf(sibling.text().trim()) }
-            }
-            .filter { it.isNotBlank() }
+    private fun h1AdjacentTexts(h1: Element, limit: Int): List<String> = h1.nextElementSiblings()
+        .take(limit)
+        .flatMap { sibling ->
+            val childTexts = sibling.children().map { it.text().trim() }.filter { it.isNotBlank() }
+            childTexts.ifEmpty { listOf(sibling.text().trim()) }
+        }
+        .filter { it.isNotBlank() }
 
-    private fun cleanTitle(
-        value: String?,
-        site: String?,
-        domain: String?,
-    ): String? {
+    private fun cleanTitle(value: String?, site: String?, domain: String?): String? {
         var title = cleanValue(value) ?: return null
         if (isPlaceholder(title)) return null
 
@@ -228,28 +219,25 @@ object PageMetadataExtractor {
         return cleaned
     }
 
-    private fun cleanValue(value: String?): String? =
-        value
-            ?.replace(Regex("""\s+"""), " ")
-            ?.trim()
-            ?.takeIf { it.isNotBlank() }
+    private fun cleanValue(value: String?): String? = value
+        ?.replace(Regex("""\s+"""), " ")
+        ?.trim()
+        ?.takeIf { it.isNotBlank() }
 
     private fun cleanNonPlaceholder(value: String?): String? {
         val cleaned = cleanValue(value) ?: return null
         return cleaned.takeUnless(::isPlaceholder)
     }
 
-    private fun isPlaceholder(value: String): Boolean =
-        value.lowercase() in PLACEHOLDERS ||
-            value == ".." ||
-            "{{" in value ||
-            "}}" in value ||
-            value.startsWith("\${")
+    private fun isPlaceholder(value: String): Boolean = value.lowercase() in PLACEHOLDERS ||
+        value == ".." ||
+        "{{" in value ||
+        "}}" in value ||
+        value.startsWith("\${")
 
-    private fun parseDomain(url: String): String? =
-        runCatching { URI(url).host?.removePrefix("www.") }
-            .getOrNull()
-            ?.ifBlank { null }
+    private fun parseDomain(url: String): String? = runCatching { URI(url).host?.removePrefix("www.") }
+        .getOrNull()
+        ?.ifBlank { null }
 
     private fun List<MetaTagItem>.firstContent(vararg keys: String): String? {
         for (key in keys) {
@@ -262,14 +250,12 @@ object PageMetadataExtractor {
         return null
     }
 
-    private fun List<MetaTagItem>.contents(key: String): List<String> =
-        filter { tag ->
-            tag.matchesKey(key)
-        }.mapNotNull { cleanValue(it.content) }
+    private fun List<MetaTagItem>.contents(key: String): List<String> = filter { tag ->
+        tag.matchesKey(key)
+    }.mapNotNull { cleanValue(it.content) }
 
-    private fun MetaTagItem.matchesKey(key: String): Boolean =
-        name.equals(key, ignoreCase = true) ||
-            property.equals(key, ignoreCase = true)
+    private fun MetaTagItem.matchesKey(key: String): Boolean = name.equals(key, ignoreCase = true) ||
+        property.equals(key, ignoreCase = true)
 
     private val PLACEHOLDERS = setOf(
         "untitled",
@@ -284,5 +270,4 @@ object PageMetadataExtractor {
         """\b(?:\d{4}-\d{1,2}-\d{1,2}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{4})\b""",
         RegexOption.IGNORE_CASE,
     )
-
 }

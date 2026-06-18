@@ -13,9 +13,8 @@ object WikipediaExtractor : Extractor {
         runCatching { URI(context.url.orEmpty()).host.orEmpty().contains("wikipedia.org") }.getOrDefault(false) &&
             context.document.selectFirst("#mw-content-text") != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult =
-        ExtractorResult(
-            contentSelector = "#mw-content-text",
-            metadata = ExtractorMetadata(site = "Wikipedia"),
-        )
+    override fun extract(context: ExtractorContext): ExtractorResult = ExtractorResult(
+        contentSelector = "#mw-content-text",
+        metadata = ExtractorMetadata(site = "Wikipedia"),
+    )
 }

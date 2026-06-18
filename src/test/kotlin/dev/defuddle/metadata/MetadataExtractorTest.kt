@@ -87,5 +87,4 @@ class MetadataExtractorTest {
         assertEquals(1, schema.diagnostics.size)
         assertTrue(schema.diagnostics.first().contains("Invalid JSON-LD"))
     }
-
 }

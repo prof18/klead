@@ -5,11 +5,7 @@ import dev.defuddle.dom.selectSafe
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
-data class DetectedContent(
-    val element: Element,
-    val selectedSelector: String,
-    val debug: ContentDetectionDebug,
-)
+data class DetectedContent(val element: Element, val selectedSelector: String, val debug: ContentDetectionDebug)
 
 data class ContentDetectionDebug(
     val selectedSelector: String,
@@ -17,10 +13,7 @@ data class ContentDetectionDebug(
     val extractorContentSelector: String? = null,
 )
 
-data class ContentCandidateDebug(
-    val selector: String,
-    val score: Double,
-)
+data class ContentCandidateDebug(val selector: String, val score: Double)
 
 object MainContentDetector {
     val entryPointSelectors = listOf(
@@ -101,18 +94,12 @@ object MainContentDetector {
         )
     }
 
-    private fun score(
-        element: Element,
-        selectorIndex: Int,
-    ): Double {
+    private fun score(element: Element, selectorIndex: Int): Double {
         val priorityBonus = (entryPointSelectors.size - selectorIndex) * 30.0
         return ContentScorer.scoreElement(element).total + priorityBonus
     }
 
-    private fun detectPreferredContent(
-        document: Document,
-        preferredSelectors: List<String>,
-    ): Candidate? {
+    private fun detectPreferredContent(document: Document, preferredSelectors: List<String>): Candidate? {
         for (selector in preferredSelectors.distinct().filter { it.isNotBlank() }) {
             val candidate = document.selectSafe(selector)
                 .map { element -> element to ContentScorer.scoreElement(element) }
@@ -135,10 +122,7 @@ object MainContentDetector {
             linkDensity <= PREFERRED_SELECTOR_MAX_LINK_DENSITY
     }
 
-    private fun refineListingParent(
-        selected: Candidate,
-        candidates: List<Candidate>,
-    ): Candidate {
+    private fun refineListingParent(selected: Candidate, candidates: List<Candidate>): Candidate {
         val parentCandidate = candidates.firstOrNull { candidate ->
             candidate.element !== selected.element &&
                 candidate.element.children().count { it.tagName() == "article" } > 1 &&
@@ -147,10 +131,7 @@ object MainContentDetector {
         return parentCandidate ?: selected
     }
 
-    private fun refineBroadContainerToDirectArticle(
-        selected: Candidate,
-        candidates: List<Candidate>,
-    ): Candidate? {
+    private fun refineBroadContainerToDirectArticle(selected: Candidate, candidates: List<Candidate>): Candidate? {
         if (selected.selector !in BROAD_CONTAINER_SELECTORS) return null
         val directArticles = selected.element.children()
             .filter { it.normalName() == "article" || it.attr("role").equals("article", ignoreCase = true) }
@@ -175,10 +156,7 @@ object MainContentDetector {
             )
     }
 
-    private fun refineBodyToFocusedCandidate(
-        selected: Candidate,
-        candidates: List<Candidate>,
-    ): Candidate? {
+    private fun refineBodyToFocusedCandidate(selected: Candidate, candidates: List<Candidate>): Candidate? {
         val focusedCandidates = candidates
             .filter { candidate ->
                 candidate.element !== selected.element &&
@@ -197,8 +175,7 @@ object MainContentDetector {
             ?: focusedCandidates.firstOrNull()
     }
 
-    private fun Candidate.isFocusedContentCandidate(): Boolean =
-        selector in FOCUSED_CONTENT_SELECTORS
+    private fun Candidate.isFocusedContentCandidate(): Boolean = selector in FOCUSED_CONTENT_SELECTORS
 
     private fun detectTableLayout(body: Element): Candidate? {
         val bodyWords = ContentScorer.scoreElement(body).wordCount
@@ -233,10 +210,7 @@ object MainContentDetector {
             "article" in hints
     }
 
-    private fun refineWithSchemaText(
-        document: Document,
-        schemaText: String?,
-    ): Candidate? {
+    private fun refineWithSchemaText(document: Document, schemaText: String?): Candidate? {
         val needle = schemaText?.trim()?.takeIf { it.length >= 20 } ?: return null
         return document.body()
             ?.select("article, main, section, div")
@@ -256,27 +230,22 @@ object MainContentDetector {
         selector: String,
         candidates: List<Candidate>,
         extractorContentSelector: String? = null,
-    ): DetectedContent =
-        DetectedContent(
-            element = element,
+    ): DetectedContent = DetectedContent(
+        element = element,
+        selectedSelector = selector,
+        debug = ContentDetectionDebug(
             selectedSelector = selector,
-            debug = ContentDetectionDebug(
-                selectedSelector = selector,
-                extractorContentSelector = extractorContentSelector,
-                candidates = candidates.map {
-                    ContentCandidateDebug(
-                        selector = it.selector,
-                        score = it.score,
-                    )
-                },
-            ),
-        )
-
-    private data class Candidate(
-        val element: Element,
-        val selector: String,
-        val score: Double,
+            extractorContentSelector = extractorContentSelector,
+            candidates = candidates.map {
+                ContentCandidateDebug(
+                    selector = it.selector,
+                    score = it.score,
+                )
+            },
+        ),
     )
+
+    private data class Candidate(val element: Element, val selector: String, val score: Double)
 
     private fun List<Candidate>.distinctByIdentity(): List<Candidate> {
         val seen = mutableListOf<Element>()

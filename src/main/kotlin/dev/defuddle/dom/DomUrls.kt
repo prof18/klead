@@ -9,10 +9,7 @@ fun Element.absUrlOrEmpty(attr: String): String {
     return absUrl(attr).takeUnless(::isDangerousUrl).orEmpty()
 }
 
-fun resolveUrl(
-    baseUrl: String,
-    value: String,
-): String {
+fun resolveUrl(baseUrl: String, value: String): String {
     val trimmed = value.trim()
     if (trimmed.isBlank() || isDangerousUrl(trimmed)) return ""
     return runCatching {

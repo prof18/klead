@@ -11,8 +11,7 @@ interface Extractor {
     val domains: Set<String> get() = emptySet()
     val priority: Int get() = 0
 
-    fun matches(context: ExtractorContext): Boolean =
-        domains.isNotEmpty() && context.hostMatches(domains)
+    fun matches(context: ExtractorContext): Boolean = domains.isNotEmpty() && context.hostMatches(domains)
 
     val contentSelectors: List<String> get() = emptyList()
     val preContentRemoveSelectors: List<String> get() = emptyList()
@@ -20,18 +19,10 @@ interface Extractor {
 
     fun extract(context: ExtractorContext): ExtractorResult? = null
 
-    fun postProcess(
-        content: Element,
-        context: ExtractorContext,
-        debug: MutableList<RemovalRecord>,
-    ) = Unit
+    fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) = Unit
 }
 
-data class ExtractorContext(
-    val url: String?,
-    val host: String?,
-    val document: Document,
-) {
+data class ExtractorContext(val url: String?, val host: String?, val document: Document) {
     fun hostMatches(domains: Set<String>): Boolean {
         val normalizedHosts = candidateHosts().map { it.lowercase().trim('.') }
         if (normalizedHosts.isEmpty()) return false
@@ -46,7 +37,9 @@ data class ExtractorContext(
     private fun candidateHosts(): List<String> {
         val result = mutableListOf<String>()
         host?.takeIf { it.isNotBlank() }?.let(result::add)
-        document.select("""link[rel=canonical][href], meta[property=og:url][content], meta[name=twitter:url][content]""")
+        document.select(
+            """link[rel=canonical][href], meta[property=og:url][content], meta[name=twitter:url][content]""",
+        )
             .mapNotNull { element ->
                 val candidateUrl = element.attr("href").ifBlank { element.attr("content") }
                 runCatching { URI(candidateUrl).host?.lowercase() }.getOrNull()
@@ -72,13 +65,10 @@ data class ExtractorMetadata(
     val description: String? = null,
 )
 
-class ExtractorRegistry(
-    private val extractors: List<Extractor> = DefaultExtractors.all,
-) {
-    fun resolve(context: ExtractorContext): List<Extractor> =
-        matchingExtractors(context)
-            .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
-            .toList()
+class ExtractorRegistry(private val extractors: List<Extractor> = DefaultExtractors.all) {
+    fun resolve(context: ExtractorContext): List<Extractor> = matchingExtractors(context)
+        .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
+        .toList()
 
     fun extract(context: ExtractorContext): ExtractorResult? {
         for (extractor in resolve(context)) {
@@ -90,10 +80,9 @@ class ExtractorRegistry(
         return null
     }
 
-    private fun matchingExtractors(context: ExtractorContext): Sequence<Extractor> =
-        extractors
-            .asSequence()
-            .filter { it.matches(context) }
+    private fun matchingExtractors(context: ExtractorContext): Sequence<Extractor> = extractors
+        .asSequence()
+        .filter { it.matches(context) }
 }
 
 object DefaultExtractors {

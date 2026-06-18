@@ -38,11 +38,7 @@ fun Element.replaceChildrenWith(source: Element) {
 
 fun Document.cloneDocument(): Document = clone()
 
-fun parseFragment(
-    html: String,
-    baseUri: String,
-): List<Node> =
-    Jsoup.parseBodyFragment(html, baseUri)
-        .body()
-        .childNodes()
-        .toList()
+fun parseFragment(html: String, baseUri: String): List<Node> = Jsoup.parseBodyFragment(html, baseUri)
+    .body()
+    .childNodes()
+    .toList()

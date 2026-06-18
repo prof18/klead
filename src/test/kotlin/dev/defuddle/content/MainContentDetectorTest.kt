@@ -202,7 +202,9 @@ class MainContentDetectorTest {
     @Test
     fun `body fallback works when no entry point has content`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse("""<body><section><p>Loose readable body text without semantic wrappers.</p></section></body>"""),
+            Jsoup.parse(
+                """<body><section><p>Loose readable body text without semantic wrappers.</p></section></body>""",
+            ),
         )
 
         assertEquals("body", detected.element.tagName())

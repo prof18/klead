@@ -1093,7 +1093,9 @@ class RemovalPipelineTest {
         assertTrue(result.contentMarkdown.contains("The actual event article starts here"))
         assertTrue(result.contentMarkdown.contains("The event article conclusion should also stay"))
         assertTrue(result.contentMarkdown.contains("**Dove:** Piazza Marconi, Vigonovo"))
-        assertFalse(lines.any { it == "/" || it == "Dove" || it == "Quando" || it == "Prezzo" || it == "Altre informazioni" })
+        assertFalse(
+            lines.any { it == "/" || it == "Dove" || it == "Quando" || it == "Prezzo" || it == "Altre informazioni" },
+        )
         assertFalse(lines.any { it == "Piazza Marconi" || it == "Piazza Guglielmo Marconi" || it == "Redazione" })
         assertFalse(result.contentMarkdown.contains("15 giugno 2026 9:57"))
     }
