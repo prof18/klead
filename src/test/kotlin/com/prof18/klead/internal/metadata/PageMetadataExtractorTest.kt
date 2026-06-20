@@ -22,6 +22,57 @@ class PageMetadataExtractorTest {
     }
 
     @Test
+    fun `site prefix separated by colon is removed from title`() {
+        val metadata = extract(
+            """
+            <html><head>
+              <title>Android Developers Blog: Build for the future with the Android XR Developer Catalyst Program — Apply now!</title>
+              <meta property="og:site_name" content="Android Developers Blog">
+            </head><body>
+              <article><h1>Build for the future with the Android XR Developer Catalyst Program — Apply now!</h1></article>
+            </body></html>
+            """.trimIndent(),
+        )
+
+        assertEquals("Build for the future with the Android XR Developer Catalyst Program — Apply now!", metadata.title)
+        assertEquals("Android Developers Blog", metadata.site)
+    }
+
+    @Test
+    fun `known site does not strip dash subtitle from title`() {
+        val metadata = extract(
+            """
+            <html><head>
+              <meta property="og:title" content="Build for the future with the Android XR Developer Catalyst Program — Apply now!">
+              <meta property="og:site_name" content="Android Developers Blog">
+            </head><body>
+              <article><h1>Build for the future with the Android XR Developer Catalyst Program — Apply now!</h1></article>
+            </body></html>
+            """.trimIndent(),
+        )
+
+        assertEquals("Build for the future with the Android XR Developer Catalyst Program — Apply now!", metadata.title)
+        assertEquals("Android Developers Blog", metadata.site)
+    }
+
+    @Test
+    fun `known site still strips pipe blog suffix from title`() {
+        val metadata = extract(
+            """
+            <html><head>
+              <meta property="og:title" content="Building Frontend UIs with Codex and Figma | Figma Blog">
+              <meta property="og:site_name" content="Figma">
+            </head><body>
+              <article><h1>Building Frontend UIs with Codex and Figma</h1></article>
+            </body></html>
+            """.trimIndent(),
+        )
+
+        assertEquals("Building Frontend UIs with Codex and Figma", metadata.title)
+        assertEquals("Figma", metadata.site)
+    }
+
+    @Test
     fun `placeholder and brand only titles fall back to better h1`() {
         val metadata = extract(
             """
@@ -34,6 +85,23 @@ class PageMetadataExtractorTest {
         )
 
         assertEquals("Actual Article Title", metadata.title)
+    }
+
+    @Test
+    fun `open graph title matching author falls back to document title`() {
+        val metadata = extract(
+            """
+            <html><head>
+              <title>The Darwin Gödel Machine: AI that improves itself by rewriting its own code</title>
+              <meta property="og:title" content="Example AI">
+              <meta name="twitter:title" content="Example AI">
+              <meta name="author" content="Example AI">
+            </head><body><main><h1>The Darwin Gödel Machine: AI that improves itself by rewriting its own code</h1></main></body></html>
+            """.trimIndent(),
+        )
+
+        assertEquals("The Darwin Gödel Machine: AI that improves itself by rewriting its own code", metadata.title)
+        assertEquals("Example AI", metadata.author)
     }
 
     @Test

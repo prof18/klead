@@ -24,13 +24,13 @@ class ReleaseDocsTest {
     }
 
     @Test
-    fun `release policy docs describe current staged scope`() {
+    fun `release policy docs describe current parity scope`() {
         val knownDifferences = Path("docs/known-differences.md").readText()
         val markdownPolicy = Path("docs/markdown-policy.md").readText()
         val releaseScope = Path("docs/release-scope.md").readText()
         val securityPolicy = Path("docs/security-policy.md").readText()
 
-        assertTrue(knownDifferences.contains("Full exact Markdown parity", ignoreCase = true))
+        assertTrue(knownDifferences.contains("Supported upstream Markdown fixtures", ignoreCase = true))
         assertTrue(markdownPolicy.contains("does not use flexmark", ignoreCase = true))
         assertTrue(releaseScope.contains("fetching is out of scope", ignoreCase = true))
         assertTrue(securityPolicy.contains("does not execute JavaScript", ignoreCase = true))

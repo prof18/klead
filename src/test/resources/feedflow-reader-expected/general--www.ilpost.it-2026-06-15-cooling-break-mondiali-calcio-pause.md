@@ -1,7 +1,7 @@
 ```json
 {
   "title": "Il calcio dei Mondiali è diventato uno sport in quattro tempi?",
-  "author": "Le pause per bere sono obbligatorie al 22esimo e al 67esimo minuto, cosa che secondo alcuni spezzetta troppo il gioco",
+  "author": "Alberto Chiumento",
   "site": "Il Post",
   "published": "2026-06-15T11:44:53+02:00"
 }

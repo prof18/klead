@@ -13,7 +13,7 @@ This article tests normalization of React SSR camelCase srcSet attributes to sta
 
 ![Hero image with React SSR attributes.](https://www.example.com/images/hero.webp)
 
-Hero image with React SSR attributes. Photo credit.
+*Hero image with React SSR attributes. Photo credit.*
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
 

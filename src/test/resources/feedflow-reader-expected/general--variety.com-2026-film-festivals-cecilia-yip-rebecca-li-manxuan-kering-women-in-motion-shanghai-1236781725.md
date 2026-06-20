@@ -15,14 +15,6 @@ Issues of under-written female roles, mid-life career transitions, and negotiati
 
 The high-profile panel at Shanghai’s historic Cathay Theatre saw veteran Hong Kong actor [Cecilia Yip](https://variety.com/t/cecilia-yip/) and Chinese actor [Rebecca Li Manxuan](https://variety.com/t/rebecca-li-manxuan/) share the stage with Tunisian producer Dora Bouchoucha and documentarian Carla Gutiérrez.
 
-## Related Stories
-
-![The Season cast](https://variety.com/wp-content/themes/pmc-variety-2020/assets/public/lazyload-fallback.gif)
-
-### [Jessie Mei Li, Karina Lam, Chris Pang and Toby Stephens on the Rich and Restless in Hong Kong Glamour Drama 'The Season': 'They're All Human Beings Who Are Terrified'](https://variety.com/2026/tv/news/the-season-hong-kong-cast-interview-1236780847/)
-
-### [Bruce Miller to Produce Series Version of 'RetroActive' Graphic Novels at Hulu From Writer Bobak Esfarjani (EXCLUSIVE)](https://variety.com/2026/tv/news/bruce-miller-retroactive-graphic-novel-hulu-bobak-esfarjani-1236781460/)
-
 Yip, reflecting on a career spanning 45 years, spoke about the pressure to conform to industry expectations early on. “It was a major source of distress, especially when I was acting. At that time, female roles indeed didn’t have much room for development. I knew I couldn’t be a ‘flower vase’, so I had to make another choice: to polish my acting skills and my performances,” said Yip.
 
 ### Popular on Variety
@@ -40,7 +32,3 @@ The panel also tackled mid-life career transitions, and how that affects women d
 “It was a bit terrifying at the time. I wasn’t young anymore, my family dynamic was shifting, my life was changing, and my body was changing too. Instead of breaking me, they gave me the energy and strength to tackle this new phase. While change can be terrifying at a certain point in time, it is only through embracing it that new stories can be born.”
 
 Kering’s Women in Motion forum and screenings was held in conjunction with the 28th Shanghai International Film Festival and guided by the theme “Boundless Imagination, Endless Motion.”
-
-## More from Variety
-
-- [From Kyrgyzstan to Brazil, Alternativa Film Festival Reels in Pics From Asia, Latin America](https://variety.com/2026/film/global/kyrgyzstan-brazil-alternativa-festival-asia-latin-america-1236737863/)

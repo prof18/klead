@@ -1,22 +1,27 @@
 # Fixture Coverage
 
-Last updated: 2026-06-16
+Last updated: 2026-06-20
 
 Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
 ## Current Gates
 
 - Total upstream HTML fixtures: 190
-- Strict metadata fixtures: 3
+- Strict supported Defuddle Markdown snapshots: 176
+- Strict supported Defuddle metadata snapshots: 176
+- Dropped math/rendering fixtures: 3
+- Focused metadata fixtures: 3
 - Relaxed removal fixtures: 2
 - MVP relaxed allowlist: 16
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
-- Strict whole-corpus Markdown parity: deferred as a documented known difference
+- Strict whole-corpus Markdown parity: enforced for supported fixtures
 - FeedFlow reader-dump regression fixtures: 48
 
 ## Active Strict Fixtures
 
+- `DefuddleFixtureMarkdownSnapshotTest`: compares supported upstream Defuddle expected Markdown against parser output after minimal Markdown normalization.
+- `DefuddleFixtureMarkdownSnapshotTest`: compares supported upstream Defuddle frontmatter fields `title`, `author`, and `site` against parser metadata. The upstream `published` field is intentionally not compared because the public metadata model does not expose it.
 - `metadata--h1-sibling-byline`
 - `metadata--placeholder-values`
 - `metadata--rel-author-in-bio-container`
@@ -82,10 +87,11 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
 - Non-empty Kotlin Markdown output is normalized to one final newline. Empty content remains an empty string.
 - Math rendering/conversion fidelity remains out of scope; source data is preserved where practical.
-- Full exact Markdown parity is not yet expected for the diagnostic corpus.
+- Supported upstream Markdown fixtures are expected to match the pinned repo expected output, including the intentional italic image-caption divergence from upstream Defuddle.
+- Supported upstream metadata snapshots are expected to match pinned Defuddle `title`, `author`, and `site` frontmatter.
 
 ## Top Classified Gaps
 
-- Full exact Markdown parity across every upstream fixture is staged behind classified known differences.
 - Network-backed extraction is out of scope for this library.
 - Math rendering/conversion fidelity is excluded by scope.
+- Dynamic browser-rendered content and computed styles are out of scope for static fixture runs.

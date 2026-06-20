@@ -11,7 +11,7 @@
 
 The **Array** object enables storing a collection of multiple items under a single variable name, and has members for performing common array operations.
 
-## Description
+## [Description](#description)
 
 In JavaScript, arrays aren't primitives but are instead Array objects with the following core characteristics:
 
@@ -19,21 +19,21 @@ In JavaScript, arrays aren't primitives but are instead Array objects with the f
 - **JavaScript arrays are not associative arrays** and so, array elements cannot be accessed using nonnumeric strings as indexes.
 - **JavaScript arrays are zero-indexed**: the first element of an array is at index 0, the second is at index 1, and so on.
 
-### Iterative methods
+### [Iterative methods](#iterative_methods)
 
 Several methods take as arguments functions to be called back while processing the array. When these methods are called, the length of the array is sampled, and any element added beyond this length from within the callback is not visited.
 
-### Generic Array methods
+### [Generic Array methods](#generic_array_methods)
 
 Array methods are always generic — they don't access any internal data of the array object. They only access the array elements through the length property and the indexed elements.
 
-## Constructor
+## [Constructor](#constructor)
 
 `Array()`
 
 Creates a new Array object.
 
-## Static methods
+## [Static methods](#static_methods)
 
 `Array.from()`
 
@@ -47,7 +47,7 @@ Returns true if the argument is an array, or false otherwise.
 
 Creates a new Array instance with a variable number of arguments.
 
-## Instance methods
+## [Instance methods](#instance_methods)
 
 `Array.prototype.at()`
 

@@ -7,8 +7,6 @@
 }
 ```
 
-6 Min Read
-
 ![A full field composite image of M83 with X-rays from Chandra (red, green, and blue) and optical light data from Hubble (red, green, and blue).](https://assets.science.nasa.gov/dynamicimage/assets/science/missions/chandra/2026/m83.jpg?w=3000&h=3000&fit=crop&crop=faces%2Cfocalpoint)
 
 Lee Mohon
@@ -85,7 +83,7 @@ To learn more about NASA’s Chandra mission, visit:
 
 [https://science.nasa.gov/chandra](https://science.nasa.gov/chandra)
 
-[https://chandra.si.edu](https://chandra.si.edu)
+[https://chandra.si.edu](https://chandra.si.edu/)
 
 Megan Watzke
 Chandra X-ray Center

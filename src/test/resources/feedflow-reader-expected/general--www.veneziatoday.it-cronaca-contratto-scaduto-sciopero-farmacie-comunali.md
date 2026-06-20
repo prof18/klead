@@ -7,17 +7,15 @@
 }
 ```
 
-SERVIZI PUBBLICI
-
 I sindacati Filcams e Fisascat chiedono aumenti legati al costo della vita e revisione degli inquadramenti: «Il lavoro del farmacista è profondamente cambiato». Il corteo arriverà a Ca' Farsetti: «Il comune prenda posizione»
 
-![](https://citynews-veneziatoday.stgy.ovh/~media/horizontal-mid/64748902890551/farmacia-comunale-trivignano.jpg)
+![](https://citynews-veneziatoday.stgy.ovh/~media/horizontal-hi/64748902890551/farmacia-comunale-trivignano.jpg)
 
 La farmacia comunale a Trivignano, foto Ames
 
 Mercoledì 17 giugno sarà giorno di sciopero nelle farmacie comunali di Venezia e di tutta Italia. Il contratto nazionale delle farmacie comunali infatti è scaduto il 31 dicembre 2024, e dopo un anno e mezzo di trattative il confronto con Assofarm si è interrotto senza produrre un accordo capace di tutelare il potere d’acquisto e riconoscere l’evoluzione professionale delle lavoratrici e dei lavoratori, denunciano Fisasacat Cisl e Filcams Cgil.
 
-[Clicca qui per iscriverti al canale WhatsApp di VeneziaToday](https://whatsapp.com/channel/0029VaDSWgR1Hsq4uWb1mS0I)
+[**Clicca qui per iscriverti al canale WhatsApp di VeneziaToday**](https://whatsapp.com/channel/0029VaDSWgR1Hsq4uWb1mS0I)
 
 «La distanza - spiegano Andrea Brignoli, e Nicola Pegoraro, segretari Filcams e Fisascat di Venezia - riguarda innanzitutto la parte economica. Le organizzazioni sindacali chiedono un aumento salariale adeguato alla crescita del costo della vita, mentre la proposta datoriale resta largamente insufficiente. Una situazione analoga a quella delle farmacie private, dove anche Federfarma ha interrotto le trattative sulla questione salariale».
 

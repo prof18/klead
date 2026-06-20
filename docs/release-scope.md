@@ -21,5 +21,5 @@ Excluded or staged:
 - browser layout and computed styles
 - WebView, GraalJS, browser DOM, Compose/UI rendering
 - rendered math fidelity and MathML/LaTeX conversion
-- full exact Markdown parity for every upstream fixture
+- unsupported upstream fixture behavior outside the documented static-HTML and math/rendering scope
 - network-backed extraction

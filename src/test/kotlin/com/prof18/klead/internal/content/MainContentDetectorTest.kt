@@ -104,6 +104,88 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `article text wrapper beats non semantic hero container`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <div id="main-content">
+                    <div class="hero-image"><img src="/hero.jpg"><div>NEWS</div></div>
+                    <div class="title-text"><a href="/article">Article title chrome</a></div>
+                    <div class="date-text">Posted by Jane Reporter on April 20, 2026</div>
+                    <div class="article-text" id="story">
+                      <p>Industry pioneer John Smith passed away on April 15, 2026, after a long career with several major publishers and a reputation for careful editorial work.</p>
+                      <p>His career began after he served ten years in the Air Force in the mid-sixties, and he later helped create several products for the domestic market.</p>
+                      <p>In 1986, he was elected to the Hall of Fame, and later received a Lifetime Achievement Award for his contributions to the field.</p>
+                    </div>
+                    <div class="about-author"><p>Jane Reporter biography should not be selected.</p></div>
+                    <div class="panel"><p>Related article card text should not be selected.</p></div>
+                  </div>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals(".article-text", detected.selectedSelector)
+    }
+
+    @Test
+    fun `focused content descendant beats broad main with legal footer prose`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <main>
+                  <div class="page-wrapper">
+                    <div class="js-article-content" id="story">
+                      <h2>Section One</h2>
+                      <p>This is the first section of the article. It introduces the main topic and sets the stage for further discussion with enough realistic prose to be recognized.</p>
+                      <h2>Section Two</h2>
+                      <p>This is the second section. It builds on the ideas introduced earlier and keeps the focused article body substantial.</p>
+                      <h2>Section Three</h2>
+                      <p>The final section wraps up the discussion with concluding thoughts and enough context to stand as the intended reading surface.</p>
+                    </div>
+                  </div>
+                  <div class="legal-disclaimer">
+                    <p>Views expressed in posts are those of the individual personnel quoted therein and are not the views of Example Capital Management. The posts are not directed to any investors or potential investors, and do not constitute an offer to sell or a solicitation of an offer to buy any securities.</p>
+                    <p>The contents should not be construed as or relied upon in any manner as investment, legal, tax, or other advice. Additional paragraphs make the broad main score higher without belonging to the article.</p>
+                  </div>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals(".js-article-content", detected.selectedSelector)
+    }
+
+    @Test
+    fun `updates scroll content beats page chrome`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <div class="announcement-banner"><a href="/press">Announcement link</a></div>
+                  <a class="center-logo" href="/"><img src="/logo.svg" alt="Example"></a>
+                  <div class="updates-overlay" aria-hidden="true">
+                    <div class="updates-scroll-content" id="letter">
+                      <p>From: Example &lt;hello@example.com&gt;</p>
+                      <p>To: You</p>
+                      <p>Subject: Sample Post</p>
+                      <p>This readable update contains enough natural language, punctuation, and context to be selected as the focused reading surface.</p>
+                      <p>The second paragraph keeps the letter substantial while page banners, logos, and dismiss controls stay outside the selected content.</p>
+                    </div>
+                  </div>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("letter", detected.element.id())
+        assertEquals(".updates-scroll-content", detected.selectedSelector)
+    }
+
+    @Test
     fun `short semantic main beats noisy body with teaser modules`() {
         val detected = MainContentDetector.detect(
             Jsoup.parse(
@@ -248,6 +330,31 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `table layout with spacer and content cells selects main cell without table width`() {
+        val detected = MainContentDetector.detect(
+            Jsoup.parse(
+                """
+                <body>
+                  <table>
+                    <tr>
+                      <td><img src="/nav.gif" alt=""></td>
+                      <td><img src="/spacer.gif" alt=""></td>
+                      <td id="main-cell">
+                        <p>This old layout cell contains the main article text with enough readable words to be selected.</p>
+                        <p>Another paragraph makes the content cell clearly more useful than image navigation and spacer cells.</p>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("main-cell", detected.element.id())
+        assertEquals("table-layout td", detected.selectedSelector)
+    }
+
+    @Test
     fun `peripheral table does not steal content`() {
         val detected = MainContentDetector.detect(
             Jsoup.parse(
@@ -283,6 +390,40 @@ class MainContentDetectorTest {
         )
 
         assertEquals("schema-match", detected.element.id())
+        assertEquals("schema-text", detected.selectedSelector)
+    }
+
+    @Test
+    fun `schema text can refine broad selection when headings split article body text`() {
+        val detected = MainContentDetector.detect(
+            document = Jsoup.parse(
+                """
+                <body>
+                  <section id="hero"><img src="/hero.jpg"></section>
+                  <section id="layout-wrapper">
+                    <h1>Post About Systems</h1>
+                    <p>January 15, 2024</p>
+                    <div id="article-block">
+                      <p>Systems come in many forms. Some are rigid, with fixed boundaries and strict coupling between components. Others are elastic, stretching under pressure but returning to their original shape.</p>
+                      <p>The key insight is that constraints are not inherently limiting. Without constraints there is no structure, and without structure there is no evolution.</p>
+                      <h3>Rigid</h3>
+                      <p>Rigid systems appear stable but can fail catastrophically.</p>
+                      <h3>Elastic</h3>
+                      <p>Elastic systems absorb stress but have limits.</p>
+                      <p>The most resilient systems combine multiple constraint types, adapting their structure to changing conditions.</p>
+                    </div>
+                  </section>
+                  <section id="sidebar">
+                    <h3>Recent Posts</h3>
+                    <p>Unrelated sidebar text should not keep the broad body selection.</p>
+                  </section>
+                </body>
+                """.trimIndent(),
+            ),
+            schemaText = "Systems come in many forms. Some are rigid, with fixed boundaries and strict coupling between components. Others are elastic, stretching under pressure but returning to their original shape. The key insight is that constraints are not inherently limiting. Without constraints there is no structure, and without structure there is no evolution. This taxonomy helps us understand different system architectures and their resilience characteristics. Rigid systems appear stable but can fail catastrophically. Elastic systems absorb stress but have limits. The most resilient systems combine multiple constraint types, adapting their structure to changing conditions.",
+        )
+
+        assertEquals("article-block", detected.element.id())
         assertEquals("schema-text", detected.selectedSelector)
     }
 }

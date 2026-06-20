@@ -15,6 +15,8 @@ internal data class PageMetadata(
 )
 
 internal object PageMetadataExtractor {
+    private data class TitleResult(val title: String?, val detectedSiteName: String?)
+
     fun extract(
         document: Document,
         sourceUrl: String,
@@ -24,14 +26,21 @@ internal object PageMetadataExtractor {
     ): PageMetadata {
         val canonicalUrl = document.selectFirst("link[rel=canonical]")?.absUrl("href")?.ifBlank { null }
         val metadataBaseUrl = canonicalUrl ?: sourceUrl
-        val domain = parseDomain(canonicalUrl ?: sourceUrl)
-        val site = cleanNonPlaceholder(metaTags.firstContent("og:site_name", "application-name"))
-            ?: cleanNonPlaceholder(schemaOrg.firstString("publisher.name"))
-            ?: domain
-        val h1 = content?.selectFirst("h1")?.text()?.trim()?.ifBlank { null }
+        val canonicalDomain = canonicalUrl?.let(::parseDomain)
+        val h1 = document.selectFirst("h1")?.text()?.trim()?.ifBlank { null }
+        val siteName = extractSiteName(metaTags, schemaOrg)
+        val author = extractAuthor(document, content, metaTags, schemaOrg)
+        val titleResult = extractTitle(document, metaTags, schemaOrg, siteName, author, h1)
+        val authorAsSite = author
+            ?.takeUnless { "," in it }
+            ?.takeIf { it.isNotBlank() }
+        val site = siteName
+            ?: titleResult.detectedSiteName
+            ?: authorAsSite
+            ?: canonicalDomain
 
         return PageMetadata(
-            title = extractTitle(document, metaTags, schemaOrg, site, domain, h1),
+            title = titleResult.title,
             description = listOf(
                 metaTags.firstContent("description"),
                 metaTags.firstContent("og:description"),
@@ -39,9 +48,24 @@ internal object PageMetadataExtractor {
             ).firstNotNullOfOrNull(::cleanNonPlaceholder),
             favicon = extractFavicon(document, metadataBaseUrl),
             image = extractImage(metaTags, schemaOrg, metadataBaseUrl),
-            author = extractAuthor(document, content, metaTags, schemaOrg),
+            author = author,
             site = site,
         )
+    }
+
+    private fun extractSiteName(metaTags: List<MetaTagItem>, schemaOrg: SchemaOrgResult): String? {
+        val candidate = listOf(
+            schemaOrg.firstString("publisher.name"),
+            metaTags.firstContent("og:site_name"),
+            schemaOrg.firstString("WebSite.name"),
+            schemaOrg.firstString("sourceOrganization.name"),
+            metaTags.firstContent("copyright"),
+            schemaOrg.firstString("copyrightHolder.name"),
+            schemaOrg.firstString("isPartOf.name"),
+            metaTags.firstContent("application-name"),
+        ).firstNotNullOfOrNull(::cleanNonPlaceholder)
+
+        return candidate?.takeIf { it.wordCount() <= 6 }
     }
 
     private fun extractTitle(
@@ -49,9 +73,9 @@ internal object PageMetadataExtractor {
         metaTags: List<MetaTagItem>,
         schemaOrg: SchemaOrgResult,
         site: String?,
-        domain: String?,
+        author: String?,
         h1: String?,
-    ): String? {
+    ): TitleResult {
         val candidates = listOf(
             metaTags.firstContent("og:title"),
             metaTags.firstContent("twitter:title"),
@@ -62,10 +86,16 @@ internal object PageMetadataExtractor {
             h1,
         )
 
-        return candidates
-            .asSequence()
-            .mapNotNull { cleanTitle(it, site, domain) }
-            .firstOrNull()
+        val cleanedCandidates = candidates
+            .mapNotNull(::cleanNonPlaceholder)
+
+        if (cleanedCandidates.isEmpty()) return TitleResult(title = null, detectedSiteName = null)
+
+        val bestTitle = cleanedCandidates
+            .firstOrNull { !it.isSiteIdentifier(site, author) }
+            ?: cleanedCandidates.first()
+
+        return cleanTitle(bestTitle, site)
     }
 
     private fun extractAuthor(
@@ -86,9 +116,11 @@ internal object PageMetadataExtractor {
             metaTags.firstContent("dc.creator"),
             schemaOrg.firstString("author.name"),
             content?.selectFirst("a[rel~=author], address[rel~=author]")?.text(),
-            content?.selectFirst(".byline, .author, [class*=author]")?.text(),
+            content?.selectFirst(".byline, .author")?.text(),
+            h1SiblingAuthorLink(content),
             h1SiblingByline(content),
             document.selectFirst("a[rel~=author], address[rel~=author]")?.text(),
+            h1SiblingAuthorLink(document),
         )
 
         return candidates.firstNotNullOfOrNull(::cleanAuthor)
@@ -161,16 +193,35 @@ internal object PageMetadataExtractor {
             ?.let { resolveUrl(baseUrl, it) }
             ?.ifBlank { null }
 
+    private fun h1SiblingAuthorLink(content: Element?): String? {
+        val h1 = content?.selectFirst("h1") ?: return null
+        return h1.nextElementSiblings()
+            .take(4)
+            .filter { it.isMetadataSiblingCandidate() }
+            .firstNotNullOfOrNull { sibling ->
+                if (!DATE_HINT_REGEX.containsMatchIn(sibling.text())) return@firstNotNullOfOrNull null
+
+                sibling.select("a[href]")
+                    .firstOrNull { link -> link.selectFirst("img[alt]") != null }
+                    ?.text()
+                    ?.trim()
+                    ?.ifBlank { null }
+            }
+    }
+
     private fun h1SiblingByline(content: Element?): String? {
         val h1 = content?.selectFirst("h1") ?: return null
         val texts = h1AdjacentTexts(h1, limit = 4)
         texts.firstOrNull { it.trim().startsWith("by ", ignoreCase = true) }?.let { return it }
 
         val dateIndex = texts.indexOfFirst { DATE_HINT_REGEX.containsMatchIn(it) }
+        if (dateIndex == -1) return null
+
         return texts.drop(dateIndex + 1)
             .firstOrNull { text ->
                 text.isNotBlank() &&
                     !DATE_HINT_REGEX.containsMatchIn(text) &&
+                    !READING_TIME_REGEX.containsMatchIn(text) &&
                     text.length <= 140 &&
                     text.split(Regex("""\s+""")).size >= 2
             }
@@ -178,30 +229,125 @@ internal object PageMetadataExtractor {
 
     private fun h1AdjacentTexts(h1: Element, limit: Int): List<String> = h1.nextElementSiblings()
         .take(limit)
+        .filter { it.isMetadataSiblingCandidate() }
         .flatMap { sibling ->
-            val childTexts = sibling.children().map { it.text().trim() }.filter { it.isNotBlank() }
+            val childTexts = sibling.children()
+                .filter { it.isMetadataSiblingCandidate() }
+                .map { it.text().trim() }
+                .filter { it.isNotBlank() }
             childTexts.ifEmpty { listOf(sibling.text().trim()) }
         }
         .filter { it.isNotBlank() }
 
-    private fun cleanTitle(value: String?, site: String?, domain: String?): String? {
-        var title = cleanValue(value) ?: return null
-        if (isPlaceholder(title)) return null
+    private fun Element.isMetadataSiblingCandidate(): Boolean =
+        normalName() in METADATA_SIBLING_TAGS && text().length <= METADATA_SIBLING_MAX_TEXT_LENGTH
 
-        for (brand in listOfNotNull(site, domain)) {
-            if (title.equals(brand, ignoreCase = true)) return null
-            title = title
-                .replace(Regex("""\s+[|:\-–—]\s+${Regex.escape(brand)}$""", RegexOption.IGNORE_CASE), "")
-                .replace(Regex("""^${Regex.escape(brand)}\s+[|:\-–—]\s+""", RegexOption.IGNORE_CASE), "")
-                .trim()
+    private fun cleanTitle(value: String, site: String?): TitleResult {
+        val title = cleanValue(value)
+            ?.takeUnless(::isPlaceholder)
+            ?: return TitleResult(title = null, detectedSiteName = null)
+
+        cleanExactSiteTitle(title, site)?.let { return it }
+
+        val separatorTitle = trySeparatorSplit(
+            title = title,
+            pattern = Regex("""\s+[|/·]\s+"""),
+            suffixOnly = false,
+        ) { titleWords, siteWords ->
+            siteWords <= 3 && titleWords >= 2 && titleWords >= siteWords * 2
+        } ?: if (site == null) {
+            trySeparatorSplit(
+                title = title,
+                pattern = Regex("""\s+[-–—]\s+"""),
+                suffixOnly = true,
+            ) { titleWords, siteWords ->
+                siteWords <= 2 && titleWords >= 2 && titleWords > siteWords
+            }
+        } else {
+            null
         }
 
-        return title.takeUnless { isPlaceholder(it) }
+        if (separatorTitle != null) return separatorTitle
+
+        return TitleResult(title = title.takeUnless { isPlaceholder(it) }, detectedSiteName = null)
+    }
+
+    private fun cleanExactSiteTitle(title: String, site: String?): TitleResult? {
+        if (site != null && !title.equals(site, ignoreCase = true) && site.wordCount() <= 6) {
+            val siteEscaped = Regex.escape(site)
+            val exactPatterns = listOf(
+                Regex("""\s*[|\-–—/·:]\s+$siteEscaped$""", RegexOption.IGNORE_CASE),
+                Regex("""^$siteEscaped\s*[|\-–—/·:]\s+""", RegexOption.IGNORE_CASE),
+            )
+            for (pattern in exactPatterns) {
+                if (pattern.containsMatchIn(title)) {
+                    return TitleResult(
+                        title = title.replace(pattern, "").trim().takeUnless(::isPlaceholder),
+                        detectedSiteName = site,
+                    )
+                }
+            }
+        }
+
+        return null
+    }
+
+    private fun trySeparatorSplit(
+        title: String,
+        pattern: Regex,
+        suffixOnly: Boolean,
+        guard: (titleWords: Int, siteWords: Int) -> Boolean,
+    ): TitleResult? {
+        val matches = pattern.findAll(title).toList()
+        if (matches.isEmpty()) return null
+
+        val lastMatch = matches.last()
+        val suffixTitle = title.substring(0, lastMatch.range.first).trim()
+        val suffixSite = title.substring(lastMatch.range.last + 1).trim()
+        if (
+            suffixTitle.isNotBlank() &&
+            suffixSite.isNotBlank() &&
+            guard(
+                suffixTitle.wordCount(),
+                suffixSite.wordCount(),
+            )
+        ) {
+            return TitleResult(title = suffixTitle, detectedSiteName = suffixSite)
+        }
+
+        if (!suffixOnly) {
+            val firstMatch = matches.first()
+            val prefixSite = title.substring(0, firstMatch.range.first).trim()
+            val prefixTitle = title.substring(firstMatch.range.last + 1).trim()
+            if (
+                prefixTitle.isNotBlank() &&
+                prefixSite.isNotBlank() &&
+                guard(
+                    prefixTitle.wordCount(),
+                    prefixSite.wordCount(),
+                )
+            ) {
+                return TitleResult(title = prefixTitle, detectedSiteName = prefixSite)
+            }
+        }
+
+        return null
+    }
+
+    private fun String.isSiteIdentifier(site: String?, author: String?): Boolean {
+        val candidate = trim()
+        for (brand in listOfNotNull(site, author)) {
+            if (candidate.equals(brand, ignoreCase = true)) return true
+        }
+
+        return false
     }
 
     private fun cleanAuthor(value: String?): String? {
         val cleaned = cleanValue(value)
             ?.replace(Regex("""^by\s+""", RegexOption.IGNORE_CASE), "")
+            ?.replace(Regex("""\(?\s*https?://\S+\s*\)?""", RegexOption.IGNORE_CASE), "")
+            ?.replace(Regex("""\s*[-–—|]\s*$"""), "")
             ?.let { author ->
                 if ("," in author) {
                     author
@@ -228,6 +374,8 @@ internal object PageMetadataExtractor {
         val cleaned = cleanValue(value) ?: return null
         return cleaned.takeUnless(::isPlaceholder)
     }
+
+    private fun String.wordCount(): Int = split(WHITESPACE_PATTERN).count { it.isNotBlank() }
 
     private fun isPlaceholder(value: String): Boolean = value.lowercase() in PLACEHOLDERS ||
         value == ".." ||
@@ -270,4 +418,8 @@ internal object PageMetadataExtractor {
         """\b(?:\d{4}-\d{1,2}-\d{1,2}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{4})\b""",
         RegexOption.IGNORE_CASE,
     )
+    private val READING_TIME_REGEX = Regex("""\b\d+\s+min(?:ute)?s?\s+read\b""", RegexOption.IGNORE_CASE)
+    private const val METADATA_SIBLING_MAX_TEXT_LENGTH = 300
+    private val METADATA_SIBLING_TAGS = setOf("p", "time", "span", "div", "address")
+    private val WHITESPACE_PATTERN = Regex("""\s+""")
 }

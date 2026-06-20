@@ -1,7 +1,7 @@
 ```json
 {
   "title": "La scomparsa di due sorelle da una comunità per minori in Abruzzo",
-  "author": "Hanno 16 e 12 anni ed erano state allontanate dai genitori due anni fa",
+  "author": "Alessandra Pellegrini De Luca",
   "site": "Il Post",
   "published": "2026-06-15T09:00:37+02:00"
 }
@@ -17,7 +17,7 @@ Due sorelle minorenni originarie di Minturno, nel Lazio, sono scomparse da una s
 
 Le ricerche si stanno svolgendo tra Civitella Alfedena, dove si trova la comunità, e il lago di Barrea, e sono state controllate case e strutture abbandonate. È impegnato un centinaio di persone tra carabinieri, vigili del fuoco, protezione civile e volontari, oltre a droni e cani addestrati nella ricerca di persone.
 
-La procura di Sulmona ha avviato un’indagine per abbandono di minore, escludendo per ora l’ipotesi di un allontanamento volontario delle due sorelle: secondo il quotidiano locale [Il Centro](https://www.ilcentro.it/l-aquila/sorelle-scomparse-a-civitella-alfedena-scatta-la-denuncia-del-padre-wxjjlqzh) sarebbe indagato il responsabile della comunità, la Ofh Hope. Un’immagine registrata da una telecamera di sorveglianza mostra un’automobile coi fari accesi di fronte alla comunità nella notte in cui sono scomparse le due sorelle.
+La procura di Sulmona ha avviato un’indagine per abbandono di minore, escludendo per ora l’ipotesi di un allontanamento volontario delle due sorelle: secondo il quotidiano locale [*Il Centro*](https://www.ilcentro.it/l-aquila/sorelle-scomparse-a-civitella-alfedena-scatta-la-denuncia-del-padre-wxjjlqzh) sarebbe indagato il responsabile della comunità, la Ofh Hope. Un’immagine registrata da una telecamera di sorveglianza mostra un’automobile coi fari accesi di fronte alla comunità nella notte in cui sono scomparse le due sorelle.
 
 Le indagini si stanno concentrando anche sul punto della struttura da cui si presume siano uscite le due sorelle – una finestra rotta e priva di inferriate – oltre che che sull’assenza di adeguate misure di protezione nella comunità.
 

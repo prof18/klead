@@ -26,7 +26,7 @@ The Honor Magic V6 represents the best in foldable phones. It sports an incredib
 - -A few software quirks
 - -No North American availability
 
-Why you can trust Android Central Our expert reviewers spend hours testing and comparing products and services so you can choose the best for you. .
+Why you can trust Android Central Our expert reviewers spend hours testing and comparing products and services so you can choose the best for you..
 
 As a person who reviews dozens upon dozens of different kinds of phones every year, I've long struggled with whether I prefer a foldable or a slab phone. [Book-style foldables](https://www.androidcentral.com/best-foldable-phone), like the Galaxy Z Fold or Honor Magic V series, are synonymous with multitasking and productivity, something I find myself using a lot as a remote worker.
 
@@ -36,7 +36,7 @@ It's a foldable phone with a gorgeous, eye-friendly pair of OLEDs, the world's h
 
 ## By the numbers
 
-![Unboxing the Honor Magic V6 with Magic OS 10](https://cdn.mos.cms.futurecdn.net/Catr738RMuGFETwRimuTET-1200-80.jpg)
+![Unboxing the Honor Magic V6 with Magic OS 10](https://cdn.mos.cms.futurecdn.net/Catr738RMuGFETwRimuTET-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 
@@ -69,7 +69,7 @@ The Magic V6 is available in four colorways — Gold, Red, White, and Black — 
 
 ## A tough design and the best displays in the business
 
-![The home screen on the Honor Magic V6&#039;s outer display](https://cdn.mos.cms.futurecdn.net/3sNYTrWuRdaEzhrJKephxd-1200-80.jpg)
+![The home screen on the Honor Magic V6&#039;s outer display](https://cdn.mos.cms.futurecdn.net/3sNYTrWuRdaEzhrJKephxd-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 
@@ -77,7 +77,7 @@ The Magic V6 is more of a tweak on the Magic V5's design. I dislike the squarer 
 
 This phone looks as elegant as the [Galaxy Z Fold 7](https://www.androidcentral.com/phones/samsung-galaxy/samsung-galaxy-z-fold-7-review)'s thin design, but with a centered camera island, it doesn't feel off-balance like that phone does. Honor also managed to make this one IP68 and IP69 rated, so you can take it to a sandy beach and then [toss it in the dishwasher](https://www.androidcentral.com/phones/android-phone-makers-want-your-smartphone-to-survive-a-kitchen-nightmare) to get all the grime off at the end of the day.
 
-![Comparing the reflectivity of the displays of the Honor Magic V6 (left) to the Honor Magic V5 (right)](https://cdn.mos.cms.futurecdn.net/MLcvDa57Tbm8PWKnxu2buW-1200-80.jpg)
+![Comparing the reflectivity of the displays of the Honor Magic V6 (left) to the Honor Magic V5 (right)](https://cdn.mos.cms.futurecdn.net/MLcvDa57Tbm8PWKnxu2buW-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 
@@ -85,7 +85,7 @@ Honor's OLED displays are the best in the business, too, providing not only lead
 
 For the first time ever on a foldable, both displays feature an anti-glare layer that substantially reduces glare from any light source, making it easier to see outside. It's not quite the same type that Samsung uses on the [Galaxy S26 Ultra](https://www.androidcentral.com/phones/samsung-galaxy/samsung-galaxy-s26-ultra-review), but it's a huge leap forward for foldables.
 
-![Opening Honor&#039;s AI assistant with a double flex on the Honor Magic V6](https://cdn.mos.cms.futurecdn.net/ZZnBnqCUUJqSvL9UQakh6-1200-80.jpg)
+![Opening Honor&#039;s AI assistant with a double flex on the Honor Magic V6](https://cdn.mos.cms.futurecdn.net/ZZnBnqCUUJqSvL9UQakh6-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 
@@ -97,7 +97,7 @@ But there are still some weird quirks that bother me daily. Many apps "don't sup
 
 ## MagicOS is pure magic
 
-![The grid-based recents/overview UI on the Honor Magic V6&#039;s inner display](https://cdn.mos.cms.futurecdn.net/jixbSGqYqCrKwkidCj7Z4-1200-80.jpg)
+![The grid-based recents/overview UI on the Honor Magic V6&#039;s inner display](https://cdn.mos.cms.futurecdn.net/jixbSGqYqCrKwkidCj7Z4-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 
@@ -105,7 +105,7 @@ And while those are annoying complaints, I truly enjoy [Honor's ecosystem of pro
 
 Honor also heavily touts its interoperability with [Apple](https://www.androidcentral.com/tag/apple) products — something I care very little about — but it will undoubtedly come in handy for plenty of people. From Mac one-tap sharing and screen casting to notification sharing between the Magic V6, Apple Watches, and iPhones, plus native AirPods controls. There's a lot to explore here. And, yes, it supports the new for each iPhone to Android file sharing.
 
-![The Gemini app on an Honor Magic V6](https://cdn.mos.cms.futurecdn.net/x6g7PL3L2FP9Rg7bHj9Psd-1200-80.jpg)
+![The Gemini app on an Honor Magic V6](https://cdn.mos.cms.futurecdn.net/x6g7PL3L2FP9Rg7bHj9Psd-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 
@@ -115,7 +115,7 @@ As with other book-style foldables, sustained performance on the Honor Magic V6 
 
 ## The best cameras in a foldable phone
 
-![The camera island on the back of the Honor Magic V6](https://cdn.mos.cms.futurecdn.net/LESW7ZVEFe9dAzL3oFE2DA-1200-80.jpg)
+![The camera island on the back of the Honor Magic V6](https://cdn.mos.cms.futurecdn.net/LESW7ZVEFe9dAzL3oFE2DA-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 
@@ -123,7 +123,7 @@ The Honor Magic V6 has the best camera on any foldable outside of China. If that
 
 Most foldables up to this point have very obviously worse cameras than their similarly priced non-foldable flagship phones, and while the [Magic 8 Pro](https://www.androidcentral.com/phones/honor-phones/honor-magic-8-pro-camera-review) is still slightly better, this is the first time I haven't felt compelled to have one of those phones in my other pocket just in case I needed to take a better photo.
 
-![Comparing telephoto camera quality between the Motorola Razr Fold 2026, Samsung Galaxy Z Fold 7, and Honor Magic V6](https://cdn.mos.cms.futurecdn.net/MJHjYepFzP5vsZXGZSFZmm-1200-80.jpg)
+![Comparing telephoto camera quality between the Motorola Razr Fold 2026, Samsung Galaxy Z Fold 7, and Honor Magic V6](https://cdn.mos.cms.futurecdn.net/MJHjYepFzP5vsZXGZSFZmm-1200-80.jpg.webp)
 
 *(Image credit: Android Central)*
 
@@ -133,7 +133,7 @@ But Honor's telephoto experience won nine times out of ten, delivering higher-re
 
 ## Verdict
 
-![The back of the gold Honor Magic V6](https://cdn.mos.cms.futurecdn.net/wAtHfC2CDQZ4ucwgeBwdZf-1200-80.jpg)
+![The back of the gold Honor Magic V6](https://cdn.mos.cms.futurecdn.net/wAtHfC2CDQZ4ucwgeBwdZf-1200-80.jpg.webp)
 
 *(Image credit: Nicholas Sutrich / Android Central)*
 

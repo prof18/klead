@@ -9,6 +9,8 @@ internal object BusinessInsiderProfile : com.prof18.klead.extractors.Extractor {
         ".byline-wrapper",
         ".byline-author-container",
         """[data-component-type="timestamp"]""",
+        """[data-component-type="post-bottom-authors"]""",
+        ".post-bottom-authors",
         ".post-video-recirc",
         """[data-component-type="post-video-recirc"]""",
         ".back-to-home-container",

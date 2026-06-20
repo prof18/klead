@@ -13,7 +13,7 @@ Among all of these audiences, Kotlin’s adoption on the JVM keeps growing. Arou
 
 In environments like these, platform teams run into a deceptively simple question: *“Which Kotlin versions are supported?”* Until today, we didn’t have a clean answer. This post introduces one.
 
-## **Growing adoption means stronger compatibility and security guarantees**
+## Growing adoption means stronger compatibility and security guarantees
 
 As more code depends on Kotlin, the language becomes more useful – and more constrained. People building on it expect that what they wrote yesterday will keep working tomorrow, that changes will be predictable, and that the team behind Kotlin will treat compatibility as a deliberate choice rather than an afterthought.
 
@@ -23,7 +23,7 @@ These commitments grew naturally as Kotlin became a load-bearing part of large c
 
 But one key thing has been missing from that list, namely an answer to the question, *“How long is a Kotlin release supported for security fixes?”* For most teams, the gap is invisible. But there are organizations whose dependency reviews depend on the answer – and for them, this gap is everything.
 
-## **Why the lack of a support policy was a problem**
+## Why the lack of a support policy was a problem
 
 Kotlin’s release model is built around a steady cadence of stable releases. The latest stable release, whether it’s a language or tooling release, is the recommended baseline. Bug fixes and language development flow forward into the next release rather than backward through patches. For most teams, this works out perfectly – upgrading is straightforward, and there is little need to think about “support” as a separate concept.
 
@@ -36,7 +36,7 @@ For organizations that need a documented support signal, the consequences are co
 
 Kotlin’s user base continues to grow, and that growth includes environments where the absence of a documented answer carries real cost. Addressing that absence is the next step.
 
-## **Introducing a security support policy for Kotlin**
+## Introducing a security support policy for Kotlin
 
 - Each Kotlin release line (e.g., 2.4.x) is supported for security fixes for **18 months** from the release date of its .0 version.
 - Security fixes are **backported to all release lines within an active support window** and released as the latest patch in each line.
@@ -54,7 +54,7 @@ The policy applies to Kotlin lines released from launch onward (2.4 and later). 
 
 The current list of supported release lines, their end-of-support dates, and the latest patch version in each line is maintained on a dedicated [support page on kotlinlang.org](https://kotl.in/stdlib-security). That page is the canonical reference for which versions are currently supported.
 
-## **How a release line evolves**
+## How a release line evolves
 
 The policy is easier to follow if you watch one release line evolve from the first release (.0) until the end of support. Below is an example of what this looks like for 2.4 (with an approximate timeline; the exact dates do not matter for this example).
 
@@ -68,12 +68,12 @@ The policy is easier to follow if you watch one release line evolve from the fir
 
 Two practical takeaways: first, you can stay on the release line you’ve qualified for production and still receive security fixes – you do not need to skip releases. Second, when a fix is published, it becomes available on all supported lines at the same time. There is no “the latest line is patched, your older line will get it eventually” gap.
 
-## **What is not changing**
+## What is not changing
 
 - Kotlin’s release process is unchanged. Bug fixes, language and library features, and performance improvements continue to ship in new releases the way they always have. Older still-supported lines receive only security backports.
 - Each new Kotlin release is still the recommended baseline for new projects. The security support window exists for organizations that need to stay on a specific minor line for compliance reasons – we still do not recommend delaying upgrades.
 
-## **FAQ and where to go next**
+## FAQ and where to go next
 
 **Q: What counts as a security fix under this policy?** A: Issues with confirmed security impact – vulnerabilities of the kind tracked by CVE, where the documented and correct use of an API leads to security impact. Application-level misuse and issues caused by passing unvalidated user input into stdlib APIs are not covered.
 

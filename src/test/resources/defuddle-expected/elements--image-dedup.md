@@ -13,13 +13,13 @@ This article tests deduplication of lazy-loaded image duplicates while preservin
 
 ![A landscape photo.](https://www.example.com/images/photo-large.webp)
 
-A landscape photo. Photo credit.
+*A landscape photo. Photo credit.*
 
 Paragraph of text between the images to separate content sections properly for the parser to work with.
 
 ![](https://www.example.com/images/portrait-large.webp)
 
-A portrait photo. Photographer name.
+*A portrait photo. Photographer name.*
 
 More article text here with enough words for the content detection scoring algorithm to work properly.
 

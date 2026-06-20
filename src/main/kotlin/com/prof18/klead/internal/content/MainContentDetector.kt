@@ -26,9 +26,14 @@ internal object MainContentDetector {
         ".post-body",
         ".article-content",
         "#article-content",
+        ".article-text",
         ".js-article-content",
         ".entry-content",
         ".markdown-body",
+        ".markdown-preview-section",
+        ".markdown-preview-view",
+        ".markdown-rendered",
+        ".updates-scroll-content",
         "article",
         """[role="article"]""",
         "main",
@@ -82,6 +87,7 @@ internal object MainContentDetector {
         val sorted = candidates.sortedByDescending { it.score }
         var selected = refineListingParent(sorted.first(), sorted)
         refineBroadContainerToDirectArticle(selected, sorted)?.let { selected = it }
+        refineBroadContainerToFocusedDescendant(selected, sorted)?.let { selected = it }
         if (selected.element.tagName() == "body") {
             refineBodyToFocusedCandidate(selected, sorted)?.let { selected = it }
         }
@@ -160,6 +166,20 @@ internal object MainContentDetector {
             )
     }
 
+    private fun refineBroadContainerToFocusedDescendant(selected: Candidate, candidates: List<Candidate>): Candidate? {
+        if (selected.selector !in BROAD_CONTAINER_SELECTORS) return null
+        val focusedDescendants = candidates
+            .filter { candidate ->
+                candidate.element !== selected.element &&
+                    candidate.selector in FOCUSED_DESCENDANT_SELECTORS &&
+                    candidate.element.isDescendantOf(selected.element) &&
+                    ContentScorer.scoreElement(candidate.element).wordCount >= BROAD_REFINEMENT_MIN_WORDS
+            }
+        if (focusedDescendants.size != 1) return null
+
+        return focusedDescendants.single()
+    }
+
     private fun refineBodyToFocusedCandidate(selected: Candidate, candidates: List<Candidate>): Candidate? {
         val focusedCandidates = candidates
             .filter { candidate ->
@@ -180,6 +200,8 @@ internal object MainContentDetector {
     }
 
     private fun Candidate.isFocusedContentCandidate(): Boolean = selector in FOCUSED_CONTENT_SELECTORS
+
+    private fun Element.isDescendantOf(ancestor: Element): Boolean = parents().any { it === ancestor }
 
     private fun detectTableLayout(body: Element): Candidate? {
         val bodyWords = ContentScorer.scoreElement(body).wordCount
@@ -211,14 +233,40 @@ internal object MainContentDetector {
         return (width != null && width >= 600) ||
             table.attr("align").equals("center", ignoreCase = true) ||
             "content" in hints ||
-            "article" in hints
+            "article" in hints ||
+            table.hasMultiColumnLayoutRow()
     }
 
+    private fun Element.hasMultiColumnLayoutRow(): Boolean = directTableRows().any { row ->
+        val cells = row.directTableCells()
+        cells.size >= 2 &&
+            cells.any { ContentScorer.scoreElement(it).wordCount >= LAYOUT_CONTENT_CELL_MIN_WORDS } &&
+            cells.any { it.isPeripheralLayoutCell() }
+    }
+
+    private fun Element.isPeripheralLayoutCell(): Boolean {
+        val score = ContentScorer.scoreElement(this)
+        return score.wordCount <= LAYOUT_PERIPHERAL_CELL_MAX_WORDS ||
+            score.linkDensity >= LAYOUT_PERIPHERAL_CELL_MIN_LINK_DENSITY ||
+            select("img, map, area").isNotEmpty()
+    }
+
+    private fun Element.directTableRows(): List<Element> = children().flatMap { child ->
+        when (child.normalName()) {
+            "tr" -> listOf(child)
+            "tbody", "thead", "tfoot" -> child.children().filter { it.normalName() == "tr" }
+            else -> emptyList()
+        }
+    }
+
+    private fun Element.directTableCells(): List<Element> =
+        children().filter { it.normalName() == "td" || it.normalName() == "th" }
+
     private fun refineWithSchemaText(document: Document, schemaText: String?): Candidate? {
-        val needle = schemaText?.trim()?.takeIf { it.length >= 20 } ?: return null
+        val needle = schemaText?.normalizeSchemaText()?.takeIf { it.length >= SCHEMA_TEXT_MIN_LENGTH } ?: return null
         return document.body()
             ?.select("article, main, section, div")
-            ?.filter { it.text().contains(needle, ignoreCase = false) }
+            ?.filter { it.matchesSchemaText(needle) }
             ?.minByOrNull { ContentScorer.scoreElement(it).wordCount }
             ?.let { element ->
                 Candidate(
@@ -228,6 +276,20 @@ internal object MainContentDetector {
                 )
             }
     }
+
+    private fun Element.matchesSchemaText(needle: String): Boolean {
+        val haystack = text().normalizeSchemaText()
+        if (haystack.contains(needle, ignoreCase = false)) return true
+        val anchors = needle.schemaTextAnchors()
+        return anchors.size > 1 && anchors.all { haystack.contains(it, ignoreCase = false) }
+    }
+
+    private fun String.schemaTextAnchors(): List<String> = when {
+        length <= SCHEMA_TEXT_ANCHOR_LENGTH * 2 -> listOf(this)
+        else -> listOf(take(SCHEMA_TEXT_ANCHOR_LENGTH), takeLast(SCHEMA_TEXT_ANCHOR_LENGTH))
+    }
+
+    private fun String.normalizeSchemaText(): String = replace(Regex("""\s+"""), " ").trim()
 
     private fun detected(
         element: Element,
@@ -274,9 +336,11 @@ internal object MainContentDetector {
         ".post-body",
         ".article-content",
         "#article-content",
+        ".article-text",
         ".js-article-content",
         ".entry-content",
         ".markdown-body",
+        ".updates-scroll-content",
         "main",
         """[role="main"]""",
         ".article-body",
@@ -295,6 +359,11 @@ internal object MainContentDetector {
         "#content",
     )
 
+    private val FOCUSED_DESCENDANT_SELECTORS = setOf(
+        ".article-text",
+        ".js-article-content",
+    )
+
     private const val BROAD_REFINEMENT_MIN_SCORE_RATIO = 0.45
     private const val BROAD_REFINEMENT_MIN_WORD_RATIO = 0.35
     private const val BROAD_REFINEMENT_MIN_WORDS = 50
@@ -304,4 +373,9 @@ internal object MainContentDetector {
     private const val PREFERRED_SELECTOR_SHORT_MIN_WORDS = 35
     private const val PREFERRED_SELECTOR_MIN_PARAGRAPHS = 2
     private const val PREFERRED_SELECTOR_MAX_LINK_DENSITY = 0.35
+    private const val LAYOUT_CONTENT_CELL_MIN_WORDS = 30
+    private const val LAYOUT_PERIPHERAL_CELL_MAX_WORDS = 8
+    private const val LAYOUT_PERIPHERAL_CELL_MIN_LINK_DENSITY = 0.45
+    private const val SCHEMA_TEXT_MIN_LENGTH = 20
+    private const val SCHEMA_TEXT_ANCHOR_LENGTH = 120
 }

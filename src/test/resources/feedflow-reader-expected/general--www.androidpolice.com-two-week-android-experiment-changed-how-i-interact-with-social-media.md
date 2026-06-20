@@ -47,7 +47,7 @@ However, I never expected this to change my relationship with social media forev
 
 ## How do I use Grayscale smartly?
 
-![A Samsung Galaxy with a black and white display sits on a white table with rainbow light.](https://static0.anpoimages.com/wordpress/wp-content/uploads/wm/2024/11/black-and-white-samsung-galaxy-1.jpg?q=49&fit=crop&w=825&dpr=2)
+![A Samsung Galaxy with a black and white display sits on a white table with rainbow light.](https://static0.anpoimages.com/wordpress/wp-content/uploads/wm/2024/11/black-and-white-samsung-galaxy-1.jpg?q=49&fit=crop&w=500&dpr=2)
 
 However, I don't use my smartphone only for social media. I also spend significant time editing articles in Word or Google Docs on my phone.
 

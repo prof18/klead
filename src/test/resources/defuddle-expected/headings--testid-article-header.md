@@ -15,7 +15,7 @@ Science also suggests we have more control than we realize when it comes to reve
 
 ![Photo description](https://example.com/image.jpg)
 
-Photo credit line.
+*Photo credit line.*
 
 Researchers differentiate between internet use on phones versus computers, with phones being much worse than computers.
 

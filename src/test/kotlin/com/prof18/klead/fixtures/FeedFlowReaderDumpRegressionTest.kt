@@ -1,6 +1,9 @@
 package com.prof18.klead.fixtures
 
 import com.prof18.klead.parseHtmlForTest
+import com.prof18.klead.testOptions
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.test.Test
@@ -18,17 +21,30 @@ class FeedFlowReaderDumpRegressionTest {
             val result = parseHtmlForTest(
                 html = case.rawHtml,
                 url = case.sourceUrl,
+                options = testOptions(debug = true),
             )
+            val actualMarkdown = result.content.requireMarkdown()
+
+            if (UPDATE_SNAPSHOTS) {
+                updateExpectedMarkdown(case.name, actualMarkdown)
+                return@forEach
+            }
 
             assertMarkdownSnapshotEquals(
                 fixtureName = case.name,
                 expected = case.expectedMarkdown.markdownBody,
-                actual = result.content.requireMarkdown(),
+                actual = actualMarkdown,
+                debug = result.debug,
             )
         }
     }
 
-    private fun assertMarkdownSnapshotEquals(fixtureName: String, expected: String, actual: String) {
+    private fun assertMarkdownSnapshotEquals(
+        fixtureName: String,
+        expected: String,
+        actual: String,
+        debug: Map<String, Any?>,
+    ) {
         val normalizedExpected = MarkdownNormalizer.minimal(expected)
         val normalizedActual = MarkdownNormalizer.minimal(actual)
         if (normalizedExpected == normalizedActual) return
@@ -43,6 +59,9 @@ class FeedFlowReaderDumpRegressionTest {
                 appendLine()
                 appendLine("Actual excerpt:")
                 appendLine(excerptAround(normalizedActual, firstDiff))
+                appendLine()
+                appendLine("Debug:")
+                appendLine(debug)
             },
         )
     }
@@ -63,7 +82,30 @@ class FeedFlowReaderDumpRegressionTest {
             .replace("\n", "\\n")
     }
 
+    private fun updateExpectedMarkdown(fixtureName: String, actual: String) {
+        val path = Path.of(
+            System.getProperty("user.dir"),
+            "src/test/resources/feedflow-reader-expected/$fixtureName.md",
+        )
+        val existing = Files.readString(path).replace("\r\n", "\n").replace('\r', '\n')
+        val preamble = if (existing.startsWith(JSON_PREAMBLE_START)) {
+            val end = existing.indexOf(JSON_PREAMBLE_END, startIndex = JSON_PREAMBLE_START.length)
+            if (end == -1) {
+                ""
+            } else {
+                existing.substring(0, end + JSON_PREAMBLE_END.length).trimEnd() + "\n\n"
+            }
+        } else {
+            ""
+        }
+        Files.writeString(path, preamble + MarkdownNormalizer.minimal(actual) + "\n")
+    }
+
     private companion object {
         const val EXCERPT_RADIUS = 240
+        const val JSON_PREAMBLE_START = "```json\n"
+        const val JSON_PREAMBLE_END = "\n```"
+        val UPDATE_SNAPSHOTS = java.lang.Boolean.getBoolean("klead.updateFeedFlowSnapshots") ||
+            System.getenv("KLEAD_UPDATE_FEEDFLOW_SNAPSHOTS") == "true"
     }
 }

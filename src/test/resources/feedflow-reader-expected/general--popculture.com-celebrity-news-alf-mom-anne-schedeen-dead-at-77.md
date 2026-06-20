@@ -7,12 +7,6 @@
 }
 ```
 
-Celebrity
-
-By [Anthony Farris](https://popculture.com/author/anthony-farris/)
-
-June 15, 2026, 2:24pm
-
 Hollywood is mourning this week after actress passed away over the weekend at the age of 77.
 
 Schedeen was most commonly known for her role as Kate Tanner on the 1980s sitcom *[ALF](https://www.imdb.com/title/tt0090390/).* The sitcom spanned four seasons, airing from 1986 to 1990.
@@ -29,6 +23,6 @@ Prior to landing a main role on *ALF*, Schedeen had parts in a popular TV shows 
 
 Of her experience on *ALF*, Schedeen told Holiday Heroes, a charity organization that assists disadvantaged families, the following, in part: “I kept reading scripts. I almost got involved with one, then withdrew at the last minute. Then I read *ALF*. I said ‘This is funny. It makes me laugh.’ I met the people involved. I met ALF and became more convinced I wanted to do it. That little alien made me laugh.”
 
-Following the [conclusion of ALF](https://popculture.com/streaming/news/alf-classic-nbc-sitcom-returning-streaming-shout-factory-tv/), Schedeen mainly acted on the big screen, which included roles in movies such as *Praying Mantis* and *Heaven’s Prisoners*. She returned to television in 2001, appearing in three episodes of *Judging Amy*.
+Following the [conclusion of *ALF*](https://popculture.com/streaming/news/alf-classic-nbc-sitcom-returning-streaming-shout-factory-tv/), Schedeen mainly acted on the big screen, which included roles in movies such as *Praying Mantis* and *Heaven’s Prisoners*. She returned to television in 2001, appearing in three episodes of *Judging Amy*.
 
 A cause of death has not been made public.

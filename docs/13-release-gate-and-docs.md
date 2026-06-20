@@ -65,7 +65,7 @@ Track:
 - MathML fallback when no LaTeX exists, because math conversion/rendering is excluded
 - no browser-computed styles
 - not-yet-ported async extractors, if any remain before a staged release
-- intentionally cleaner Markdown than upstream Turndown in some cases
+- strict upstream Markdown fixture parity for supported fixtures
 
 ## Release Gate Commands
 

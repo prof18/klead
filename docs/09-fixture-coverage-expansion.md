@@ -124,14 +124,14 @@ Generate or maintain a report containing:
 - `[d]` Kotlin expected outputs are loaded only when explicitly allowed.
 - `[x]` Coverage report is generated or documented.
 
-Note: the MVP allowlist runs in relaxed release mode while exact Markdown parity remains a staged known difference. Strict fixture coverage is active for the metadata subset. Kotlin-specific expected outputs are not used in this release.
+Note: the MVP allowlist runs in relaxed release mode for broad diagnostics. Supported upstream Markdown fixtures and supported upstream metadata fields (`title`, `author`, `site`) are covered by strict snapshots, and Kotlin-specific expected outputs are not used in this release.
 
 ## Acceptance Gate
 
 - `[d]` All fixtures outside the explicit math rendering/conversion exception pass strict or accepted-difference tests.
 - `[x]` Full diagnostic suite has no unknown failures.
 
-Release decision: full exact Markdown parity across every upstream fixture is deferred and documented in `docs/known-differences.md` and `docs/fixture-coverage.md`. The current gate is strict metadata fixtures, relaxed MVP fixtures, full diagnostic coverage, and zero unknown diagnostic failures.
+Release decision: supported upstream Markdown and metadata fixture parity is enforced by strict snapshots. The remaining documented exclusions are math/rendering conversion, network-backed extraction, browser-rendered content, computed styles, and upstream `published` frontmatter that is not part of the public metadata model.
 
 ## Commit Slices
 

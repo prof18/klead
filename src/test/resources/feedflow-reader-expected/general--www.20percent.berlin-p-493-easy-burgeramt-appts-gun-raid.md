@@ -9,7 +9,7 @@
 
 ### We really do throw away a lot
 
-Andrew Bulkeley
+[Andrew Bulkeley](https://substack.com/@20prozent)
 
 May 15, 2026
 
@@ -37,6 +37,8 @@ Everyone who needed an appointment with *Bürgerämter* in March was **able to g
 
 Berlin politicians are tired of cash-only businesses and want the federal government **to force retailers to accept at least one form of digitial payment**, [according to RBB24](https://www.rbb24.de/wirtschaft/beitrag/2026/05/berlin-initiative-bargeldlose-bezahlung-geschaefte-laeden.html). A parliamentary committee Wednesday agreed to pressure the Bundesrat, one of Germany’s two parliaments, in-line with recent noise made by federal politicians in an attempt to dampen tax avoidance and make life easier for us consumers. Germany loses out on **an estimated €2 billion in annual sales tax revenue** while I am often forced to opt for major retailers and fast-food joints because of the short-sighted practice of accepting only cash by local merchants. Only the local 💩AfD opposed the measure.
 
+---
+
 20percent.berlin events!
 
 💡Maurice will be hosting the fínal [20% Berlin News Quiz](https://luma.com/db04x76m) before a summer break on Wednesday, May 20. A fun night of pub quiz style news, trivia and history questions. At the awesome Electric Social, close to Alexanderplatz. We’d love to see you there. [Get your tickets!](https://luma.com/db04x76m) 💡
@@ -45,9 +47,13 @@ Berlin politicians are tired of cash-only businesses and want the federal govern
 
 😂 [100% Funny](https://www.downstairscomedy.shop/produkte/96200-tickets-downstairs-comedy-english-stand-up-show-downstairs-comedy-club-berlin-am-18-06-2026), the 20percent.berlin comedy night, is back June 18 at Berlin’s best standup club: Downstairs Comedy Club. Berlin’s funniest comedians from both the German and English scenes will bring their best jokes in Berlin’s lingua franca — English. Vincent Pfäfflin, Žana Fejzić, Dan Stern, Dinara Kerey and Masud Akbarzadeh hosted by 20percent.berlin’s own Andrew Bulkeley. [TICKETS HERE](https://www.downstairscomedy.shop/produkte/96200-tickets-downstairs-comedy-english-stand-up-show-downstairs-comedy-club-berlin-am-18-06-2026).
 
+---
+
 ## Gun crime raids
 
 Berlin and federal cops Wednesday **raided 28 addresses looking for weapons** used in recent crimes, [according to Tagesspiegel](https://www.tagesspiegel.de/berlin/grossrazzia-in-berlin-sek-und-sondereinheit-ferrum-gehen-gegen-schusswaffen-vor-15590941.html?icid=in-text-link_15597343). 570 officers — including the elite GSG9 federal SWAT team — arrested nine suspects and confiscated drugs, cash, two cars and a single weapon. 570 officers. 1 gun. 🤔 Police and prosecutors have had little luck in controlling an explosion in gun-related crime, which leapt 68% last year. The near-daily shootings rarely result in serious injury and are often attributed to Turkish and Kurdish gangs attempting to establish dominance while **blackmailing businesses into protection payments**.
+
+---
 
 *from our partner*
 
@@ -58,6 +64,8 @@ What if your social-life was on auto-pilot? Real friendships means seeing the sa
 Limited spots available.
 
 [Apply now to join.](https://forms.theanalogcircle.com/ic-application?utm_source=twentypercent&utm_medium=partners&utm_campaign=twenty-15-05-2026&utm_section=text)
+
+---
 
 ## Tschüss Eta!
 
@@ -73,15 +81,17 @@ The first-ever female head coach of a Bundesliga mens soccer team will coach **h
 
 ## Factoid
 
-![](https://substackcdn.com/image/fetch/$s_!0zvd!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F74851e85-7905-49d7-bace-c38550e612f8_4032x2268.jpeg)
+![](https://substackcdn.com/image/fetch/$s_!0zvd!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F74851e85-7905-49d7-bace-c38550e612f8_4032x2268.jpeg)
 
 *The bane of our existence.*
 
 > Berliner’s throw away more per-person than the average German or **an average 231.6 kgs per Berliner per year** compared with just 186.7 kgs per Kraut nationwide, [according to the Berlin-Brandenburg statistics office](https://www.statistik-berlin-brandenburg.de/news/2026/hausmuell-sperrmuell-2024). The figures are for 2024, the first year that people **threw away more than the previous year** since 2020. The figure includes both ordinary household trash and *Sperrmüll*, or bulky items like that refrigerator or mattress abandoned on your street corner.
 
+---
+
 ### 🚶‍♂️🚶‍♂️🚶‍♂️ Visit our sponsor! 🚶🏽‍♀️🚶🏽‍♀️🚶🏽‍♀️
 
-![](https://substackcdn.com/image/fetch/$s_!qS_P!,w_1456,c_limit,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F05dd5722-e941-4de6-9655-816d9e9c630f_600x600.png)
+![](https://substackcdn.com/image/fetch/$s_!qS_P!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F05dd5722-e941-4de6-9655-816d9e9c630f_600x600.png)
 
 **Hey Berliners, ready to go out in nature around Berlin?**
 
@@ -96,6 +106,8 @@ All proceeds go to Learning Lions, providing tech education to young people in r
 By becoming an Impact Partner, your club/NGO can gather funds for its own project.
 
 Ready to hike for impact? [Assemble your team and REGISTER NOW!](https://berlin.xn--lwenmarsch-ecb.de/)
+
+---
 
 ### 🔗 🔗 🔗 Useful links 🔗 🔗 🔗
 

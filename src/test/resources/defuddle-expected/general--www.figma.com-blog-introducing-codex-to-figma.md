@@ -13,7 +13,7 @@ With Codex to Figma, teams can bring real, running interfaces into Figma to expl
 
 Starting today, you can generate Figma Design files from Codex using the [Figma MCP server](https://www.figma.com/blog/introducing-figma-mcp-server/)
 
-### Introducing our MCP server: Bringing Figma into your workflow
+### [Introducing our MCP server: Bringing Figma into your workflow](https://www.figma.com/blog/introducing-figma-mcp-server/)
 
 [Today we’re announcing the beta release of the Figma MCP server, which brings Figma directly into the developer workflow to help LLMs achieve design-informed code generation.](https://www.figma.com/blog/introducing-figma-mcp-server/)
 
@@ -23,7 +23,7 @@ The Codex desktop application is purpose-built for agentic coding. It provides a
 
 That kind of fluidity feels familiar. In Figma, teams move just as easily. The canvas is designed for exploration and iteration. It’s a space where the best ideas have room to take shape. By connecting the Figma canvas to Codex, that spirit of exploration extends directly into the development workflow—unlocking a powerful new way for users to build everything from prototypes to production applications.
 
-## Starting an app from a design
+## [Starting an app from a design](#starting-an-app-from-a-design)
 
 One of the core use cases of the Figma MCP server is retrieving context from Figma files and using that context in code generation. The Figma MCP server can capture information from Figma Design, Figma Make, and FigJam files and pass it to Codex as part of the building process.
 
@@ -35,7 +35,7 @@ Beyond extracting design information, there are a number of other [helpful tools
 
 Prompts like this will instruct the agent to call the `get_design_context` tool from the Figma MCP server. This tool helps extract critical design information from Figma files like layouts, styles, and component information and then provides that context to Codex for code generation.
 
-## From code to canvas
+## [From code to canvas](#from-code-to-canvas)
 
 After iterating in code, you can bring your design back into the canvas to compare flows, explore alternatives, and validate your assumptions. The Figma MCP server makes it easy to bring those screens back into Figma without having to recreate them manually from the browser. With the `generate_figma_design` tool, you can turn a live, running interface into fully editable Figma frames in seconds—bringing real, functioning UI directly onto the canvas for deeper explorations and collaboration.
 
@@ -56,7 +56,7 @@ When the application reloads, you’ll see a new tool bar at the top of the page
 
 After you’ve captured all the information that you want to transfer to Figma, you can choose to either open the file or return to Codex. Codex will have the Figma file URL waiting for you.
 
-## There and back again, an MCP story
+## [There and back again, an MCP story](#there-and-back-again-an-mcp-story)
 
 Now that you’ve built your app and set up your design file, you’re ready to iterate. Here you can take full advantage of what the Figma canvas has to offer, including:
 

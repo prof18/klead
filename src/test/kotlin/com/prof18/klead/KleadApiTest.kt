@@ -46,7 +46,7 @@ class KleadApiTest {
         assertEquals("A short description", result.metadata.description)
         assertEquals(
             """
-            # Readable title
+            ## Readable title
 
             This is the first paragraph.
 
@@ -146,5 +146,40 @@ class KleadApiTest {
         assertTrue(result.content.requireMarkdown().contains("Schema body marker belongs"))
         assertFalse(result.content.requireMarkdown().contains("Unrelated body content"))
         assertEquals("schema-text", result.debug["selectedContentSelector"])
+    }
+
+    @Test
+    fun `external footnote blocks are merged when article contains matching references`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                  <body>
+                    <article>
+                      <p>This release includes several improvements to image processing.</p>
+                      <ul>
+                        <li>Higher resolution is available to every account.<sup class="caption post__sup">1</sup></li>
+                        <li>Better accuracy was measured in internal evaluations.<sup class="caption post__sup">2</sup></li>
+                      </ul>
+                      <p>Users can start using these features immediately.</p>
+                    </article>
+                    <div class="page-wrapper">
+                      <div class="PostDetail__abc123__footnotes">
+                        <h4>Footnotes</h4>
+                        <p><sup>1</sup> This is a <a href="https://example.com/docs/vision">configuration change</a>.</p>
+                        <p><sup>2</sup> Based on standardized test harnesses.</p>
+                      </div>
+                    </div>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://example.com/external-footnotes",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("Higher resolution is available to every account.[^1]"))
+        assertTrue(markdown.contains("[^1]: This is a [configuration change](https://example.com/docs/vision)"))
+        assertFalse(markdown.contains("[^1]: This is a [configuration change](https://example.com/docs/vision)."))
+        assertTrue(markdown.contains("[^2]: Based on standardized test harnesses."))
+        assertFalse(markdown.contains("<sup"))
     }
 }

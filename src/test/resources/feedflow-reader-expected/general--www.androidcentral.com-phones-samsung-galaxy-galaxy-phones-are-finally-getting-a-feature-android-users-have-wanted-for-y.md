@@ -11,7 +11,7 @@ Samsung finally adds a network speed meter to Galaxy phones with One UI 9.
 
 When you purchase through links on our site, we may earn an affiliate commission. [Here’s how it works](https://www.androidcentral.com/about).
 
-![Samsung Galaxy S26 Ultra testing on Android Central](https://cdn.mos.cms.futurecdn.net/7yDjB7Dppc8HUjCyREPkr5-1920-80.jpg)
+![Samsung Galaxy S26 Ultra testing on Android Central](https://cdn.mos.cms.futurecdn.net/7yDjB7Dppc8HUjCyREPkr5-1920-80.jpg.webp)
 
 *(Image credit: Harish Jonnalagadda / Android Central)*
 
@@ -29,13 +29,13 @@ The new software update from Samsung includes a built-in network speed indicator
 
 Previously, users of Galaxy devices who wanted this feature had to resort to third-party applications or unofficial hacks that required root access. With [One UI 9](https://www.androidcentral.com/phones/samsung-galaxy/samsung-speeds-ahead-rolls-out-one-ui-9-beta-2-for-the-galaxy-s26-overseas), there’s a more official way through Samsung’s Good Lock ecosystem.
 
-- [Early Prime Day Samsung Galaxy deals: discounted S26 Ultra, Galaxy Watch 8](https://www.androidcentral.com/phones/samsung-galaxy/early-prime-day-samsung-galaxy-deals-2026)
+- [*Early Prime Day Samsung Galaxy deals: discounted S26 Ultra, Galaxy Watch 8*](https://www.androidcentral.com/phones/samsung-galaxy/early-prime-day-samsung-galaxy-deals-2026)
 
 ## The feature hides inside QuickStar
 
 The new choice comes through an upgraded version of QuickStar, one of the customization modules of [Good Lock](https://www.androidcentral.com/samsung-good-lock). After you enable it, the indicator will appear next to the existing status bar icons and will show you the current network speeds when you’re connected to either Wi-Fi or mobile data. Readout can change between KB/s, MB/s, and GB/s depending on the amount of traffic.
 
-![network speed indicator toggle in the settings within One UI 9](https://cdn.mos.cms.futurecdn.net/mjJMnrtX7ouXPxGYKupkoC-473-80.jpg)
+![network speed indicator toggle in the settings within One UI 9](https://cdn.mos.cms.futurecdn.net/mjJMnrtX7ouXPxGYKupkoC-473-80.jpg.webp)
 
 *(Image credit: SammyGuru)*
 

@@ -7,17 +7,15 @@
 }
 ```
 
-# Svastica vegana al buffet di AfD: la protesta degli attivisti contro l’ultradestra
-
 ![fck afd](https://www.ilmitte.com/wp-content/uploads/2025/05/fck-afd-780x470.jpg)
 
-*Foto: [Markus Spiske](https://unsplash.com/@markusspiske?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/black-and-white-labeled-bottle-YK8hGXXElBk?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)*
+*Foto: Markus Spiske on Unsplash*
 
 Un gruppo di attivisti vicini al **Centro per la Bellezza Politica** ha messo in atto una singolare azione dimostrativa vicino al **Congress Centrum** di **Heidenheim**, alla vigilia del congresso regionale di **AfD** del **Baden-Württemberg**. Arrivando nella sala colazioni del proprio hotel in mattinata, i politici di AfD hanno trovato, su un vassoio del buffet, una svastica realizzata con 1,2 chili di carne macinata vegana, contornata da cetrioli e con la scritta “Attenzione alla NSAFD”. Il gioco di parole combina il nome del partito nazista di Adolf Hitler, l’NSDAP, con quello di AfD.
 
-Non è la prima volta che il Centro per la Bellezza Politica o attivisti vicini al celebre collettivo progettano interventi di questo tipo, con provocazioni creative che vanno dal satirico al situazionista: sono stati loro, per esempio, a creare una finta tipografia per accaparrarsi l’ordine di tutti i volantini di AfD per una campagna elettorale, salvo poi **[mandarli interamente al macero](https://www.ilmitte.com/2021/10/finta-azienda-di-volantinaggio-manda-al-macero-5-milioni-di-flyer-di-afd/)**. Sempre loro hanno organizzato un coro che ha coperto, cantando “**[AfD merda](https://www.ilmitte.com/2025/07/intervista-ad-alice-weidel-coperta-dai-cori-afd-mrd/)**“, la registrazione di un’intervista televisiva alla leader dell’ultradestra **Alice Weidel**.
+Non è la prima volta che il Centro per la Bellezza Politica o attivisti vicini al celebre collettivo progettano interventi di questo tipo, con provocazioni creative che vanno dal satirico al situazionista: sono stati loro, per esempio, a creare una finta tipografia per accaparrarsi l’ordine di tutti i volantini di AfD per una campagna elettorale, salvo poi **[mandarli interamente al macero](https://www.ilmitte.com/2021/10/finta-azienda-di-volantinaggio-manda-al-macero-5-milioni-di-flyer-di-afd/)**. Sempre loro hanno organizzato un coro che ha coperto, cantando “ **[AfD merda](https://www.ilmitte.com/2025/07/intervista-ad-alice-weidel-coperta-dai-cori-afd-mrd/)**“, la registrazione di un’intervista televisiva alla leader dell’ultradestra **Alice Weidel**.
 
-In quest’occasione, il gruppo ha prenotato alcune camere nello stesso hotel in cui alloggiavano numerosi delegati del partito. Nel post social, gli attivisti hanno descritto l’operazione con tono ironico, dichiarandosi sorpresi del fatto che nessuno abbia sospettato alcunché, quando una squadra di pallavolo di sette giocatori dell'”FC Brandmauer SRP+” ha chiesto di prenotare delle stanze in una struttura così vicina alla sede del congresso. “*Brandmauer*“, infatti, è il termine tedesco che indica il cosiddetto “cordone sanitario” che i partiti democratici (originariamente la CDU) avrebbero giurato di creare contro AfD, rifiutandosi di creare alleanze con il partito di ultradestra.
+In quest’occasione, il gruppo ha prenotato alcune camere nello stesso hotel in cui alloggiavano numerosi delegati del partito. Nel post social, gli attivisti hanno descritto l’operazione con tono ironico, dichiarandosi sorpresi del fatto che nessuno abbia sospettato alcunché, quando una squadra di pallavolo di sette giocatori dell'”FC Brandmauer SRP+” ha chiesto di prenotare delle stanze in una struttura così vicina alla sede del congresso. “ *Brandmauer*“, infatti, è il termine tedesco che indica il cosiddetto “cordone sanitario” che i partiti democratici (originariamente la CDU) avrebbero giurato di creare contro AfD, rifiutandosi di creare alleanze con il partito di ultradestra.
 
 Al termine dell’episodio, risulta, secondo gli organizzatori e il personale, che i politici di AfD presenti abbiano minacciato gli attivisti.
 

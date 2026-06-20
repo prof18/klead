@@ -7,7 +7,7 @@
 }
 ```
 
-# Bose Ultra Open earbuds already at lowest-ever prices before Prime Day
+## Bose Ultra Open earbuds already at lowest-ever prices before Prime Day
 
 In select colors, score one of our favorite pairs of open earbuds for less than $200.
 
@@ -15,33 +15,22 @@ In select colors, score one of our favorite pairs of open earbuds for less than 
 
 Credit: Mashable Photo Composite/Bose
 
-Deal pricing and availability subject to change after time of publication. Learn more about
+Deal pricing and availability subject to change after time of publication. Learn more about [how we select deals](https://mashable.com/about/deals-coverage-explained).
 
-how we select deals
-
-.
-
-**SAVE $100:** As of June 12, select colors of the are back to their [lowest-ever price](https://camelcamelcamel.com/product/B0CPFVB5VN) at Amazon of $199. This is $100 off their full price of $299.
+**SAVE $100:** As of June 12, select colors of the are back to their [lowest-ever price](https://camelcamelcamel.com/product/B0CPFVB5VN "(opens in a new window)") at Amazon of $199. This is $100 off their full price of $299.
 
 ---
 
 Credit: Bose
 
-$199
-
-at Amazon
-
-$299
-
-Save $100
+$199 at Amazon
+$299 Save $100
 
 The are among our favorite [early Prime Day earbuds deals](https://mashable.com/tech/best-early-prime-day-headphones-deals-2026) at [Amazon](https://mashable.com/category/amazon) right now. If you've had your eyes on them, there's no need to wait for the sale event to officially start to save. As of June 12, Amazon's slashed the price of most colors of these earbuds down to $199.
 
-Compared to their list price of $299, this is a huge $100 discount and a return for some colors to their [lowest price point so far](https://camelcamelcamel.com/product/B0CPFVB5VN) at the retailer. If you're curious which colors have dropped to this price, you can save on the white smoke, black, desert gold, driftwood sand, midnight violet, and moonstone blue earbuds.
+Compared to their list price of $299, this is a huge $100 discount and a return for some colors to their [lowest price point so far](https://camelcamelcamel.com/product/B0CPFVB5VN "(opens in a new window)") at the retailer. If you're curious which colors have dropped to this price, you can save on the white smoke, black, desert gold, driftwood sand, midnight violet, and moonstone blue earbuds.
 
-SEE ALSO:
-
-How to sign up for Amazon Prime in time for Prime Day
+SEE ALSO: [How to sign up for Amazon Prime in time for Prime Day](https://mashable.com/article/how-to-sign-up-for-amazon-prime)
 
 If you're someone who prefers to be aware of the world around you while listening to music rather than completely tuned out through noise-canceling, open earbuds like the are worth looking into. Writer RJ Andersen gushed over these earbuds in Mashable's [review](https://mashable.com/review/bose-ultra-open-earbuds), saying they're "extremely comfortable and score top marks for battery life, spatial audio, and sound quality."
 

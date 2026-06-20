@@ -21,7 +21,7 @@ After years of using the Samsung Home screen, I finally replaced it with a custo
 
 ## Niagara Launcher made me rethink what a home screen should look like
 
-![Three smartphones displaying minimalist Niagara Launcher home screens with vertical app lists against a blue abstract background.](https://static0.anpoimages.com/wordpress/wp-content/uploads/2026/03/three-smartphones-displaying-minimalist-niagara-launcher-home-screens-with-vertical-app-lists-against-a-blue-abstract-background.png?q=49&fit=crop&w=825&dpr=2)
+![Three smartphones displaying minimalist Niagara Launcher home screens with vertical app lists against a blue abstract background.](https://static0.anpoimages.com/wordpress/wp-content/uploads/2026/03/three-smartphones-displaying-minimalist-niagara-launcher-home-screens-with-vertical-app-lists-against-a-blue-abstract-background.png?q=49&fit=crop&w=500&dpr=2)
 
 More is better, but in many instances, having something more can actually create obstruction, making navigation hard.
 
@@ -41,7 +41,7 @@ Moreover, Niagara supports colorful app icons and supports multiple themes, so i
 
 ## I now spend less time looking for apps without using a cluttered interface
 
-![A Google Pixel 8 Pro held in hand, running Niagara Launcher's setup screen for notification summary, with a keyboard and an iPhone 13 visible in the background](https://static0.anpoimages.com/wordpress/wp-content/uploads/wm/2023/12/niagara-launcher-notification-summary-setup.jpg?q=49&fit=crop&w=825&dpr=2)
+![A Google Pixel 8 Pro held in hand, running Niagara Launcher's setup screen for notification summary, with a keyboard and an iPhone 13 visible in the background](https://static0.anpoimages.com/wordpress/wp-content/uploads/wm/2023/12/niagara-launcher-notification-summary-setup.jpg?q=49&fit=crop&w=500&dpr=2)
 
 Switching to something new isn't easy because you have to unlearn and relearn everything. It takes time and effort to do that.
 

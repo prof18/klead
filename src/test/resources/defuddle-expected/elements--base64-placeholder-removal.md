@@ -15,7 +15,7 @@ Some article text between images with enough words for content detection to func
 
 ![Resolvable from picture source.](https://www.example.com/images/resolved.webp)
 
-Resolvable from picture source. Photo credit.
+*Resolvable from picture source. Photo credit.*
 
 More article text with enough content for the parser to work with on this test article page.
 

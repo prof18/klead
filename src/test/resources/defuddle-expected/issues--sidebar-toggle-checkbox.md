@@ -13,6 +13,6 @@ A second paragraph keeps the prose flowing and ensures the article has more than
 
 ![Storage migration: SD to NVMe](https://sidebar-toggle-checkbox/media/orangepi-storage-migration.svg)
 
-Storage migration: SD to NVMe
+*Storage migration: SD to NVMe*
 
 A closing paragraph after the diagram explains what the figure shows and gives the article a tidy conclusion that should survive extraction.

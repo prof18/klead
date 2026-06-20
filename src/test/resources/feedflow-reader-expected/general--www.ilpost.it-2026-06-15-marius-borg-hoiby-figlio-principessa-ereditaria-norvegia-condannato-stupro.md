@@ -1,7 +1,7 @@
 ```json
 {
   "title": "Marius Borg Høiby, figlio della principessa ereditaria di Norvegia, è stato condannato a quattro anni per stupro e violenza domestica",
-  "author": "Condividi Condividi Facebook X (Twitter) Email Whatsapp Regala il Post",
+  "author": "Giovanni De Benedictis",
   "site": "Il Post",
   "published": "2026-06-15T09:22:09+02:00"
 }

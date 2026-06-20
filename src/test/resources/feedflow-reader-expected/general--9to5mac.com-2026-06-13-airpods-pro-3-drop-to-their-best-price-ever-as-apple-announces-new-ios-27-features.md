@@ -17,11 +17,11 @@ Plus, Apple just announced a bunch of new iOS 27 features for AirPods coming thi
 
 Whether you’re looking to score Dad some banger new AirPods this year, or just upgrade for yourself, Amazon is getting particularly aggressive with sale pricing on Apple’s latest and greatest personal listening experience, and this year the flagship AirPods deal is landing just ahead of Father’s Day and well ahead of the big 4-day summer Prime Day event later this month.
 
-Regularly $249, AirPods Pro 3 are [now sitting down at $179 shipped](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20) – that’s close to 30% off the list price and the best deal we have tracked online to date. This deal is also now sitting alongside the best price ever on the new [AirPods Max 2 as well](https://amzn.to/3S0nEQQ):
+Regularly $249, AirPods Pro 3 are [now sitting down at **$179 shipped**](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20) – that’s close to 30% off the list price and the best deal we have tracked online to date. This deal is also now sitting alongside the best price ever on the new [AirPods Max 2 as well](https://amzn.to/3S0nEQQ):
 
-- AirPods Pro 3 [$179 (Reg. $249)](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20) – New all-time low
-- AirPods 4 [$99 (Reg. $129)](https://www.amazon.com/dp/B0DGHMNQ5Z/?tag=toysj-20&th=1)
-- AirPods Max 2 [$499 (Reg. $549)](https://www.amazon.com/dp/B0GSS4SGZR/?tag=toysj-20) – New all-time low
+- AirPods Pro 3 [**$179** (Reg. $249)](https://www.amazon.com/dp/B0FQFB8FMG?tag=toysj-20) – New all-time low
+- AirPods 4 [**$99** (Reg. $129)](https://www.amazon.com/dp/B0DGHMNQ5Z/?tag=toysj-20&th=1)
+- AirPods Max 2 [**$499** (Reg. $549)](https://www.amazon.com/dp/B0GSS4SGZR/?tag=toysj-20) – New all-time low
 
 Whether or not this price makes it through the end of the month when Prime Day goes live or not is hard to say, but I’m not sure it even matters at a price like this – they couldn’t possibly go for all that much less than this. There was an equally solid chance Amazon just retained the previous $199 sale price for its Prime Day festivities this year, and there is a chance Amazon flexes on Best Buy and the gang even more even if just for a couple hours at some point, but anything much lower than the [$179 we have right now](https://amzn.to/3Qin5RN) is unlikely and going to be hard to lock down unless you’re glued to your screen for 4-straight days in the middle of the week later this month.
 
@@ -49,4 +49,4 @@ Here’s even more iOS 27 news about AirPods:
 
 [This year’s best Prime Day deal might already be live: AirPods Pro 3 now at $179 all-time low](https://9to5toys.com/2026/06/10/best-prime-day-deal-live-airpods-pro-3/)
 
-You’ll want to stay locked to *[9to5Toys](https://9to5toys.com/)* this month – the early Prime Day deals are already flying on all things Apple, from the latest 2026 M5 MacBook releases, Apple Watch Series 11 (already [up to $160 off](https://9to5toys.com/2026/06/09/apple-watch-series-11-best-prices-3/)), iPad, and more.
+You’ll want to stay locked to *[9to5Toys](https://9to5toys.com/)* this month – the early Prime Day deals are already flying on all things Apple, from the latest 2026 M5 MacBook releases, Apple Watch Series 11 (already [up to **$160 off**](https://9to5toys.com/2026/06/09/apple-watch-series-11-best-prices-3/)), iPad, and more.

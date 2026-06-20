@@ -18,6 +18,7 @@ import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.ExtractorRegistry
 import com.prof18.klead.internal.extractors.site.ExtractorRemovalPipeline
 import com.prof18.klead.internal.markdown.KleadMarkdownWriter
+import com.prof18.klead.internal.media.TrustedEmbeds
 import com.prof18.klead.internal.metadata.MetadataExtractor
 import com.prof18.klead.internal.metadata.PageMetadataExtractor
 import com.prof18.klead.internal.metadata.SchemaOrgResult
@@ -27,8 +28,10 @@ import com.prof18.klead.internal.standardize.HtmlStandardizer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Comment
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.Node
 import java.net.URI
 import kotlin.math.max
 import kotlin.time.measureTimedValue
@@ -51,8 +54,11 @@ internal object KleadParser {
                 host = url.hostOrNull(),
                 document = document,
             )
-            val extractorResult = ExtractorRegistry(options.effectiveExtractors()).extract(
+            val extractorRegistry = ExtractorRegistry(options.effectiveExtractors())
+            val matchedExtractors = extractorRegistry.resolve(context = extractorContext)
+            val extractorResult = extractorRegistry.extract(
                 context = extractorContext,
+                extractors = matchedExtractors,
             )
             val parseDocument = extractorResult?.contentHtml
                 ?.let { contentHtml ->
@@ -68,6 +74,7 @@ internal object KleadParser {
                     url = url,
                     options = options,
                     extractorResult = extractorResult,
+                    matchedExtractors = matchedExtractors,
                     removalPolicy = removalPolicy,
                 )
                 RetryCandidate(
@@ -93,6 +100,7 @@ internal object KleadParser {
         url: String,
         options: KleadOptions,
         extractorResult: ExtractorResult?,
+        matchedExtractors: List<Extractor>,
         removalPolicy: RemovalPolicy,
     ): ParsedResult {
         val extractorContext = ExtractorContext(
@@ -100,7 +108,6 @@ internal object KleadParser {
             host = url.hostOrNull(),
             document = document,
         )
-        val matchedExtractors = ExtractorRegistry(options.effectiveExtractors()).resolve(context = extractorContext)
         val removals = mutableListOf<RemovalRecord>()
         ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
 
@@ -113,6 +120,7 @@ internal object KleadParser {
             preferredSelectors = matchedExtractors.flatMap { it.contentSelectors },
         )
         val content = detected.element
+        mergeExternalFootnoteBlocks(document, content)
         stripUnsafe(content)
         val metadata = PageMetadataExtractor.extract(
             document = document,
@@ -130,7 +138,7 @@ internal object KleadParser {
         ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
         val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
         matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
-        HtmlStandardizer.apply(content, metadata.title)
+        HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title)
         val requestedHtml = KleadOutput.HTML in options.outputs
         val requestedMarkdown = KleadOutput.MARKDOWN in options.outputs
         val html = if (requestedHtml) content.cleanOuterHtml() else null
@@ -180,7 +188,84 @@ internal object KleadParser {
 
     private fun prepareDocument(document: Document) {
         promoteNoscriptImages(document)
+        hydrateReactStreamedSegments(document)
     }
+
+    private fun hydrateReactStreamedSegments(document: Document) {
+        val segmentMoves = document.select("script")
+            .flatMap { script ->
+                REACT_STREAM_SEGMENT_CALL.findAll(script.data()).map { match ->
+                    match.groupValues[1] to match.groupValues[2]
+                }
+            }
+
+        for ((templateId, segmentId) in segmentMoves) {
+            val template = document.getElementById(templateId) ?: continue
+            val segment = document.getElementById(segmentId) ?: continue
+            removeReactFallbackAfter(template)
+            segment.childNodes().toList().forEach { node ->
+                template.before(node.clone())
+            }
+            template.remove()
+            segment.remove()
+        }
+    }
+
+    private fun removeReactFallbackAfter(template: Element) {
+        var node = template.nextSibling()
+        var nestedBoundaryDepth = 0
+        while (node != null) {
+            val next = node.nextSibling()
+            if (node.isReactBoundaryEnd() && nestedBoundaryDepth == 0) return
+            if (node.isReactBoundaryStart()) {
+                nestedBoundaryDepth++
+            } else if (node.isReactBoundaryEnd()) {
+                nestedBoundaryDepth--
+            }
+            node.remove()
+            node = next
+        }
+    }
+
+    private fun Node.isReactBoundaryStart(): Boolean = this is Comment && data.trim() == "$?"
+
+    private fun Node.isReactBoundaryEnd(): Boolean = this is Comment && data.trim() == "/$"
+
+    private fun mergeExternalFootnoteBlocks(document: Document, content: Element) {
+        val referencedNumbers = content.select("sup")
+            .mapNotNull { it.text().normalizedFootnoteNumber() }
+            .toSet()
+        if (referencedNumbers.isEmpty()) return
+
+        document.select("section, aside, div")
+            .filterNot { it.isInside(content) }
+            .filter { it.isExternalFootnoteBlock(referencedNumbers) }
+            .forEach { content.appendChild(it.clone()) }
+    }
+
+    private fun Element.isExternalFootnoteBlock(referencedNumbers: Set<String>): Boolean {
+        val hints = "${id()} ${className()} ${attributes().asList().joinToString(" ") { it.value }}".lowercase()
+        if (!EXTERNAL_FOOTNOTE_HINT_PATTERN.containsMatchIn(hints)) return false
+
+        val definitionNumbers = select("p, li")
+            .mapNotNull { it.leadingFootnoteDefinitionNumber() }
+            .toSet()
+        return definitionNumbers.any { it in referencedNumbers }
+    }
+
+    private fun Element.leadingFootnoteDefinitionNumber(): String? {
+        val marker = children().firstOrNull() ?: return null
+        return when (marker.normalName()) {
+            "sup", "span", "a" -> marker.text().normalizedFootnoteNumber()
+            else -> null
+        }
+    }
+
+    private fun Element.isInside(root: Element): Boolean = this === root || parents().any { it === root }
+
+    private fun String.normalizedFootnoteNumber(): String? = trim()
+        .trim('[', ']')
+        .takeIf { it.matches(FOOTNOTE_NUMBER_PATTERN) }
 
     private fun buildDebug(
         options: KleadOptions,
@@ -234,9 +319,24 @@ internal object KleadParser {
                 isDangerousUrl(image.attr("src"))
             }
             for (image in promotedImages) {
+                val altCaption = noscript.nextJsAltCaptionForPromotedImage(image)
                 noscript.before(image.clone())
+                if (altCaption != null) {
+                    noscript.before(Element("span").text(altCaption))
+                }
             }
         }
+    }
+
+    private fun Element.nextJsAltCaptionForPromotedImage(image: Element): String? {
+        if (!image.hasAttr("data-nimg")) return null
+        if (parents().any { it.normalName() == "figure" && it.selectFirst("figcaption") != null }) return null
+
+        val placeholder = previousElementSibling()
+            ?.takeIf { it.normalName() == "img" && it.hasAttr("data-nimg") }
+            ?: return null
+
+        return placeholder.attr("alt").trim().ifBlank { image.attr("alt").trim() }.ifBlank { null }
     }
 
     private fun stripUnsafe(content: Element) {
@@ -263,14 +363,7 @@ internal object KleadParser {
     private fun isTrustedVideoIframe(element: Element): Boolean {
         val src = element.absUrl("src").ifBlank { element.attr("src").trim() }
         if (src.isBlank() || isDangerousUrl(src)) return false
-        val uri = runCatching { URI(src) }.getOrNull() ?: return false
-        if (!uri.scheme.equals("https", ignoreCase = true)) return false
-
-        val host = uri.host?.lowercase()?.removePrefix("www.") ?: return false
-        val path = uri.rawPath.orEmpty()
-        return (host == "youtube.com" || host == "youtube-nocookie.com") &&
-            path.startsWith("/embed/") &&
-            YOUTUBE_VIDEO_ID.matches(path.removePrefix("/embed/").substringBefore('/'))
+        return TrustedEmbeds.isTrustedIframeSrc(src)
     }
 
     private fun Element.cleanOuterHtml(): String =
@@ -287,7 +380,10 @@ internal object KleadParser {
     }
 
     private val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
-    private val YOUTUBE_VIDEO_ID = Regex("""[A-Za-z0-9_-]{6,32}""")
-
+    private val REACT_STREAM_SEGMENT_CALL = Regex(
+        """\${'$'}RC\(\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']\s*\)""",
+    )
+    private val FOOTNOTE_NUMBER_PATTERN = Regex("""\d{1,4}""")
+    private val EXTERNAL_FOOTNOTE_HINT_PATTERN = Regex("""(?i)(footnotes?|endnotes?)""")
     private val DANGEROUS_URL_ATTRIBUTES = setOf("href", "src", "action", "formaction", "xlink:href")
 }

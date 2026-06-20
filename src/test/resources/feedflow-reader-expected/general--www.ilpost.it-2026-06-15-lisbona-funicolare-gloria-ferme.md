@@ -1,15 +1,13 @@
 ```json
 {
   "title": "Le funicolari di Lisbona sono ancora ferme, chissà per quanto",
-  "author": "di Valerio Clari",
+  "author": "Valerio Clari",
   "site": "Il Post",
   "published": "2026-06-15T10:49:12+02:00"
 }
 ```
 
 ## Dopo l'incidente di settembre a quella di Glória, e soprattutto anni di appalti al ribasso e scarsa manutenzione
-
-## di Valerio Clari
 
 ![Un vagone fermo della funicolare Bica, il 4 giugno 2026(Valerio Clari/il Post)](https://www.ilpost.it/wp-content/uploads/2026/06/10/1781102232-CLV-ILPOST-LISBONA-0626-5.jpg)
 
@@ -52,7 +50,7 @@ I cartelli che indicano che l’ascensore è monumento nazionale, ma anche che �
 
 In una città costruita a valle di molte colline, l’unica funicolare tornata attiva è [quella di Graça](https://www.theportugalnews.com/it/notizia/2026-04-30/la-funicolare-di-lisbona-riprende-il-suo-funzionamento/1015254). Che però è una struttura moderna, inaugurata nel 2024 su una linea che era chiusa dal 1909. Al momento è tutt’altro che affollata: in quelle storiche c’erano sempre code, questa viaggia semivuota. Forse per un po’ di timore, forse perché senza il fascino dell’antico ha meno presa [sui turisti](https://www.dn.pt/sociedade/carris-alarga-horrio-do-funicular-da-graa-e-estima-que-70-dos-utilizadores-sejam-turistas#goog_rewarded).
 
-Catarina Carvalho è la cofondatrice [del giornale online Mensagem](https://amensagem.pt/), un esperimento di buon successo di giornalismo locale a Lisbona, con grande attenzione alla vita concreta dei residenti. Dice che nonostante quello che si dice sulla stampa nazionale e internazionale, il sistema delle funicolari era ancora piuttosto usato dagli abitanti, soprattutto quelli che devono affrontare le salite quotidianamente, per tornare a casa o andare a fare la spesa. Fra le 16 persone morte, 5 erano portoghesi. Da tempo alcuni gruppi di residenti chiedevano accessi prioritari per evitare le code create dai turisti. Lamentano lo stesso problema sui tram storici numero 28, che si arrampicano e scendono fra le viuzze, fra grandi rumori e repentine frenate.
+Catarina Carvalho è la cofondatrice [del giornale online *Mensagem*](https://amensagem.pt/), un esperimento di buon successo di giornalismo locale a Lisbona, con grande attenzione alla vita concreta dei residenti. Dice che nonostante quello che si dice sulla stampa nazionale e internazionale, il sistema delle funicolari era ancora piuttosto usato dagli abitanti, soprattutto quelli che devono affrontare le salite quotidianamente, per tornare a casa o andare a fare la spesa. Fra le 16 persone morte, 5 erano portoghesi. Da tempo alcuni gruppi di residenti chiedevano accessi prioritari per evitare le code create dai turisti. Lamentano lo stesso problema sui tram storici numero 28, che si arrampicano e scendono fra le viuzze, fra grandi rumori e repentine frenate.
 
 Oggi al posto delle funicolari ci sono dei bus sostitutivi, con percorsi molto meno diretti.
 

@@ -1,6 +1,7 @@
 ```json
 {
   "title": "Le foto e i video del discusso evento di arti marziali miste davanti alla Casa Bianca",
+  "author": "Giuseppe Scaffidi",
   "site": "Il Post",
   "published": "2026-06-15T09:58:41+02:00"
 }

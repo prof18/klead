@@ -15,7 +15,7 @@ L’evoluzione del gioco passa attraverso alcune scelte regolamentari che hanno 
 
 La stagione 1979-1980 portò invece l’adozione ufficiale del tiro da tre punti, una regola ereditata dalla American Basketball Association dopo la sua scomparsa. Un altro passaggio determinante riguarda le Olimpiadi di Barcellona del 1992, quando i professionisti della lega presero parte per la prima volta ai Giochi con il celebre Dream Team, contribuendo in modo decisivo alla diffusione internazionale del marchio.
 
-Proprio questa dimensione globale ha alimentato negli anni l’attenzione mediatica e l’interesse del pubblico europeo verso il campionato statunitense: un fenomeno che si riflette anche nella crescita delle [scommesse NBA](https://www.betflag.it/sport/basket/usa/nba/2/54529) proposte dai principali operatori del settore, ovvero il segno di quanto la pallacanestro americana sia oramai parte integrante dell’immaginario sportivo internazionale.
+Proprio questa dimensione globale ha alimentato negli anni l’attenzione mediatica e l’interesse del pubblico europeo verso il campionato statunitense: un fenomeno che si riflette anche nella crescita delle [**scommesse NBA**](https://www.betflag.it/sport/basket/usa/nba/2/54529) proposte dai principali operatori del settore, ovvero il segno di quanto la pallacanestro americana sia oramai parte integrante dell’immaginario sportivo internazionale.
 
 **Record, curiosità e dinastie che hanno segnato la lega**
 

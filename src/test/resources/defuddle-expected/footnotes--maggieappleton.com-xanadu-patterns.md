@@ -59,7 +59,7 @@ Curiously enough, there appear to be rogue seedlings sprouting around the web. A
 
 ## The Patterns
 
-### 1\. Visible Links
+### 1. Visible Links
 
 Ted Nelson has many gripes, and **jump links** are one of his biggest. They’re the kind of links we all use around the web today. Clicking a hyperlink is a bit of a gamble. It *jumps* you into somewhere unknown. You find out when you get there.
 
@@ -67,7 +67,7 @@ We’ve found ways to adapt to this; Venkatesh Rao has a compelling exploration 
 
 ![URL hover previews showing in the left hand corner of page](https://res.cloudinary.com/dxj9qr5gj/image/upload/c_scale,f_auto,q_auto:good,w_1200/v1623585337/maggieappleton.com/notes/xanadu/hover-preview-url_shrink_kxvwtp.png)
 
-URL hover previews showing in the left hand corner of page
+*URL hover previews showing in the left hand corner of page*
 
 These can only tell you so much when modern URLs are often obscured by link shorteners and overstuffed with tracking queries. These solutions are only a band-aid on the underlying wound. They suggest where you’re headed, rather than showing you.
 
@@ -75,7 +75,7 @@ Nelson’s answer to jump links are **visible links** – links that show you th
 
 ![One of the original UI mockups for a Xanadoc with visible links between text blocks](https://res.cloudinary.com/dxj9qr5gj/image/upload/c_scale,f_auto,q_auto:good,w_1200/v1623916915/maggieappleton.com/notes/xanadu/xanadu_au17yq_shrink_tqkdxs.png)
 
-One of the original UI mockups for a Xanadoc with visible links between text blocks
+*One of the original UI mockups for a Xanadoc with visible links between text blocks*
 
 This proposed solution relies on two other patterns – *parallel documents* and *transpointing windows* (covered below) – but the underlying principle was simply that links made their destinations clear.
 
@@ -85,23 +85,23 @@ In lieu of Xanadoc links, the modern web has landed on some fairly decent soluti
 
 ![Wikipedia's interface showing one of the hover previews that appear over links](https://res.cloudinary.com/dg3gyk0gu/image/upload/c_scale,f_auto,q_auto:good,w_1000/v1592343673/maggieappleton.com/notes/Screenshot_-_2020-06-16_20.49.44.png)
 
-Wikipedia's interface showing one of the hover previews that appear over links
+*Wikipedia's interface showing one of the hover previews that appear over links*
 
 Hover previews have also become popular in the [Digital Gardening](https://maggieappleton.com-xanadu-patterns/garden-history) community as a way to help visitors quickly navigate through collections of public notes and essays that are deeply interlinked. [Andy Matuschak](https://notes.andymatuschak.org/) and [Gwern Branwen](https://www.gwern.net/index) are two gardeners with good examples of how these work in action.
 
 ![Andy Matuschak's notes website featuring hover link previews](https://res.cloudinary.com/dg3gyk0gu/image/upload/c_scale,f_auto,q_auto:good,w_1000/v1592343501/maggieappleton.com/notes/Screenshot_2020-06-16_at_22.38.06.png)
 
-Andy Matuschak's notes website featuring hover link previews
+*Andy Matuschak's notes website featuring hover link previews*
 
 Similar to hover previews, **unfurls** are the preview cards that automagically appear when you paste a link into Twitter, Facebook, Notion, Miro, or any other richly-featured web app. If I paste a link to this great article on [building a more honest internet](https://www.cjr.org/special_report/building-honest-internet-public-interest.php) into a Tweet or Notion document, it automagically displays the feature image, title, and byline without any extra effort from me:
 
 ![An open graph image preview appearing in a tweet](https://res.cloudinary.com/dxj9qr5gj/image/upload/c_scale,f_auto,q_auto:best,w_800/v1623916885/maggieappleton.com/notes/xanadu/tweet-opengraph_o6eecg.jpg)
 
-An open graph image preview appearing in a tweet
+*An open graph image preview appearing in a tweet*
 
 ![Open graph previews appear in Notion when you paste a link and select 'Create Bookmark'](https://res.cloudinary.com/dxj9qr5gj/image/upload/c_scale,f_auto,q_auto:best,w_1000/v1623917579/maggieappleton.com/notes/xanadu/notion-ogpreview_shrink_ckiuyn.png)
 
-Open graph previews appear in Notion when you paste a link and select 'Create Bookmark'
+*Open graph previews appear in Notion when you paste a link and select 'Create Bookmark'*
 
 This system is powered by the [Open Graph Protocol](https://ogp.me/) which Facebook introduced in 2010 <sub>16ya</sub> . This standardised format helps website authors define *metadata* like titles, descriptions, authors, and images for each of their pages. These are automatically retrieved and “unfurled” when the link is pasted elsewhere on the web.
 
@@ -109,7 +109,7 @@ Both hover previews and link unfurls give you a good sense of where you’re hea
 
 Previews aren’t quite the same as physical links between parts of a page though. You lose the fine-grained associations between specific paragraphs and lines. If we wanted to dial up the Xanadu-esque visibility, we could work on showing previews of the whole page and directing people to specific pieces of text within it.
 
-### 2\. Parallel Documents
+### 2. Parallel Documents
 
 Ted’s proposal for visible links relied on another key Xanadu pattern: **parallel documents arranged side-by-side**. This pattern allow us to see quotations in their original context, and quickly jump to the source material of documents.
 
@@ -117,7 +117,7 @@ It’s also tricky to misquote someone and cherry-pick misleading excerpts when 
 
 ![Three parallel documents with visible links between them](https://res.cloudinary.com/dxj9qr5gj/image/upload/c_scale,f_auto,q_auto:good,w_900/v1640076312/maggieappleton.com/notes/xanadu/transclusion_6_shrink_sl0vcb_mtepgz.jpg)
 
-Three parallel documents with visible links between them
+*Three parallel documents with visible links between them*
 
 This sounds great in theory. Being able to lay multiple sheets of paper down side-by-side in meatspace is one of its shining qualities. Humans are very good at visually skimming information spread out in front of us – it allows us to quickly pattern-match by comparing and contrasting.
 
@@ -147,7 +147,7 @@ Arranging two windows side-by-side doesn’t properly solve this problem. We can
 
 The mobile-first responsive web also makes this tricky. There is simply no space on a 320px-wide screen to consider viewing multiple windows at once. Although patterns like horizontal scroll and slide-over windows might help solve this.
 
-### 3\. Transpointing Windows
+### 3. Transpointing Windows
 
 Parts of documents visibly point to other parts
 
@@ -155,25 +155,25 @@ LiquidText
 
 ![The interface of LiquidText with transpointing between sections of text](https://res.cloudinary.com/dxj9qr5gj/image/upload/c_scale,f_auto,q_auto:best,w_1100/v1623925818/maggieappleton.com/notes/xanadu/liquid_rrgru8.png)
 
-The interface of LiquidText with transpointing between sections of text
+*The interface of LiquidText with transpointing between sections of text*
 
 [Azlen Elza](https://azlen.me/) managed to craft up this crazy demo inside of their Roam Research database.
 
-### 4\. Transclusion
+### 4. Transclusion
 
 - [Transclusion and Transcopyright Dreams](https://maggieappleton.com-xanadu-patterns/transcopyright-dreams)
 
-### 5\. Bi-Directional Links
+### 5. Bi-Directional Links
 
 - [A Short History of Bi-Directional Links](https://maggieappleton.com-xanadu-patterns/bidirectionals)
 
-### 6\. Version Control
+### 6. Version Control
 
 In the age of Git, we tend to take version control for granted.
 
 The first version control system dates back to [1975](https://en.wikipedia.org/wiki/Version_control#History). It’s now difficult to imagine programming without it.
 
-### 7\. Modular Text Blocks
+### 7. Modular Text Blocks
 
 The core building block of the web has always been documents. While the idea of a web *page* has evolved far beyond it’s original idea, we still construct, connect, and navigate websites at the page level.
 
@@ -187,7 +187,7 @@ Notion pioneered this in the note-taking space
 
 Explosion of note-taking apps using a block-first approach: Roam, Innos, Clover, Craft, Kosmik
 
-### 8\. Stable, Universal Addresses
+### 8. Stable, Universal Addresses
 
 The web enforces addresess on the document level rather than the block level
 
@@ -197,13 +197,13 @@ URL queries and subpaths
 
 Roam block UIDs
 
-### 9\. Annotation
+### 9. Annotation
 
 Hypothesis
 
 Google docs comments
 
-### 10\. Multiple Views and Spatial Arrangements
+### 10. Multiple Views and Spatial Arrangements
 
 Graph previews are a weak version of this
 
@@ -213,7 +213,7 @@ Most modern dashboards offer multiple ways to view data
 
 ZigZag format
 
-### 11\. Micropayments
+### 11. Micropayments
 
 Jarons Lanier’s dreams in Who Owns the Future
 

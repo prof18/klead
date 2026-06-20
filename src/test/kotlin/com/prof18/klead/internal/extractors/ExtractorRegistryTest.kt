@@ -11,6 +11,7 @@ import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ExtractorRegistryTest {
@@ -42,13 +43,22 @@ class ExtractorRegistryTest {
     @Test
     fun `static extractor can return content selector`() {
         val document = Jsoup.parse(
-            """<html><body><div id="mw-content-text"><p>Wikipedia article text.</p></div></body></html>""",
+            """
+            <html><body>
+              <div id="mw-content-text">
+                <div class="mw-parser-output">
+                  <p>Wikipedia article text.</p>
+                </div>
+              </div>
+            </body></html>
+            """.trimIndent(),
             "https://en.wikipedia.org/wiki/Test",
         )
 
         val result = WikipediaExtractor.extract(document.context("https://en.wikipedia.org/wiki/Test"))
 
-        assertEquals("#mw-content-text", result.contentSelector)
+        assertNotNull(result)
+        assertEquals(".mw-parser-output", result.contentSelector)
         assertEquals("Wikipedia", result.metadata.site)
     }
 

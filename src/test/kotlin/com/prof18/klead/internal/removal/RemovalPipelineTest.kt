@@ -41,6 +41,105 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `responsive desktop svg diagrams are kept while mobile duplicates are removed`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>Visible article text with enough ordinary prose, punctuation, and stable sentence structure to keep the normal parser result after responsive visual cleanup. This paragraph intentionally has enough words for the retry controller to trust the cleaned output, so hidden responsive variants are removed by the normal policy instead of being preserved by a sparse-page fallback.</p>
+                  <div class="sm:hidden">
+                    <svg viewBox="0 0 100 300" aria-hidden="true">
+                      <circle cx="50" cy="50" r="30"></circle>
+                      <text x="50" y="50">Mobile diagram</text>
+                    </svg>
+                  </div>
+                  <div class="hidden sm:flex">
+                    <svg viewBox="0 0 400 100" aria-hidden="true">
+                      <circle cx="50" cy="50" r="30"></circle>
+                      <path d="M80 50 L320 50"></path>
+                      <text x="350" y="50">Desktop diagram</text>
+                    </svg>
+                  </div>
+                  <p class="hidden md:block">Class hidden text.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/responsive-svg",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("Desktop diagram"))
+        assertFalse(markdown.contains("Mobile diagram"))
+        assertFalse(markdown.contains("Class hidden text."))
+    }
+
+    @Test
+    fun `hidden section bodies remove orphan headings`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>Visible article text with enough ordinary prose to avoid the short-page retry that intentionally disables hidden-element removal for sparse pages. This paragraph keeps the default removal attempt as the selected parse result while still leaving hidden sections nearby for the removal pipeline to clean up. Additional visible sentences provide stable article length, realistic punctuation, and enough words for the retry controller to trust the cleaned default result.</p>
+                  <h2>Secondary header</h2>
+                  <p style="display: none;">Hidden secondary section body.</p>
+                  <h2>Third header</h2>
+                  <p hidden>Hidden third section body.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/hidden-section-headings",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("Visible article text"))
+        assertFalse(markdown.contains("Secondary header"))
+        assertFalse(markdown.contains("Third header"))
+        assertFalse(markdown.contains("Hidden secondary section body."))
+        assertFalse(markdown.contains("Hidden third section body."))
+    }
+
+    @Test
+    fun `hidden parent section body keeps heading when visible child section follows`() {
+        val document = Jsoup.parse(
+            """
+            <article>
+              <h1>Parent section</h1>
+              <div style="visibility: hidden;">
+                <p>Hidden parent section body.</p>
+              </div>
+              <h2>Visible child section</h2>
+              <p>Visible article text remains.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Parent section"))
+        assertTrue(article.text().contains("Visible child section"))
+        assertFalse(article.text().contains("Hidden parent section body."))
+    }
+
+    @Test
+    fun `plain author bio blocks are not removed by global exact selectors`() {
+        val document = Jsoup.parse(
+            """
+            <article>
+              <p>Article body remains.</p>
+              <div class="author-bio">
+                <p>Author Name</p>
+                <p>Author bio goes here.</p>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Article body remains."))
+        assertTrue(article.text().contains("Author Name"))
+        assertTrue(article.text().contains("Author bio goes here."))
+    }
+
+    @Test
     fun `math hidden wrappers are preserved`() {
         val document = Jsoup.parse(
             """
@@ -59,6 +158,53 @@ class RemovalPipelineTest {
 
         assertTrue(article.outerHtml().contains("<math>"))
         assertTrue(article.text().contains("Visible prose."))
+    }
+
+    @Test
+    fun `hidden collapsed callout content is preserved`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>Introductory article prose with enough words, punctuation, and sentence structure to keep the default parser result selected.</p>
+                  <div data-callout-fold="-" data-callout="faq" class="callout">
+                    <div class="callout-title"><div class="callout-title-inner">Is this foldable?</div></div>
+                    <div class="callout-content" style="display: none;"><p>Hidden answer stays.</p></div>
+                  </div>
+                  <p>Closing article prose remains after the collapsed callout.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/callout",
+        )
+
+        assertTrue(result.content.requireMarkdown().contains("> Hidden answer stays."))
+    }
+
+    @Test
+    fun `obsidian callout dividers are preserved`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article class="markdown-preview-section">
+                  <p>Introductory article prose with enough words, punctuation, and sentence structure to keep the default parser result selected.</p>
+                  <div class="el-div">
+                    <div data-callout="note" class="callout">
+                      <div class="callout-title"><div class="callout-title-inner">Note</div></div>
+                      <div class="callout-content"><p>First body.</p></div>
+                    </div>
+                  </div>
+                  <div class="el-hr"><hr></div>
+                  <div class="el-div">
+                    <div data-callout="tip" class="callout">
+                      <div class="callout-title"><div class="callout-title-inner">Tip</div></div>
+                      <div class="callout-content"><p>Second body.</p></div>
+                    </div>
+                  </div>
+                  <p>Closing article prose remains after the collapsed callout.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/obsidian-callouts",
+        )
+
+        assertTrue(result.content.requireMarkdown().contains("\n---\n"), result.content.requireMarkdown())
     }
 
     @Test
@@ -87,9 +233,13 @@ class RemovalPipelineTest {
                 <article>
                   <nav>Navigation should go</nav>
                   <p>Main prose stays with enough words to avoid short-page retry and make removal deterministic for this fixture.</p>
+                  <p>Inline <span class="cursor-pointer"><button type="button"><em>keyword</em></button></span> text should stay.</p>
+                  <button class="nav-menu-toggle">Menu should go</button>
                   <aside class="ad">Advertisement should go</aside>
                   <section class="footnotes"><p>Footnote should stay.</p></section>
                   <footer>Footer should go</footer>
+                  <div id="site-footer">Div footer should go</div>
+                  <div id="fps">FPS debug chrome should go</div>
                 </article>
             """.trimIndent(),
             url = "https://example.com/exact",
@@ -98,7 +248,142 @@ class RemovalPipelineTest {
         assertFalse(result.content.requireMarkdown().contains("Navigation should go"))
         assertFalse(result.content.requireMarkdown().contains("Advertisement should go"))
         assertFalse(result.content.requireMarkdown().contains("Footer should go"))
+        assertFalse(result.content.requireMarkdown().contains("Div footer should go"))
+        assertFalse(result.content.requireMarkdown().contains("FPS debug chrome should go"))
+        assertFalse(result.content.requireMarkdown().contains("Menu should go"))
+        assertTrue(result.content.requireMarkdown().contains("Inline *keyword* text should stay."))
         assertTrue(result.content.requireMarkdown().contains("Footnote should stay."))
+    }
+
+    @Test
+    fun `content cleanup removes table of contents with paired dividers`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The introduction stays because it is useful article prose with enough detail, punctuation, and ordinary sentence structure for the parser to keep this as real content.</p>
+                  <hr>
+                  <ul class="table-of-contents">
+                    <li><a href="#install">Install</a></li>
+                    <li><a href="#configure">Configure</a></li>
+                    <li><a href="#run">Run</a></li>
+                    <li><a href="#debug">Debug</a></li>
+                  </ul>
+                  <hr>
+                  <h2 id="install">Installation Guide</h2>
+                  <p>The installation section stays because it contains the article body that readers need after navigation chrome has been removed from the cleaned output.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/table-of-contents",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The introduction stays"))
+        assertTrue(markdown.contains("## Installation Guide"))
+        assertFalse(markdown.contains("Configure"), markdown)
+        assertFalse(markdown.contains("---"), markdown)
+    }
+
+    @Test
+    fun `exact selectors remove table based table of contents`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The introduction stays because it is useful article prose with enough detail, punctuation, and ordinary sentence structure for the parser to keep this as real content.</p>
+                  <table id="toc" class="toc"><tr><td>
+                    <h2>Contents</h2>
+                    <ul>
+                      <li><a href="#install">1 Installation Guide</a></li>
+                      <li><a href="#configure">2 Configure</a></li>
+                      <li><a href="#run">3 Run</a></li>
+                      <li><a href="#debug">4 Debug</a></li>
+                    </ul>
+                  </td></tr></table>
+                  <h2 id="install">Installation Guide</h2>
+                  <p>The installation section stays because it contains the article body that readers need after navigation chrome has been removed from the cleaned output.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/table-toc",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The introduction stays"))
+        assertTrue(markdown.contains("## Installation Guide"))
+        assertFalse(markdown.contains("## Contents"), markdown)
+        assertFalse(markdown.contains("Configure"), markdown)
+    }
+
+    @Test
+    fun `image cleanup keeps placeholder images with distinct resolved lazy sources`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>This article tests lazy placeholder images with enough useful prose, punctuation, and sentence structure for the default parser result to remain stable.</p>
+                  <img src="data:image/gif;base64,placeholder" alt="Unresolved placeholder.">
+                  <figure>
+                    <picture>
+                      <source srcset="https://www.example.com/images/resolved.webp 2x, https://www.example.com/images/resolved-small.webp 1x">
+                      <img src="data:image/gif;base64,placeholder" alt="Resolved from picture.">
+                    </picture>
+                    <figcaption>Resolved from picture. Photo credit.</figcaption>
+                  </figure>
+                  <img src="data:image/gif;base64,placeholder" data-image-loader="https://www.example.com/images/lazy-loaded.jpg" alt="Resolved from loader.">
+                  <p>The final paragraph stays so the article has enough meaningful body content after placeholder cleanup finishes.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.example.com/article/image-placeholders",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertFalse(markdown.contains("Unresolved placeholder"))
+        assertTrue(markdown.contains("![Resolved from picture.](https://www.example.com/images/resolved.webp)"))
+        assertTrue(markdown.contains("![Resolved from loader.](https://www.example.com/images/lazy-loaded.jpg)"))
+    }
+
+    @Test
+    fun `image cleanup preserves repeated inline prose images`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>This article has enough meaningful prose before the inline image examples to keep the normal cleaned parser result selected.</p>
+                  <p>Here is a formula: <img src="https://www.example.com/latex/formula.png" alt="E equals mc squared"> in context.</p>
+                  <p>The same formula <img src="https://www.example.com/latex/formula.png" alt="E equals mc squared"> appears again here.</p>
+                  <p>The closing paragraph adds ordinary text so this fixture stays above sparse-content retry thresholds.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.example.com/article/repeated-inline-images",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        val imageCount = Regex(
+            """!\[E equals mc squared]\(https://www\.example\.com/latex/formula\.png\)""",
+        ).findAll(markdown).count()
+        assertEquals(2, imageCount)
+    }
+
+    @Test
+    fun `opening head div before body is removed with leading divider`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article class="post">
+                  <div class="head">
+                    <h1>Article Title</h1>
+                    <div class="meta"><span>July 13, 2023</span><span>5 min read</span></div>
+                  </div>
+                  <hr>
+                  <div class="body">
+                    <p>The web browser is the most used program on any desktop. This paragraph should stay as the first real body paragraph after the opening article header chrome is removed.</p>
+                    <p>A second paragraph keeps the selected content stable and verifies that the body wrapper itself remains readable after cleanup.</p>
+                  </div>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/post",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertFalse(markdown.contains("Article Title"))
+        assertFalse(markdown.contains("July 13, 2023"))
+        assertFalse(markdown.startsWith("---"))
+        assertTrue(markdown.startsWith("The web browser is the most used program"))
     }
 
     @Test
@@ -250,6 +535,33 @@ class RemovalPipelineTest {
         assertFalse(result.content.requireMarkdown().contains("Example Author"))
         assertFalse(result.content.requireHtml().contains("mega-header"))
         assertFalse(result.content.requireHtml().contains("author-row"))
+    }
+
+    @Test
+    fun `content patterns remove trailing product manager author bio`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main>
+                  <article>
+                    <p>The article body should stay because it contains useful prose with enough detail, punctuation, and sentence structure for the normal cleaned parser result to remain stable.</p>
+                    <p>A second paragraph keeps the post body substantial while the trailing author profile module is removed from the final reader output.</p>
+                  </article>
+                  <div class="fig-opaque-footer">
+                    <img src="https://example.com/author.png" alt="">
+                    <div>
+                      <p>Yarden is a Product Manager at Figma focused on developer tools across design, code, and AI.</p>
+                    </div>
+                    <a href="https://www.linkedin.com/in/example/">LinkedIn</a>
+                  </div>
+                </main>
+            """.trimIndent(),
+            url = "https://www.figma.com/blog/example",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The article body should stay"))
+        assertFalse(markdown.contains("Product Manager at Figma"))
+        assertFalse(markdown.contains("LinkedIn"))
     }
 
     @Test
@@ -468,6 +780,59 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `low scoring preserves nested article link lists`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>This article explains a technical topic in enough detail to avoid sparse-page retries. It includes normal prose, punctuation, and useful context before the nested outline so the cleanup pass should treat the list as article content.</p>
+                  <ul>
+                    <li>
+                      Primary topic
+                      <ul>
+                        <li><a href="/posts/one">First referenced post</a> by Example Author</li>
+                        <li><a href="/posts/two">Second referenced post</a> by Example Author</li>
+                        <li><a href="/posts/three">Third referenced post</a> by Example Author</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/nested-link-list",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("Primary topic"))
+        assertTrue(markdown.contains("First referenced post"))
+        assertTrue(markdown.contains("Third referenced post"))
+    }
+
+    @Test
+    fun `content cleanup preserves linked footnote definitions`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>This article body has enough ordinary prose and punctuation for cleanup to run deterministically while keeping the footnote definition available to the markdown writer.<sup><a href="#fn1">1</a></sup></p>
+                  <ol class="footnotes">
+                    <li id="fn1" role="doc-endnote" class="footnote-item">
+                      <div class="footnote-content">
+                        <p>they are not <a href="/posts/fixed-goals">wrapper</a> <a href="/posts/wrapper-minds">minds</a></p>
+                      </div>
+                    </li>
+                  </ol>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/footnote-links",
+        )
+
+        assertTrue(
+            result.content.requireMarkdown().contains(
+                "[^1]: they are not [wrapper](https://example.com/posts/fixed-goals) " +
+                    "[minds](https://example.com/posts/wrapper-minds)",
+            ),
+        )
+    }
+
+    @Test
     fun `content patterns remove trailing subscribe blocks but preserve final prose`() {
         val result = parseHtmlForTest(
             html = """
@@ -481,6 +846,40 @@ class RemovalPipelineTest {
 
         assertTrue(result.content.requireMarkdown().contains("The final article paragraph should stay"))
         assertFalse(result.content.requireMarkdown().contains("Subscribe to our newsletter"))
+    }
+
+    @Test
+    fun `content patterns remove trailing metadata list and marketing cta`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main>
+                  <section class="blog-post-content">
+                    <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing metadata and marketing call-to-action cleanup deterministic while preserving the legitimate article ending.</p>
+                    <ul class="blog-metadata">
+                      <li><svg></svg><span>March 13, 2026</span></li>
+                      <li><svg></svg><span>4 min</span></li>
+                      <li><svg></svg><span>Share</span></li>
+                    </ul>
+                  </section>
+                  <section class="cta-section">
+                    <div class="cta-content">
+                      <h2>See how our platform can help your team</h2>
+                      <svg></svg>
+                      <p>Tips, tutorials, and product updates delivered monthly to your inbox.</p>
+                    </div>
+                  </section>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/trailing-cta",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The final article paragraph should stay"))
+        assertFalse(markdown.contains("March 13, 2026"))
+        assertFalse(markdown.contains("4 min"))
+        assertFalse(markdown.contains("Share"))
+        assertFalse(markdown.contains("help your team"))
+        assertFalse(markdown.contains("delivered monthly"))
     }
 
     @Test
@@ -511,6 +910,35 @@ class RemovalPipelineTest {
         assertFalse(result.content.requireMarkdown().contains("marketing emails"))
         assertFalse(result.content.requireMarkdown().contains("Terms of Use"))
         assertFalse(result.content.requireMarkdown().contains("unsubscribe anytime"))
+    }
+
+    @Test
+    fun `exact selectors remove substack subscription widgets while preserving prose`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the Substack subscription widget removal deterministic while preserving legitimate article text.</p>
+                  <div class="subscription-widget-wrap">
+                    <div class="subscription-widget show-subscribe">
+                      <div class="preamble">
+                        <p>Thanks for reading Example Newsletter! Subscribe for free to receive new posts and support my work.</p>
+                      </div>
+                      <div data-component-name="SubscribeWidget" class="subscribe-widget">
+                        <form><input type="email"><button>Subscribe</button></form>
+                      </div>
+                    </div>
+                  </div>
+                  <p>The article conclusion should also stay after the subscription widget is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/substack-widget",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The article introduction should stay"))
+        assertTrue(markdown.contains("The article conclusion should also stay"))
+        assertFalse(markdown.contains("Thanks for reading"))
+        assertFalse(markdown.contains("Subscribe for free"))
     }
 
     @Test
@@ -558,6 +986,119 @@ class RemovalPipelineTest {
         assertTrue(result.content.requireMarkdown().contains("The final article paragraph should stay"))
         assertFalse(result.content.requireMarkdown().contains("Recommended"))
         assertFalse(result.content.requireMarkdown().contains("First unrelated story"))
+    }
+
+    @Test
+    fun `content patterns remove plain recommendation labels before separator siblings`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                  <div><hr></div>
+                  <p>For More on This Topic</p>
+                  <div><hr></div>
+                  <h2>Second Section</h2>
+                  <p>The article conclusion should also stay after the plain recommendation label is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/plain-recommendation-label",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The article introduction should stay"))
+        assertTrue(markdown.contains("## Second Section"))
+        assertTrue(markdown.contains("The article conclusion should also stay"))
+        assertFalse(markdown.contains("For More on This Topic"))
+    }
+
+    @Test
+    fun `partial selectors remove prose heavy recommendation footer`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main>
+                  <article>
+                    <p>The main article body should stay because it contains useful prose with enough words, punctuation, and sentence structure for the parser to preserve the cleaned result.</p>
+                    <p>The final section wraps up the discussion with concluding thoughts and should remain the last reader-visible paragraph.</p>
+                  </article>
+                  <div class="recommended-footer">
+                    <strong>Recommended for You</strong>
+                    <div class="recommended-item">
+                      <h4><a href="/blog/first-recommended">Understanding Modern Architecture Patterns</a></h4>
+                      <p>A comprehensive guide to building scalable distributed systems using modern architectural patterns and best practices for reliability.</p>
+                    </div>
+                    <div class="recommended-item">
+                      <h4><a href="/blog/second-recommended">The Evolution of Enterprise Software</a></h4>
+                      <p>Enterprise software has transformed how organizations operate and this summary should not survive as article content.</p>
+                    </div>
+                  </div>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/recommendation-footer",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The main article body should stay"))
+        assertTrue(markdown.contains("The final section wraps up"))
+        assertFalse(markdown.contains("Recommended for You"))
+        assertFalse(markdown.contains("A comprehensive guide"))
+    }
+
+    @Test
+    fun `content patterns remove trailing related link clusters`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <h1>How Coffee Cools</h1>
+                  <p>Coffee cools following Newton's law of cooling. The rate of heat loss is proportional to the temperature difference between the coffee and its surroundings.</p>
+                  <p>Most models fit two exponential decay terms: a fast rate from heat flow into the mug, and a slow rate from mug to air. This paragraph should remain as the article ending.</p>
+                  <section>
+                    <p><a href="/pattern/">Maybe there's a pattern here?</a> · <a href="/#science">science</a> <a href="/#ai">AI</a></p>
+                    <p><a href="/data-wall/">The real data wall is billions of years of evolution</a> · <a href="/#ai">AI</a> <a href="/#science">science</a></p>
+                    <p><a href="/gpt-2/">Why didn't we get GPT-2 in 2005?</a> · <a href="/#science">science</a> <a href="/#economics">economics</a></p>
+                  </section>
+                  <hr>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/trailing-related-links",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("Coffee cools following Newton's law"), markdown)
+        assertTrue(markdown.contains("This paragraph should remain as the article ending."), markdown)
+        assertFalse(markdown.contains("Maybe there's a pattern here?"), markdown)
+        assertFalse(markdown.contains("The real data wall"), markdown)
+    }
+
+    @Test
+    fun `content patterns remove trailing avatar byline date blocks`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main>
+                  <section>
+                    <h2>How Acme Corp improved performance with a new architecture</h2>
+                    <p>The new architecture delivered significant improvements across all key metrics. Response times dropped by forty percent, deployment frequency increased from weekly to multiple times per day, and the mean time to recovery decreased by seventy percent.</p>
+                    <p>The migration story contains enough ordinary article prose to keep the default parser result selected while still leaving a trailing byline block for cleanup. Additional details about rollout phases, deployment safety, operational dashboards, and incident response make the selected article body stable in tests without changing the footer pattern under evaluation.</p>
+                    <p>The engineering team also documented the migration process for future platform work. This paragraph keeps the content above the sparse-page retry threshold and ensures the byline cleanup is exercised by the normal removal pipeline.</p>
+                  </section>
+                  <section>
+                    <div>
+                      <img alt="Acme avatar" src="/avatar.png" width="32" height="32">
+                      <div>
+                        <p>By Acme Corp</p>
+                        <p>March 4, 2026</p>
+                      </div>
+                    </div>
+                  </section>
+                </main>
+            """.trimIndent(),
+            url = "https://example.com/trailing-byline",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("How Acme Corp improved performance"), markdown)
+        assertTrue(markdown.contains("Response times dropped by forty percent"), markdown)
+        assertFalse(markdown.contains("By Acme Corp"), markdown)
+        assertFalse(markdown.contains("March 4, 2026"), markdown)
     }
 
     @Test
@@ -657,6 +1198,64 @@ class RemovalPipelineTest {
         assertFalse(result.content.requireMarkdown().contains("Back To Top"))
         assertFalse(result.content.requireMarkdown().contains("Read more"))
         assertFalse(result.content.requireMarkdown().contains("First suggested story"))
+    }
+
+    @Test
+    fun `content cleanup removes top comments and trailing product recommendation lists`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The article opening should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the story stable while comment and commerce modules are removed.</p>
+                  <div class="top-comment">
+                    <h2>Top comment by</h2>
+                    <span>Liked by 28 people</span>
+                    <p>I can't believe they kept this secret until launch day.</p>
+                    <a href="#comments">View all comments</a>
+                  </div>
+                  <p>The article conclusion should stay after the inline comment block is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable.</p>
+                  <h3>Best accessories</h3>
+                  <ul>
+                    <li><a href="https://affiliate.example/product1">Wireless Earbuds</a></li>
+                    <li><a href="https://affiliate.example/product2">Battery Case 2-pack</a></li>
+                    <li><a href="https://affiliate.example/product3">Car Mount</a></li>
+                  </ul>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/product-announcement",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The article opening should stay"))
+        assertTrue(markdown.contains("The article conclusion should stay"))
+        assertFalse(markdown.contains("Top comment by"))
+        assertFalse(markdown.contains("Liked by 28 people"))
+        assertFalse(markdown.contains("Best accessories"))
+        assertFalse(markdown.contains("Wireless Earbuds"))
+    }
+
+    @Test
+    fun `content cleanup preserves trailing related links inside blockquote comments`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The article body should stay because it contains enough normal prose, punctuation, and context to keep the default cleaned result selected before a trailing quoted social reply.</p>
+                  <blockquote>
+                    <p><strong>Dave @dave@example.com</strong> · <a href="https://social.example/@dave/1">2026-04-20</a></p>
+                    <p><a href="https://social.example/@alice">@alice</a> Related project here</p>
+                    <p><a href="https://example.com/related"><img alt="Related Project" src="https://cdn.example.com/related.png"></a></p>
+                    <p><a href="https://example.com/related">Related Project</a></p>
+                    <p>A similar project with different goals</p>
+                  </blockquote>
+                </article>
+            """.trimIndent(),
+            url = "https://social.example/@alice/1",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The article body should stay"))
+        assertTrue(markdown.contains("Dave @dave@example.com"), markdown)
+        assertTrue(markdown.contains("Related Project"), markdown)
+        assertTrue(markdown.contains("A similar project with different goals"), markdown)
     }
 
     @Test
@@ -1426,6 +2025,40 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content cleanup removes image only publisher article card after story prose`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main>
+                  <article>
+                    <div data-cy="article-content" class="article-content">
+                      <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when publisher recirculation cards follow the article body.</p>
+                      <p>The article conclusion should also stay after related cards are removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                    </div>
+                  </article>
+                  <div class="font-graphik flex-1 group flex flex-col gap-lg relative" data-cy="article-wrapper">
+                    <a class="aspect-[3/2] relative" href="/2026/06/15/what-is-us-iran-deal-nuclear-uranium-strait-hormuz-israel/">
+                      <img alt="wh" data-cy="article-card-image" src="https://fortune.com/img-assets/wp-content/uploads/2026/06/AP26163613353392.jpg">
+                    </a>
+                    <div class="flex flex-col gap-sm">
+                      <span data-cy="article-card-date">June 15, 2026</span>
+                      <span data-cy="time-ago-wrapper">4 hours ago</span>
+                    </div>
+                  </div>
+                </main>
+            """.trimIndent(),
+            url = "https://fortune.com/2026/06/15/beagle-breeding-farm-wisconsin-protests-closed/",
+            options = mainSelectorOptions(),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The actual story starts here"))
+        assertTrue(markdown.contains("The article conclusion should also stay"))
+        assertFalse(markdown.contains("AP26163613353392"))
+        assertFalse(markdown.contains("4 hours ago"))
+        assertFalse(result.content.requireHtml().contains("article-card-image"))
+    }
+
+    @Test
     fun `content cleanup removes trending author bio and skeleton recirculation modules`() {
         val result = parseHtmlForTest(
             html = """
@@ -1881,6 +2514,8 @@ class RemovalPipelineTest {
                     </ul>
                   </div>
                   <div data-container-type="content"><p>The actual article body should stay because it contains useful reporting and enough prose for the selected content.</p></div>
+                  <div data-container-type="content"><p>The update also includes enough normal article prose to keep the default parser result selected while Android Authority source prompts and comment policy modules are removed. Additional reporting text describes the release timing, patch quality, rollout details, and reader impact so the cleanup test does not depend on sparse-page retry behavior.</p></div>
+                  <div data-container-type="content"><p>Readers should still see the core article body after chrome removal. This final paragraph adds stable article length, realistic punctuation, and enough words for the default removal policy to remain the chosen parse result.</p></div>
                   <div><div>Follow</div></div>
                   <div data-container-type="content"><p>Thank you for being part of our community. Read our <a href="https://www.androidauthority.com/android-authority-comment-policy/">Comment Policy</a> before posting.</p></div>
                 </main>
@@ -2088,6 +2723,78 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `promoted noscript image variants are removed when preview image already exists`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>Article prose has enough words to keep the default cleaned parse result. It describes the image context clearly and avoids short retry paths with stable text.</p>
+                  <figure>
+                    <div>
+                      <div>
+                        <img src="https://cdn.example.com/max/60/hero.png?q=20" width="1200" height="800" role="presentation">
+                      </div>
+                      <img width="1200" height="800" role="presentation">
+                      <noscript>
+                        <img src="https://cdn.example.com/max/2400/hero.png" width="1200" height="800" role="presentation">
+                      </noscript>
+                    </div>
+                    <figcaption>Hero caption.</figcaption>
+                  </figure>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/images",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("![](https://cdn.example.com/max/60/hero.png?q=20)"))
+        assertFalse(markdown.contains("https://cdn.example.com/max/2400/hero.png"))
+    }
+
+    @Test
+    fun `small linked author avatar images are preserved`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <a href="/@author"><img src="/avatar.jpg" alt="Example Author" width="48" height="48"></a>
+                  <p>Article prose has enough words to keep the default cleaned parse result. It describes the story clearly and keeps a linked author avatar available for reader output.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/images",
+        )
+
+        assertTrue(result.content.requireMarkdown().contains("[![Example Author](https://example.com/avatar.jpg)]"))
+    }
+
+    @Test
+    fun `repeated images in separate captioned figures are preserved`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <figure>
+                    <img src="/hero.webp" alt="Hero image caption.">
+                    <figcaption>Header caption. Photo Credit / Agency</figcaption>
+                  </figure>
+                  <h2>Article heading</h2>
+                  <figure>
+                    <img src="/hero.webp" alt="Hero image caption.">
+                    <figcaption>Body caption. Photo Credit / Agency</figcaption>
+                  </figure>
+                  <p>Article prose has enough words to keep the default cleaned parse result. It describes why the same image can appear once in a page header and again inside the article body.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/images",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        val imageCount = Regex("""!\[Hero image caption.]\(https://example\.com/hero\.webp\)""")
+            .findAll(markdown)
+            .count()
+        assertEquals(2, imageCount)
+        assertTrue(markdown.contains("Header caption. Photo Credit / Agency"))
+        assertTrue(markdown.contains("Body caption. Photo Credit / Agency"))
+    }
+
+    @Test
     fun `cover image duplicating metadata image is removed`() {
         val result = parseHtmlForTest(
             html = """
@@ -2106,6 +2813,31 @@ class RemovalPipelineTest {
         assertEquals("https://example.com/cover.png", result.metadata.image)
         assertFalse(result.content.requireHtml().contains("""alt="Cover""""))
         assertFalse(result.content.requireHtml().contains("""class="post-thumbnail""""))
+    }
+
+    @Test
+    fun `captioned feature image duplicating metadata image is preserved`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><head>
+                  <meta property="og:image" content="https://example.com/cover.png">
+                </head><body>
+                  <article>
+                    <div class="featured-image">
+                      <figure>
+                        <img src="/cover.png" alt="Captioned cover">
+                        <small class="item-img-caption">Credit: Example</small>
+                      </figure>
+                    </div>
+                    <p>Article prose has enough words to keep the default cleaned parse result. It describes the article content clearly and avoids short retry paths with stable text.</p>
+                  </article>
+                </body></html>
+            """.trimIndent(),
+            url = "https://example.com/article",
+        )
+
+        assertEquals("https://example.com/cover.png", result.metadata.image)
+        assertTrue(result.content.requireMarkdown().contains("![Captioned cover](https://example.com/cover.png)"))
     }
 
     private fun mainSelectorOptions() = testOptions(customExtractors = listOf(MainSelectorExtractor))

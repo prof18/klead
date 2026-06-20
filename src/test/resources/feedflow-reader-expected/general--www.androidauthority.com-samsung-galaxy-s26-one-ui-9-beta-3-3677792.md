@@ -7,7 +7,7 @@
 }
 ```
 
-![Samsung Galaxy S26 Ultra showing One UI lock screen](https://www.androidauthority.com/wp-content/uploads/2026/05/Samsung-Galaxy-S26-Ultra-showing-One-UI-lock-screen.jpg)
+![Samsung Galaxy S26 Ultra showing One UI lock screen](https://www.androidauthority.com/wp-content/uploads/2026/05/Samsung-Galaxy-S26-Ultra-showing-One-UI-lock-screen.jpg.webp)
 
 Aamir Siddiqui / Android Authority
 
@@ -21,7 +21,7 @@ New month, new One UI 9 beta. Following on the heels of the [first](https://www.
 
 We’ve received the third One UI 9 update on our Galaxy S26 Ultra in the UK. This Android 17-based update comes with firmware version ending in ZZF7, the June 5, 2026 security patch, and is 1,786MB in size.
 
-![One UI 9 Beta 3 for the Galaxy S26](https://www.androidauthority.com/wp-content/uploads/2026/06/One-UI-9-Beta-3-for-the-Galaxy-S26-scaled.jpg)
+![One UI 9 Beta 3 for the Galaxy S26](https://www.androidauthority.com/wp-content/uploads/2026/06/One-UI-9-Beta-3-for-the-Galaxy-S26-scaled.jpg.webp)
 
 Aamir Siddiqui / Android Authority
 

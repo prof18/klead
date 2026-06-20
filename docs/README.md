@@ -110,7 +110,7 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - `[x]` DONE-003 The library outputs clean Markdown without flexmark HTML-to-Markdown.
 - `[x]` DONE-004 Upstream Defuddle fixtures are pinned and runnable.
 - `[x]` DONE-005 Major extraction feature families are implemented, excluding math rendering/conversion.
-- `[x]` DONE-006 Fixture failures are green or documented as intentional known differences.
+- `[x]` DONE-006 Supported fixture failures are green; exclusions are documented as intentional scope differences.
 - `[x]` DONE-007 Security sanitization tests pass.
 - `[x]` DONE-008 Performance is acceptable for a desktop JVM app.
 - `[x]` DONE-009 Docs explain current coverage and known differences.
@@ -148,8 +148,8 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, and extractor metadata overrides.
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
 2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
-2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Full exact Markdown parity remains a documented staged difference while diagnostic fixture coverage has zero unknown failures.
-2026-06-14 - PHASE-09 - complete - Closed the fixture expansion phase for this broad practical port with strict metadata fixtures, relaxed MVP fixtures, full diagnostic coverage, zero unknown diagnostic failures, and documented deferral of full exact Markdown parity.
+2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Supported upstream Markdown fixture parity is enforced by strict snapshots, with math/rendering differences documented.
+2026-06-14 - PHASE-09 - complete - Closed the fixture expansion phase for this broad practical port with strict metadata fixtures, relaxed MVP fixtures, full diagnostic coverage, zero unknown diagnostic failures, and documented math/rendering scope exclusions.
 2026-06-15 - COMMIT-029 - superseded - Added a separate coroutine entry point with internal dispatcher selection; this was later replaced by a suspending-only `parseHtml` API with no library-owned blocking wrapper.
 2026-06-15 - PHASE-04/06 - complete - Added a FeedFlow reader-dump regression fixture for an ilpost article and fixed generic body-to-article refinement plus breadcrumb/recommendation clutter removal so reader Markdown excludes category/date breadcrumbs and bottom recommendation sections.
 2026-06-15 - PHASE-08 - complete - Added a FeedFlow reader-dump regression for WordPress-style captioned image wrappers and fixed block-level image Markdown rendering so body images are not dropped when they are direct children of non-figure containers.

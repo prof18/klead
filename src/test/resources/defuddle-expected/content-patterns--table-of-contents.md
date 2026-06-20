@@ -11,7 +11,7 @@
 
 This guide walks through the complete installation process for setting up the system with encryption and a custom bootloader on a single disk.
 
-## 1\. Start Here
+## 1. Start Here
 
 The system is installed as the sole operating system on a single disk using a two-partition layout.
 
@@ -36,7 +36,7 @@ Write the installer to an unmounted USB storage device:
 dd bs=4M conv=fsync oflag=direct status=progress if=installer.iso of=/dev/sdx
 ```
 
-## 2\. Configure the Environment
+## 2. Configure the Environment
 
 Boot the target device from the installation media.
 
@@ -72,7 +72,7 @@ Verify network connectivity:
 ping -c 3 example.org
 ```
 
-## 3\. Prepare the Disk
+## 3. Prepare the Disk
 
 ### Define variables
 
@@ -99,7 +99,7 @@ sgdisk -n1:1M:+512M -t1:EF00 $DISK
 sgdisk -n2:0:0 -t2:BF00 $DISK
 ```
 
-## 4\. Installation
+## 4. Installation
 
 Install the base system packages:
 
@@ -107,7 +107,7 @@ Install the base system packages:
 apk add base-system
 ```
 
-## 5\. Configure the System
+## 5. Configure the System
 
 ### Chroot
 
@@ -149,7 +149,7 @@ Set the hostname:
 echo "myhost" > /etc/hostname
 ```
 
-## 6\. Finish Up
+## 6. Finish Up
 
 ### Unmount
 
@@ -168,6 +168,6 @@ Remove installation media and reboot:
 reboot
 ```
 
-## 7\. Resources
+## 7. Resources
 
 For more information, consult the official documentation and community forums.

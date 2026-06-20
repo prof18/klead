@@ -8,5 +8,6 @@ internal object NASAProfile : com.prof18.klead.extractors.Extractor {
         """[class*="related-articles"]""",
         """[class*="topic-cards"]""",
         """[class*="about-the-author"]""",
+        ".social-icons",
     )
 }

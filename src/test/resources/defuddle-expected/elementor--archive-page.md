@@ -24,7 +24,7 @@ If you are looking to buy a premium apartment, you may have noticed a problem: l
 
 ## Premium Apartment Projects Currently For Sale
 
-### 1\. District 1 — City Center
+### 1. District 1 — City Center
 
 District 1 is the administrative and economic center, where the highest-priced premium apartment projects are concentrated (100-200+ million/sqm). In return, this area has good liquidity, suitable for both long-term living and flexible investment.
 
@@ -54,7 +54,7 @@ Status: Now selling
 - Diverse apartment types
 - Suitable for both buyers and investors
 
-### 2\. District 3 — Beachfront Area
+### 2. District 3 — Beachfront Area
 
 District 3 accounts for the majority of premium apartment supply, the most dynamic area in the market.
 

@@ -30,7 +30,6 @@
 —[u/itsokay\_28](https://www.reddit.com/user/itsokay_28/)
 
 ![A large iced coffee with an orange straw in a Dunkin&#x27; cup](https://img.buzzfeed.com/buzzfeed-static/static/2026-06/14/22/subbuzz/BT-8aJ1h9.jpg)
-![A large iced coffee with an orange straw in a Dunkin&#x27; cup](https://img.buzzfeed.com/buzzfeed-static/static/2026-06/14/22/subbuzz/BT-8aJ1h9.jpg)
 
 ## 4. "Very diverse (at least in California) and no one treats you as a 'foreigner' if you are not white. You really don’t feel like an outsider as a person of color, which is really nice. As a foreigner, I truly don’t think I’ve ever felt so accepted anywhere else I’ve been so far. This has been such a wholesome experience."
 

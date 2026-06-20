@@ -9,7 +9,7 @@
 
 ---
 
-![](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjK-8uaBuG-Xdug5wfik0xw8C-Nhyphenhyphenj5-Z7tHoQjxeFwH-5qqg2OB2DSGMHgHFd_372Fx_tREZxL51mDBFJEGMpc5eH9bH-7461bXKEXZgefVhPAmAU8Ehvk8_zpnkhODFFI51tyrJMnoudf3a6b9sCfEqcJoZ-idYpBVVUet8Ehc2gUR30R2D8ADSS-RdE/s16000/GoogleForDevelopers-AndroidText-Blogger-4209x1253.png)
+[![](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjK-8uaBuG-Xdug5wfik0xw8C-Nhyphenhyphenj5-Z7tHoQjxeFwH-5qqg2OB2DSGMHgHFd_372Fx_tREZxL51mDBFJEGMpc5eH9bH-7461bXKEXZgefVhPAmAU8Ehvk8_zpnkhODFFI51tyrJMnoudf3a6b9sCfEqcJoZ-idYpBVVUet8Ehc2gUR30R2D8ADSS-RdE/s16000/GoogleForDevelopers-AndroidText-Blogger-4209x1253.png)](https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjK-8uaBuG-Xdug5wfik0xw8C-Nhyphenhyphenj5-Z7tHoQjxeFwH-5qqg2OB2DSGMHgHFd_372Fx_tREZxL51mDBFJEGMpc5eH9bH-7461bXKEXZgefVhPAmAU8Ehvk8_zpnkhODFFI51tyrJMnoudf3a6b9sCfEqcJoZ-idYpBVVUet8Ehc2gUR30R2D8ADSS-RdE/s4209/GoogleForDevelopers-AndroidText-Blogger-4209x1253.png)
 
 The Android XR ecosystem is expanding, and we’re committed to supporting developers who will build its next great experiences. Today, we’re opening applications for the [Android XR Developer Catalyst Program](http://developer.android.com/develop/xr/catalyst), a dedicated initiative to accelerate the development of Android XR apps ready to launch within the next year.
 

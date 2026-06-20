@@ -7,7 +7,7 @@
 }
 ```
 
-### Dr. A. Researcher, March 2015
+### [Dr. A. Researcher](https://example.com/about.htm), March 2015
 
 This article provides an overview of cellular biology with a focus on practical applications in modern research. The field has grown rapidly in recent decades. Many hypotheses currently under debate will be resolved by new experimental methods. This text aims to synthesize current knowledge for researchers and students alike.
 

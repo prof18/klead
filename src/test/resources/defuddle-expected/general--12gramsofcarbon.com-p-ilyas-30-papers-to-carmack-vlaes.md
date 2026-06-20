@@ -9,7 +9,7 @@
 
 This post is part of a series of paper reviews, covering the ~30 papers Ilya Sutskever sent to John Carmack to learn about AI. To see the rest of the reviews, go [here](https://theahura.substack.com/p/ilyas-30-papers-to-carmack-table).
 
-## Paper 18: Variational Lossy Autoencoder
+## Paper 18: [Variational Lossy Autoencoder](https://arxiv.org/pdf/1611.02731)
 
 **High Level**
 
@@ -19,7 +19,7 @@ I definitely am not as precise with my language as I should be — I often will 
 
 ![](https://substackcdn.com/image/fetch/$s_!YemM!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb8e2d8ef-fb8d-43f5-be94-34b38ae74db3_406x245.png)
 
-A well structured representation space. Things that are similar in the real world have ‘representations’ that are close to each other in vector space.
+*A well structured representation space. Things that are similar in the real world have ‘representations’ that are close to each other in vector space.*
 
 Another word that is often used imprecisely is the concept of a 'latent' variable. A lot of folks use 'latent' to simply refer to 'the intermediate layers of the model'. So latent variables, embeddings, vector representations — in the common terminology, these terms have all sort of bled together. But a latent variable has a specific meaning: it is a variable that represents some kind of compressed representation space. Not all embeddings are necessarily latent variables. And in this paper, we are specifically interested in *probabilistic* latent variables. These are vectors that are produced by some *probabilistic generator*, commonly a Gaussian function, which is used downstream to calculate the output. And often the model is feeding parameters into the probabilistic function — for example, the model may calculate and pass in a mean and standard deviation, and then get out a vector variable sampled from a Gaussian with those parameters.
 
@@ -55,7 +55,7 @@ This is an intractable problem, even in the simple 2d case. The true distributio
 
 ![](https://substackcdn.com/image/fetch/$s_!UuHZ!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F901fc4b0-7c42-48d4-b535-c7e5e22fecdf_745x580.png)
 
-The data MAY be Gaussian. But it could also be a Christmas tree.
+*The data MAY be Gaussian. But it could also be a Christmas tree.*
 
 The number of parameters you need in your model is directly dependent on the shape of the true distribution. But you don't know the true distribution of the data! So you have to look at the data and guess what the shape might be. This is called a 'prior'. One simple example of a 'prior' is "I assume my data was sampled from a line". If you assume the data is a line, you have two parameters ***θ = { m, b }***, where ***m*** is the slope of the line and ***b*** is the bias.
 
@@ -111,7 +111,7 @@ The VLAE paper is also a representation learning paper. In fact, it's really the
 
 ![](https://substackcdn.com/image/fetch/$s_!sMgV!,w_1456,c_limit,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F5cd91396-a3b2-48e2-90d7-fcbe4df4da9d_649x705.png)
 
-The latent space of eevees is very semantically reasonable.
+*The latent space of eevees is very semantically reasonable.*
 
 This is partially why the authors are so interested in understanding just how much they are able to compress their representations. Almost all interesting representation schemes are lossy, the question is always 'how much' and 'along what axis'. Most generic compression schemes (think: jpeg) are semantically indiscriminate. You cannot tell a jpeg to 'care more' about the structure of a house vs the color of the sky, for example. If the authors can use VLAEs to consistently regenerate the information they care about using a very small vector representation, they have created a very powerful *semantically aware* compression algorithm. This was always the promise of auto-encoders in general, so it's cool to see how that particular area developed.
 

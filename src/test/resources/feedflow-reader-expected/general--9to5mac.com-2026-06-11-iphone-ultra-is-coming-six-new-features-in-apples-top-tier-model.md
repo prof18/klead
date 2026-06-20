@@ -58,7 +58,7 @@ Not much is known about these cameras, but Apple will likely use the same 18MP C
 
 iOS 27 was unveiled this week, but there are some iPhone Ultra-exclusive features that will likely stay hidden until this fall.
 
-[Per Mark Gurman at Bloomberg](https://9to5mac.com/2026/03/11/iphone-fold-expected-to-include-new-app-features-including-side-by-side-multitasking/), two main upgrades are coming:
+[Per Mark Gurman at *Bloomberg*](https://9to5mac.com/2026/03/11/iphone-fold-expected-to-include-new-app-features-including-side-by-side-multitasking/), two main upgrades are coming:
 
 1. Side-by-side apps for multitasking
 2. iPad-like app layouts

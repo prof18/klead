@@ -19,7 +19,7 @@ Although he recovered to finish sixth, Hadjar described his Barcelona start as a
 
 "We just need to work on our starts, because it's just yeah it's not possible to keep going like that," he told F1 TV. "Every race weekend it's the same story. Today was a nightmare, but the whole weekend I was struggling. It's really the point we need to work on because everyone's made progress, but I went backwards \[again\]. So, yeah, procedure is too difficult. Window is too small."
 
-![Isack Hadjar, Red Bull Racing](https://cdn.motorsport.com/images/mgl/2eZgBJ1Y/s1000/isack-hadjar-red-bull-racing.jpg)
+![Isack Hadjar, Red Bull Racing](https://cdn.motorsport.com/images/mgl/2eZgBJ1Y/s1200/isack-hadjar-red-bull-racing.webp)
 
 Isack Hadjar, Red Bull Racing
 

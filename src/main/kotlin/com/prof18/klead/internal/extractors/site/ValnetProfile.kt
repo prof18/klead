@@ -1,6 +1,8 @@
 package com.prof18.klead.internal.extractors.site
 
-internal object ValnetProfile : com.prof18.klead.extractors.Extractor {
+import com.prof18.klead.extractors.Extractor
+
+internal object ValnetProfile : Extractor {
     override val id: String = "valnet"
     override val domains: Set<String> = setOf("screenrant.com", "androidpolice.com", "polygon.com")
     override val postContentRemoveSelectors: List<String> = listOf(

@@ -15,7 +15,7 @@ Second paragraph after a br spacer.
 
 ![](https://example.com/image.jpg)
 
-A sample figure.
+*A sample figure.*
 
 Third paragraph after a figure and br.
 

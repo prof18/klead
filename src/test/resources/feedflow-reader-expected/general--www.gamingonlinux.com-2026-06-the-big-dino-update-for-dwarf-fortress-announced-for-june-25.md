@@ -21,14 +21,10 @@ This includes:
 
 See the trailer below
 
-[YouTube video](https://www.youtube.com/watch?v=1hKyYaBzko8)
+![](https://www.youtube.com/watch?v=1hKyYaBzko8)
 
-Dwarf Fortress
+[Dwarf Fortress](https://www.gamingonlinux.com/itemdb/app/10123/dwarf-fortress/)
 
-Release Date:
+Release Date: 6th December 2022
 
-6th December 2022
-
-Platform:
-
-🐧 Native Linux
+Platform: 🐧 Native Linux

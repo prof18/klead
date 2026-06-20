@@ -106,7 +106,7 @@ While the version we’ll be using looks like this:
 
 We’ve moved all values to the parent `<ul>` and given each item a dedicated name — effectively indexing them.
 
-I had previously experimented with this kind of “indexing” CSS workaround, for example, to compensate for the lack of [sibling-index()](https://css-tricks.com/almanac/functions/s/sibling-index/) and [sibling-count()](https://css-tricks.com/almanac/functions/s/sibling-count/) functions to [generate random numbers](https://codepen.io/villepreux/pen/azdgZRG). I knew this was the right direction and that the rest would follow logically on the CSS side.
+I had previously experimented with this kind of “indexing” CSS workaround, for example, to compensate for the lack of [`sibling-index()`](https://css-tricks.com/almanac/functions/s/sibling-index/) and [`sibling-count()`](https://css-tricks.com/almanac/functions/s/sibling-count/) functions to [generate random numbers](https://codepen.io/villepreux/pen/azdgZRG). I knew this was the right direction and that the rest would follow logically on the CSS side.
 
 **Spoiler:** `sibling-index()` and `sibling-count()` are becoming Baseline soon!
 
@@ -126,7 +126,7 @@ Optionally, we could add `data-label` attributes to the labels just to pair labe
 
 Now let’s examine the CSS. The implementation requires two sets of some repetitive but straightforward CSS rules.
 
-Firstly, we’ll need to pass down each percentage to its corresponding slice. To do so, we use Juan’s and get the `data-percentage` attributes into CSS through the upgraded [attr()](https://developer.chrome.com/blog/advanced-attr) function. In parallel, we’ll assign them to the corresponding slice using the [nth-child()](https://css-tricks.com/almanac/pseudo-selectors/n/nth-child/) selector.
+Firstly, we’ll need to pass down each percentage to its corresponding slice. To do so, we use Juan’s and get the `data-percentage` attributes into CSS through the upgraded [`attr()`](https://developer.chrome.com/blog/advanced-attr) function. In parallel, we’ll assign them to the corresponding slice using the [`nth-child()`](https://css-tricks.com/almanac/pseudo-selectors/n/nth-child/) selector.
 
 ```css
 .pie-chart {
@@ -201,7 +201,7 @@ While forking the original Pen, some questions popped out in my mind — that I 
 
 ### Note About Accessibility
 
-In my fork, I handled accessibility the same way Juan did, but with one slight modification: I used [counter-reset](https://css-tricks.com/almanac/properties/c/counter-reset/) / [counter()](https://css-tricks.com/almanac/functions/c/counter/) instead of `attr()` to assign the percentages to the [content](https://css-tricks.com/almanac/properties/c/content/) property. This should work just as good as `attr()`, but let’s make sure it is still screenreader-friendly:
+In my fork, I handled accessibility the same way Juan did, but with one slight modification: I used [`counter-reset`](https://css-tricks.com/almanac/properties/c/counter-reset/) / [`counter()`](https://css-tricks.com/almanac/functions/c/counter/) instead of `attr()` to assign the percentages to the [`content`](https://css-tricks.com/almanac/properties/c/content/) property. This should work just as good as `attr()`, but let’s make sure it is still screenreader-friendly:
 
 Another thing I thought of changing was the label elements inside each `<li>`. In the original article, Juan uses a `<strong>` element, while I opted for `<span>` instead. However, I think it may be totally acceptable to use the `<label>` itself. We normally think of them as being bounded inside `<form>` elements, but [the spec says](https://html.spec.whatwg.org/multipage/forms.html#the-label-element) that we could expect to use them in contexts “where phrasing content is expected.” So I could not find any obligation to use them only in the context of forms.
 

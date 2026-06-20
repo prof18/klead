@@ -117,6 +117,7 @@ Resolve relative URLs.
 ## Acceptance Gate
 
 - `[x]` Metadata fixture subset passes strict expected fields.
+- `[x]` Supported upstream Defuddle fixtures pass strict `title`, `author`, and `site` metadata snapshots. Upstream `published` frontmatter is ignored until the public metadata model exposes a publication date.
 - `[x]` Metadata extractor has focused unit tests independent of full parser.
 
 ## Commit Slices

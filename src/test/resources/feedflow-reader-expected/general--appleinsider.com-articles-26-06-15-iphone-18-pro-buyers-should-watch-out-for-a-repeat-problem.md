@@ -13,7 +13,7 @@ Following the launch of the iPhone 17 Pro, consumers started to complain about t
 
 Weibo leaker Fixed Focus Digital [posted](https://weibo.com/5821279480/5308887596531958) on June 12 a warning to consumers planning to buy the [iPhone 18](https://appleinsider.com/inside/iphone-18) Pro. The account says that people should be careful about the color fading issue with the upcoming models.
 
-![Pink smartphone lying flat on a table, showing side buttons and a bright orange magnetic wallet attached to the back near the dual rear cameras](https://photos5.appleinsider.com/gallery/67955-143254-65450-136951-iphoneredditorangepink-xl-xl.jpg)
+[![Pink smartphone lying flat on a table, showing side buttons and a bright orange magnetic wallet attached to the back near the dual rear cameras](https://photos5.appleinsider.com/gallery/67955-143254-65450-136951-iphoneredditorangepink-xl-xl.jpg)](https://photos5.appleinsider.com/gallery/67955-143254-65450-136951-iphoneredditorangepink-xl-xl.jpg)
 
 An alleged discolored iPhone 17 Pro, shifting from Cosmic Orange to pink - Image Credit: DakAttack316/Reddit
 

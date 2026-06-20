@@ -21,13 +21,13 @@ For memory, constant monitoring is the best practice to track the worst develope
 
 ![](https://miro.medium.com/max/60/1*5o3M5niyi911waUrKWVZ0Q.png?q=20)
 
-Memory leak in action
+*Memory leak in action*
 
 > Stay focused on the CPU!
 
 ![](https://miro.medium.com/max/60/1*8uOdeOfnUzTaFIY1r7oAMg.png?q=20)
 
-Basic CPU monitoring
+*Basic CPU monitoring*
 
 ## CPU profiling: what's the difference with CPU monitoring?
 
@@ -42,14 +42,14 @@ node --prof app.js
 ```
 ![](https://miro.medium.com/max/60/1*e7gjTlzi55udTXbbPeEs2A.png?q=20)
 
-Output of — prof
+*Output of — prof*
 
 - It needs to restart the application to launch a CPU profiling
 - It is NOT suited for a production environment
 
 ![CPU profiling before optimization](https://miro.medium.com/max/60/1*CANkRN_yzl9tfrGd2F41wQ.png?q=20)
 
-CPU profiling before optimization
+*CPU profiling before optimization*
 
 **How can we identify an issue?**
 
@@ -57,7 +57,7 @@ A CPU profiling should be read like this: The wider is the block the more it con
 
 ![CPU profiling after optimization](https://miro.medium.com/max/60/1*EO-pr4RolgcAOj_Uk1rpDA.png?q=20)
 
-CPU profiling after optimization
+*CPU profiling after optimization*
 
 What do we observe? Blocks are a lot smaller! It means that functions consume less CPU individually.
 

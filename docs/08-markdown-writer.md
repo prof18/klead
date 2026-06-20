@@ -278,7 +278,7 @@ Policy:
 - MathML without LaTeX -> readable text fallback
 - no MathML-to-LaTeX conversion
 - no rendered math fidelity requirement
-- known differences must be documented
+- exclusions from upstream Markdown parity must be documented
 
 ## Post Processing
 
