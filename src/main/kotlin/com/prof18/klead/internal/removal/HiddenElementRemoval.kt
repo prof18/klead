@@ -5,7 +5,7 @@ import org.jsoup.nodes.Element
 
 internal object HiddenElementRemoval {
     fun apply(content: Element, debug: MutableList<RemovalRecord>) {
-        for (element in content.select("*").toList()) {
+        for (element in content.descendantsSnapshot()) {
             if (!element.isAttachedTo(content)) continue
             val reason = removableHiddenReason(element) ?: continue
             element.orphanedHeadingBeforeHiddenBlock()?.let { heading ->
@@ -16,13 +16,13 @@ internal object HiddenElementRemoval {
     }
 
     private fun removableHiddenReason(element: Element): String? {
-        val reason = hiddenReason(element)
+        val reason = hiddenReason(element) ?: return null
         val isProtectedHidden = element.isRenderableAriaHiddenSvg() ||
             element.isMathWrapper() ||
             element.isWithinCalloutLike() ||
             element.isWithinFootnoteLike()
 
-        return reason?.takeUnless { isProtectedHidden }
+        return reason.takeUnless { isProtectedHidden }
     }
 
     private fun Element.orphanedHeadingBeforeHiddenBlock(): Element? {
@@ -116,12 +116,7 @@ internal object HiddenElementRemoval {
 
     private fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
 
-    private fun partialHaystack(element: Element): String {
-        val attrs = element.attributes().asList().joinToString(" ") { attribute ->
-            if (attribute.key.startsWith("data-")) "${attribute.key} ${attribute.value}" else attribute.value
-        }
-        return "${element.id()} ${element.className()} $attrs".lowercase()
-    }
+    private fun partialHaystack(element: Element): String = elementHintHaystack(element)
 
     private val OPACITY_ZERO_STYLE_PATTERN = Regex("""(?:^|;)opacity:0(?:\.0+)?(?:;|$)""")
     private val HEADING_TAG_PATTERN = Regex("""h[1-6]""")

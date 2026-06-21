@@ -1,0 +1,449 @@
+<article><div class="article-content">
+
+
+
+<p class="wp-block-paragraph">Recently,&nbsp;<a href="https://css-tricks.com/trying-to-make-the-perfect-pie-chart-in-css/">Juan Diego Rodríguez published an excellent article</a>&nbsp;exploring how far CSS can be pushed to build a semantic and customizable pie chart while keeping JavaScript to a minimum.</p>
+
+
+
+
+
+
+
+<p class="wp-block-paragraph">Citing Juan himself:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">In this article, we’ll try making the perfect pie chart in CSS. That means avoiding as much JavaScript as possible while addressing major headaches that comes with handwriting pie charts.</p>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">And it stated some goals that I want to go through again in order of priority:</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<ul class="wp-block-list">
+<li>This must be semantic! Meaning a screen reader should be able to understand the data shown in the pie chart.</li>
+</ul>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">To my understanding, the original article’s solution reached that goal. Its semantic approach (labels in plain HTML + values as attributes reinjected into the DOM via pseudo-elements) is clean, expressive, and hopefully accessible.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<ul class="wp-block-list">
+<li>This should be HTML-customizable! Once the CSS is done, we only have to change the markup to customize the pie chart.</li>
+</ul>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">The original article reached that goal as well.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<ul class="wp-block-list">
+<li>This should keep JavaScript to a minimum! No problem with JavaScript in general, it’s just more fun this way.</li>
+</ul>
+</blockquote>
+
+
+
+<p class="wp-block-paragraph">The original article aimed to use as little JavaScript as possible, mainly for fun. I tend to disagree slightly. For me, it should not be just for fun, since…</p>
+
+
+
+<ul class="wp-block-list">
+<li>JavaScript is there to deal with states and logic, and</li>
+
+
+
+<li>CSS is there to style the markup.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">The initial “no JavaScript” constraint was meaningful to me. CSS should be powerful enough to let us style a pie chart. JavaScript should not be required. So, I decided to see whether there was a way to 100% get rid of it and, for fun, forked <a href="https://codepen.io/monknow/pen/pvbrmGL" rel="noopener">the article’s CodePen</a> during a lunch break.</p>
+
+
+
+<p class="wp-block-paragraph">I kept the original code as unchanged as possible, preserving its semantic approach and HTML-side customizability. If It Ain’t Broke, Don’t Fix It™.</p>
+
+
+
+<p class="wp-block-paragraph">Coincidentally, this article came right after a&nbsp;<a href="https://codepen.io/villepreux/pen/NPrBEgE" rel="noopener">recent short pen of mine toying with bar charts</a>. So I was already in the mood for charts. But bar charts are far easier: each bar’s position or size does not depend on the others. A pie chart is a different beast: each slice’s position depends on the previous one. Luckily, this made it more of a fun challenge.</p>
+
+
+
+<p class="wp-block-paragraph">But before diving into my take on pie charts, let’s see how these have been approached by other web developers.</p>
+
+
+
+<h3 id="prior-art" class="wp-block-heading">Prior Art</h3>
+
+
+
+<p class="wp-block-paragraph">I read many blogs, articles, and code examples from professional front-end developers, but I am not one myself, so I am not entirely certain of my ability to identify the most relevant and up-to-date prior art… Let’s try anyway.</p>
+
+
+
+<p class="wp-block-paragraph">It is easy to find many JavaScript libraries dealing with charts. I have used them a lot in my work. However, due to our no-JavaScript constraint, we shall exclude them.</p>
+
+
+
+<p class="wp-block-paragraph">I started looking for CSS-only pie charts, and one of the first libraries that pops up is <a href="https://chartscss.org/charts" rel="noopener">Chart-CSS</a>. It advertises semantic structure, HTML tags to display data, accessibility, and raw data inside the markup. It seems to be a very good library and does not use any JavaScript.</p>
+
+
+
+<p class="wp-block-paragraph">Instead, it uses HTML tables, which, in my opinion and experience, makes total sense (most of the time, source data comes in a table). However, it does not solve the specific challenge of letting the user set only the values while having the start and end angles of each slice automatically computed. In this case, users still have to manually define them.</p>
+
+
+
+<p class="wp-block-paragraph">There are also very good articles discussing charts or data visualization in general. To name a few:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Vitaly Friedman’s&nbsp;<a href="https://www.smashingmagazine.com/2021/03/complete-guide-accessible-front-end-components/#accessible-data-visualizations" rel="noopener">“2022 Guide to Accessible Front-End Components”</a>&nbsp;is still relevant.</li>
+
+
+
+<li>Sarah L. Fossheim&nbsp;<a href="https://fossheim.io/writing/tag/dataviz/" rel="noopener">wrote extensively about data visualization accessibility</a>&nbsp;between 2020 and 2024</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">They just have one small (but very important to us) drawback. While these resources are valuable in explaining how chart accessibility should work, they do not really address easy HTML “interface” nor pure CSS implementations.</p>
+
+
+
+<h3 id="how-i-tackled-the-problem" class="wp-block-heading">How I Tackled the Problem</h3>
+
+
+
+<p class="wp-block-paragraph">If you are still reading, I assume you are at least somewhat interested in my approach. Understandably, If you just want to see the code, here it is!</p>
+
+
+
+
+
+
+
+<p class="wp-block-paragraph">Initially, the reason JavaScript was required was that each slice needed to know the value of the previous one. However, due to how CSS property inheritance works, a child cannot know the state of another child. Despite knowing this, I first tried to determine whether there were niche or “voodoo” techniques that would allow me to keep the original HTML markup and attribute-based approach while removing JavaScript.</p>
+
+
+
+<p class="wp-block-paragraph">I know that people like&nbsp;<a href="https://kizu.dev/" rel="noopener">Roman Komarov</a>&nbsp;can do incredible things with CSS, so I even considered exploring techniques involving property animations. But I clearly did not have the time to investigate that direction.</p>
+
+
+
+<p class="wp-block-paragraph">I returned to the core issue: because of how CSS inheritance works, children cannot know the state of their siblings. I obviously needed a “surrounding entity” to handle this.</p>
+
+
+
+<p class="wp-block-paragraph">In Juan’s post, that “entity” was JavaScript, which could loop through all children and compute the appropriate slice accumulations.</p>
+
+
+
+<pre rel="JavaScript" class="wp-block-csstricks-code-block language-javascript" data-line=""><code markup="tt" data-lang="javascript" class="language-javascript">const pieChartItems = document.querySelectorAll(".pie-chart li");
+
+let accum = 0;
+
+pieChartItems.forEach((item) =&gt; {
+  item.style.setProperty("--accum", accum);
+  accum += parseFloat(item.getAttribute("data-percentage"));
+});</code></pre>
+
+
+
+<p class="wp-block-paragraph">The JavaScript code sets an&nbsp;<code>--accum</code>&nbsp;value for each slice, which holds the percentage values of all charts prior to it. Without it, we wouldn’t know where to position each slice and its corresponding label.</p>
+
+
+
+<p class="wp-block-paragraph">In HTML/CSS, that entity exists too: the classic parent element. Therefore, my solution was to move the percentage values to the parent.</p>
+
+
+
+<p class="wp-block-paragraph">First, let’s remember what the original markup for the pie chart looked like this:</p>
+
+
+
+<pre rel="HTML" class="wp-block-csstricks-code-block language-markup" data-line=""><code markup="tt" data-lang="markup" class="language-markup">&lt;ul class="pie-chart"&gt;
+  &lt;li data-percentage-1="10"&gt;Apple&lt;/li&gt;
+  &lt;li data-percentage-2="30"&gt;Banana&lt;/li&gt;
+  &lt;li data-percentage-3="20"&gt;Orange&lt;/li&gt;
+  &lt;li data-percentage-4="40"&gt;Strawberry&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+
+
+<p class="wp-block-paragraph">While the version we’ll be using looks like this:</p>
+
+
+
+<pre rel="HTML" class="wp-block-csstricks-code-block language-markup" data-line=""><code markup="tt" data-lang="markup" class="language-markup">&lt;ul class="pie-chart" data-percentage-1="10" data-percentage-2="30" data-percentage-3="20" data-percentage-4="40"&gt;
+  &lt;li&gt;Apple&lt;/li&gt;
+  &lt;li&gt;Banana&lt;/li&gt;
+  &lt;li&gt;Orange&lt;/li&gt;
+  &lt;li&gt;Strawberry&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+
+
+<p class="wp-block-paragraph">We’ve moved all values to the parent <code>&lt;ul&gt;</code> and given each item a dedicated name — effectively indexing them.</p>
+
+
+
+<p class="wp-block-paragraph">I had previously experimented with this kind of “indexing” CSS workaround, for example, to compensate for the lack of&nbsp;<a href="https://css-tricks.com/almanac/functions/s/sibling-index/"><code>sibling-index()</code></a>&nbsp;and&nbsp;<a href="https://css-tricks.com/almanac/functions/s/sibling-count/"><code>sibling-count()</code></a>&nbsp;functions to&nbsp;<a href="https://codepen.io/villepreux/pen/azdgZRG" rel="noopener">generate random numbers</a>. I knew this was the right direction and that the rest would follow logically on the CSS side.</p>
+
+
+
+<p class="is-style-explanation wp-block-paragraph"><strong>Spoiler:</strong>&nbsp;<code>sibling-index()</code>&nbsp;and&nbsp;<code>sibling-count()</code>&nbsp;are becoming Baseline soon!</p>
+
+
+
+
+<baseline-status class="wp-block-css-tricks-baseline-status" featureid="sibling-count"></baseline-status>
+
+
+
+<p class="wp-block-paragraph">It may look like duplication since we didn’t add anything but rather moved the attributes. However, this slight change allows us to manage all labels and values from the parent in CSS. What’s best, we still keep all attributes close together. And while you may say that this won’t scale as well, if we have data with tons of entries, then a pie chart is rarely the best choice to show it.</p>
+
+
+
+<p class="wp-block-paragraph">Optionally, we could add&nbsp;<code>data-label</code>&nbsp;attributes to the labels just to pair labels and values visually.</p>
+
+
+
+<pre rel="HTML" class="wp-block-csstricks-code-block language-markup" data-line=""><code markup="tt" data-lang="markup" class="language-markup">&lt;ul class="pie-chart" data-percentage-1="10" data-percentage-2="30" data-percentage-3="20" data-percentage-4="40"&gt;
+  &lt;!-- Optional data-label attributes: just visual hints--&gt;
+  &lt;li data-label-1&gt;Apple&lt;/li&gt;
+  &lt;li data-label-2&gt;Banana&lt;/li&gt;
+  &lt;li data-label-3&gt;Orange&lt;/li&gt;
+  &lt;li data-label-4&gt;Strawberry&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+
+
+<p class="wp-block-paragraph">Now let’s examine the CSS. The implementation requires two sets of some repetitive but straightforward CSS rules.</p>
+
+
+
+<p class="wp-block-paragraph">Firstly, we’ll need to pass down each percentage to its corresponding slice. To do so, we use Juan’s and get the&nbsp;<code>data-percentage</code>&nbsp;attributes into CSS through the upgraded&nbsp;<a href="https://developer.chrome.com/blog/advanced-attr" rel="noopener"><code>attr()</code></a>&nbsp;function. In parallel, we’ll assign them to the corresponding slice using the&nbsp;<a href="https://css-tricks.com/almanac/pseudo-selectors/n/nth-child/"><code>nth-child()</code></a>&nbsp;selector.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">.pie-chart {
+   /* We write one for each slice we think we'll need */
+  --p-100-1: attr(data-percentage-1 type(&lt;number&gt;)); :nth-child(1) { --p-100: var(--p-100-1) }
+  --p-100-2: attr(data-percentage-2 type(&lt;number&gt;)); :nth-child(2) { --p-100: var(--p-100-2) }
+  --p-100-3: attr(data-percentage-3 type(&lt;number&gt;)); :nth-child(3) { --p-100: var(--p-100-3) }
+  --p-100-4: attr(data-percentage-4 type(&lt;number&gt;)); :nth-child(4) { --p-100: var(--p-100-4) }
+   /*...*/
+}</code></pre>
+
+
+
+<p class="is-style-explanation wp-block-paragraph">For that kind of repetitive/incremental code, I keep it as a one-liner without carriage return. <abbr>IMHO</abbr> it’s a very acceptable exception to common formatting rules as it prevents typos by easing scan-ability of and also eases further iterations (e.g., adding support for more slices). But your mileage may vary.</p>
+
+
+
+<p class="wp-block-paragraph">Let’s look a little closer at what’s going on here. At the level of the whole pie, we access the percentages for each slice through their index and store them in a corresponding CSS variable, so the fourth element gets&nbsp;<code>--p-100-4</code>, the fifth element gets&nbsp;<code>--p-100-5</code>, and so on:</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">--p-100-4: attr(data-percentage-4 type(&lt;number&gt;));</code></pre>
+
+
+
+<p class="wp-block-paragraph">Next, we pass each a&nbsp;<code>--p-100</code>&nbsp;variable that’s local to each slice.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">:nth-child(4) {
+  --p-100: var(--p-100-4);
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">We now have all these slice values accessible at two levels:</p>
+
+
+
+<ul class="wp-block-list">
+<li>On the pie, via indexed variables:&nbsp;<code>--p-100-1</code>,&nbsp;<code>--p-100-2</code>,&nbsp;<code>--p-100-3</code></li>
+
+
+
+<li>On each slice, via the&nbsp;<code>--p-100</code>&nbsp;variable</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Now, we’ll need to calculate the corresponding&nbsp;<code>--accum</code>&nbsp;value, which is the sum of the values of all previous slices. To do so, we’ll have to progressively sum each percentage after each slice, then assign the value to the slice using&nbsp;<code>nth-child()</code>&nbsp;again.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">.pie-chart {
+  /* ... */
+  --accum-1: 0;                                     :nth-child(1) { --accum: var(--accum-1) }
+  --accum-2: calc(var(--accum-1) + var(--p-100-1)); :nth-child(2) { --accum: var(--accum-2) }
+  --accum-3: calc(var(--accum-2) + var(--p-100-2)); :nth-child(3) { --accum: var(--accum-3) }
+  --accum-4: calc(var(--accum-3) + var(--p-100-3)); :nth-child(4) { --accum: var(--accum-4) }
+  /*...*/
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">Again, we first work at the pie level, where we compute one dedicated variable per slice. The first slice is a special case: there is no previous slice, so the accumulation is <code>0</code>. While in the rest, the accumulation for the slice&nbsp;<code>n</code>&nbsp;is the accumulation of the slices before&nbsp;<code>n−1</code>&nbsp;plus the value of the slice&nbsp;<code>n−1</code>.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">--accum-4: calc(var(--accum-3) + var(--p-100-3));</code></pre>
+
+
+
+<p class="wp-block-paragraph">The fourth element gets&nbsp;<code>--accum-4</code>, the fifth element gets&nbsp;<code>--accum-5</code>, and so on. Just as the percentages, at the level of each slice, we assign them to the local variable&nbsp;<code>--accum</code>.</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">:nth-child(4) {
+  --accum: var(--accum-4);
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">Once again, we have all these slice accumulation values accessible at two levels:</p>
+
+
+
+<ul class="wp-block-list">
+<li>On the pie, via indexed variables:&nbsp;<code>--accum-1</code>,&nbsp;<code>--accum-2</code>,&nbsp;<code>--accum-3</code></li>
+
+
+
+<li>On each slice, via the&nbsp;<code>--accum</code>&nbsp;variable</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">I hope future native CSS features (perhaps&nbsp;<code><a href="https://css-tricks.com/functions-in-css/">@function</a></code>?) will prevent us from having to resort to such repetitive code. In the meantime, this can be simplified with a CSS preprocessor (Sass, Less).</p>
+
+
+
+<p class="wp-block-paragraph">While forking the original Pen, some questions popped out in my mind — that I did not actually explore — to keep the original code as unchanged as possible:</p>
+
+
+
+<ul class="wp-block-list">
+<li>What about using&nbsp;<code>&lt;label&gt;</code>&nbsp;and&nbsp;<code>&lt;meter&gt;</code>&nbsp;for labels and values?</li>
+
+
+
+<li>What about using a&nbsp;<code>&lt;table&gt;</code>&nbsp;(since charts are often extracted from tables with rows like <code>[label, value]</code>)?</li>
+</ul>
+
+
+
+<h3 id="note-about-accessibility" class="wp-block-heading">Note About Accessibility</h3>
+
+
+
+<p class="wp-block-paragraph">In my fork, I handled accessibility the same way Juan did, but with one slight modification: I used&nbsp;<a href="https://css-tricks.com/almanac/properties/c/counter-reset/"><code>counter-reset</code></a>&nbsp;/&nbsp;<a href="https://css-tricks.com/almanac/functions/c/counter/"><code>counter()</code></a>&nbsp;instead of&nbsp;<code>attr()</code>&nbsp;to assign the percentages to the&nbsp;<a href="https://css-tricks.com/almanac/properties/c/content/"><code>content</code></a>&nbsp;property. This should work just as good as&nbsp;<code>attr()</code>, but let’s make sure it is still screenreader-friendly:</p>
+
+
+
+<figure class="wp-block-video"><video height="1080" style="aspect-ratio: 1920 / 1080;" width="1920" controls src="https://css-tricks.com/wp-content/uploads/2026/03/screenreader.mp4" playsinline></video></figure>
+
+
+
+<p class="wp-block-paragraph">Another thing I thought of changing was the label elements inside each&nbsp;<code>&lt;li&gt;</code>. In the original article, Juan uses a&nbsp;<code>&lt;strong&gt;</code> element, while I opted for&nbsp;<code>&lt;span&gt;</code>&nbsp;instead. However, I think it may be totally acceptable to use the&nbsp;<code>&lt;label&gt;</code>&nbsp;itself. We normally think of them as being bounded inside&nbsp;<code>&lt;form&gt;</code>&nbsp;elements, but&nbsp;<a href="https://html.spec.whatwg.org/multipage/forms.html#the-label-element" rel="noopener">the spec says</a>&nbsp;that we could expect to use them in contexts “where phrasing content is expected.” So I could not find any obligation to use them only in the context of forms.</p>
+
+
+
+<h3 id="default-colors" class="wp-block-heading">Default Colors</h3>
+
+
+
+<p class="wp-block-paragraph">Juan’s article also called upon&nbsp;<a href="https://css-tricks.com/trying-to-make-the-perfect-pie-chart-in-css/#aa-thats-about-it-for-now">some improvements</a>, which I tried to address in my fork:</p>
+
+
+
+<ul class="wp-block-list">
+<li><code>data-color</code>&nbsp;can be omitted, and colors are then generated.</li>
+
+
+
+<li>Colors can be defined either on the parent or on the children (user’s choice; both are supported).</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">This translates to the next snippet for each slice:</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">.pie-chart li {
+  --color: attr(data-color type(&lt;color&gt;));
+  --bg-color: var(--color, hsl(calc(360deg * sibling-index() / sibling-count()) 90% 40%));
+}</code></pre>
+
+
+
+<p class="wp-block-paragraph">I refrained from using&nbsp;<code>sibling-index()</code>&nbsp;and&nbsp;<code>sibling-count()</code>&nbsp;in the main part, since they aren’t Baseline (yet, but soon!), but I couldn’t hold myself back since calculating the color hue is so much fancier with them. These functions really allow some&nbsp;<a href="https://codepen.io/villepreux/pen/pvEjVdK" rel="noopener">magic</a>!</p>
+
+
+
+<p class="wp-block-paragraph">Still, here is my “CSS-only polyfill”; repetitive (yet simple) code:</p>
+
+
+
+<pre rel="CSS" class="wp-block-csstricks-code-block language-css" data-line=""><code markup="tt" data-lang="css" class="language-css">.pie-chart {
+  :has(:nth-child(1)) { --sibling-count: 1 } :nth-child(1) { --sibling-index: 1; }
+  :has(:nth-child(2)) { --sibling-count: 2 } :nth-child(2) { --sibling-index: 2; }
+  :has(:nth-child(3)) { --sibling-count: 3 } :nth-child(3) { --sibling-index: 3; }
+  :has(:nth-child(4)) { --sibling-count: 4 } :nth-child(4) { --sibling-index: 4; }
+  /* ... */
+}</code></pre>
+
+
+
+<h3 id="more-chart-types-" class="wp-block-heading">More Chart Types?</h3>
+
+
+
+<p class="wp-block-paragraph">We now have a common foundation for other chart types. As a proof of concept, I implemented a bar chart mode in&nbsp;<a href="https://codepen.io/villepreux/pen/KwMrGGa?editors=0100" rel="noopener">my fork</a>.</p>
+
+
+
+
+
+
+
+<figure class="wp-block-video"><video height="1390" style="aspect-ratio: 2008 / 1390;" width="2008" controls src="https://css-tricks.com/wp-content/uploads/2026/03/pie-bar-charts.mov" playsinline></video></figure>
+
+
+
+<h3 id="a-web-component-" class="wp-block-heading">A Web Component, Perhaps?</h3>
+
+
+
+<p class="wp-block-paragraph">In a way, we already have a web component here — one without JavaScript, using&nbsp;<a href="https://meyerweb.com/eric/thoughts/2023/11/01/blinded-by-the-light-dom/" rel="noopener">light DOM</a>.</p>
+
+
+
+<p class="wp-block-paragraph">And to me&nbsp;<code>&lt;pie-char attributes...&gt;</code>&nbsp;is not fundamentally different that either&nbsp;<code>&lt;div class="pie chart" attributes...&gt;</code>&nbsp;or&nbsp;<code>&lt;div pie chart attributes...&gt;</code>. I can see value in this approach when considering progressive enhancement, though.</p>
+
+
+
+<p class="wp-block-paragraph">For example, a chart that refreshes automatically and fetches live data. But that would require JavaScript — which we are deliberately avoiding today.</p>
+
+
+        </div></article>

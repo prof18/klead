@@ -39,62 +39,109 @@ import kotlin.time.measureTimedValue
 internal object KleadParser {
     private data class ParsedResult(val result: KleadResult, val wordCount: Int)
 
+    private class ParseTimings(private val enabled: Boolean) {
+        private val entries = linkedMapOf<String, Long>()
+
+        fun <T> measure(name: String, block: () -> T): T {
+            if (!enabled) return block()
+
+            val timed = measureTimedValue(block)
+            entries[name] = max(0, timed.duration.inWholeMilliseconds)
+            return timed.value
+        }
+
+        fun toDebugMap(): Map<String, Long> = entries.toMap()
+    }
+
     internal suspend fun parseHtml(
         html: String,
         url: String,
         options: KleadOptions,
         parserDispatcher: CoroutineDispatcher,
     ): KleadResult = withContext(parserDispatcher) {
+        val timings = ParseTimings(options.debug)
+        val retryAttempts = mutableListOf<Map<String, Any?>>()
         val timed = measureTimedValue {
-            val document = Jsoup.parse(html, url)
-            document.outputSettings().prettyPrint(false)
-            prepareDocument(document)
+            val document = timings.measure("documentParse") {
+                Jsoup.parse(html, url).also {
+                    it.outputSettings().prettyPrint(false)
+                }
+            }
+            timings.measure("prepareDocument") {
+                prepareDocument(document)
+            }
             val extractorContext = ExtractorContext(
                 url = url,
                 host = url.hostOrNull(),
                 document = document,
             )
-            val extractorRegistry = ExtractorRegistry(options.effectiveExtractors())
-            val matchedExtractors = extractorRegistry.resolve(context = extractorContext)
-            val extractorResult = extractorRegistry.extract(
-                context = extractorContext,
-                extractors = matchedExtractors,
-            )
-            val parseDocument = extractorResult?.contentHtml
-                ?.let { contentHtml ->
+            val extractorRegistry = timings.measure("extractorRegistry") {
+                ExtractorRegistry(options.effectiveExtractors())
+            }
+            val matchedExtractors = timings.measure("extractorResolve") {
+                extractorRegistry.resolve(context = extractorContext)
+            }
+            val extractorResult = timings.measure("extractorExtract") {
+                extractorRegistry.extract(
+                    context = extractorContext,
+                    extractors = matchedExtractors,
+                )
+            }
+            val parseDocument = extractorResult?.contentHtml?.let { contentHtml ->
+                timings.measure("extractorContentParse") {
                     Jsoup.parseBodyFragment(contentHtml, url).also { parsed ->
                         parsed.outputSettings().prettyPrint(false)
                     }
                 }
-                ?: document
+            } ?: document
 
-            RetryController.run { removalPolicy ->
-                val result = parseInternal(
-                    document = parseDocument.cloneDocument(),
-                    url = url,
-                    options = options,
-                    extractorResult = extractorResult,
-                    matchedExtractors = matchedExtractors,
-                    removalPolicy = removalPolicy,
-                )
-                RetryCandidate(
-                    value = result.result,
-                    wordCount = result.wordCount,
-                    removalPolicy = removalPolicy,
-                )
-            }.value
+            val retryCandidate = timings.measure("retry") {
+                RetryController.run { removalPolicy ->
+                    val attemptName = "attempt${retryAttempts.size + 1}"
+                    val result = timings.measure("$attemptName.total") {
+                        parseInternal(
+                            document = timings.measure("$attemptName.cloneDocument") {
+                                parseDocument.cloneDocument()
+                            },
+                            url = url,
+                            options = options,
+                            extractorResult = extractorResult,
+                            matchedExtractors = matchedExtractors,
+                            removalPolicy = removalPolicy,
+                            timings = timings,
+                            timingPrefix = attemptName,
+                        )
+                    }
+                    if (options.debug) {
+                        retryAttempts += mapOf(
+                            "attempt" to attemptName,
+                            "wordCount" to result.wordCount,
+                            "removalPolicy" to removalPolicy.toDebugMap(),
+                        )
+                    }
+                    RetryCandidate(
+                        value = result.result,
+                        wordCount = result.wordCount,
+                        removalPolicy = removalPolicy,
+                    )
+                }
+            }
+            retryCandidate.value
         }
 
         val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
         val debug = timed.value.debug.toMutableMap()
         if (options.debug) {
             debug["parseTimeMillis"] = parseTimeMillis
+            debug["timingsMillis"] = timings.toDebugMap()
+            debug["retryAttempts"] = retryAttempts
         }
         timed.value.copy(
             debug = debug,
         )
     }
 
+    @Suppress("LongMethod")
     private fun parseInternal(
         document: Document,
         url: String,
@@ -102,6 +149,8 @@ internal object KleadParser {
         extractorResult: ExtractorResult?,
         matchedExtractors: List<Extractor>,
         removalPolicy: RemovalPolicy,
+        timings: ParseTimings,
+        timingPrefix: String,
     ): ParsedResult {
         val extractorContext = ExtractorContext(
             url = url,
@@ -109,41 +158,80 @@ internal object KleadParser {
             document = document,
         )
         val removals = mutableListOf<RemovalRecord>()
-        ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
+        timings.measure("$timingPrefix.preContentRemovals") {
+            ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
+        }
 
-        val metaTags = MetadataExtractor.collectMetaTags(document)
-        val schemaOrg = MetadataExtractor.extractSchemaOrg(document, options.debug)
-        val detected = MainContentDetector.detect(
-            document = document,
-            extractorContentSelector = extractorResult?.contentSelector,
-            schemaText = schemaOrg.contentText(),
-            preferredSelectors = matchedExtractors.flatMap { it.contentSelectors },
-        )
+        val metaTags = timings.measure("$timingPrefix.collectMetaTags") {
+            MetadataExtractor.collectMetaTags(document)
+        }
+        val schemaOrg = timings.measure("$timingPrefix.schemaOrg") {
+            MetadataExtractor.extractSchemaOrg(document, options.debug)
+        }
+        val detected = timings.measure("$timingPrefix.mainContentDetection") {
+            MainContentDetector.detect(
+                document = document,
+                extractorContentSelector = extractorResult?.contentSelector,
+                schemaText = schemaOrg.contentText(),
+                preferredSelectors = matchedExtractors.flatMap { it.contentSelectors },
+            )
+        }
         val content = detected.element
-        mergeExternalFootnoteBlocks(document, content)
-        stripUnsafe(content)
-        val metadata = PageMetadataExtractor.extract(
-            document = document,
-            sourceUrl = url,
-            content = content,
-            metaTags = metaTags,
-            schemaOrg = schemaOrg,
-        )
-        RemovalPipeline.apply(
-            content = content,
-            debug = removals,
-            metadataImage = metadata.image,
-            policy = removalPolicy,
-        )
-        ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
+        timings.measure("$timingPrefix.mergeFootnotes") {
+            mergeExternalFootnoteBlocks(document, content)
+        }
+        timings.measure("$timingPrefix.stripUnsafe") {
+            stripUnsafe(content)
+        }
+        val metadata = timings.measure("$timingPrefix.metadata") {
+            PageMetadataExtractor.extract(
+                document = document,
+                sourceUrl = url,
+                content = content,
+                metaTags = metaTags,
+                schemaOrg = schemaOrg,
+            )
+        }
+        timings.measure("$timingPrefix.removalPipeline") {
+            RemovalPipeline.apply(
+                content = content,
+                debug = removals,
+                metadataImage = metadata.image,
+                policy = removalPolicy,
+                measure = { step, block ->
+                    timings.measure("$timingPrefix.removalPipeline.$step", block)
+                },
+            )
+        }
+        timings.measure("$timingPrefix.postContentRemovals") {
+            ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
+        }
         val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
-        matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
-        HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title)
+        timings.measure("$timingPrefix.extractorPostProcess") {
+            matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
+        }
+        timings.measure("$timingPrefix.htmlStandardizer") {
+            HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title)
+        }
         val requestedHtml = KleadOutput.HTML in options.outputs
         val requestedMarkdown = KleadOutput.MARKDOWN in options.outputs
-        val html = if (requestedHtml) content.cleanOuterHtml() else null
-        val markdown = if (requestedMarkdown) KleadMarkdownWriter.write(content, url) else null
-        val wordCount = countBodyWords(content)
+        val html = if (requestedHtml) {
+            timings.measure("$timingPrefix.htmlOutput") {
+                content.cleanOuterHtml()
+            }
+        } else {
+            null
+        }
+        val markdown = if (requestedMarkdown) {
+            timings.measure("$timingPrefix.markdownOutput") {
+                KleadMarkdownWriter.write(content, url)
+            }
+        } else {
+            null
+        }
+        val wordCount = timings.measure("$timingPrefix.wordCount") {
+            countBodyWords(content)
+        }
 
         return ParsedResult(
             result = KleadResult(
@@ -309,6 +397,14 @@ internal object KleadParser {
     private fun String.hostOrNull(): String? = runCatching { URI(this).host?.lowercase() }.getOrNull()
 
     private fun KleadOptions.effectiveExtractors(): List<Extractor> = customExtractors + DefaultExtractors.all
+
+    private fun RemovalPolicy.toDebugMap(): Map<String, Boolean> = mapOf(
+        "removeExactSelectors" to removeExactSelectors,
+        "removePartialSelectors" to removePartialSelectors,
+        "removeHiddenElements" to removeHiddenElements,
+        "removeLowScoring" to removeLowScoring,
+        "removeContentPatterns" to removeContentPatterns,
+    )
 
     private fun promoteNoscriptImages(document: Document) {
         for (noscript in document.select("noscript").toList()) {

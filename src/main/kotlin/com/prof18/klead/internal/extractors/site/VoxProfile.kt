@@ -6,6 +6,7 @@ internal object VoxProfile : com.prof18.klead.extractors.Extractor {
     override val postContentRemoveSelectors: List<String> = listOf(
         ".duet--article--lede",
         ".duet--ledes--standard-lede-bottom",
+        ".duet--article--scorecard",
         ".wp-block-query",
         "aside[data-mrf-recirculation]",
         "aside.hawk-root",

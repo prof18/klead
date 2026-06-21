@@ -29,29 +29,45 @@ internal data class RemovalPolicy(
     val removeContentPatterns: Boolean = true,
 )
 
+@Suppress("LargeClass")
 internal object RemovalPipeline {
+    private data class NestedFooterRemoval(val reason: String, val tableOfContents: Boolean = false)
+
     fun apply(
         content: Element,
         debug: MutableList<RemovalRecord>,
         metadataImage: String? = null,
         policy: RemovalPolicy = RemovalPolicy(),
+        measure: (String, () -> Unit) -> Unit = { _, block -> block() },
     ) {
         if (policy.removeHiddenElements) {
-            removeHiddenElements(content, debug)
+            measure("removeHiddenElements") {
+                removeHiddenElements(content, debug)
+            }
         }
         if (policy.removeExactSelectors) {
-            removeExactSelectors(content, debug)
+            measure("removeExactSelectors") {
+                removeExactSelectors(content, debug)
+            }
         }
         if (policy.removePartialSelectors) {
-            removePartialSelectors(content, debug)
+            measure("removePartialSelectors") {
+                removePartialSelectors(content, debug)
+            }
         }
         if (policy.removeLowScoring) {
-            removeLowScoringBlocks(content, debug)
+            measure("removeLowScoringBlocks") {
+                removeLowScoringBlocks(content, debug)
+            }
         }
         if (policy.removeContentPatterns) {
-            removeContentPatterns(content, debug)
+            measure("removeContentPatterns") {
+                removeContentPatterns(content, debug, measure)
+            }
         }
-        ImageRemovalPipeline.apply(content, metadataImage, debug, ::partialHaystack)
+        measure("imageRemoval") {
+            ImageRemovalPipeline.apply(content, metadataImage, debug, ::partialHaystack)
+        }
     }
 
     private fun removeHiddenElements(content: Element, debug: MutableList<RemovalRecord>) {
@@ -73,35 +89,56 @@ internal object RemovalPipeline {
     }
 
     private fun removePartialSelectors(content: Element, debug: MutableList<RemovalRecord>) {
-        for (element in content.select("*").toList()) {
+        for (element in content.descendantsSnapshot()) {
+            if (!element.isAttachedTo(content)) continue
             val haystack = partialHaystack(element)
-            if (isProtected(element)) continue
+            if (PARTIAL_PATTERNS.none { it in haystack }) continue
+            if (isProtected(element, haystack)) continue
             if (isLikelyProse(element) && !isStrongRecirculationChrome(element, haystack)) continue
-            if (PARTIAL_PATTERNS.any { it in haystack }) {
-                recordAndRemove(element, debug, "removePartialSelectors", null, "partial clutter attribute")
-            }
+            recordAndRemove(element, debug, "removePartialSelectors", null, "partial clutter attribute")
         }
     }
 
     private fun removeLowScoringBlocks(content: Element, debug: MutableList<RemovalRecord>) {
         for (element in content.select("section, aside, div, ul, ol").toList()) {
+            if (!element.isAttachedTo(content)) continue
+            val links = element.select("a")
+            val linkCount = links.size
+            if (linkCount < 3) continue
             if (isProtected(element) || isLikelyProse(element)) continue
             if (element.isNestedListContent()) continue
             val text = element.text()
-            val linkText = element.select("a").sumOf { it.text().length }
+            val linkText = links.sumOf { it.text().length }
             val linkDensity = if (text.isBlank()) 0.0 else linkText.toDouble() / text.length
-            val linkCount = element.select("a").size
-            if (linkCount >= 3 && linkDensity > 0.55) {
+            if (linkDensity > 0.55) {
                 recordAndRemove(element, debug, "removeLowScoring", null, "link-heavy low scoring block")
             }
         }
     }
 
-    private fun removeContentPatterns(content: Element, debug: MutableList<RemovalRecord>) {
-        removeOpeningArticleHeaderBlocks(content, debug)
-        removeRecommendationSiblingRuns(content, debug)
-        TrailingContentPatterns.remove(content, debug)
-        removeNestedArticleFooterBlocks(content, debug)
+    private fun removeContentPatterns(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        measure: (String, () -> Unit) -> Unit,
+    ) {
+        measure("removeContentPatterns.openingArticleHeaders") {
+            removeOpeningArticleHeaderBlocks(content, debug)
+        }
+        measure("removeContentPatterns.recommendationSiblingRuns") {
+            removeRecommendationSiblingRuns(content, debug)
+        }
+        measure("removeContentPatterns.trailingContentPatterns") {
+            TrailingContentPatterns.remove(content, debug)
+        }
+        measure("removeContentPatterns.nestedArticleFooterBlocks") {
+            removeNestedArticleFooterBlocks(content, debug)
+        }
+        measure("removeContentPatterns.trailingChildren") {
+            removeTrailingChildPatterns(content, debug)
+        }
+    }
+
+    private fun removeTrailingChildPatterns(content: Element, debug: MutableList<RemovalRecord>) {
         for (element in content.children().toList().asReversed()) {
             val text = element.text().trim()
             if (text.isBlank()) continue
@@ -279,130 +316,135 @@ internal object RemovalPipeline {
     }
 
     private fun removeNestedArticleFooterBlocks(content: Element, debug: MutableList<RemovalRecord>) {
-        for (element in content.select("aside, div, p, section, ul, ol, hr").toList()) {
-            if (shouldSkipNestedArticleFooterRemoval(element)) continue
+        for (element in content.descendantsWithTagNamesSnapshot(NESTED_ARTICLE_FOOTER_TAGS)) {
+            if (!element.isAttachedTo(content)) continue
+            if (element.isNestedListContent()) continue
+            if (element.isPlainParagraphWithoutFooterSignal()) continue
             removeNestedArticleFooterBlock(element, content, debug)
         }
     }
 
-    private fun shouldSkipNestedArticleFooterRemoval(element: Element): Boolean =
-        isProtected(element) || element.isNestedListContent()
-
     private fun removeNestedArticleFooterBlock(element: Element, content: Element, debug: MutableList<RemovalRecord>) {
-        when {
-            isOrphanSeparatorBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "orphan separator block")
-            }
+        val removal = nestedArticleFooterRemoval(element, content) ?: return
+        if (isProtected(element)) return
 
-            isTrailingDividerBlock(element, content) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "trailing divider")
-            }
-
-            isSkeletonRecirculationBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "skeleton recirculation block")
-            }
-
-            isPostedByBylineBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "posted-by byline strip")
-            }
-
-            isBreadcrumbBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "breadcrumb block")
-            }
-
-            isTableOfContentsBlock(element) -> {
-                removeTableOfContentsBlock(element, debug, "removeContentPatterns", null)
-            }
-
-            isSocialCounterBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "social counter block")
-            }
-
-            isTrailingRecirculationLinkCluster(element) -> {
-                removeNestedFooterBlock(element, debug, "trailing recirculation link cluster")
-            }
-
-            isRecommendationSectionHeadingBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "orphan recommendation heading")
-            }
-
-            isAboutAuthorFooterBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "about-author footer block")
-            }
-
-            isArticleFooterDetailsBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "article details footer block")
-            }
-
-            isRelatedTermsBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "related terms footer block")
-            }
-
-            isTagListBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "article footer tag list")
-            }
-
-            isCommentCountBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment count")
-            }
-
-            isBackToTopBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "article footer back-to-top control")
-            }
-
-            isCommentPromptBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "article footer comment prompt")
-            }
-
-            isReadyForMoreBlock(element) -> {
-                removeNestedFooterBlock(element, debug, "article footer subscription call to action")
-            }
-
-            isMobileAppPromoBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "mobile app promo")
-            }
-
-            isNewsletterSignupBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "newsletter signup")
-            }
-
-            isDonationWidgetBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "donation widget")
-            }
-
-            isBylineMetadataStrip(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "byline metadata strip")
-            }
-
-            isArticlePackageBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "article package card")
-            }
-
-            isInlineAuthorBioBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "inline author bio")
-            }
-
-            isFollowTopicsBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "follow topics prompt")
-            }
-
-            isStorySuggestionBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "story suggestion prompt")
-            }
-
-            isLocalNewsFollowBlock(element) -> {
-                recordAndRemove(element, debug, "removeContentPatterns", null, "local news follow prompt")
-            }
+        if (removal.tableOfContents) {
+            removeTableOfContentsBlock(element, debug, "removeContentPatterns", null)
+        } else {
+            recordAndRemove(element, debug, "removeContentPatterns", null, removal.reason)
         }
     }
 
-    private fun removeNestedFooterBlock(element: Element, debug: MutableList<RemovalRecord>, reason: String) {
-        recordAndRemove(element, debug, "removeContentPatterns", null, reason)
+    private fun nestedArticleFooterRemoval(element: Element, content: Element): NestedFooterRemoval? = when {
+        isOrphanSeparatorBlock(element) -> {
+            NestedFooterRemoval("orphan separator block")
+        }
+
+        isTrailingDividerBlock(element, content) -> {
+            NestedFooterRemoval("trailing divider")
+        }
+
+        isSkeletonRecirculationBlock(element) -> {
+            NestedFooterRemoval("skeleton recirculation block")
+        }
+
+        isPostedByBylineBlock(element) -> {
+            NestedFooterRemoval("posted-by byline strip")
+        }
+
+        isBreadcrumbBlock(element) -> {
+            NestedFooterRemoval("breadcrumb block")
+        }
+
+        isTableOfContentsBlock(element) -> {
+            NestedFooterRemoval("table of contents block", tableOfContents = true)
+        }
+
+        isSocialCounterBlock(element) -> {
+            NestedFooterRemoval("social counter block")
+        }
+
+        isTrailingRecirculationLinkCluster(element) -> {
+            NestedFooterRemoval("trailing recirculation link cluster")
+        }
+
+        isRecommendationSectionHeadingBlock(element) -> {
+            NestedFooterRemoval("orphan recommendation heading")
+        }
+
+        isAboutAuthorFooterBlock(element) -> {
+            NestedFooterRemoval("about-author footer block")
+        }
+
+        isArticleFooterDetailsBlock(element) -> {
+            NestedFooterRemoval("article details footer block")
+        }
+
+        isRelatedTermsBlock(element) -> {
+            NestedFooterRemoval("related terms footer block")
+        }
+
+        isTagListBlock(element) -> {
+            NestedFooterRemoval("article footer tag list")
+        }
+
+        isCommentCountBlock(element) -> {
+            NestedFooterRemoval("article footer comment count")
+        }
+
+        isBackToTopBlock(element) -> {
+            NestedFooterRemoval("article footer back-to-top control")
+        }
+
+        isCommentPromptBlock(element) -> {
+            NestedFooterRemoval("article footer comment prompt")
+        }
+
+        isReadyForMoreBlock(element) -> {
+            NestedFooterRemoval("article footer subscription call to action")
+        }
+
+        isMobileAppPromoBlock(element) -> {
+            NestedFooterRemoval("mobile app promo")
+        }
+
+        isNewsletterSignupBlock(element) -> {
+            NestedFooterRemoval("newsletter signup")
+        }
+
+        isDonationWidgetBlock(element) -> {
+            NestedFooterRemoval("donation widget")
+        }
+
+        isBylineMetadataStrip(element) -> {
+            NestedFooterRemoval("byline metadata strip")
+        }
+
+        isArticlePackageBlock(element) -> {
+            NestedFooterRemoval("article package card")
+        }
+
+        isInlineAuthorBioBlock(element) -> {
+            NestedFooterRemoval("inline author bio")
+        }
+
+        isFollowTopicsBlock(element) -> {
+            NestedFooterRemoval("follow topics prompt")
+        }
+
+        isStorySuggestionBlock(element) -> {
+            NestedFooterRemoval("story suggestion prompt")
+        }
+
+        isLocalNewsFollowBlock(element) -> {
+            NestedFooterRemoval("local news follow prompt")
+        }
+
+        else -> null
     }
 
-    private fun isProtected(element: Element): Boolean {
-        val hints = partialHaystack(element)
-        return element.`is`("pre, code, figure, picture, table, math, blockquote") ||
+    private fun isProtected(element: Element, hints: String = partialHaystack(element)): Boolean =
+        element.`is`("pre, code, figure, picture, table, math, blockquote") ||
             element.parents().any { it.`is`("pre, code, figure, picture, table, math, blockquote") } ||
             element.parents().any { it.hasFootnoteProtectionHint() } ||
             element.select(".footdef, .footref, [role=doc-footnote]").isNotEmpty() ||
@@ -412,10 +454,39 @@ internal object RemovalPipeline {
             "footref" in hints ||
             "callout" in hints ||
             "admonition" in hints
-    }
 
     private fun Element.isNestedListContent(): Boolean =
         normalName() in setOf("ul", "ol") && parent()?.normalName() == "li"
+
+    private fun Element.isPlainParagraphWithoutFooterSignal(): Boolean {
+        if (normalName() != "p") return false
+
+        val text = text().trim().collapseWhitespace()
+        if (text.isBlank() || text.length > PARAGRAPH_FOOTER_SIGNAL_MAX_LENGTH) return true
+
+        return !hasParagraphFooterSignal(text)
+    }
+
+    private fun hasParagraphFooterSignal(text: String): Boolean = text in ORPHAN_SEPARATOR_TEXTS ||
+        POSTED_BY_BYLINE_PATTERN.matches(text) ||
+        RECOMMENDATION_SECTION_HEADING_PATTERN.matches(text) ||
+        AUTHOR_FOLLOW_PATTERN.containsMatchIn(text) ||
+        TRAILING_TAG_LABEL_PATTERN.containsMatchIn(text) ||
+        COMMENT_COUNT_PATTERN.matches(text) ||
+        BACK_TO_TOP_PATTERN.matches(text) ||
+        COMMENT_PROMPT_PATTERN.containsMatchIn(text) ||
+        READY_FOR_MORE_PATTERN.matches(text) ||
+        MOBILE_APP_PROMO_PATTERN.containsMatchIn(text) ||
+        NEWSLETTER_SIGNUP_PATTERN.containsMatchIn(text) ||
+        INLINE_NEWSLETTER_PROMO_PATTERN.containsMatchIn(text) ||
+        DONATION_WIDGET_PATTERN.containsMatchIn(text) ||
+        BYLINE_METADATA_STRIP_PATTERN.containsMatchIn(text) ||
+        TRAILING_BYLINE_DATE_PATTERN.matches(text) ||
+        ARTICLE_PACKAGE_PATTERN.containsMatchIn(text) ||
+        INLINE_AUTHOR_BIO_PATTERN.containsMatchIn(text) ||
+        FOLLOW_TOPICS_PATTERN.containsMatchIn(text) ||
+        STORY_SUGGESTION_PATTERN.containsMatchIn(text) ||
+        LOCAL_NEWS_FOLLOW_PATTERN.containsMatchIn(text)
 
     private fun Element.hasFootnoteProtectionHint(): Boolean {
         val role = attr("role").lowercase()
@@ -1022,6 +1093,7 @@ internal object RemovalPipeline {
     )
 
     private val TABLE_OF_CONTENTS_EXACT_SELECTORS = setOf(".toc", ".table-of-contents")
+    private val NESTED_ARTICLE_FOOTER_TAGS = setOf("aside", "div", "p", "section", "ul", "ol", "hr")
 
     private val PARTIAL_PATTERNS = listOf(
         "advert",
@@ -1365,6 +1437,7 @@ internal object RemovalPipeline {
     private const val RELATED_TERMS_MAX_LENGTH = 1_200
     private const val RELATED_TERMS_PROSE_WORD_GUARD = 14
     private const val RELATED_TERMS_MIN_LINKS = 2
+    private const val PARAGRAPH_FOOTER_SIGNAL_MAX_LENGTH = 700
 }
 
 private fun Element.isInlineTextButton(): Boolean {
@@ -1375,14 +1448,9 @@ private fun Element.isInlineTextButton(): Boolean {
     return true
 }
 
-private fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
+internal fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
 
-private fun partialHaystack(element: Element): String {
-    val attrs = element.attributes().asList().joinToString(" ") { attribute ->
-        if (attribute.key.startsWith("data-")) "${attribute.key} ${attribute.value}" else attribute.value
-    }
-    return "${element.id()} ${element.className()} $attrs".lowercase()
-}
+private fun partialHaystack(element: Element): String = elementHintHaystack(element)
 
 private fun Element.isTrailingLinkedListRecommendation(linkCount: Int, minLinks: Int): Boolean {
     if (normalName() !in setOf("ul", "ol")) return false

@@ -1177,6 +1177,92 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `image aspect placeholder padding is removed from responsive wrappers`() {
+        val article = article(
+            """
+            <article>
+              <div class="body-img landscape">
+                <div class="responsive-img image-expandable img-article-item" style="padding-bottom:59.504132231405%">
+                  <figure>
+                    <picture>
+                      <img src="/myfitnesspal.jpg" width="825" height="491" alt="Images highlighting the app">
+                    </picture>
+                    <small class="body-img-caption">Credit: MyFitnessPal</small>
+                  </figure>
+                </div>
+              </div>
+              <p>Following paragraph stays close.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val wrapper = article.selectFirst(".responsive-img")
+        assertNotNull(wrapper)
+        assertFalse(wrapper.hasAttr("style"), article.outerHtml())
+        assertTrue(article.outerHtml().contains("Following paragraph stays close."))
+    }
+
+    @Test
+    fun `browser managed fill image positioning style is removed`() {
+        val article = article(
+            """
+            <article>
+              <img
+                src="/next-fill.jpg"
+                alt="Next image"
+                data-nimg="fill"
+                style="position:absolute;height:100%;width:100%;left:0;top:0;color:transparent;background-size:cover"
+              >
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val image = article.selectFirst("img")
+        assertNotNull(image)
+        assertFalse(image.hasAttr("style"), article.outerHtml())
+        assertEquals("/next-fill.jpg", image.attr("src"))
+    }
+
+    @Test
+    fun `non placeholder image padding style is preserved`() {
+        val article = article(
+            """
+            <article>
+              <div class="photo-callout" style="padding-bottom: 1rem; color: red">
+                <img src="/inline.png" alt="Inline image">
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("padding-bottom: 1rem; color: red", article.selectFirst(".photo-callout")?.attr("style"))
+    }
+
+    @Test
+    fun `image aspect placeholder padding is removed while other style declarations stay`() {
+        val article = article(
+            """
+            <article>
+              <picture class="hero-image" style="padding-top:56.25%; aspect-ratio: 1920 / 1080">
+                <source srcset="/hero.webp">
+                <img src="/hero.jpg" alt="Hero image">
+              </picture>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("aspect-ratio: 1920 / 1080", article.selectFirst("picture")?.attr("style"))
+    }
+
+    @Test
     fun `placeholder image uses picture source srcset`() {
         val article = article(
             """

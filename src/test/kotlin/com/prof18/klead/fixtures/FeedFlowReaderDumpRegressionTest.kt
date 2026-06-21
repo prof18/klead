@@ -12,8 +12,8 @@ import kotlin.test.fail
 
 class FeedFlowReaderDumpRegressionTest {
     @Test
-    fun `feedflow reader dumps match expected markdown snapshots`() {
-        val cases = FeedFlowReaderDumpLoader.loadAll()
+    fun `feedflow reader dumps match expected content snapshots`() {
+        val cases = FeedFlowReaderDumpLoader.loadAll(requireExpectedSnapshots = !UPDATE_SNAPSHOTS)
 
         assertTrue(cases.isNotEmpty(), "Expected FeedFlow reader dump fixtures")
 
@@ -24,35 +24,50 @@ class FeedFlowReaderDumpRegressionTest {
                 options = testOptions(debug = true),
             )
             val actualMarkdown = result.content.requireMarkdown()
+            val actualHtml = result.content.requireHtml()
 
             if (UPDATE_SNAPSHOTS) {
-                updateExpectedMarkdown(case.name, actualMarkdown)
+                updateExpectedSnapshots(case.name, actualMarkdown, actualHtml)
                 return@forEach
             }
 
-            assertMarkdownSnapshotEquals(
+            assertTextSnapshotEquals(
                 fixtureName = case.name,
-                expected = case.expectedMarkdown.markdownBody,
+                snapshotType = "markdown",
+                expected = case.expectedMarkdown?.markdownBody
+                    ?: error("Missing expected FeedFlow markdown fixture: ${case.name}.md"),
                 actual = actualMarkdown,
+                normalizer = MarkdownNormalizer::minimal,
+                debug = result.debug,
+            )
+            assertTextSnapshotEquals(
+                fixtureName = case.name,
+                snapshotType = "HTML",
+                expected = case.expectedHtml
+                    ?: error("Missing expected FeedFlow HTML fixture: ${case.name}.html"),
+                actual = actualHtml,
+                normalizer = ::normalizeHtmlSnapshot,
                 debug = result.debug,
             )
         }
     }
 
-    private fun assertMarkdownSnapshotEquals(
+    private fun assertTextSnapshotEquals(
         fixtureName: String,
+        snapshotType: String,
         expected: String,
         actual: String,
+        normalizer: (String) -> String,
         debug: Map<String, Any?>,
     ) {
-        val normalizedExpected = MarkdownNormalizer.minimal(expected)
-        val normalizedActual = MarkdownNormalizer.minimal(actual)
+        val normalizedExpected = normalizer(expected)
+        val normalizedActual = normalizer(actual)
         if (normalizedExpected == normalizedActual) return
 
         val firstDiff = firstDiffIndex(normalizedExpected, normalizedActual)
         fail(
             buildString {
-                appendLine("$fixtureName markdown snapshot mismatch at char $firstDiff")
+                appendLine("$fixtureName $snapshotType snapshot mismatch at char $firstDiff")
                 appendLine()
                 appendLine("Expected excerpt:")
                 appendLine(excerptAround(normalizedExpected, firstDiff))
@@ -82,12 +97,21 @@ class FeedFlowReaderDumpRegressionTest {
             .replace("\n", "\\n")
     }
 
+    private fun updateExpectedSnapshots(fixtureName: String, actualMarkdown: String, actualHtml: String) {
+        updateExpectedMarkdown(fixtureName, actualMarkdown)
+        updateExpectedHtml(fixtureName, actualHtml)
+    }
+
     private fun updateExpectedMarkdown(fixtureName: String, actual: String) {
         val path = Path.of(
             System.getProperty("user.dir"),
             "src/test/resources/feedflow-reader-expected/$fixtureName.md",
         )
-        val existing = Files.readString(path).replace("\r\n", "\n").replace('\r', '\n')
+        val existing = if (Files.isRegularFile(path)) {
+            Files.readString(path).normalizeLineEndings()
+        } else {
+            ""
+        }
         val preamble = if (existing.startsWith(JSON_PREAMBLE_START)) {
             val end = existing.indexOf(JSON_PREAMBLE_END, startIndex = JSON_PREAMBLE_START.length)
             if (end == -1) {
@@ -98,8 +122,26 @@ class FeedFlowReaderDumpRegressionTest {
         } else {
             ""
         }
+        Files.createDirectories(path.parent)
         Files.writeString(path, preamble + MarkdownNormalizer.minimal(actual) + "\n")
     }
+
+    private fun updateExpectedHtml(fixtureName: String, actual: String) {
+        val path = Path.of(
+            System.getProperty("user.dir"),
+            "src/test/resources/feedflow-reader-expected/$fixtureName.html",
+        )
+        Files.createDirectories(path.parent)
+        Files.writeString(path, normalizeHtmlSnapshot(actual) + "\n")
+    }
+
+    private fun normalizeHtmlSnapshot(html: String): String = html
+        .normalizeLineEndings()
+        .lines()
+        .joinToString("\n") { it.trimEnd() }
+        .trimEnd()
+
+    private fun String.normalizeLineEndings(): String = replace("\r\n", "\n").replace('\r', '\n')
 
     private companion object {
         const val EXCERPT_RADIUS = 240

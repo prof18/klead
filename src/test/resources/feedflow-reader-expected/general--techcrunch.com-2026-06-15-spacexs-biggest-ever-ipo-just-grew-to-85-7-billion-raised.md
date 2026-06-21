@@ -9,7 +9,7 @@
 
 ![Tesla and SpaceX CEO Elon Musk attends the inauguration of President Donald Trump at the U.S. Capitol Rotunda on January 20, 2025 in Washington, DC.](https://techcrunch.com/wp-content/uploads/2025/02/musk-getty-inauguration-trump.jpg)
 
-SpaceX’s historic IPO just got super-sized, after the public offering’s underwriters their option to purchase the maximum amount of shares — bringing the total amount raised to $85.7 billion.
+SpaceX’s historic IPO just got super-sized, after the public offering’s underwriters [exercised](https://ir.spacex.com/updates/releases-details/2026/Space-Exploration-Technologies-Corp--Announces-Closing-of-Initial-Public-Offering-Including-Full-Exercise-of-Underwriters-Option-to-Purchase-Additional-Shares-2026-RgoR-Y1Vwh/default.aspx) their option to purchase the maximum amount of shares — bringing the total amount raised to $85.7 billion.
 
 Elon Musk’s space-and-AI company had initially raised $75 billion, which was already enough to make it the largest IPO windfall ever.
 

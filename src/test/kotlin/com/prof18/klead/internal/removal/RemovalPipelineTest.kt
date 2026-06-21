@@ -1856,6 +1856,22 @@ class RemovalPipelineTest {
                     </div>
                     <p>The actual story starts here with enough natural language, punctuation, and context to keep the default cleaned parse result selected. It should survive when The Verge style header, package, author, and follow modules are removed.</p>
                     <p>The article conclusion should also stay after footer follow modules are removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                    <div class="duet--article--block-placement duet--article--article-body-component">
+                      <div>
+                        <div class="duet--article--scorecard" id="product-card-example">
+                          <a href="https://example.com/product">
+                            <img src="/product.jpg" alt="Product photo" style="position:absolute;height:100%;width:100%">
+                          </a>
+                          <p>6</p>
+                          <p>Verge Score</p>
+                          <h3>Sony Xperia 1 VIII</h3>
+                          <h4>The Good</h4>
+                          <ul><li>Capable cameras</li></ul>
+                          <h4>The Bad</h4>
+                          <ul><li>Middling battery life</li></ul>
+                        </div>
+                      </div>
+                    </div>
                     <div class="topic-follow-module">
                       <strong>Follow topics and authors</strong>
                       from this story to see more like this in your personalized homepage feed and to receive email updates.
@@ -1873,6 +1889,10 @@ class RemovalPipelineTest {
         assertFalse(result.content.requireMarkdown().contains("Part Of"))
         assertFalse(result.content.requireMarkdown().contains("Let me see some ID"))
         assertFalse(result.content.requireMarkdown().contains("Example Writer"))
+        assertFalse(result.content.requireMarkdown().contains("Verge Score"))
+        assertFalse(result.content.requireMarkdown().contains("Sony Xperia 1 VIII"))
+        assertFalse(result.content.requireMarkdown().contains("Middling battery life"))
+        assertFalse(result.content.requireHtml().contains("position:absolute"))
         assertFalse(result.content.requireMarkdown().contains("Follow topics and authors"))
         assertFalse(result.content.requireMarkdown().contains("personalized homepage"))
     }

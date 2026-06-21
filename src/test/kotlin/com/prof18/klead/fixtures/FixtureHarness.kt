@@ -27,7 +27,8 @@ data class FeedFlowReaderDumpCase(
     val path: Path,
     val sourceUrl: String,
     val rawHtml: String,
-    val expectedMarkdown: ExpectedResult,
+    val expectedMarkdown: ExpectedResult?,
+    val expectedHtml: String?,
 )
 
 data class ExpectedResult(val metadata: Map<String, String>, val markdownBody: String)
@@ -123,7 +124,7 @@ object FixtureLoader {
 }
 
 object FeedFlowReaderDumpLoader {
-    fun loadAll(): List<FeedFlowReaderDumpCase> {
+    fun loadAll(requireExpectedSnapshots: Boolean = true): List<FeedFlowReaderDumpCase> {
         val dumpDir = resourceDir("feedflow-reader-dumps")
         return Files.list(dumpDir).use { paths ->
             paths
@@ -137,10 +138,14 @@ object FeedFlowReaderDumpLoader {
                         path = path,
                         sourceUrl = FixtureLoader.extractUrl(name, rawHtml),
                         rawHtml = rawHtml,
-                        expectedMarkdown = ExpectedResultLoader.loadFrom(
-                            resourceDirectory = "feedflow-reader-expected",
+                        expectedMarkdown = ExpectedResultLoader.loadFeedFlowMarkdown(
                             fixtureName = name,
-                        ) ?: error("Missing expected FeedFlow markdown fixture: $name.md"),
+                            required = requireExpectedSnapshots,
+                        ),
+                        expectedHtml = ExpectedResultLoader.loadFeedFlowHtml(
+                            fixtureName = name,
+                            required = requireExpectedSnapshots,
+                        ),
                     )
                 }
                 .toList()
@@ -160,8 +165,32 @@ object ExpectedResultLoader {
         return parse(path.readText())
     }
 
-    fun loadHtml(fixtureName: String): String? {
-        val path = resourceDir("defuddle-expected").resolve("$fixtureName.html")
+    fun loadHtml(fixtureName: String): String? = loadHtmlFrom("defuddle-expected", fixtureName)
+
+    fun loadFeedFlowMarkdown(fixtureName: String, required: Boolean): ExpectedResult? {
+        val result = loadFrom(
+            resourceDirectory = "feedflow-reader-expected",
+            fixtureName = fixtureName,
+        )
+        if (required && result == null) {
+            error("Missing expected FeedFlow markdown fixture: $fixtureName.md")
+        }
+        return result
+    }
+
+    fun loadFeedFlowHtml(fixtureName: String, required: Boolean): String? {
+        val result = loadHtmlFrom(
+            resourceDirectory = "feedflow-reader-expected",
+            fixtureName = fixtureName,
+        )
+        if (required && result == null) {
+            error("Missing expected FeedFlow HTML fixture: $fixtureName.html")
+        }
+        return result
+    }
+
+    private fun loadHtmlFrom(resourceDirectory: String, fixtureName: String): String? {
+        val path = resourceDir(resourceDirectory).resolve("$fixtureName.html")
         if (!Files.isRegularFile(path)) return null
         return path.readText()
     }

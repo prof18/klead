@@ -5,7 +5,8 @@ import org.jsoup.nodes.Element
 
 internal object TrailingContentPatterns {
     fun remove(content: Element, debug: MutableList<RemovalRecord>) {
-        for (element in content.select("aside, div, ol, section, ul").toList()) {
+        for (element in content.descendantsWithTagNamesSnapshot(TRAILING_CONTENT_TAGS)) {
+            if (!element.isAttachedTo(content)) continue
             val reason = footerReason(element) ?: continue
             recordAndRemove(element, debug, "removeContentPatterns", null, reason)
         }
@@ -48,18 +49,14 @@ internal object TrailingContentPatterns {
             select("svg, time, [datetime]").isNotEmpty()
     }
 
-    private fun Element.partialHaystack(): String {
-        val attrs = attributes().asList().joinToString(" ") { attribute ->
-            if (attribute.key.startsWith("data-")) "${attribute.key} ${attribute.value}" else attribute.value
-        }
-        return "${id()} ${className()} $attrs".lowercase()
-    }
+    private fun Element.partialHaystack(): String = elementHintHaystack(this)
 
     private fun String.collapseWhitespace(): String = replace(WHITESPACE_PATTERN, " ")
 
     private fun String.wordCount(): Int = split(WHITESPACE_PATTERN).count { it.isNotBlank() }
 
     private val WHITESPACE_PATTERN = Regex("""\s+""")
+    private val TRAILING_CONTENT_TAGS = setOf("aside", "div", "ol", "section", "ul")
     private val TRAILING_MARKETING_CTA_TAGS = setOf("aside", "div", "section")
     private val TRAILING_METADATA_LIST_TAGS = setOf("ol", "ul")
     private const val TRAILING_MARKETING_CTA_MAX_LENGTH = 280

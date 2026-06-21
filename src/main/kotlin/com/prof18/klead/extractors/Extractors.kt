@@ -22,32 +22,41 @@ interface Extractor {
 }
 
 data class ExtractorContext(val url: String?, val host: String?, val document: Document) {
-    fun hostMatches(domains: Set<String>): Boolean {
-        val normalizedHosts = candidateHosts().map { it.lowercase().trim('.') }
-        if (normalizedHosts.isEmpty()) return false
-        return normalizedHosts.any { normalizedHost ->
-            domains.any { domain ->
-                val normalizedDomain = domain.lowercase().trim().trim('.')
-                normalizedHost == normalizedDomain || normalizedHost.endsWith(".$normalizedDomain")
-            }
+    private val normalizedHost: String? = host.normalizedHost()
+
+    private val candidateHosts: List<String> by lazy(LazyThreadSafetyMode.NONE) {
+        buildList {
+            normalizedHost?.let(::add)
+            document.select(
+                """link[rel=canonical][href], meta[property=og:url][content], meta[name=twitter:url][content]""",
+            )
+                .mapNotNull { element ->
+                    val candidateUrl = element.attr("href").ifBlank { element.attr("content") }
+                    runCatching { URI(candidateUrl).host?.lowercase() }.getOrNull()
+                }
+                .forEach { candidate ->
+                    if (candidate !in this) add(candidate)
+                }
         }
     }
 
-    private fun candidateHosts(): List<String> {
-        val result = mutableListOf<String>()
-        host?.takeIf { it.isNotBlank() }?.let(result::add)
-        document.select(
-            """link[rel=canonical][href], meta[property=og:url][content], meta[name=twitter:url][content]""",
-        )
-            .mapNotNull { element ->
-                val candidateUrl = element.attr("href").ifBlank { element.attr("content") }
-                runCatching { URI(candidateUrl).host?.lowercase() }.getOrNull()
-            }
-            .forEach { candidate ->
-                if (candidate !in result) result.add(candidate)
-            }
-        return result
+    fun hostMatches(domains: Set<String>): Boolean {
+        val normalizedDomains = domains.mapNotNull { it.normalizedHost() }
+        if (normalizedDomains.isEmpty()) return false
+        if (normalizedHost != null && normalizedHost.matchesDomain(normalizedDomains)) return true
+
+        if (candidateHosts.isEmpty()) return false
+        return candidateHosts.any { candidate -> candidate.matchesDomain(normalizedDomains) }
     }
+
+    private fun String?.normalizedHost(): String? = this
+        ?.lowercase()
+        ?.trim()
+        ?.trim('.')
+        ?.takeIf { it.isNotBlank() }
+
+    private fun String.matchesDomain(domains: List<String>): Boolean =
+        domains.any { domain -> this == domain || endsWith(".$domain") }
 }
 
 data class ExtractorResult(

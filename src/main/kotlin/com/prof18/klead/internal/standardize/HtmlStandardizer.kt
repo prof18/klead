@@ -23,6 +23,7 @@ internal object HtmlStandardizer {
         removeEdgeDividers(content)
         normalizeCodeBlocks(content)
         normalizeImages(content)
+        normalizeImageAspectPlaceholders(content)
         normalizeFootnotes(content)
         removeTrailingSectionHeadings(content)
         normalizeTables(content)
@@ -766,6 +767,7 @@ internal object HtmlStandardizer {
     private fun normalizeImages(content: Element) {
         content.select("img").forEach { image ->
             if (image.parent() == null) return@forEach
+            image.removeBrowserManagedImageLayoutStyle()
             val pictureSourceSrcset = image.parents().firstOrNull { it.normalName() == "picture" }
                 ?.selectFirst("source[srcset], source[srcSet], source[data-srcset]")
                 ?.let { firstAttr(it, "srcset", "srcSet", "data-srcset") }
@@ -820,6 +822,66 @@ internal object HtmlStandardizer {
                 duplicate.remove()
             }
         }
+    }
+
+    private fun Element.removeBrowserManagedImageLayoutStyle() {
+        val style = attr("style")
+        if (style.isBlank()) return
+        if (!style.contains("position:absolute", ignoreCase = true) && attr("data-nimg") != "fill") return
+
+        removeAttr("style")
+    }
+
+    private fun normalizeImageAspectPlaceholders(content: Element) {
+        content.select(
+            "div[style], figure[style], picture[style], span[style], p[style], a[style]",
+        ).forEach { element ->
+            if (!element.hasImageContent()) return@forEach
+
+            val style = element.attr("style")
+            if (!style.hasAspectPlaceholderPadding()) return@forEach
+            if (!element.hasImageAspectPlaceholderHint() && !element.isImageOnlyWrapper()) return@forEach
+
+            val normalized = style.withoutAspectPlaceholderPadding()
+            if (normalized.isBlank()) {
+                element.removeAttr("style")
+            } else {
+                element.attr("style", normalized)
+            }
+        }
+    }
+
+    private fun Element.hasImageContent(): Boolean = normalName() == "picture" || selectFirst("img, picture") != null
+
+    private fun Element.hasImageAspectPlaceholderHint(): Boolean {
+        val haystack = listOf(id(), className(), attr("data-testid"), attr("data-component"), attr("itemprop"))
+            .joinToString(" ")
+            .lowercase()
+        return IMAGE_ASPECT_PLACEHOLDER_HINTS.any { it in haystack }
+    }
+
+    private fun Element.isImageOnlyWrapper(): Boolean {
+        val clone = clone()
+        clone.select("img, picture, source, noscript, figcaption, small").remove()
+        return clone.text().trim().isBlank()
+    }
+
+    private fun String.hasAspectPlaceholderPadding(): Boolean =
+        split(';').any { it.trim().isAspectPlaceholderPaddingDeclaration() }
+
+    private fun String.withoutAspectPlaceholderPadding(): String = split(';')
+        .map { it.trim() }
+        .filter { it.isNotBlank() && !it.isAspectPlaceholderPaddingDeclaration() }
+        .joinToString("; ")
+
+    private fun String.isAspectPlaceholderPaddingDeclaration(): Boolean {
+        val parts = split(':', limit = 2)
+        if (parts.size != 2) return false
+
+        val property = parts[0].trim().lowercase()
+        if (property != "padding-bottom" && property != "padding-top") return false
+
+        return ASPECT_PLACEHOLDER_PADDING_VALUE.matches(parts[1].trim())
     }
 
     private fun Element.noscriptImage(): Element? =
@@ -1876,6 +1938,10 @@ internal object HtmlStandardizer {
 
     private val LANGUAGE_REGEX = Regex("""(?:^|\s)language-([A-Za-z0-9_+#-]+)(?:\s|$)""")
     private val WHITESPACE_PATTERN = Regex("""\s+""")
+    private val ASPECT_PLACEHOLDER_PADDING_VALUE = Regex(
+        """(?:\d+(?:\.\d+)?|\.\d+)%\s*(?:!important)?""",
+        RegexOption.IGNORE_CASE,
+    )
     private val CODE_LINE_NUMBER_PATTERN = Regex("""\d{1,5}""")
     private val CODE_LINE_CELL_TAGS = setOf("div", "span")
     private val CODE_LINE_CONTAINER_TAGS = setOf("div", "span")
@@ -1932,6 +1998,22 @@ internal object HtmlStandardizer {
         "admonition",
         "details",
         "open",
+    )
+    private val IMAGE_ASPECT_PLACEHOLDER_HINTS = setOf(
+        "article-image",
+        "article-img",
+        "aspect-ratio",
+        "aspectratio",
+        "body-img",
+        "image-aspect",
+        "image-container",
+        "image-expandable",
+        "image-wrapper",
+        "img-article-item",
+        "intrinsic",
+        "ratio-box",
+        "ratio-container",
+        "responsive-img",
     )
 
     private enum class TitleMatch {
