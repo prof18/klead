@@ -309,7 +309,7 @@ private class Renderer(private val baseUrl: String) {
         node: Node,
         value: String,
     ) {
-        if (value.startsWith(persianComma) && rendered.lastOrNull()?.isWhitespace() == false) {
+        if (value.startsWith(PERSIAN_COMMA) && rendered.lastOrNull()?.isWhitespace() == false) {
             rendered.append(' ')
         }
         if (node is Element && node.needsLeadingSpaceBeforeNumericVariableSubscript(value, nodes, index, rendered)) {
@@ -1323,129 +1323,6 @@ private class Renderer(private val baseUrl: String) {
         drop(index + 1).firstOrNull { it.trimEnd().isNotBlank() }?.trimStart()
 
     private fun String.isMarkdownMediaLine(): Boolean = startsWith("![](")
-
-    private val srcsetDelimiter = Regex(""",\s+""")
-    private val bareOriginUrl = Regex("""https?://[^/?#]+""")
-    private val placeholderDotsPattern = Regex("""(^|[\s"'“‘(\[])\. \.(?=$|[\s"'”’)\],.;:!?])""")
-    private val spacedEllipsisPattern = Regex("""(?<=\S)\s+\.{3}""")
-    private val persianComma = "،"
-    private val codeLanguageClass = Regex("""[A-Za-z][A-Za-z0-9_+-]*""")
-    private val highlightCodeClassNoise = setOf(
-        "block",
-        "code",
-        "hl",
-        "highlight",
-        "source",
-    )
-    private val rawIframeAttributes = listOf("width", "height", "frameborder", "allow", "allowfullscreen")
-    private val footnoteIdHint = Regex(
-        """(?i)(?:fn|ftn|ftnt|footnote|easy-footnote|_ftn|fna|cite_note|^r\d+$|^ref\d+$|reference)""",
-    )
-    private val footnoteIdNumberPattern = Regex(
-        """(?i)(?:fnref|fn|ftnref|ftn|ftnt_ref|ftnt|footnote|easy-footnote-bottom|easy-footnote|_ftnref|_ftn|fna|cite_note(?:-[A-Za-z0-9_]+)?|ref|reference|^r)[-_:.\s]*(\d+)""",
-    )
-    private val numericSubscriptPattern = Regex("""\d{1,4}""")
-    private val nextNumericSubscriptCharPattern = Regex("""[),;:.\]}]""")
-    private val footnoteNumberPattern = Regex("""\d{1,4}""")
-    private val footnoteReferenceTextPattern = Regex("""\[?\d{1,4}]?""")
-    private val footnoteTerminalInlineElementPattern = Regex("""(?:\]\([^)]+\)|`+)$""")
-    private val emptyLinkPattern = Regex("""\n*(?<!!)\[]\([^)]+\)\n*""")
-    private val inlineWhitespacePattern = Regex("""[ \t]+(?!\n)""")
-    private val inlineIndentedNewlinePattern = Regex("""\n[ \t]+(?=\S)""")
-    private val linkTitleWhitespacePattern = Regex("""\s+""")
-    private val horizontalWhitespacePattern = Regex("""[ \t]+""")
-    private val tagGapWhitespacePattern = Regex(""">\s+<""")
-    private val srcsetWhitespacePattern = Regex("""\s+""")
-    private val imageDimensionSuffixPattern =
-        Regex("""(?:-\d+x\d+|-\d+w|-(?:small|medium|large|thumb|thumbnail))(?=\.[A-Za-z0-9]+$)""")
-    private val imageFileExtensionPattern = Regex("""\.[A-Za-z0-9]+$""")
-    private val leadingHardBreakRun = Regex("""^(?:  \n)+""")
-    private val headingTagPattern = Regex("""h[1-6]""")
-    private val blockLikeSpanHint = Regex("""(?:^|[\s_-])(?:caption|credit|credits)(?:$|[\s_-])""")
-    private val svgSelfClosingTagPattern = Regex("""<([A-Za-z][A-Za-z0-9:_-]*)([^>]*)\s/>""")
-    private val svgTextLabelGroupSpacingPattern = Regex("""</text>(</g>(?:</g>)?<g)""")
-    private val svgTextLabelPathSpacingPattern = Regex("""</text>(<path\b)""")
-    private val svgNumberDelimiter = Regex("""[\s,]+""")
-    private val svgRenderableElementSelector = listOf(
-        "circle",
-        "ellipse",
-        "image",
-        "line",
-        "path",
-        "polygon",
-        "polyline",
-        "rect",
-        "text",
-    ).joinToString(",")
-    private val svgColorAttributes = setOf("fill", "stroke")
-    private val svgAttributeValueFallbacks = mapOf(
-        "var(--background-color-card)" to "Canvas",
-        "var(--text-color-body)" to "currentColor",
-        "var(--color-amber-600)" to "#d97706",
-        "var(--color-green-600)" to "#16a34a",
-        "light-dark(var(--color-slate-400), var(--color-slate-300))" to "#94a3b8",
-    )
-    private val svgClassAttributeFallbacks = mapOf(
-        "fill-amber-500" to ("fill" to "#f59e0b"),
-        "fill-orange-500" to ("fill" to "#f97316"),
-        "stroke-zinc-400" to ("stroke" to "#a1a1aa"),
-    )
-    private val footnoteBlockTags = setOf("p", "ul", "ol", "blockquote", "pre", "table", "figure")
-    private val footnoteMarkerTags = setOf("sup", "strong", "b")
-    private val footnoteSeparatingPunctuation = setOf('.', ',', ';', ':')
-    private val footnoteSeparatingSentencePunctuation = setOf('.', '!', '?')
-    private val footnoteSeparatingClosingQuotes = setOf('"', '\'', '”', '’')
-    private val footnoteSeparatingInlineSuffixes = setOf('*', '~', '`')
-    private val footnoteAttachingPunctuation = setOf('.', ',', ';', ':', '!', '?')
-    private val tightPunctuation = setOf('.', ',', ';', ':', '!', '?')
-    private val delimitedInlineTags = setOf("strong", "b", "em", "i", "del", "s")
-    private val delimitedInlineLeadingSpacingChars = setOf('*', '~', '"', '“', '‘')
-    private val delimitedInlineTrailingSpacingChars = setOf('"', '”', '’')
-    private val linkOpeningQuoteSpacingChars = setOf('"', '\'', '“', '‘')
-    private val linkClosingQuoteSpacingChars = setOf('"', '\'', '”', '’')
-    private val linkedImageSpacingLeadingChars = setOf('"', '\'', '“', '‘', '(')
-    private val inlineFlowTags = setOf(
-        "a",
-        "abbr",
-        "b",
-        "br",
-        "cite",
-        "code",
-        "del",
-        "em",
-        "font",
-        "i",
-        "ins",
-        "mark",
-        "math",
-        "small",
-        "span",
-        "strong",
-        "sub",
-        "sup",
-        "s",
-    )
-    private val blockFlowTags = setOf(
-        "article",
-        "aside",
-        "blockquote",
-        "div",
-        "figure",
-        "h1",
-        "h2",
-        "h3",
-        "h4",
-        "h5",
-        "h6",
-        "hr",
-        "main",
-        "ol",
-        "p",
-        "pre",
-        "section",
-        "table",
-        "ul",
-    )
 
     private companion object {
         const val SVG_ICON_MAX_SIZE = 32.0
