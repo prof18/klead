@@ -26,4 +26,8 @@ internal fun String.normalizeSpace(): String = replace(WHITESPACE_REGEX, " ").tr
 
 internal fun String.isoDatePart(): String = substringBefore("T")
 
+internal fun Element.textTrimmedOrNull(): String? = text().trim().ifBlank { null }
+
+internal fun Element.attrTrimmedOrNull(name: String): String? = attr(name).trim().ifBlank { null }
+
 private val WHITESPACE_REGEX = Regex("""\s+""")

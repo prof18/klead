@@ -4,7 +4,9 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.isoDatePart
+import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import org.jsoup.nodes.Element
 
@@ -34,8 +36,8 @@ internal object RedditProfile : Extractor {
         return ExtractorResult(
             contentHtml = article.outerHtml(),
             metadata = ExtractorMetadata(
-                title = post.selectFirst(".title")?.text()?.trim()?.ifBlank { null },
-                author = post.attr("data-author").trim().ifBlank { null },
+                title = post.selectFirst(".title")?.textTrimmedOrNull(),
+                author = post.attrTrimmedOrNull("data-author"),
                 site = post.attr("data-subreddit")
                     .trim()
                     .takeIf { it.isNotBlank() }

@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.standardize
 
+import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import org.jsoup.nodes.Element
 
 internal val HEADING_TAG_PATTERN = Regex("""h[1-6]""")
@@ -9,7 +10,7 @@ internal val WHITESPACE_PATTERN = Regex("""\s+""")
 internal fun String.collapseWhitespace(): String = replace(WHITESPACE_PATTERN, " ")
 
 internal fun firstAttr(element: Element, vararg names: String): String? = names.firstNotNullOfOrNull { name ->
-    element.attr(name).trim().ifBlank { null }
+    element.attrTrimmedOrNull(name)
 }
 
 internal fun Element.componentHintHaystack(): String =

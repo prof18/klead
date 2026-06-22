@@ -4,6 +4,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import org.jsoup.nodes.Element
 
@@ -94,7 +95,7 @@ internal object HackerNewsProfile : Extractor {
         return ExtractorResult(
             contentHtml = article.outerHtml(),
             metadata = ExtractorMetadata(
-                title = storyLink.text().trim().ifBlank { null },
+                title = storyLink.textTrimmedOrNull(),
                 author = author,
                 site = SITE_NAME,
             ),

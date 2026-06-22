@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.selectFirstSafe
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -57,7 +58,7 @@ internal object SubstackProfile : com.prof18.klead.extractors.Extractor {
 
     private fun Document.noteUrl(): String? = listOfNotNull(
         metaContent("og:url"),
-        selectFirst("""link[rel=canonical][href]""")?.attr("href")?.trim()?.ifBlank { null },
+        selectFirst("""link[rel=canonical][href]""")?.attrTrimmedOrNull("href"),
     ).firstOrNull { it.contains("/note/c-") }
 
     private fun Document.metaContent(name: String): String? =

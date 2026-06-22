@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.markdown
 
+import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.resolveUrl
 import com.prof18.klead.internal.media.TrustedEmbeds
@@ -1132,7 +1133,7 @@ private class Renderer(private val baseUrl: String) {
     }
 
     private fun renderMath(element: Element): String? {
-        val latex = element.attr("data-latex").trim().ifBlank { null } ?: return null
+        val latex = element.attrTrimmedOrNull("data-latex") ?: return null
         val display = element.hasClass("display") || element.attr("display") == "block"
         return if (display) "$$\n$latex\n$$" else "$$latex$"
     }

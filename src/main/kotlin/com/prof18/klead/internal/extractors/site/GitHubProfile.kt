@@ -5,6 +5,7 @@ import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isoDatePart
+import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import org.jsoup.nodes.Element
 import java.net.URI
@@ -54,7 +55,7 @@ internal object GitHubProfile : Extractor {
             ?: return null
 
         val author = issueBody.selectFirst("""[data-testid="issue-body-header-author"]""")
-        val authorName = author?.text()?.trim().orEmpty().ifBlank { null }
+        val authorName = author?.textTrimmedOrNull()
         val article = Element("article")
         if (authorName != null) {
             article.appendElement("p")

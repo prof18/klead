@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.standardize
 
 import com.prof18.klead.internal.dom.replaceWithChildren
+import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.media.TrustedEmbeds
 import com.prof18.klead.internal.media.TrustedMarkdownMedia
 import org.jsoup.nodes.Element
@@ -817,7 +818,7 @@ internal object HtmlStandardizer {
                 ?.lowercase()
                 ?: "note"
             val titleElement = alert.selectFirst(".alert-heading, .alert-title")
-            val title = titleElement?.text()?.trim()?.ifBlank { null } ?: type.replaceFirstChar { it.uppercase() }
+            val title = titleElement?.textTrimmedOrNull() ?: type.replaceFirstChar { it.uppercase() }
             val bodyNodes = alert.childNodes().filterNot { it === titleElement }.toList()
             alert.rebuildCallout(type, title, bodyNodes)
         }

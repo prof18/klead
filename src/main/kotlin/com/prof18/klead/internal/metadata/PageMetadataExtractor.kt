@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.metadata
 
 import com.prof18.klead.internal.dom.resolveUrl
+import com.prof18.klead.internal.dom.textTrimmedOrNull
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URI
@@ -27,7 +28,7 @@ internal object PageMetadataExtractor {
         val canonicalUrl = document.selectFirst("link[rel=canonical]")?.absUrl("href")?.ifBlank { null }
         val metadataBaseUrl = canonicalUrl ?: sourceUrl
         val canonicalDomain = canonicalUrl?.let(::parseDomain)
-        val h1 = document.selectFirst("h1")?.text()?.trim()?.ifBlank { null }
+        val h1 = document.selectFirst("h1")?.textTrimmedOrNull()
         val siteName = extractSiteName(metaTags, schemaOrg)
         val author = extractAuthor(document, content, metaTags, schemaOrg)
         val titleResult = extractTitle(document, metaTags, schemaOrg, siteName, author, h1)

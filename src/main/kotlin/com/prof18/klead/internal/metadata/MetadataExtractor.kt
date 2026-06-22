@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.metadata
 
+import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -24,9 +25,9 @@ internal data class SchemaOrgResult(val items: List<Map<String, Any?>>, val diag
 
 internal object MetadataExtractor {
     fun collectMetaTags(document: Document): List<MetaTagItem> = document.select("meta").mapNotNull { meta ->
-        val name = meta.attr("name").trim().ifBlank { null }
-        val property = meta.attr("property").trim().ifBlank { null }
-        val content = meta.attr("content").trim().ifBlank { null }
+        val name = meta.attrTrimmedOrNull("name")
+        val property = meta.attrTrimmedOrNull("property")
+        val content = meta.attrTrimmedOrNull("content")
         if (content == null || (name == null && property == null)) {
             null
         } else {

@@ -4,6 +4,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.textTrimmedOrNull
 import org.jsoup.nodes.Element
 
 internal object WikipediaExtractor : Extractor {
@@ -26,7 +27,7 @@ internal object WikipediaExtractor : Extractor {
                     ?.trim()
                     ?.removeSuffix(" - Wikipedia")
                     ?.ifBlank { null }
-                    ?: context.document.selectFirst("h1")?.text()?.trim()?.ifBlank { null },
+                    ?: context.document.selectFirst("h1")?.textTrimmedOrNull(),
                 site = "Wikipedia",
             ),
         )
