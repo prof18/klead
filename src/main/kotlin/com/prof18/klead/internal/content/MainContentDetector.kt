@@ -5,6 +5,7 @@ import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.dom.selectSafe
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.util.Collections
 import java.util.IdentityHashMap
 
 internal data class DetectedContent(
@@ -342,15 +343,8 @@ internal object MainContentDetector {
     private data class Candidate(val element: Element, val selector: String, val score: Double)
 
     private fun List<Candidate>.distinctByIdentity(): List<Candidate> {
-        val seen = mutableListOf<Element>()
-        val result = mutableListOf<Candidate>()
-        for (candidate in this) {
-            if (seen.none { it === candidate.element }) {
-                seen.add(candidate.element)
-                result.add(candidate)
-            }
-        }
-        return result
+        val seen = Collections.newSetFromMap(IdentityHashMap<Element, Boolean>())
+        return filter { seen.add(it.element) }
     }
 
     private val ARTICLE_SELECTORS = setOf(
