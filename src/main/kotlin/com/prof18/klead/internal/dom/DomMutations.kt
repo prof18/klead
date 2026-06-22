@@ -31,9 +31,13 @@ internal fun Element.transferChildrenTo(target: Element) {
     }
 }
 
+internal fun Element.appendChildNodesFrom(source: Element) {
+    source.childNodes().forEach { appendChild(it.clone()) }
+}
+
 internal fun Element.replaceChildrenWith(source: Element) {
     childNodes().toList().forEach(Node::remove)
-    source.childNodes().forEach { appendChild(it.clone()) }
+    appendChildNodesFrom(source)
 }
 
 internal fun Document.cloneDocument(): Document = clone()

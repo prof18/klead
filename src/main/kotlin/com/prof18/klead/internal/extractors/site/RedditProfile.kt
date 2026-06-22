@@ -4,6 +4,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.appendChildNodesFrom
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.textTrimmedOrNull
@@ -26,7 +27,7 @@ internal object RedditProfile : Extractor {
         if (body.text().isBlank() || commentRoots.isEmpty()) return null
 
         val article = Element("article")
-        article.appendMarkdownBody(body)
+        article.appendChildNodesFrom(body)
         article.appendElement("hr")
         article.appendElement("h2").text("Comments")
         commentRoots.forEach { comment ->
@@ -89,15 +90,9 @@ internal object RedditProfile : Extractor {
                 header.appendText(" · $score")
             }
         }
-        quote.appendMarkdownBody(comment.body)
+        quote.appendChildNodesFrom(comment.body)
         comment.children.forEach { child ->
             quote.appendRedditComment(child)
-        }
-    }
-
-    private fun Element.appendMarkdownBody(body: Element) {
-        body.childNodes().forEach { node ->
-            appendChild(node.clone())
         }
     }
 

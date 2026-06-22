@@ -4,6 +4,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.appendChildNodesFrom
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
@@ -23,7 +24,7 @@ internal object GitHubProfile : Extractor {
         val body = bodies.firstOrNull() ?: return null
 
         val article = Element("article")
-        article.appendMarkdownBody(body)
+        article.appendChildNodesFrom(body)
 
         val comments = bodies.drop(1)
             .mapNotNull { body -> body.githubComment() }
@@ -74,7 +75,7 @@ internal object GitHubProfile : Extractor {
 
         val content = body.clone()
         content.cleanGitHubIssueBody()
-        article.appendMarkdownBody(content)
+        article.appendChildNodesFrom(content)
 
         if (article.text().isBlank()) return null
         return ExtractorResult(
@@ -102,12 +103,6 @@ internal object GitHubProfile : Extractor {
     private fun ExtractorContext.isPullRequestPage(): Boolean = url.orEmpty().contains("/pull/") ||
         document.selectFirst(".pull-discussion-timeline") != null
 
-    private fun Element.appendMarkdownBody(body: Element) {
-        body.childNodes().forEach { node ->
-            appendChild(node.clone())
-        }
-    }
-
     private fun Element.githubComment(): GitHubComment? {
         val container = parents().firstOrNull { it.hasClass("js-comment") }
             ?: parents().firstOrNull { it.hasClass("timeline-comment-group") }
@@ -127,7 +122,7 @@ internal object GitHubProfile : Extractor {
             header.appendElement("strong").text(comment.author)
             header.appendText(" · ${comment.date}")
         }
-        quote.appendMarkdownBody(comment.body)
+        quote.appendChildNodesFrom(comment.body)
     }
 
     private fun ExtractorContext.repositorySiteName(): String {
