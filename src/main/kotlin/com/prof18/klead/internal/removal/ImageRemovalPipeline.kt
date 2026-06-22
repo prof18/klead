@@ -169,7 +169,7 @@ internal object ImageRemovalPipeline {
 
     private fun largestSrcsetUrl(srcset: String): String? = srcset.split(srcsetDelimiter)
         .mapNotNull { candidate ->
-            val parts = candidate.trim().split(Regex("""\s+"""))
+            val parts = candidate.trim().split(WHITESPACE_PATTERN)
             val url = parts.firstOrNull()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
             val width = parts.getOrNull(1)?.removeSuffix("w")?.toIntOrNull()
                 ?: parts.getOrNull(1)?.removeSuffix("x")?.toDoubleOrNull()?.times(1_000)?.toInt()
@@ -183,7 +183,7 @@ internal object ImageRemovalPipeline {
         val url = source
             .substringBefore(",")
             .trim()
-            .split(Regex("""\s+"""))
+            .split(WHITESPACE_PATTERN)
             .firstOrNull()
             ?.substringBefore("#")
             ?.substringBefore("?")
@@ -221,11 +221,17 @@ internal object ImageRemovalPipeline {
     }
 
     private fun Element.dimension(name: String): Int? = attr(name).dimensionValue()
-        ?: Regex("""$name\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
+        ?: styleDimensionPattern(name)
             .find(attr("style"))
             ?.groupValues
             ?.getOrNull(1)
             ?.toIntOrNull()
+
+    private fun styleDimensionPattern(name: String): Regex = when (name) {
+        "width" -> WIDTH_STYLE_DIMENSION_PATTERN
+        "height" -> HEIGHT_STYLE_DIMENSION_PATTERN
+        else -> Regex("""$name\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
+    }
 
     private fun String.dimensionValue(): Int? =
         DIMENSION_VALUE_PATTERN.find(this)?.groupValues?.getOrNull(1)?.toIntOrNull()
@@ -254,6 +260,9 @@ internal object ImageRemovalPipeline {
 
     private val DIMENSION_VALUE_PATTERN = Regex("""^\s*(\d+)""")
     private val srcsetDelimiter = Regex(""",\s+""")
+    private val WHITESPACE_PATTERN = Regex("""\s+""")
+    private val WIDTH_STYLE_DIMENSION_PATTERN = Regex("""width\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
+    private val HEIGHT_STYLE_DIMENSION_PATTERN = Regex("""height\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
 
     private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

@@ -662,7 +662,7 @@ private class Renderer(private val baseUrl: String) {
             is Element -> renderLinkTextElement(node)
             else -> ""
         }
-    }.replace(Regex("""[ \t]+"""), " ")
+    }.replace(horizontalWhitespacePattern, " ")
 
     private fun renderLinkTextElement(element: Element): String = when (element.normalName()) {
         "br" -> " "
@@ -734,7 +734,7 @@ private class Renderer(private val baseUrl: String) {
         clone.select("[class]").removeAttr("class")
         return clone.outerHtml()
             .trim()
-            .replace(Regex(""">\s+<"""), "><")
+            .replace(tagGapWhitespacePattern, "><")
             .replace(svgTextLabelGroupSpacingPattern, "</text> $1")
             .replace(svgTextLabelPathSpacingPattern, "</text> $1")
             .replace(svgSelfClosingTagPattern) { match ->
@@ -977,7 +977,7 @@ private class Renderer(private val baseUrl: String) {
             is Element -> renderCaptionElement(node)
             else -> ""
         }
-    }.replace(Regex("""[ \t]+"""), " ")
+    }.replace(horizontalWhitespacePattern, " ")
 
     private fun renderCaptionElement(element: Element): String = when (element.normalName()) {
         "br" -> "\n"
@@ -1139,7 +1139,7 @@ private class Renderer(private val baseUrl: String) {
 
     private fun largestSrcsetUrl(srcset: String): String? = srcset.split(srcsetDelimiter)
         .mapNotNull { candidate ->
-            val parts = candidate.trim().split(Regex("""\s+"""))
+            val parts = candidate.trim().split(srcsetWhitespacePattern)
             val url = parts.firstOrNull()?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
             val width = parts.getOrNull(1)?.removeSuffix("w")?.toIntOrNull() ?: 0
             url to width
@@ -1168,8 +1168,8 @@ private class Renderer(private val baseUrl: String) {
 
     private fun String.normalizedImageFamily(): String = substringBefore('?')
         .substringBefore('#')
-        .replace(Regex("""(?:-\d+x\d+|-\d+w|-(?:small|medium|large|thumb|thumbnail))(?=\.[A-Za-z0-9]+$)"""), "")
-        .replace(Regex("""\.[A-Za-z0-9]+$"""), "")
+        .replace(imageDimensionSuffixPattern, "")
+        .replace(imageFileExtensionPattern, "")
 
     private fun codeSpan(text: String): String {
         val maxTicks = Regex("`+").findAll(text).maxOfOrNull { it.value.length } ?: 0
@@ -1353,6 +1353,12 @@ private class Renderer(private val baseUrl: String) {
     private val inlineWhitespacePattern = Regex("""[ \t]+(?!\n)""")
     private val inlineIndentedNewlinePattern = Regex("""\n[ \t]+(?=\S)""")
     private val linkTitleWhitespacePattern = Regex("""\s+""")
+    private val horizontalWhitespacePattern = Regex("""[ \t]+""")
+    private val tagGapWhitespacePattern = Regex(""">\s+<""")
+    private val srcsetWhitespacePattern = Regex("""\s+""")
+    private val imageDimensionSuffixPattern =
+        Regex("""(?:-\d+x\d+|-\d+w|-(?:small|medium|large|thumb|thumbnail))(?=\.[A-Za-z0-9]+$)""")
+    private val imageFileExtensionPattern = Regex("""\.[A-Za-z0-9]+$""")
     private val leadingHardBreakRun = Regex("""^(?:  \n)+""")
     private val headingTagPattern = Regex("""h[1-6]""")
     private val blockLikeSpanHint = Regex("""(?:^|[\s_-])(?:caption|credit|credits)(?:$|[\s_-])""")

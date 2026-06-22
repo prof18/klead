@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.content
 
+import com.prof18.klead.internal.dom.normalizeSpace
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.dom.selectSafe
 import org.jsoup.nodes.Document
@@ -316,7 +317,7 @@ internal object MainContentDetector {
         else -> listOf(take(SCHEMA_TEXT_ANCHOR_LENGTH), takeLast(SCHEMA_TEXT_ANCHOR_LENGTH))
     }
 
-    private fun String.normalizeSchemaText(): String = replace(Regex("""\s+"""), " ").trim()
+    private fun String.normalizeSchemaText(): String = normalizeSpace()
 
     private fun detected(
         element: Element,
