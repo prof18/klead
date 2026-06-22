@@ -4,6 +4,8 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.isoDatePart
+import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import org.jsoup.nodes.Element
 
 internal object RedditProfile : Extractor {
@@ -49,7 +51,7 @@ internal object RedditProfile : Extractor {
         val score = entry.selectFirst(".tagline .score")?.text()?.trim()
         val date = entry.selectFirst(".tagline time[datetime]")
             ?.attr("datetime")
-            ?.substringBefore("T")
+            ?.isoDatePart()
             .orEmpty()
         val body = entry.selectFirst(".usertext-body .md")?.clone() ?: return null
         if (author.isBlank() || date.isBlank() || body.text().isBlank()) return null
@@ -66,7 +68,7 @@ internal object RedditProfile : Extractor {
         return RedditComment(
             author = author,
             date = date,
-            permalink = attr("data-permalink").toRedditUrl(),
+            permalink = attr("data-permalink").toAbsoluteSiteUrl("reddit.com"),
             score = score,
             body = body,
             children = children,
@@ -98,12 +100,6 @@ internal object RedditProfile : Extractor {
     }
 
     private fun Element.isRedditCommentElement(): Boolean = hasClass("thing") && hasClass("comment")
-
-    private fun String.toRedditUrl(): String = when {
-        startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true) -> this
-        startsWith("/") -> "https://reddit.com$this"
-        else -> "https://reddit.com/$this"
-    }
 
     private data class RedditComment(
         val author: String,

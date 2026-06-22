@@ -24,4 +24,6 @@ internal fun Element.isAttachedTo(root: Element): Boolean = this === root || par
 
 internal fun String.normalizeSpace(): String = replace(WHITESPACE_REGEX, " ").trim()
 
+internal fun String.isoDatePart(): String = substringBefore("T")
+
 private val WHITESPACE_REGEX = Regex("""\s+""")

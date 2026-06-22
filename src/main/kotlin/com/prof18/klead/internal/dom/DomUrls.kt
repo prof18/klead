@@ -9,6 +9,12 @@ internal fun Element.absUrlOrEmpty(attr: String): String {
     return absUrl(attr).takeUnless(::isDangerousUrl).orEmpty()
 }
 
+internal fun String.toAbsoluteSiteUrl(domain: String): String = when {
+    startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true) -> this
+    startsWith("/") -> "https://$domain$this"
+    else -> "https://$domain/$this"
+}
+
 internal fun resolveUrl(baseUrl: String, value: String): String {
     val trimmed = value.trim()
     if (trimmed.isBlank() || isDangerousUrl(trimmed)) return ""

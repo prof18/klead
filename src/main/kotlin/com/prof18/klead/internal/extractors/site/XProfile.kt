@@ -4,6 +4,8 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.isoDatePart
+import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import org.jsoup.nodes.Element
 
 internal object XProfile : Extractor {
@@ -103,11 +105,11 @@ internal object XProfile : Extractor {
         val statusLink = select("a[href]")
             .firstOrNull { link -> "/status/" in link.attr("href") && link.selectFirst("time[datetime]") != null }
             ?: select("a[href]").firstOrNull { link -> "/status/" in link.attr("href") }
-        val statusUrl = statusLink?.attr("href")?.toXUrl()
+        val statusUrl = statusLink?.attr("href")?.toAbsoluteSiteUrl("x.com")
         val date = statusLink
             ?.selectFirst("time[datetime]")
             ?.attr("datetime")
-            ?.substringBefore("T")
+            ?.isoDatePart()
             ?.takeIf { it.isNotBlank() }
 
         return XTweet(
@@ -234,12 +236,6 @@ internal object XProfile : Extractor {
             .takeIf { it.isNotBlank() }
             ?.takeWhile(Char::isDigit)
             ?.takeIf { it.isNotBlank() }
-
-    private fun String.toXUrl(): String = when {
-        startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true) -> this
-        startsWith("/") -> "https://x.com$this"
-        else -> "https://x.com/$this"
-    }
 
     private fun String.normalizeXHref(): String {
         if (!startsWith("//")) return this

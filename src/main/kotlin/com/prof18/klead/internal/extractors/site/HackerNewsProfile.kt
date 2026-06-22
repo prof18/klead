@@ -4,6 +4,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import org.jsoup.nodes.Element
 
 internal object HackerNewsProfile : Extractor {
@@ -214,11 +215,7 @@ internal object HackerNewsProfile : Extractor {
 
     private fun String.collapseForTitle(): String = replace(WHITESPACE_PATTERN, " ")
 
-    private fun String.toHackerNewsUrl(): String = when {
-        startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true) -> this
-        startsWith("/") -> "https://news.ycombinator.com$this"
-        else -> "https://news.ycombinator.com/$this"
-    }
+    private fun String.toHackerNewsUrl(): String = toAbsoluteSiteUrl("news.ycombinator.com")
 
     private data class HackerNewsComment(
         val id: String,

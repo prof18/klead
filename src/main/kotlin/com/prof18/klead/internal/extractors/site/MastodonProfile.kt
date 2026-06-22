@@ -4,6 +4,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.isoDatePart
 import org.jsoup.nodes.Element
 import java.net.URI
 
@@ -90,7 +91,7 @@ internal object MastodonProfile : Extractor {
         val account = selectFirst(".display-name__account")?.text()?.trim().orEmpty()
         val date = selectFirst(".status__relative-time time[datetime]")
             ?.attr("datetime")
-            ?.substringBefore("T")
+            ?.isoDatePart()
             .orEmpty()
         val permalink = selectFirst(".status__relative-time[href]")
             ?.attr("href")

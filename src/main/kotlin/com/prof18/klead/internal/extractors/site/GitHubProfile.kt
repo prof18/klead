@@ -4,6 +4,8 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.isoDatePart
+import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import org.jsoup.nodes.Element
 import java.net.URI
 
@@ -112,7 +114,7 @@ internal object GitHubProfile : Extractor {
         val author = container.selectFirst(".author")?.text()?.trim().orEmpty()
         val date = container.selectFirst("relative-time[datetime]")
             ?.attr("datetime")
-            ?.substringBefore("T")
+            ?.isoDatePart()
             .orEmpty()
         if (author.isBlank() || date.isBlank()) return null
         return GitHubComment(author = author, date = date, body = this)
@@ -189,12 +191,7 @@ internal object GitHubProfile : Extractor {
         }
     }
 
-    private fun String.toGitHubUrl(): String = when {
-        startsWith("https://", ignoreCase = true) || startsWith("http://", ignoreCase = true) -> this
-        startsWith("/") -> "https://github.com$this"
-        isBlank() -> "https://github.com"
-        else -> "https://github.com/$this"
-    }
+    private fun String.toGitHubUrl(): String = if (isBlank()) "https://github.com" else toAbsoluteSiteUrl("github.com")
 
     private data class GitHubComment(val author: String, val date: String, val body: Element)
 
