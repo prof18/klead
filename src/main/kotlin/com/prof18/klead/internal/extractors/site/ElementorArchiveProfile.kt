@@ -5,6 +5,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.isAttachedTo
 import com.prof18.klead.internal.removal.recordAndRemove
 import org.jsoup.nodes.Element
 
@@ -57,6 +58,4 @@ internal object ElementorArchiveProfile : Extractor {
         clone.select("br").remove()
         return clone.text().isBlank()
     }
-
-    private fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
 }

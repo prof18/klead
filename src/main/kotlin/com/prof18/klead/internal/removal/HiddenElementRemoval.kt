@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.removal
 
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.isAttachedTo
 import org.jsoup.nodes.Element
 
 internal object HiddenElementRemoval {
@@ -113,8 +114,6 @@ internal object HiddenElementRemoval {
         select("img, picture, figure, table, pre, code, math, p, h1, h2, h3, h4, h5, h6").isNotEmpty()
 
     private fun Element.headingLevel(): Int = normalName().removePrefix("h").toIntOrNull() ?: Int.MAX_VALUE
-
-    private fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
 
     private fun partialHaystack(element: Element): String = elementHintHaystack(element)
 

@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.removal
 
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.isAttachedTo
 import org.jsoup.nodes.Element
 
 internal object TrailingContentPatterns {

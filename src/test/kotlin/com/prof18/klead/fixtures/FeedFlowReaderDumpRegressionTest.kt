@@ -141,8 +141,6 @@ class FeedFlowReaderDumpRegressionTest {
         .joinToString("\n") { it.trimEnd() }
         .trimEnd()
 
-    private fun String.normalizeLineEndings(): String = replace("\r\n", "\n").replace('\r', '\n')
-
     private companion object {
         const val EXCERPT_RADIUS = 240
         const val JSON_PREAMBLE_START = "```json\n"

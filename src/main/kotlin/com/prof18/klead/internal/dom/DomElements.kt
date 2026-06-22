@@ -20,4 +20,8 @@ internal fun Element.childrenElements(): List<Element> = children().toList()
 
 internal fun Element.descendants(): List<Element> = select("*").filterNot { it === this }
 
-internal fun String.normalizeSpace(): String = replace(Regex("""\s+"""), " ").trim()
+internal fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
+
+internal fun String.normalizeSpace(): String = replace(WHITESPACE_REGEX, " ").trim()
+
+private val WHITESPACE_REGEX = Regex("""\s+""")

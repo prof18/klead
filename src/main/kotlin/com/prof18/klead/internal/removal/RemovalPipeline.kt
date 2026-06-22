@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.removal
 
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.isAttachedTo
 import com.prof18.klead.internal.dom.removeSafely
 import com.prof18.klead.internal.dom.selectSafe
 import org.jsoup.nodes.Element
@@ -1447,8 +1448,6 @@ private fun Element.isInlineTextButton(): Boolean {
     if (select("svg, img, picture, iframe, input, select, textarea").isNotEmpty()) return false
     return true
 }
-
-internal fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
 
 private fun partialHaystack(element: Element): String = elementHintHaystack(element)
 

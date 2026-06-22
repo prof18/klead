@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.standardize
 
+import com.prof18.klead.internal.dom.isAttachedTo
 import com.prof18.klead.internal.dom.replaceWithChildren
 import com.prof18.klead.internal.media.TrustedEmbeds
 import com.prof18.klead.internal.media.TrustedMarkdownMedia
@@ -334,15 +335,18 @@ internal object HtmlStandardizer {
 
     private fun Element.headingLevel(): Int = normalName().removePrefix("h").toIntOrNull() ?: Int.MAX_VALUE
 
+    private fun Element.componentHintHaystack(): String =
+        listOf(id(), className(), attr("data-testid"), attr("data-component"), attr("itemprop"))
+            .joinToString(" ")
+            .lowercase()
+
     private fun Element.hasBylineHint(): Boolean = listOf(id(), className(), attr("data-testid"), attr("itemprop"))
         .joinToString(" ")
         .lowercase()
         .contains("byline")
 
     private fun Element.hasArticleBodyHint(): Boolean {
-        val hints = listOf(id(), className(), attr("data-testid"), attr("data-component"), attr("itemprop"))
-            .joinToString(" ")
-            .lowercase()
+        val hints = componentHintHaystack()
         return ARTICLE_BODY_HINTS.any { it in hints }
     }
 
@@ -382,7 +386,7 @@ internal object HtmlStandardizer {
         val text = text().trim()
         if (text.isBlank() || text.length > HEADING_CHROME_MAX_LENGTH) return false
         if (hasMetadataChromeHint()) return true
-        return text.split(Regex("""\s+""")).size <= 3 && !SENTENCE_PUNCTUATION.containsMatchIn(text)
+        return text.split(WHITESPACE_PATTERN).size <= 3 && !SENTENCE_PUNCTUATION.containsMatchIn(text)
     }
 
     private fun Element.isTrailingHeadingChrome(): Boolean {
@@ -516,25 +520,19 @@ internal object HtmlStandardizer {
     private fun Element.hasBlockContentDescendant(): Boolean = select(BLOCK_CONTENT_SELECTOR).any { it !== this }
 
     private fun Element.hasMetadataChromeHint(): Boolean {
-        val haystack = listOf(id(), className(), attr("data-testid"), attr("data-component"), attr("itemprop"))
-            .joinToString(" ")
-            .lowercase()
+        val haystack = componentHintHaystack()
         return METADATA_CHROME_HINTS.any { it in haystack }
     }
 
     private fun Element.hasFrontMatterHint(): Boolean {
-        val haystack = listOf(id(), className(), attr("data-testid"), attr("data-component"), attr("itemprop"))
-            .joinToString(" ")
-            .lowercase()
+        val haystack = componentHintHaystack()
             .replace("-", "")
             .replace("_", "")
         return "frontmatter" in haystack
     }
 
     private fun Element.hasTimeZoneHint(): Boolean {
-        val haystack = listOf(id(), className(), attr("data-testid"), attr("data-component"), attr("itemprop"))
-            .joinToString(" ")
-            .lowercase()
+        val haystack = componentHintHaystack()
             .replace("-", "")
             .replace("_", "")
         return "timezone" in haystack
@@ -576,7 +574,7 @@ internal object HtmlStandardizer {
         .replace('‘', '\'')
         .replace('“', '"')
         .replace('”', '"')
-        .replace(Regex("""\s+"""), " ")
+        .replace(WHITESPACE_PATTERN, " ")
         .lowercase()
 
     private fun String.isMetadataChromeText(): Boolean = DATE_TEXT_PATTERN.containsMatchIn(this) ||
@@ -752,7 +750,7 @@ internal object HtmlStandardizer {
         val content = pre.selectFirst(".cm-content") ?: return
         val language = pre.selectFirst(".sticky, [class*=header], [class*=toolbar]")
             ?.text()
-            ?.split(Regex("""\s+"""))
+            ?.split(WHITESPACE_PATTERN)
             ?.firstOrNull { it.length in 1..24 && it.all { char -> char.isLetterOrDigit() || char in "+#_-" } }
         val code = Element("code")
         code.text(normalizeCodeText(content.textWithLineBreaks()))
@@ -854,9 +852,7 @@ internal object HtmlStandardizer {
     private fun Element.hasImageContent(): Boolean = normalName() == "picture" || selectFirst("img, picture") != null
 
     private fun Element.hasImageAspectPlaceholderHint(): Boolean {
-        val haystack = listOf(id(), className(), attr("data-testid"), attr("data-component"), attr("itemprop"))
-            .joinToString(" ")
-            .lowercase()
+        val haystack = componentHintHaystack()
         return IMAGE_ASPECT_PLACEHOLDER_HINTS.any { it in haystack }
     }
 
@@ -918,7 +914,7 @@ internal object HtmlStandardizer {
         val url = source
             .substringBefore(",")
             .trim()
-            .split(Regex("""\s+"""))
+            .split(WHITESPACE_PATTERN)
             .firstOrNull()
             ?.substringBefore("#")
             ?.substringBefore("?")
@@ -1694,8 +1690,6 @@ internal object HtmlStandardizer {
     }
 
     private fun String.normalizeFootnoteNumberText(): String = trim().trim('[', ']')
-
-    private fun Element.isAttachedTo(root: Element): Boolean = this === root || parents().any { it === root }
 
     private fun removeFootnoteDividers(content: Element) {
         content.select("hr").forEach { divider ->

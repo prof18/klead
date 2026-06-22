@@ -263,4 +263,4 @@ private fun resourceDir(name: String): Path {
     return Path.of(URI(resource.toString()))
 }
 
-private fun String.normalizeLineEndings(): String = replace("\r\n", "\n").replace('\r', '\n')
+internal fun String.normalizeLineEndings(): String = replace("\r\n", "\n").replace('\r', '\n')
