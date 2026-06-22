@@ -411,3 +411,29 @@ internal const val RELATED_TERMS_MAX_LENGTH = 1_200
 internal const val RELATED_TERMS_PROSE_WORD_GUARD = 14
 internal const val RELATED_TERMS_MIN_LINKS = 2
 internal const val PARAGRAPH_FOOTER_SIGNAL_MAX_LENGTH = 700
+
+// Text patterns that mark a standalone paragraph as footer chrome rather than prose. Each entry mirrors the
+// matcher used by the corresponding footer-block predicate; keep this list in sync when adding a predicate
+// whose pattern can match a bare paragraph's text.
+internal val PARAGRAPH_FOOTER_SIGNAL_MATCHERS: List<(String) -> Boolean> = listOf(
+    { text: String -> text in ORPHAN_SEPARATOR_TEXTS },
+    POSTED_BY_BYLINE_PATTERN::matches,
+    RECOMMENDATION_SECTION_HEADING_PATTERN::matches,
+    AUTHOR_FOLLOW_PATTERN::containsMatchIn,
+    TRAILING_TAG_LABEL_PATTERN::containsMatchIn,
+    COMMENT_COUNT_PATTERN::matches,
+    BACK_TO_TOP_PATTERN::matches,
+    COMMENT_PROMPT_PATTERN::containsMatchIn,
+    READY_FOR_MORE_PATTERN::matches,
+    MOBILE_APP_PROMO_PATTERN::containsMatchIn,
+    NEWSLETTER_SIGNUP_PATTERN::containsMatchIn,
+    INLINE_NEWSLETTER_PROMO_PATTERN::containsMatchIn,
+    DONATION_WIDGET_PATTERN::containsMatchIn,
+    BYLINE_METADATA_STRIP_PATTERN::containsMatchIn,
+    TRAILING_BYLINE_DATE_PATTERN::matches,
+    ARTICLE_PACKAGE_PATTERN::containsMatchIn,
+    INLINE_AUTHOR_BIO_PATTERN::containsMatchIn,
+    FOLLOW_TOPICS_PATTERN::containsMatchIn,
+    STORY_SUGGESTION_PATTERN::containsMatchIn,
+    LOCAL_NEWS_FOLLOW_PATTERN::containsMatchIn,
+)
