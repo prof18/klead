@@ -1,9 +1,7 @@
 package com.prof18.klead.internal.markdown
 
-import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.resolveUrl
-import com.prof18.klead.internal.media.TrustedEmbeds
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
@@ -15,7 +13,6 @@ internal object KleadMarkdownWriter {
     }
 }
 
-@Suppress("LargeClass")
 private class Renderer(private val baseUrl: String) {
     private val footnotes = linkedMapOf<String, String>()
     private val footnoteTargets = mutableMapOf<String, String>()
@@ -30,7 +27,7 @@ private class Renderer(private val baseUrl: String) {
             val definitions = footnotes.entries.joinToString("\n\n") { (id, text) -> "[^$id]: $text" }
             body + "\n\n" + listOfNotNull(footnoteHeading, definitions).joinToString("\n\n")
         }
-        return postProcess(withFootnotes)
+        return postProcessMarkdown(withFootnotes)
     }
 
     private fun renderBlocks(nodes: List<Node>, listDepth: Int): String {
@@ -100,55 +97,6 @@ private class Renderer(private val baseUrl: String) {
         else -> ""
     }
 
-    private fun Node.isStandaloneImageBlock(): Boolean = this is Element && normalName() == "img"
-
-    private fun Node.isCodeBlock(): Boolean = this is Element && (normalName() == "pre" || isBlockCodeElement())
-
-    private fun Node.isListBlock(): Boolean = this is Element && normalName() in setOf("ol", "ul")
-
-    private fun List<RenderedBlock>.joinToStringWithSeparators(): String {
-        if (isEmpty()) return ""
-        val builder = StringBuilder(first().markdown)
-        for (index in 1 until size) {
-            val previous = this[index - 1]
-            val current = this[index]
-            val separator = if (
-                (previous.codeBlock && current.markdown.startsWith("![")) ||
-                (previous.listBlock && current.codeBlock)
-            ) {
-                "\n"
-            } else {
-                "\n\n"
-            }
-            builder.append(separator)
-            builder.append(current.markdown)
-        }
-        return builder.toString()
-    }
-
-    private fun Node.isInlineFlowNode(): Boolean = when (this) {
-        is TextNode -> text().isNotBlank()
-
-        is Element -> normalName() in inlineFlowTags &&
-            !isBlockCodeElement() &&
-            !isBlockLikeSpan() &&
-            !(normalName() == "span" && attr("data-as") == "p") &&
-            !(normalName() == "a" && selectFirst("img") != null) &&
-            children().none { it.normalName() in blockFlowTags }
-
-        else -> false
-    }
-
-    private fun Element.isBlockLikeSpan(): Boolean {
-        if (normalName() != "span") return false
-        val hints = listOf(
-            attr("data-cy"),
-            attr("data-testid"),
-            id(),
-        ).joinToString(" ").lowercase()
-        return blockLikeSpanHint.containsMatchIn(hints)
-    }
-
     private fun renderElementBlock(element: Element, listDepth: Int): String {
         if (element.hasClass("callout") || element.hasAttr("data-callout")) {
             return renderCallout(element, listDepth)
@@ -177,7 +125,7 @@ private class Renderer(private val baseUrl: String) {
 
             "p" -> renderInline(element).trimInlineBlock()
 
-            "a" -> renderLinkedImage(element)
+            "a" -> renderLinkedImage(element, baseUrl)
                 ?: renderLinkedHeadingBlock(element, listDepth)
                 ?: renderInline(element).trimInlineBlock()
 
@@ -191,15 +139,15 @@ private class Renderer(private val baseUrl: String) {
 
             "hr" -> "---"
 
-            "img" -> renderImage(element)
+            "img" -> renderImage(element, baseUrl)
 
-            "picture" -> element.select("img").firstOrNull()?.let { renderImage(it) }.orEmpty()
+            "picture" -> element.select("img").firstOrNull()?.let { renderImage(it, baseUrl) }.orEmpty()
 
             "figure" -> renderFigure(element, listDepth)
 
             "table" -> renderTable(element)
 
-            "iframe" -> renderEmbeddedMedia(element)
+            "iframe" -> renderEmbeddedMedia(element, baseUrl)
 
             "svg" -> renderSvg(element)
 
@@ -256,19 +204,6 @@ private class Renderer(private val baseUrl: String) {
         else -> ""
     }
 
-    private fun String.trimInlineBlock(preserveLeadingHardBreaks: Boolean = true): String {
-        val leadingHardBreaks = if (preserveLeadingHardBreaks) {
-            leadingHardBreakRun.find(this)?.value.orEmpty()
-        } else {
-            ""
-        }
-        var value = leadingHardBreaks + removePrefix(leadingHardBreaks).trimStart()
-        if (value.endsWith('\n')) {
-            value = value.dropLast(1)
-        }
-        return if (value.endsWith("  ")) value else value.trimEnd()
-    }
-
     private fun renderInlineElement(element: Element, inLink: Boolean): String = when (element.normalName()) {
         "strong", "b" -> renderDelimitedInline(element, inLink, "**")
 
@@ -278,7 +213,7 @@ private class Renderer(private val baseUrl: String) {
 
         "a" -> renderLink(element, inLink)
 
-        "img" -> renderImage(element)
+        "img" -> renderImage(element, baseUrl)
 
         "br" -> "  \n"
 
@@ -322,7 +257,7 @@ private class Renderer(private val baseUrl: String) {
 
     private fun renderLink(element: Element, inLink: Boolean): String {
         if (!inLink) {
-            renderLinkedImage(element)?.let { return it }
+            renderLinkedImage(element, baseUrl)?.let { return it }
         }
         val parts = renderLinkTextNodes(element.childNodes()).splitInlineWhitespace()
         val text = parts.body
@@ -341,30 +276,9 @@ private class Renderer(private val baseUrl: String) {
         return "${parts.leading}[$text]($destination)${parts.trailing}"
     }
 
-    private fun linkDestination(url: String, title: String, visibleText: String): String {
-        val destination = escapeDestination(url)
-        val cleanTitle = title.trim().takeIf { it.isNotBlank() } ?: return destination
-        if (cleanTitle.normalizedLinkTitleText().equals(visibleText.normalizedLinkTitleText(), ignoreCase = true)) {
-            return destination
-        }
-        return "$destination \"${escapeTitle(cleanTitle)}\""
-    }
-
-    private fun renderLinkedImage(element: Element): String? {
-        val image = element.linkedImageOnlyChild() ?: return null
-
-        val url = element.safeResolvedHref() ?: return null
-        val imageMarkdown = renderImage(image)
-        return if (imageMarkdown.isBlank()) {
-            null
-        } else {
-            "[$imageMarkdown](${escapeDestination(url.withRootSlashForBareOrigin())})"
-        }
-    }
-
     private fun renderLinkedHeadingBlock(element: Element, listDepth: Int): String? {
         if (element.children().none { it.normalName() in blockFlowTags }) return null
-        val url = element.safeResolvedHref() ?: return null
+        val url = element.safeResolvedHref(baseUrl) ?: return null
         return element.childNodes().mapNotNull { child ->
             when (child) {
                 is Element -> if (child.isHeading()) {
@@ -390,26 +304,6 @@ private class Renderer(private val baseUrl: String) {
 
     private fun Element.isHeading(): Boolean = normalName().matches(headingTagPattern)
 
-    private fun Element.linkedImageOnlyChild(): Element? {
-        if (normalName() != "a") return null
-        if (hasNonImageText()) return null
-        return children().singleOrNull { it.normalName() == "img" }
-    }
-
-    private fun Element.hasNonImageText(): Boolean = childNodes().any { node ->
-        when (node) {
-            is TextNode -> node.text().isNotBlank()
-            is Element -> node.normalName() != "img" && node.text().isNotBlank()
-            else -> false
-        }
-    }
-
-    private fun Element.safeResolvedHref(): String? {
-        val href = attr("href").trim()
-        if (href.isBlank() || isDangerousUrl(href)) return null
-        return resolveUrl(baseUrl, href).takeIf { it.isNotBlank() }
-    }
-
     private fun renderLinkTextNodes(nodes: List<Node>): String = nodes.joinToString("") { node ->
         when (node) {
             is TextNode -> escapeInline(node.text())
@@ -423,62 +317,6 @@ private class Renderer(private val baseUrl: String) {
         "img" -> escapeInline(element.attr("alt").ifBlank { element.attr("title") })
         "math" -> escapeInline(element.text())
         else -> renderInlineElement(element, inLink = true)
-    }
-
-    private fun renderImage(element: Element): String {
-        val sources = listOfNotNull(
-            largestSrcsetUrl(element.attr("srcset")),
-            element.attr("src").trim().takeIf { it.isNotBlank() },
-        ).distinct()
-        for (src in sources) {
-            if (isDangerousUrl(src) || element.isPlaceholderImage(src)) continue
-            val url = resolveUrl(baseUrl, src)
-            if (url.isNotBlank()) {
-                return "![${escapeInline(element.attr("alt"))}](${escapeDestination(url)})"
-            }
-        }
-        return ""
-    }
-
-    private fun renderEmbeddedMedia(element: Element): String {
-        val href = element.attr("data-klead-video-url").trim().ifBlank {
-            TrustedEmbeds.markdownMediaFromUrl(element.attr("src").trim())?.watchUrl.orEmpty()
-        }
-        if (href.isNotBlank()) {
-            return renderMarkdownMedia(href, preserveLeadingSpacer = element.hasKleadLeadingSpacer())
-        }
-
-        return renderTrustedRawIframe(element)
-    }
-
-    private fun renderMarkdownMedia(href: String, preserveLeadingSpacer: Boolean): String {
-        if (isDangerousUrl(href)) return ""
-        val url = resolveUrl(baseUrl, href)
-        if (url.isBlank()) return ""
-        val media = "![](${escapeDestination(url)})"
-        return if (preserveLeadingSpacer) "\n$media" else media
-    }
-
-    private fun Element.hasKleadLeadingSpacer(): Boolean = attr("data-klead-leading-spacer") == "true"
-
-    private fun renderTrustedRawIframe(element: Element): String {
-        val src = element.attr("src").trim()
-        if (src.isBlank() || isDangerousUrl(src)) return ""
-        val url = resolveUrl(baseUrl, src)
-        if (url.isBlank() || !TrustedEmbeds.isTrustedRawIframeSrc(url)) return ""
-
-        val attributes = buildList {
-            add("src" to url)
-            rawIframeAttributes.forEach { name ->
-                if (element.hasAttr(name)) {
-                    add(name to element.attr(name))
-                }
-            }
-        }
-        val renderedAttributes = attributes.joinToString(" ") { (name, value) ->
-            "$name=\"${escapeHtmlAttribute(value)}\""
-        }
-        return "<iframe $renderedAttributes></iframe>"
     }
 
     private fun renderList(element: Element, ordered: Boolean, listDepth: Int): String {
@@ -526,7 +364,7 @@ private class Renderer(private val baseUrl: String) {
         }
         val imageMarkdown = element.select("img")
             .distinctBy(::imageDedupKey)
-            .joinToString("\n") { renderImage(it) }
+            .joinToString("\n") { renderImage(it, baseUrl) }
             .trim()
         val caption = element.select("figcaption").firstOrNull()?.let { renderCaptionInline(it).trim() }
         return listOfNotNull(
@@ -635,100 +473,10 @@ private class Renderer(private val baseUrl: String) {
         return rendered.stripTerminalInlineElementPeriod()
     }
 
-    private fun renderMath(element: Element): String? {
-        val latex = element.attrTrimmedOrNull("data-latex") ?: return null
-        val display = element.hasClass("display") || element.attr("display") == "block"
-        return if (display) "$$\n$latex\n$$" else "$$latex$"
-    }
-
     private fun Element.hasComplexSpan(): Boolean = hasComplexSpan("rowspan") || hasComplexSpan("colspan")
 
     private fun Element.hasComplexSpan(name: String): Boolean {
         if (!hasAttr(name)) return false
         return attr(name).trim().toIntOrNull() != 1
     }
-
-    private fun String.normalizeFinalNewline(): String = replace("\r\n", "\n").replace('\r', '\n').trimEnd('\n') + "\n"
-
-    private fun String.splitInlineWhitespace(): InlineWhitespace {
-        val firstBodyIndex = indexOfFirst { !it.isWhitespace() }
-        if (firstBodyIndex == -1) return InlineWhitespace(original = this)
-        val lastBodyIndex = indexOfLast { !it.isWhitespace() }
-        return InlineWhitespace(
-            original = this,
-            leading = substring(0, firstBodyIndex),
-            body = substring(firstBodyIndex, lastBodyIndex + 1),
-            trailing = substring(lastBodyIndex + 1),
-        )
-    }
-
-    private fun postProcess(markdown: String): String {
-        val normalized = markdown.replace("\r\n", "\n")
-            .replace('\r', '\n')
-            .replace(emptyLinkPattern, "")
-        if (normalized.isBlank()) return ""
-        val result = mutableListOf<String>()
-        var blankCount = 0
-        var inFence = false
-        val lines = normalized.lines()
-        for ((index, line) in lines.withIndex()) {
-            if (line.startsWith("```")) inFence = !inFence
-            if (!inFence && line == PRESERVED_BLANK_SPACER) {
-                result += ""
-                result += ""
-                blankCount = 2
-                continue
-            }
-            val processed = when {
-                inFence -> line
-                line.endsWith("  ") -> line
-                line == "> " -> line
-                line.trim() == "--" -> "\\--"
-                else -> line.trimEnd()
-            }
-            if (!inFence && processed.isBlank()) {
-                blankCount++
-                val maxBlankLines = if (lines.nextNonBlankLineAfter(index)?.isMarkdownMediaLine() == true) {
-                    MAX_CONSECUTIVE_BLANK_LINES_BEFORE_MEDIA
-                } else {
-                    MAX_CONSECUTIVE_BLANK_LINES
-                }
-                if (blankCount <= maxBlankLines) {
-                    result += if (processed.endsWith("  ")) processed else ""
-                }
-            } else {
-                blankCount = 0
-                result += processed
-            }
-        }
-        return result
-            .dropWhile { it.isBlank() }
-            .joinToString("\n")
-            .trimEnd() + "\n"
-    }
-
-    private fun List<String>.nextNonBlankLineAfter(index: Int): String? =
-        drop(index + 1).firstOrNull { it.trimEnd().isNotBlank() }?.trimStart()
-
-    private fun String.isMarkdownMediaLine(): Boolean = startsWith("![](")
-
-    private companion object {
-        const val MAX_CONSECUTIVE_BLANK_LINES = 1
-        const val MAX_CONSECUTIVE_BLANK_LINES_BEFORE_MEDIA = 2
-        const val PRESERVED_BLANK_SPACER = "<!-- klead-preserve-blank-spacer -->"
-    }
-
-    private data class InlineWhitespace(
-        val original: String,
-        val leading: String = "",
-        val body: String = "",
-        val trailing: String = "",
-    )
-
-    private data class RenderedBlock(
-        val markdown: String,
-        val standaloneImage: Boolean,
-        val codeBlock: Boolean,
-        val listBlock: Boolean,
-    )
 }
