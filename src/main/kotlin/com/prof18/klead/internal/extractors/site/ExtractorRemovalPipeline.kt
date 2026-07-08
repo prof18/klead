@@ -2,9 +2,8 @@ package com.prof18.klead.internal.extractors.site
 
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.internal.dom.removeSafely
 import com.prof18.klead.internal.dom.selectSafe
-import com.prof18.klead.internal.removal.DiscardedRemovals
+import com.prof18.klead.internal.removal.recordAndRemove
 import org.jsoup.nodes.Element
 
 internal object ExtractorRemovalPipeline {
@@ -25,15 +24,13 @@ internal object ExtractorRemovalPipeline {
         for (extractor in extractors) {
             for (selector in phase.selectors(extractor)) {
                 for (element in root.selectSafe(selector).toList()) {
-                    if (debug !== DiscardedRemovals) {
-                        debug += RemovalRecord(
-                            step = "${phase.step}:${extractor.id}",
-                            selector = selector,
-                            reason = "extractor-scoped clutter selector",
-                            preview = element.text().take(100),
-                        )
-                    }
-                    element.removeSafely()
+                    recordAndRemove(
+                        element = element,
+                        debug = debug,
+                        step = "${phase.step}:${extractor.id}",
+                        selector = selector,
+                        reason = "extractor-scoped clutter selector",
+                    )
                 }
             }
         }

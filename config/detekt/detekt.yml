@@ -9,7 +9,7 @@ complexity:
     allowedComplexity: 30
   LargeClass:
     active: true
-    allowedLines: 1200
+    allowedLines: 600
     excludes:
       - '**/src/test/**'
   LongMethod:
