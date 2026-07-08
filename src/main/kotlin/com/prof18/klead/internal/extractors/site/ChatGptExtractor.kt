@@ -20,8 +20,12 @@ internal object ChatGptExtractor : Extractor {
                 ?.attr("data-message-author-role")
                 ?.trim()
                 ?: return@forEachIndexed
+            // A turn can split one assistant message into several message elements, and each
+            // may carry content both before and after a Thought section. Take every content
+            // fragment from every message element that belongs to this turn (not a nested one).
             val messageBlocks = turn.select("[data-message-author-role=$role]")
-                .mapNotNull { it.messageContentElement() }
+                .filter { it.closestConversationTurn() === turn }
+                .flatMap { it.messageContentElements() }
             if (messageBlocks.isEmpty()) return@forEachIndexed
 
             if (index > 0) {
@@ -43,8 +47,20 @@ internal object ChatGptExtractor : Extractor {
         )
     }
 
-    private fun Element.messageContentElement(): Element? =
-        selectFirst(".markdown") ?: selectFirst(".whitespace-pre-wrap") ?: this.takeIf { text().isNotBlank() }
+    private fun Element.closestConversationTurn(): Element? =
+        parents().firstOrNull { it.attr("data-testid").startsWith("conversation-turn-") }
+
+    private fun Element.messageContentElements(): List<Element> {
+        val candidates = buildList {
+            if (hasClass("markdown") || hasClass("whitespace-pre-wrap")) add(this@messageContentElements)
+            addAll(select(".markdown, .whitespace-pre-wrap"))
+        }
+        if (candidates.isEmpty()) return this.takeIf { text().isNotBlank() }?.let(::listOf).orEmpty()
+        // Drop any candidate nested inside another candidate so content isn't duplicated.
+        return candidates.filter { candidate ->
+            candidates.none { other -> other !== candidate && candidate.parents().any { it === other } }
+        }
+    }
 
     private fun Element.appendLabel(label: String) {
         appendElement("p").appendElement("strong").text(label)

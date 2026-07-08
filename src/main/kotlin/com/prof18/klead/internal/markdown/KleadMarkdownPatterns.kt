@@ -6,6 +6,7 @@ internal val placeholderDotsPattern = Regex("""(^|[\s"'“‘(\[])\. \.(?=$|[\s"
 internal val spacedEllipsisPattern = Regex("""(?<=\S)\s+\.{3}""")
 internal const val PERSIAN_COMMA = "،"
 internal val codeLanguageClass = Regex("""[A-Za-z][A-Za-z0-9_+-]*""")
+internal val backtickRunPattern = Regex("`+")
 internal val highlightCodeClassNoise = setOf(
     "block",
     "code",

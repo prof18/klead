@@ -256,184 +256,6 @@ private class Renderer(private val baseUrl: String) {
         else -> ""
     }
 
-    private fun normalizeLeadingInlineSpacing(
-        rendered: StringBuilder,
-        nodes: List<Node>,
-        index: Int,
-        node: Node,
-        value: String,
-        previousInlineWasLinkedImage: Boolean,
-    ): String {
-        var adjusted = value
-        if (previousInlineWasLinkedImage && adjusted.needsLeadingSpaceAfterLinkedImage()) {
-            rendered.append(' ')
-        }
-        if (adjusted.hasLeadingFootnoteWhitespaceAfterPunctuation(rendered.lastNonWhitespaceOrNull())) {
-            adjusted = adjusted.trimStart()
-        }
-        if (adjusted.hasLeadingTightPunctuation() && rendered.lastOrNull()?.isWhitespace() == true) {
-            if (!rendered.endsWithHtmlSubscriptIgnoringInlineWhitespace()) {
-                rendered.trimTrailingInlineWhitespace()
-            }
-            adjusted = adjusted.trimStart()
-        }
-        if (node is Element && node.needsLeadingSpaceBeforeDelimitedInline(adjusted, rendered)) {
-            rendered.append(' ')
-        }
-        if (node is Element && node.needsLeadingSpaceBeforeQuotedLink(adjusted, rendered)) {
-            rendered.append(' ')
-        }
-        if (shouldAppendFootnoteSpace(rendered, nodes, index, node, adjusted)) {
-            rendered.append(' ')
-        }
-        return adjusted
-    }
-
-    private fun normalizeTrailingInlineSpacing(nodes: List<Node>, index: Int, node: Node, value: String): String {
-        if (node !is Element) return value
-
-        var adjusted = value
-        val nextText = nodes.nextInlineTextAfter(index)
-        if (node.isDelimitedInlineElement() && adjusted.needsTrailingSpaceAfterDelimitedInline(nextText)) {
-            adjusted += " "
-        }
-        if (node.isMarkdownLinkElement(adjusted) && nextText.needsTrailingSpaceBeforeClosingQuoteAfterLink()) {
-            adjusted += " "
-        }
-        return adjusted
-    }
-
-    private fun appendSpecialInlineSpacing(
-        rendered: StringBuilder,
-        nodes: List<Node>,
-        index: Int,
-        node: Node,
-        value: String,
-    ) {
-        if (value.startsWith(PERSIAN_COMMA) && rendered.lastOrNull()?.isWhitespace() == false) {
-            rendered.append(' ')
-        }
-        if (node is Element && node.needsLeadingSpaceBeforeNumericVariableSubscript(value, nodes, index, rendered)) {
-            rendered.append(' ')
-        }
-        if (node is Element && node.isReadableSubscript(value) && rendered.lastOrNull()?.isDigit() == true) {
-            rendered.append(' ')
-        }
-    }
-
-    private fun Element.needsLeadingSpaceBeforeDelimitedInline(value: String, rendered: StringBuilder): Boolean =
-        isDelimitedInlineElement() && value.needsLeadingSpaceBeforeDelimitedInline(rendered.lastNonWhitespaceOrNull())
-
-    private fun Element.needsLeadingSpaceBeforeQuotedLink(value: String, rendered: StringBuilder): Boolean =
-        isMarkdownLinkElement(value) && rendered.lastNonWhitespaceOrNull() in linkOpeningQuoteSpacingChars
-
-    private fun Element.needsLeadingSpaceBeforeNumericVariableSubscript(
-        value: String,
-        nodes: List<Node>,
-        index: Int,
-        rendered: StringBuilder,
-    ): Boolean = isNumericVariableSubscript(value) &&
-        nodes.shouldSeparateNumericVariableSubscript(index, rendered.lastOrNull())
-
-    private fun shouldAppendFootnoteSpace(
-        rendered: StringBuilder,
-        nodes: List<Node>,
-        index: Int,
-        node: Node,
-        value: String,
-    ): Boolean {
-        if (!value.startsWith("[^")) return false
-        if (rendered.endsWithSentenceClosingQuote()) return true
-        if (node !is Element) return nodes.shouldSeparateFootnote(index, rendered.lastOrNull())
-        return node.needsLeadingSpaceBeforeFootnote(
-            previous = rendered.lastNonWhitespaceOrNull(),
-            previousElement = nodes.previousInlineElementBefore(index),
-        ) || nodes.shouldSeparateFootnote(index, rendered.lastOrNull())
-    }
-
-    private fun String.hasLeadingTightPunctuation(): Boolean {
-        val trimmed = trimStart()
-        return !trimmed.startsWith("![") && trimmed.firstOrNull() in tightPunctuation
-    }
-
-    private fun StringBuilder.trimTrailingInlineWhitespace() {
-        while (isNotEmpty() && last().isWhitespace() && last() != '\n') {
-            deleteAt(lastIndex)
-        }
-    }
-
-    private fun StringBuilder.endsWithHtmlSubscriptIgnoringInlineWhitespace(): Boolean {
-        var index = lastIndex
-        while (index >= 0 && get(index).isWhitespace() && get(index) != '\n') {
-            index--
-        }
-        val suffix = "</sub>"
-        if (index + 1 < suffix.length) return false
-        return substring(index - suffix.length + 1, index + 1) == suffix
-    }
-
-    private fun Element.isDelimitedInlineElement(): Boolean = normalName() in delimitedInlineTags
-
-    private fun Element.isMarkdownLinkElement(value: String): Boolean =
-        normalName() == "a" && value.startsWith("[") && !value.startsWith("[^")
-
-    private fun String.needsLeadingSpaceBeforeDelimitedInline(previous: Char?): Boolean =
-        firstOrNull()?.let { it == '*' || it == '~' } == true &&
-            previous != null &&
-            !previous.isWhitespace() &&
-            (previous.isLetterOrDigit() || previous in delimitedInlineLeadingSpacingChars)
-
-    private fun String.needsTrailingSpaceAfterDelimitedInline(nextText: String?): Boolean =
-        lastOrNull()?.let { it == '*' || it == '~' } == true &&
-            nextText?.trimStart()?.firstOrNull() in delimitedInlineTrailingSpacingChars
-
-    private fun String?.needsTrailingSpaceBeforeClosingQuoteAfterLink(): Boolean {
-        val text = this?.trimStart() ?: return false
-        val quote = text.firstOrNull() ?: return false
-        if (quote !in linkClosingQuoteSpacingChars) return false
-        val afterQuote = text.drop(1).trimStart().firstOrNull()
-        return afterQuote == null || !afterQuote.isLetterOrDigit()
-    }
-
-    private fun List<Node>.nextInlineTextAfter(index: Int): String? {
-        for (nextIndex in index + 1 until size) {
-            val text = when (val node = get(nextIndex)) {
-                is TextNode -> node.wholeText
-                is Element -> node.text()
-                else -> ""
-            }
-            if (text.isBlank()) continue
-            return text
-        }
-        return null
-    }
-
-    private fun List<Node>.previousInlineElementBefore(index: Int): Element? {
-        for (previousIndex in index - 1 downTo 0) {
-            val node = get(previousIndex)
-            if (node is TextNode && node.wholeText.isBlank()) continue
-            return node as? Element
-        }
-        return null
-    }
-
-    private fun String.needsLeadingSpaceAfterLinkedImage(): Boolean =
-        firstOrNull()?.let { it.isLetterOrDigit() || it in linkedImageSpacingLeadingChars } == true
-
-    private fun String.hasLeadingFootnoteWhitespaceAfterPunctuation(previous: Char?): Boolean =
-        firstOrNull()?.isWhitespace() == true &&
-            trimStart().startsWith("[^") &&
-            previous in footnoteAttachingPunctuation
-
-    private fun StringBuilder.lastNonWhitespaceOrNull(): Char? = asSequence().lastOrNull { !it.isWhitespace() }
-
-    private fun StringBuilder.endsWithSentenceClosingQuote(): Boolean {
-        val last = indexOfLast { !it.isWhitespace() }
-        if (last <= 0 || get(last) !in footnoteSeparatingClosingQuotes) return false
-        val previous = substring(0, last).indexOfLast { !it.isWhitespace() }
-        return previous >= 0 && get(previous) in footnoteSeparatingSentencePunctuation
-    }
-
     private fun String.trimInlineBlock(preserveLeadingHardBreaks: Boolean = true): String {
         val leadingHardBreaks = if (preserveLeadingHardBreaks) {
             leadingHardBreakRun.find(this)?.value.orEmpty()
@@ -485,75 +307,6 @@ private class Renderer(private val baseUrl: String) {
                 renderInlineNodes(element.childNodes(), inLink)
             }
         }
-    }
-
-    private fun List<Node>.shouldSeparateFootnote(index: Int, previous: Char?): Boolean {
-        if (previous == null || previous.isWhitespace()) return false
-        var sawWhitespace = false
-        for (nextIndex in index + 1 until size) {
-            val text = when (val node = get(nextIndex)) {
-                is TextNode -> node.wholeText
-                is Element -> node.text()
-                else -> ""
-            }
-            if (text.isBlank()) {
-                if (text.any { it.isWhitespace() }) {
-                    sawWhitespace = true
-                }
-                continue
-            }
-            val trimmed = text.trimStart()
-            val first = trimmed.firstOrNull() ?: return false
-            val hasLeadingWhitespace = sawWhitespace || text.firstOrNull()?.isWhitespace() == true
-            val separatesWordFootnote = previous.isLetterOrDigit() &&
-                hasLeadingWhitespace &&
-                first.isLetterOrDigit()
-            val separatesQuotedSentenceFootnote = previous in footnoteSeparatingClosingQuotes &&
-                hasLeadingWhitespace &&
-                first.isLetterOrDigit()
-            val separatesWordBeforePunctuationFootnote = previous.isLetterOrDigit() &&
-                first in footnoteSeparatingPunctuation
-            val separatesCodeFootnote = previous == '`' && first in footnoteSeparatingPunctuation
-            return separatesWordFootnote ||
-                separatesQuotedSentenceFootnote ||
-                separatesWordBeforePunctuationFootnote ||
-                separatesCodeFootnote
-        }
-        return false
-    }
-
-    private fun Element.needsLeadingSpaceBeforeFootnote(previous: Char?, previousElement: Element?): Boolean {
-        if (previous == null || previous.isWhitespace()) return false
-        if (previous in footnoteAttachingPunctuation) return false
-        if (previous == '*') return previousElement?.normalName() in setOf("em", "i")
-        return previous in footnoteSeparatingInlineSuffixes ||
-            previous == ')' ||
-            previous == ']' ||
-            (previous.isLetterOrDigit() && isInTableCell())
-    }
-
-    private fun Element.isInTableCell(): Boolean = parents().any { it.normalName() == "td" || it.normalName() == "th" }
-
-    private fun Element.isNumericVariableSubscript(rendered: String): Boolean = normalName() == "sub" &&
-        text().trim().matches(numericSubscriptPattern) &&
-        rendered.startsWith("<sub>")
-
-    private fun Element.isReadableSubscript(rendered: String): Boolean = normalName() == "sub" &&
-        text().trim().any { it.isLetter() } &&
-        rendered.startsWith("<sub>")
-
-    private fun List<Node>.shouldSeparateNumericVariableSubscript(index: Int, previous: Char?): Boolean {
-        if (previous?.isLetter() != true) return false
-        for (nextIndex in index + 1 until size) {
-            val text = when (val node = get(nextIndex)) {
-                is TextNode -> node.wholeText
-                is Element -> node.text()
-                else -> ""
-            }
-            if (text.isBlank()) continue
-            return nextNumericSubscriptCharPattern.matches(text.trimStart().first().toString())
-        }
-        return false
     }
 
     private fun renderDelimitedInline(element: Element, inLink: Boolean, delimiter: String): String {
@@ -767,101 +520,6 @@ private class Renderer(private val baseUrl: String) {
         return renderInlineNodes(nodes, inLink = false)
     }
 
-    private fun List<Node>.hasSignParagraphListItemShape(): Boolean {
-        val meaningfulNodes = filterNot { it is TextNode && it.text().isBlank() }
-        val blockCount = meaningfulNodes.count { it is Element && it.isFlattenableSignListBlock() }
-        if (blockCount != 1) return false
-
-        val firstNode = meaningfulNodes.firstOrNull() ?: return false
-        return firstNode.signListMarkerText() in setOf("+", "-") &&
-            meaningfulNodes.all { node ->
-                node is TextNode ||
-                    (node is Element && (node.isFlattenableSignListBlock() || node.normalName() in inlineFlowTags))
-            }
-    }
-
-    private fun Node.signListMarkerText(): String? = when (this) {
-        is TextNode -> text().trim()
-        is Element -> if (isFlattenableSignListBlock()) null else text().trim()
-        else -> null
-    }
-
-    private fun Element.isFlattenableSignListBlock(): Boolean = normalName() in setOf("p", "div")
-
-    private fun listItemIndent(listDepth: Int, itemIndex: Int): String {
-        val effectiveDepth = if (itemIndex == 0) listDepth else listDepth * 2
-        return "\t".repeat(effectiveDepth)
-    }
-
-    private fun renderListItemLine(indent: String, marker: String, content: String): String {
-        val lines = content.lines()
-        if (lines.size == 1) return "$indent$marker ${lines.first()}"
-
-        val continuationIndent = "$indent\t"
-        return buildString {
-            append(indent)
-            append(marker)
-            append(' ')
-            append(lines.first().trimEnd())
-            append("  ")
-            lines.drop(1).forEach { line ->
-                append('\n')
-                append(continuationIndent)
-                append(line.trim())
-            }
-        }
-    }
-
-    private fun blockquote(markdown: String): String {
-        val lines = markdown.lines()
-        return lines.mapIndexed { index, line ->
-            if (line.isBlank()) {
-                when {
-                    line.endsWith("  ") -> "> $line"
-                    lines.isHorizontalRuleSeparator(index) -> "> "
-                    else -> ">"
-                }
-            } else {
-                "> $line"
-            }
-        }.joinToString("\n")
-    }
-
-    private fun List<String>.isHorizontalRuleSeparator(index: Int): Boolean =
-        previousNonBlankLine(index)?.trim() == "---" || nextNonBlankLine(index)?.trim() == "---"
-
-    private fun List<String>.previousNonBlankLine(index: Int): String? =
-        asSequence().take(index).lastOrNull { it.isNotBlank() }
-
-    private fun List<String>.nextNonBlankLine(index: Int): String? =
-        asSequence().drop(index + 1).firstOrNull { it.isNotBlank() }
-
-    private fun renderCodeBlock(element: Element): String {
-        val code = if (element.normalName() == "code") element else element.selectFirst("code")
-        val language = code?.attr("data-lang")?.ifBlank { null }
-            ?: languageFrom(code)
-            ?: languageFrom(element)
-            ?: ""
-        val rawText = (code ?: element)
-            .codeBlockText(trimSurroundingWhitespace = element.isBlockCodeElement())
-            .normalizeFinalNewline()
-            .replace("\t", "    ")
-        val fence = codeFence(rawText)
-        val text = rawText.replace("`", "\\`")
-        return "$fence$language\n$text$fence"
-    }
-
-    private fun Element.isBlockCodeElement(): Boolean = normalName() == "code" && classNames().contains("block")
-
-    private fun Node.codeBlockText(trimSurroundingWhitespace: Boolean): String {
-        val text = when (this) {
-            is TextNode -> wholeText
-            is Element -> childNodes().joinToString("") { it.codeBlockText(trimSurroundingWhitespace = false) }
-            else -> ""
-        }
-        return if (trimSurroundingWhitespace) text.trim() else text
-    }
-
     private fun renderFigure(element: Element, listDepth: Int): String {
         if (element.hasArticleBodyWrapper()) {
             return renderBlocks(element.childNodes(), listDepth)
@@ -877,23 +535,6 @@ private class Renderer(private val baseUrl: String) {
         ).joinToString("\n\n").ifBlank { renderBlocks(element.childNodes(), listDepth) }
     }
 
-    private fun renderCaptionInline(element: Element): String = renderCaptionNodes(element.childNodes())
-
-    private fun renderCaptionNodes(nodes: List<Node>): String = nodes.joinToString("") { node ->
-        when (node) {
-            is TextNode -> escapeInline(node.text())
-            is Element -> renderCaptionElement(node)
-            else -> ""
-        }
-    }.replace(horizontalWhitespacePattern, " ")
-
-    private fun renderCaptionElement(element: Element): String = when (element.normalName()) {
-        "br" -> "\n"
-        "img" -> escapeInline(element.attr("alt").ifBlank { element.attr("title") })
-        "math" -> escapeInline(element.text())
-        else -> renderCaptionNodes(element.childNodes())
-    }
-
     private fun Element.hasArticleBodyWrapper(): Boolean = children().any { child ->
         child.classNames().contains("content-wrapper") &&
             child.select("p, ul, ol, blockquote, pre, table, figure").isNotEmpty()
@@ -907,11 +548,16 @@ private class Renderer(private val baseUrl: String) {
             }.trim()
         }
         val rows = element.select("tr").map { row -> row.select("th, td").map { renderInline(it).escapeTableCell() } }
-        if (rows.isEmpty() || rows.map { it.size }.distinct().size != 1) {
-            return element.text()
-        }
-        val header = rows.first()
-        val body = rows.drop(1)
+        if (rows.isEmpty()) return element.text()
+        // A markdown table's width is fixed by its separator row; parsers drop body
+        // cells beyond it and pad rows that fall short. Source tables can be ragged,
+        // so size every row to the widest one instead of dropping trailing columns.
+        val columnCount = rows.maxOf { it.size }
+        if (columnCount == 0) return element.text()
+        fun padRow(row: List<String>): List<String> =
+            if (row.size < columnCount) row + List(columnCount - row.size) { "" } else row
+        val header = padRow(rows.first())
+        val body = rows.drop(1).map(::padRow)
         return buildString {
             append("| ${header.joinToString(" | ")} |\n")
             append("| ${header.joinToString(" | ") { "---" }} |")
@@ -987,56 +633,6 @@ private class Renderer(private val baseUrl: String) {
             renderInline(clone).trim()
         }
         return rendered.stripTerminalInlineElementPeriod()
-    }
-
-    private fun String.stripTerminalInlineElementPeriod(): String {
-        if (!endsWith(".")) return this
-        val withoutPeriod = dropLast(1)
-        return if (footnoteTerminalInlineElementPattern.containsMatchIn(withoutPeriod)) withoutPeriod else this
-    }
-
-    private fun Element.cleanupFootnoteDefinition() {
-        select(
-            "a[href*=fnref], a[href*=ftnt_ref], a[href*=_ftnref], a[class*=backref], a[class*=to-top], " +
-                "a[href*=FnAnchor], a[href*=-link], a[aria-label*=Back], a[aria-label*=back], " +
-                "a[aria-label*=Jump], a[aria-label*=jump], " +
-                ".footnote-backref, .data-footnote-backref, .easy-footnote-margin-adjust",
-        ).remove()
-
-        val first = children().firstOrNull()
-        if (
-            first != null &&
-            first.normalName() in footnoteMarkerTags &&
-            cleanFootnoteId(first.text()) == cleanFootnoteId(id())
-        ) {
-            first.remove()
-        }
-    }
-
-    private fun Element.isFootnoteReferenceLike(href: String): Boolean {
-        val target = href.removePrefix("#")
-        if (!footnoteIdHint.containsMatchIn(target)) return false
-        val text = text().trim()
-        return normalName() == "sup" ||
-            parent()?.normalName() == "sup" ||
-            className().contains("footnote", ignoreCase = true) ||
-            text.matches(footnoteReferenceTextPattern)
-    }
-
-    private fun cleanFootnoteId(raw: String): String {
-        val value = raw.trim().trim('#', '-', ':', '_', '.')
-        footnoteIdNumberPattern.find(value)
-            ?.takeIf { match -> match.isStandaloneFootnoteNumberIn(value) }
-            ?.let { return it.groupValues[1] }
-        return value.removePrefix("fnref")
-            .removePrefix("fn")
-            .trim('-', ':', '_', '.')
-            .ifBlank { raw }
-    }
-
-    private fun MatchResult.isStandaloneFootnoteNumberIn(value: String): Boolean {
-        val nextIndex = range.last + 1
-        return nextIndex >= value.length || !value[nextIndex].isLetterOrDigit()
     }
 
     private fun renderMath(element: Element): String? {

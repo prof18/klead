@@ -134,7 +134,7 @@ internal fun String.normalizedImageFamily(): String = substringBefore('?')
     .replace(imageFileExtensionPattern, "")
 
 internal fun codeSpan(text: String): String {
-    val maxTicks = Regex("`+").findAll(text).maxOfOrNull { it.value.length } ?: 0
+    val maxTicks = backtickRunPattern.findAll(text).maxOfOrNull { it.value.length } ?: 0
     val ticks = "`".repeat(maxTicks + 1)
     return if ("`" in text) "$ticks $text $ticks" else "$ticks$text$ticks"
 }
@@ -159,7 +159,7 @@ internal fun renderCodeSpanElement(element: Element): String {
 }
 
 internal fun codeFence(text: String): String {
-    val maxTicks = Regex("`+").findAll(text).maxOfOrNull { it.value.length } ?: 0
+    val maxTicks = backtickRunPattern.findAll(text).maxOfOrNull { it.value.length } ?: 0
     return "`".repeat((maxTicks + 1).coerceAtLeast(3))
 }
 
@@ -188,6 +188,16 @@ internal fun escapeInline(text: String): String = text
     .replace("_", "\\_")
     .replace("[", "\\[")
     .replace("]", "\\]")
+    .escapeTagLikeOpeners()
+
+// Escape "<" that opens an HTML-tag-like sequence (e.g. a title "Monte<video>") so
+// CommonMark renderers such as Obsidian don't parse it as raw HTML and swallow the
+// following content. Only "<" directly followed by an (optional "/") tag name and
+// then whitespace, "/", or ">" is escaped \u2014 autolinks like <a@b.com> or <https://x>
+// have "@"/":" after the name and "a < b" has a space, so both are left intact.
+private fun String.escapeTagLikeOpeners(): String = tagLikeOpenerPattern.replace(this) { "\\<" }
+
+private val tagLikeOpenerPattern = Regex("""<(?=/?[A-Za-z][A-Za-z0-9-]*(?:\s|/?>))""")
 
 internal fun String.normalizePlaceholderDots(): String = placeholderDotsPattern.replace(this) { match ->
     "${match.groupValues[1]}.."

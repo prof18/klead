@@ -1611,6 +1611,39 @@ class KleadMarkdownWriterTest {
         )
     }
 
+    @Test
+    fun `ragged table pads short rows and preserves trailing columns`() {
+        val markdown = render(
+            """
+            <article>
+              <table>
+                <tr><th>A</th><th>B</th></tr>
+                <tr><td>1</td><td>2</td><td>3</td></tr>
+                <tr><td>4</td></tr>
+              </table>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals(
+            """
+            | A | B |  |
+            | --- | --- | --- |
+            | 1 | 2 | 3 |
+            | 4 |  |  |
+            """.trimIndent() + "\n",
+            markdown,
+        )
+    }
+
+    @Test
+    fun `tag-like text is escaped so renderers do not treat it as raw html`() {
+        val markdown = render("<article><p>Title Monte&lt;video&gt; and a &lt; b stays</p></article>")
+
+        assertTrue(markdown.contains("""Monte\<video>"""), "tag-like opener should be escaped, got: $markdown")
+        assertTrue(markdown.contains("a < b stays"), "non-tag '<' should be left intact, got: $markdown")
+    }
+
     private fun render(html: String): String = KleadMarkdownWriter.write(
         root = Jsoup.parse(html, "https://example.com/base/").selectFirst("article") ?: error("missing article"),
         baseUrl = "https://example.com/base/",

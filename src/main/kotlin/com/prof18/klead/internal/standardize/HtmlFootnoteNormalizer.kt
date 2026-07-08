@@ -7,6 +7,8 @@ import org.jsoup.nodes.TextNode
 internal object HtmlFootnoteNormalizer {
     fun normalizeFootnotes(content: Element) {
         normalizeDataDefinitionFootnotes(content)
+        normalizeTexinfoFootnotes(content)
+        normalizeOReillyFootnotes(content)
         normalizeInlineFootnoteSpans(content)
         normalizeInlineFootnoteContainers(content)
         normalizeParagraphFootnoteDefinitions(content)
@@ -43,6 +45,71 @@ internal object HtmlFootnoteNormalizer {
             reference.replaceWith(sup)
             target.remove()
         }
+    }
+
+    // GNU Texinfo / makeinfo: <div class="footnotes-segment"> holds a heading per footnote —
+    // <h5 class="footnote-body-heading"><a id="FOOTn" href="#DOCFn">(n)</a></h5> — followed by
+    // the body <p>. Inline markers (<a class="footnote" id="DOCFn" href="#FOOTn">) point at the
+    // heading anchor id, so register each footnote under that id.
+    private fun normalizeTexinfoFootnotes(content: Element) {
+        val segments = content.select("div.footnotes-segment").toList()
+        if (segments.isEmpty()) return
+        val section = lazyFootnoteSection(content)
+        segments.forEach { segment ->
+            segment.select("h5.footnote-body-heading").forEach { heading ->
+                val id = heading.selectFirst("a[id]")?.id()?.trim().orEmpty()
+                if (id.isBlank()) return@forEach
+                val item = Element("li").attr("id", id)
+                var sibling = heading.nextElementSibling()
+                while (sibling != null &&
+                    !(sibling.normalName() == "h5" && sibling.hasClass("footnote-body-heading"))
+                ) {
+                    val next = sibling.nextElementSibling()
+                    if (sibling.text().trim().isNotBlank() || sibling.selectFirst("img, br") != null) {
+                        item.appendChild(sibling.clone())
+                    }
+                    sibling = next
+                }
+                section.appendChild(item)
+                content.select("a.footnote[href^=#]").forEach { marker ->
+                    if (marker.hrefFragmentTarget() == id) marker.normalizeFootnoteReferenceLink(id)
+                }
+            }
+            segment.remove()
+        }
+    }
+
+    // O'Reilly / HTMLBook: definitions are <p data-type="footnote" id="chNNfnK">, each opening
+    // with a <sup><a href="#…-marker">K</a></sup> backlink; the rest is the body. Inline markers
+    // are <a data-type="noteref" href="chNN.html#chMMfnK">, whose href fragment is the def id.
+    private fun normalizeOReillyFootnotes(content: Element) {
+        val definitions = content.select("p[data-type=footnote][id]").toList()
+        if (definitions.isEmpty()) return
+        val section = lazyFootnoteSection(content)
+        definitions.forEach { definition ->
+            val id = definition.id().trim()
+            if (id.isBlank()) return@forEach
+            val item = Element("li").attr("id", id)
+            val clone = definition.clone()
+            val marker = clone.children().firstOrNull()
+            if (marker?.normalName() == "sup" && marker.selectFirst("a[href*=#]") != null) {
+                marker.remove()
+                clone.trimLeadingTextWhitespace()
+            }
+            clone.childNodes().toList().forEach { item.appendChild(it) }
+            section.appendChild(item)
+            definition.remove()
+        }
+        content.select("a[data-type=noteref][href*=#]").forEach { marker ->
+            val fragment = marker.attr("href").substringAfterLast("#").trim()
+            if (fragment.isNotBlank()) marker.normalizeFootnoteReferenceLink(fragment)
+        }
+    }
+
+    private fun Element.trimLeadingTextWhitespace() {
+        val first = childNodes().firstOrNull() as? TextNode ?: return
+        val trimmed = first.wholeText.trimStart()
+        if (trimmed.isBlank()) first.remove() else first.text(trimmed)
     }
 
     private fun normalizeInlineFootnoteSpans(content: Element) {
@@ -352,7 +419,7 @@ internal object HtmlFootnoteNormalizer {
             } as? Element
         if (previousElement?.normalName() != "a") return
 
-        lastText.text(lastText.wholeText.replace(Regex("""\.\s*$"""), ""))
+        lastText.text(lastText.wholeText.replace(TRAILING_PERIOD_PATTERN, ""))
     }
 
     private fun normalizeParagraphFootnoteDefinitions(content: Element) {
@@ -680,6 +747,7 @@ internal object HtmlFootnoteNormalizer {
     private val FOOTNOTE_NUMBER_PREFIX_PATTERN = Regex("""^(\d{1,4})(?:$|[\].):]|\s)""")
     private val FOOTNOTE_NUMBER_DOT_PREFIX_PATTERN = Regex("""^\s*\d{1,4}\.\s*""")
     private val TRAILING_LINK_PERIOD_TEXT_PATTERN = Regex("""^\s*[)\]]?\.\s*$""")
+    private val TRAILING_PERIOD_PATTERN = Regex("""\.\s*$""")
     private val PARAGRAPH_FOOTNOTE_ID_PATTERN = Regex("""(?i)^(?:ftnt|_ftn)\d+$""")
     private val NAMED_FOOTNOTE_DEFINITION_ID_PATTERN = Regex("""(?i)^(?:Footnote|_ftn)\D*\d+$""")
     private val DHAMMATALKS_NOTE_ID_PATTERN = Regex("""(?i).+note\d{1,4}$""")

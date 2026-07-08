@@ -80,7 +80,7 @@ internal object HtmlCodeNormalizer {
             builder.append(text)
         }
         return builder.toString()
-            .replace(Regex("""\n{3,}"""), "\n\n")
+            .replace(MULTI_NEWLINE_PATTERN, "\n\n")
             .trimEnd()
     }
 
@@ -98,12 +98,12 @@ internal object HtmlCodeNormalizer {
     private fun String.normalizeVersoLeanText(): String {
         val normalized = replace("\r\n", "\n")
             .replace('\r', '\n')
-            .replace(Regex("""\n{3,}"""), "\n\n")
+            .replace(MULTI_NEWLINE_PATTERN, "\n\n")
         if (normalized.isBlank()) {
             return if (normalized.contains('\n')) "\n" else ""
         }
         return normalized
-            .replace(Regex("""^\n+"""), "")
+            .replace(LEADING_NEWLINE_PATTERN, "")
             .trimEnd(' ', '\t')
     }
 
@@ -301,8 +301,8 @@ internal object HtmlCodeNormalizer {
     private fun normalizeCodeText(value: String): String = value
         .replace("\r\n", "\n")
         .replace('\r', '\n')
-        .replace(Regex("""^\n+"""), "")
-        .replace(Regex("""\n{3,}"""), "\n\n")
+        .replace(LEADING_NEWLINE_PATTERN, "")
+        .replace(MULTI_NEWLINE_PATTERN, "\n\n")
         .trimEnd()
 
     private fun Element.isCodeChromeSibling(language: String?): Boolean {
@@ -320,6 +320,8 @@ internal object HtmlCodeNormalizer {
     private fun Element.partialCodeChromeHaystack(): String =
         "${id()} ${className()} ${attributes().asList().joinToString(" ") { it.value }}".lowercase()
 
+    private val MULTI_NEWLINE_PATTERN = Regex("""\n{3,}""")
+    private val LEADING_NEWLINE_PATTERN = Regex("""^\n+""")
     private val LANGUAGE_REGEX = Regex("""(?:^|\s)language-([A-Za-z0-9_+#-]+)(?:\s|$)""")
     private val CODE_LINE_NUMBER_PATTERN = Regex("""\d{1,5}""")
     private val CODE_LINE_CELL_TAGS = setOf("div", "span")
