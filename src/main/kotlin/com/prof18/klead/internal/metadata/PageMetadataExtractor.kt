@@ -224,7 +224,7 @@ internal object PageMetadataExtractor {
                     !DATE_HINT_REGEX.containsMatchIn(text) &&
                     !READING_TIME_REGEX.containsMatchIn(text) &&
                     text.length <= 140 &&
-                    text.split(Regex("""\s+""")).size >= 2
+                    text.split(WHITESPACE_PATTERN).size >= 2
             }
     }
 
@@ -252,14 +252,14 @@ internal object PageMetadataExtractor {
 
         val separatorTitle = trySeparatorSplit(
             title = title,
-            pattern = Regex("""\s+[|/·]\s+"""),
+            pattern = TITLE_SEPARATOR_PRIMARY_PATTERN,
             suffixOnly = false,
         ) { titleWords, siteWords ->
             siteWords <= 3 && titleWords >= 2 && titleWords >= siteWords * 2
         } ?: if (site == null) {
             trySeparatorSplit(
                 title = title,
-                pattern = Regex("""\s+[-–—]\s+"""),
+                pattern = TITLE_SEPARATOR_DASH_PATTERN,
                 suffixOnly = true,
             ) { titleWords, siteWords ->
                 siteWords <= 2 && titleWords >= 2 && titleWords > siteWords
@@ -346,14 +346,14 @@ internal object PageMetadataExtractor {
 
     private fun cleanAuthor(value: String?): String? {
         val cleaned = cleanValue(value)
-            ?.replace(Regex("""^by\s+""", RegexOption.IGNORE_CASE), "")
-            ?.replace(Regex("""\(?\s*https?://\S+\s*\)?""", RegexOption.IGNORE_CASE), "")
-            ?.replace(Regex("""\s*[-–—|]\s*$"""), "")
+            ?.replace(AUTHOR_BY_PREFIX_PATTERN, "")
+            ?.replace(AUTHOR_URL_PATTERN, "")
+            ?.replace(AUTHOR_TRAILING_SEPARATOR_PATTERN, "")
             ?.let { author ->
                 if ("," in author) {
                     author
                 } else {
-                    author.replace(Regex("""\s+and\s+""", RegexOption.IGNORE_CASE), ", ")
+                    author.replace(AUTHOR_AND_SEPARATOR_PATTERN, ", ")
                 }
             }
             ?.trim()
@@ -367,7 +367,7 @@ internal object PageMetadataExtractor {
     }
 
     private fun cleanValue(value: String?): String? = value
-        ?.replace(Regex("""\s+"""), " ")
+        ?.replace(WHITESPACE_PATTERN, " ")
         ?.trim()
         ?.takeIf { it.isNotBlank() }
 
@@ -423,4 +423,10 @@ internal object PageMetadataExtractor {
     private const val METADATA_SIBLING_MAX_TEXT_LENGTH = 300
     private val METADATA_SIBLING_TAGS = setOf("p", "time", "span", "div", "address")
     private val WHITESPACE_PATTERN = Regex("""\s+""")
+    private val AUTHOR_BY_PREFIX_PATTERN = Regex("""^by\s+""", RegexOption.IGNORE_CASE)
+    private val AUTHOR_URL_PATTERN = Regex("""\(?\s*https?://\S+\s*\)?""", RegexOption.IGNORE_CASE)
+    private val AUTHOR_TRAILING_SEPARATOR_PATTERN = Regex("""\s*[-–—|]\s*$""")
+    private val AUTHOR_AND_SEPARATOR_PATTERN = Regex("""\s+and\s+""", RegexOption.IGNORE_CASE)
+    private val TITLE_SEPARATOR_PRIMARY_PATTERN = Regex("""\s+[|/·]\s+""")
+    private val TITLE_SEPARATOR_DASH_PATTERN = Regex("""\s+[-–—]\s+""")
 }

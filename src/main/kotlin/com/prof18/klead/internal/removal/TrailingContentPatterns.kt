@@ -5,58 +5,56 @@ import com.prof18.klead.internal.dom.isAttachedTo
 import org.jsoup.nodes.Element
 
 internal object TrailingContentPatterns {
-    fun remove(content: Element, debug: MutableList<RemovalRecord>) {
+    fun remove(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit = {}) {
+        // Both predicates guard on text length far below the chrome caps, so this skip is
+        // exact — it just avoids building the text of large containers.
+        val caps = ChromeBlockCaps.compute(content)
         for (element in content.descendantsWithTagNamesSnapshot(TRAILING_CONTENT_TAGS)) {
+            checkCancelled()
             if (!element.isAttachedTo(content)) continue
-            val reason = footerReason(element) ?: continue
+            if (caps.exceeds(element)) continue
+            val reason = footerReason(BlockScan(element)) ?: continue
             recordAndRemove(element, debug, "removeContentPatterns", null, reason)
         }
     }
 
-    private fun footerReason(element: Element): String? = when {
-        element.isTrailingMarketingCtaBlock() -> "marketing call to action"
-        element.isTrailingArticleMetadataList() -> "article metadata list"
+    private fun footerReason(scan: BlockScan): String? = when {
+        scan.isTrailingMarketingCtaBlock() -> "marketing call to action"
+        scan.isTrailingArticleMetadataList() -> "article metadata list"
         else -> null
     }
 
-    private fun Element.isTrailingMarketingCtaBlock(): Boolean {
-        if (normalName() !in TRAILING_MARKETING_CTA_TAGS) return false
-        val text = text().trim().collapseWhitespace()
+    private fun BlockScan.isTrailingMarketingCtaBlock(): Boolean {
+        if (element.normalName() !in TRAILING_MARKETING_CTA_TAGS) return false
+        val text = collapsedText
         if (text.isBlank() || text.length > TRAILING_MARKETING_CTA_MAX_LENGTH) return false
 
-        val hints = "${partialHaystack()} ${select("*").joinToString(" ") { it.partialHaystack() }}"
+        val hints = selfAndSubtreeHints
         if (TRAILING_MARKETING_CTA_HINTS.none { it in hints }) return false
         if (!TRAILING_MARKETING_CTA_PATTERN.containsMatchIn(text)) return false
 
-        return select("h1, h2, h3, h4, h5, h6, form, input, button, svg, img").isNotEmpty()
+        return element.select("h1, h2, h3, h4, h5, h6, form, input, button, svg, img").isNotEmpty()
     }
 
-    private fun Element.isTrailingArticleMetadataList(): Boolean {
-        if (normalName() !in TRAILING_METADATA_LIST_TAGS) return false
-        val text = text().trim().collapseWhitespace()
+    private fun BlockScan.isTrailingArticleMetadataList(): Boolean {
+        if (element.normalName() !in TRAILING_METADATA_LIST_TAGS) return false
+        val text = collapsedText
         if (text.isBlank() || text.length > TRAILING_METADATA_LIST_MAX_LENGTH) return false
         if (!TRAILING_METADATA_PATTERN.containsMatchIn(text)) return false
 
-        val items = children().filter { it.normalName() == "li" }
+        val items = element.children().filter { it.normalName() == "li" }
         if (items.isEmpty() || items.any { it.text().trim().wordCount() > TRAILING_METADATA_ITEM_MAX_WORDS }) {
             return false
         }
 
-        val hints = partialHaystack()
+        val hints = haystack
         return "metadata" in hints ||
             "meta" in hints ||
             "byline" in hints ||
             "share" in hints ||
-            select("svg, time, [datetime]").isNotEmpty()
+            element.select("svg, time, [datetime]").isNotEmpty()
     }
 
-    private fun Element.partialHaystack(): String = elementHintHaystack(this)
-
-    private fun String.collapseWhitespace(): String = replace(WHITESPACE_PATTERN, " ")
-
-    private fun String.wordCount(): Int = split(WHITESPACE_PATTERN).count { it.isNotBlank() }
-
-    private val WHITESPACE_PATTERN = Regex("""\s+""")
     private val TRAILING_CONTENT_TAGS = setOf("aside", "div", "ol", "section", "ul")
     private val TRAILING_MARKETING_CTA_TAGS = setOf("aside", "div", "section")
     private val TRAILING_METADATA_LIST_TAGS = setOf("ol", "ul")

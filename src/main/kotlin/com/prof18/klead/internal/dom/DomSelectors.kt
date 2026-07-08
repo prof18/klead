@@ -32,12 +32,16 @@ internal fun Element.childrenMatching(selector: String): List<Element> = childre
 }
 
 internal object SelectorDiagnostics {
+    private const val MAX_TRACKED_SELECTORS = 100
     private val unsupported = linkedSetOf<String>()
     private val lock = Any()
 
     fun recordUnsupported(selector: String) {
         synchronized(lock) {
-            unsupported += selector
+            // Cap the process-wide set so user-supplied selectors can't grow it unbounded.
+            if (unsupported.size < MAX_TRACKED_SELECTORS) {
+                unsupported += selector
+            }
         }
     }
 

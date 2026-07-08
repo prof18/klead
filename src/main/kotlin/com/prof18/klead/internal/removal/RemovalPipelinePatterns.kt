@@ -1,5 +1,7 @@
 package com.prof18.klead.internal.removal
 
+import com.prof18.klead.internal.dom.SimpleSelectorIndex
+
 internal val EXACT_SELECTORS = listOf(
     "nav",
     "footer",
@@ -64,6 +66,8 @@ internal val EXACT_SELECTORS = listOf(
     ".toc",
     ".table-of-contents",
 )
+
+internal val EXACT_SELECTOR_INDEX = SimpleSelectorIndex(EXACT_SELECTORS)
 
 internal val TABLE_OF_CONTENTS_EXACT_SELECTORS = setOf(".toc", ".table-of-contents")
 internal val NESTED_ARTICLE_FOOTER_TAGS = setOf("aside", "div", "p", "section", "ul", "ol", "hr")

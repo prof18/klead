@@ -2,6 +2,11 @@ package com.prof18.klead
 
 import com.prof18.klead.internal.dom.SelectorDiagnostics
 import com.prof18.klead.internal.dom.selectSafe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jsoup.Jsoup
 import kotlin.system.measureTimeMillis
 import kotlin.test.Test
@@ -64,6 +69,31 @@ class SecurityRobustnessTest {
                 options = testOptions(debug = true),
             )
             assertFalse(result.debug.toString().contains("Hidden ${index - 1}"))
+        }
+    }
+
+    @Test
+    fun `parse of pathologically nested html is cancellable`() {
+        val depth = 6_000
+        val html = buildString {
+            append("<article>")
+            repeat(depth) { append("<div>") }
+            append("<p>Deep text</p>")
+            repeat(depth) { append("</div>") }
+            append("</article>")
+        }
+
+        runBlocking {
+            var completed = false
+            val parseJob = launch(Dispatchers.Default) {
+                Klead.parseHtml(html, "https://example.com/deep", testOptions())
+                completed = true
+            }
+            delay(250)
+            val cancelMillis = measureTimeMillis { parseJob.cancelAndJoin() }
+
+            assertFalse(completed, "parse finished before cancellation; deepen the fixture")
+            assertTrue(cancelMillis < 5_000, "cancellation took ${cancelMillis}ms")
         }
     }
 

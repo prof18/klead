@@ -13,6 +13,70 @@ import kotlin.test.assertTrue
 
 class RemovalPipelineTest {
     @Test
+    fun `delimiter-less anchor id is kept even when it contains a clutter token`() {
+        val document = Jsoup.parse(
+            """
+            <article>
+              <p>Intro paragraph with enough words to clearly be the article content and remain present here.</p>
+              <div id="correlatedvariables"><span>Kept marker text</span></div>
+              <div id="related-section"><span>Removed marker text</span></div>
+              <p>Outro paragraph with enough words to clearly be the article content and remain present too.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        // "correlatedvariables" contains "related" but has no delimiter, so it must not be stripped.
+        assertTrue(article.text().contains("Kept marker text"))
+        // "related-section" is delimited, so the substring match still removes it.
+        assertFalse(article.text().contains("Removed marker text"))
+    }
+
+    @Test
+    fun `link-heavy block inside a table cell is not removed`() {
+        val document = Jsoup.parse(
+            """
+            <article>
+              <table>
+                <tr>
+                  <td>
+                    <div><a href="/1">L1</a><a href="/2">L2</a><a href="/3">L3</a><a href="/4">L4</a></div>
+                  </td>
+                  <td>Data cell</td>
+                </tr>
+              </table>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("L1"))
+        assertTrue(article.text().contains("Data cell"))
+    }
+
+    @Test
+    fun `button wrapping an image keeps the image when the button is removed`() {
+        val document = Jsoup.parse(
+            """
+            <article>
+              <p>Article body text long enough to be treated as the main content of the page.</p>
+              <button type="button"><img src="https://example.com/photo.jpg" alt="Zoomable photo"><span>Zoom</span></button>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.select("button").isEmpty(), "button should be removed")
+        assertNotNull(article.selectFirst("img[src=https://example.com/photo.jpg]"), "image should survive")
+    }
+
+    @Test
     fun `hidden inline styles and attributes are removed`() {
         val result = parseHtmlForTest(
             html = """

@@ -17,10 +17,10 @@ internal fun isProtected(element: Element, hints: String = partialHaystack(eleme
 internal fun Element.isNestedListContent(): Boolean =
     normalName() in setOf("ul", "ol") && parent()?.normalName() == "li"
 
-internal fun Element.isPlainParagraphWithoutFooterSignal(): Boolean {
-    if (normalName() != "p") return false
+internal fun BlockScan.isPlainParagraphWithoutFooterSignal(): Boolean {
+    if (element.normalName() != "p") return false
 
-    val text = text().trim().collapseWhitespace()
+    val text = collapsedText
     if (text.isBlank() || text.length > PARAGRAPH_FOOTER_SIGNAL_MAX_LENGTH) return true
 
     return !hasParagraphFooterSignal(text)
@@ -35,10 +35,10 @@ internal fun Element.hasFootnoteProtectionHint(): Boolean {
     return "footnote" in hints || "footnotes" in hints || "footdef" in hints || "footref" in hints
 }
 
-internal fun isLikelyProse(element: Element): Boolean {
-    val paragraphs = element.select("p").count { it.text().split(WHITESPACE_PATTERN).size >= 8 }
+internal fun isLikelyProse(scan: BlockScan): Boolean {
+    val paragraphs = scan.element.select("p").count { it.text().split(WHITESPACE_PATTERN).size >= 8 }
     if (paragraphs >= 1) return true
-    val text = element.text()
+    val text = scan.text
     val words = text.split(WHITESPACE_PATTERN).count { it.isNotBlank() }
     return words >= 35 && text.count { it == '.' || it == ',' } >= 2
 }

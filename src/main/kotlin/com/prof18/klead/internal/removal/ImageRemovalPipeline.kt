@@ -10,9 +10,13 @@ internal object ImageRemovalPipeline {
         metadataImage: String?,
         debug: MutableList<RemovalRecord>,
         hintFor: (Element) -> String,
+        checkCancelled: () -> Unit = {},
     ) {
+        checkCancelled()
         removeSmallImages(content, debug)
+        checkCancelled()
         deduplicateImages(content, debug)
+        checkCancelled()
         removeCoverImage(content, metadataImage, debug, hintFor)
     }
 

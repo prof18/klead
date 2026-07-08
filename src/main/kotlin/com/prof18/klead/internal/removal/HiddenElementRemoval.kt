@@ -5,8 +5,9 @@ import com.prof18.klead.internal.dom.isAttachedTo
 import org.jsoup.nodes.Element
 
 internal object HiddenElementRemoval {
-    fun apply(content: Element, debug: MutableList<RemovalRecord>) {
+    fun apply(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit = {}) {
         for (element in content.descendantsSnapshot()) {
+            checkCancelled()
             if (!element.isAttachedTo(content)) continue
             val reason = removableHiddenReason(element) ?: continue
             element.orphanedHeadingBeforeHiddenBlock()?.let { heading ->
@@ -46,19 +47,22 @@ internal object HiddenElementRemoval {
     }
 
     private fun hiddenReason(element: Element): String? {
-        val style = element.attr("style").lowercase().replace(" ", "")
-        val classes = element.classNames()
+        // An element without attributes has no hidden markers at all; skipping early avoids the
+        // style/class string work below for the vast majority of elements.
+        if (element.attributesSize() == 0) return null
+        val classes = if (element.hasAttr("class")) element.classNames() else emptySet()
         if (element.hasResponsiveDisplayVisualFallback(classes)) return null
 
-        return when {
-            element.hasAttr("hidden") -> "hidden attribute"
-            element.attr("aria-hidden").equals("true", ignoreCase = true) -> "aria-hidden"
-            "display:none" in style -> "display:none"
-            "visibility:hidden" in style -> "visibility:hidden"
-            OPACITY_ZERO_STYLE_PATTERN.containsMatchIn(style) -> "opacity:0"
-            classes.any { it.isHiddenClass() } -> "hidden class"
-            else -> null
+        if (element.hasAttr("hidden")) return "hidden attribute"
+        if (element.attr("aria-hidden").equals("true", ignoreCase = true)) return "aria-hidden"
+        if (element.hasAttr("style")) {
+            val style = element.attr("style").lowercase().replace(" ", "")
+            if ("display:none" in style) return "display:none"
+            if ("visibility:hidden" in style) return "visibility:hidden"
+            if (OPACITY_ZERO_STYLE_PATTERN.containsMatchIn(style)) return "opacity:0"
         }
+        if (classes.any { it.isHiddenClass() }) return "hidden class"
+        return null
     }
 
     private fun String.isHiddenClass(): Boolean = this == "hidden" ||

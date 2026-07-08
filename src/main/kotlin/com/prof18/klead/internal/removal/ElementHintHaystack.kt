@@ -2,9 +2,9 @@ package com.prof18.klead.internal.removal
 
 import org.jsoup.nodes.Element
 
-internal fun elementHintHaystack(element: Element): String {
+internal fun elementHintHaystack(element: Element, includeId: Boolean = true): String {
     val parts = buildList {
-        element.id().takeIf { it.isNotBlank() }?.let(::add)
+        if (includeId) element.id().takeIf { it.isNotBlank() }?.let(::add)
         element.className().takeIf { it.isNotBlank() }?.let(::add)
 
         for (attribute in element.attributes()) {

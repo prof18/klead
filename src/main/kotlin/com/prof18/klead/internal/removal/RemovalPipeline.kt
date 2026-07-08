@@ -3,7 +3,6 @@ package com.prof18.klead.internal.removal
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.internal.dom.isAttachedTo
 import com.prof18.klead.internal.dom.removeSafely
-import com.prof18.klead.internal.dom.selectSafe
 import org.jsoup.nodes.Element
 
 internal fun recordAndRemove(
@@ -13,13 +12,26 @@ internal fun recordAndRemove(
     selector: String?,
     reason: String,
 ) {
-    debug += RemovalRecord(
-        step = step,
-        selector = selector,
-        reason = reason,
-        preview = element.text().take(100),
-    )
+    if (debug !== DiscardedRemovals) {
+        debug += RemovalRecord(
+            step = step,
+            selector = selector,
+            reason = reason,
+            preview = element.text().take(100),
+        )
+    }
     element.removeSafely()
+}
+
+// Sink used when debug output is disabled: recordAndRemove checks for it by identity and skips
+// building the preview text, and any direct appends are dropped, so the pipeline never pays for
+// records nobody reads.
+internal object DiscardedRemovals : AbstractMutableList<RemovalRecord>() {
+    override val size: Int get() = 0
+    override fun get(index: Int): RemovalRecord = throw IndexOutOfBoundsException("Discarded removals are empty.")
+    override fun set(index: Int, element: RemovalRecord): RemovalRecord = throw IndexOutOfBoundsException("discarded")
+    override fun removeAt(index: Int): RemovalRecord = throw IndexOutOfBoundsException("discarded")
+    override fun add(index: Int, element: RemovalRecord) = Unit
 }
 
 internal data class RemovalPolicy(
@@ -39,75 +51,101 @@ internal object RemovalPipeline {
         metadataImage: String? = null,
         policy: RemovalPolicy = RemovalPolicy(),
         measure: (String, () -> Unit) -> Unit = { _, block -> block() },
+        checkCancelled: () -> Unit = {},
     ) {
         if (policy.removeHiddenElements) {
             measure("removeHiddenElements") {
-                removeHiddenElements(content, debug)
+                removeHiddenElements(content, debug, checkCancelled)
             }
         }
         if (policy.removeExactSelectors) {
             measure("removeExactSelectors") {
-                removeExactSelectors(content, debug)
+                removeExactSelectors(content, debug, checkCancelled)
             }
         }
         if (policy.removePartialSelectors) {
             measure("removePartialSelectors") {
-                removePartialSelectors(content, debug)
+                removePartialSelectors(content, debug, checkCancelled)
             }
         }
         if (policy.removeLowScoring) {
             measure("removeLowScoringBlocks") {
-                removeLowScoringBlocks(content, debug)
+                removeLowScoringBlocks(content, debug, checkCancelled)
             }
         }
         if (policy.removeContentPatterns) {
             measure("removeContentPatterns") {
-                removeContentPatterns(content, debug, measure)
+                removeContentPatterns(content, debug, measure, checkCancelled)
             }
         }
         measure("imageRemoval") {
-            ImageRemovalPipeline.apply(content, metadataImage, debug, ::partialHaystack)
+            ImageRemovalPipeline.apply(content, metadataImage, debug, ::partialHaystack, checkCancelled)
         }
     }
 
-    private fun removeHiddenElements(content: Element, debug: MutableList<RemovalRecord>) {
-        HiddenElementRemoval.apply(content, debug)
+    private fun removeHiddenElements(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
+        HiddenElementRemoval.apply(content, debug, checkCancelled)
     }
 
-    private fun removeExactSelectors(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removeExactSelectors(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
+        val buckets = EXACT_SELECTOR_INDEX.collect(content)
         for (selector in EXACT_SELECTORS) {
-            for (element in content.selectSafe(selector).toList()) {
+            checkCancelled()
+            // Filtering at bucket start replicates the per-selector query this replaces: elements
+            // detached by earlier selectors disappear, while detachments within this selector's
+            // own batch are still processed like the previous query-snapshot was.
+            for (element in buckets[selector].orEmpty().filter { it.isAttachedTo(content) }) {
                 if (selector in TABLE_OF_CONTENTS_EXACT_SELECTORS) {
                     removeTableOfContentsBlock(element, debug, "removeExactSelectors", selector)
                     continue
                 }
-                if (selector == "button" && element.isInlineTextButton()) continue
+                if (selector == "button") {
+                    if (element.isInlineTextButton()) continue
+                    // Buttons that wrap media (e.g. image-zoom overlays) — lift the media
+                    // out before discarding the button so the image isn't lost with it.
+                    element.liftButtonMedia()
+                }
                 if (isProtected(element) && selector !in PROTECTED_EXACT_SELECTOR_OVERRIDES) continue
                 recordAndRemove(element, debug, "removeExactSelectors", selector, "exact clutter selector")
             }
         }
     }
 
-    private fun removePartialSelectors(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removePartialSelectors(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        checkCancelled: () -> Unit,
+    ) {
         for (element in content.descendantsSnapshot()) {
+            checkCancelled()
             if (!element.isAttachedTo(content)) continue
-            val haystack = partialHaystack(element)
-            if (PARTIAL_PATTERNS.none { it in haystack }) continue
-            if (isProtected(element, haystack)) continue
-            if (isLikelyProse(element) && !isStrongRecirculationChrome(element, haystack)) continue
+            if (!element.matchesPartialClutter()) continue
+            val scan = BlockScan(element)
+            if (isProtected(element, scan.haystack)) continue
+            if (isLikelyProse(scan) && !isStrongRecirculationChrome(scan)) continue
             recordAndRemove(element, debug, "removePartialSelectors", null, "partial clutter attribute")
         }
     }
 
-    private fun removeLowScoringBlocks(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removeLowScoringBlocks(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        checkCancelled: () -> Unit,
+    ) {
         for (element in content.select("section, aside, div, ul, ol").toList()) {
+            checkCancelled()
             if (!element.isAttachedTo(content)) continue
+            // Skip elements inside table cells — a cell's content is structural, not a
+            // standalone navigation block, and removing it leaves the table malformed.
+            // The table itself isn't scored here, so genuine nav tables are unaffected.
+            if (element.isInsideTableCell()) continue
             val links = element.select("a")
             val linkCount = links.size
             if (linkCount < 3) continue
-            if (isProtected(element) || isLikelyProse(element)) continue
+            val scan = BlockScan(element)
+            if (isProtected(element, scan.haystack) || isLikelyProse(scan)) continue
             if (element.isNestedListContent()) continue
-            val text = element.text()
+            val text = scan.text
             val linkText = links.sumOf { it.text().length }
             val linkDensity = if (text.isBlank()) 0.0 else linkText.toDouble() / text.length
             if (linkDensity > 0.55) {
@@ -120,18 +158,19 @@ internal object RemovalPipeline {
         content: Element,
         debug: MutableList<RemovalRecord>,
         measure: (String, () -> Unit) -> Unit,
+        checkCancelled: () -> Unit,
     ) {
         measure("removeContentPatterns.openingArticleHeaders") {
             removeOpeningArticleHeaderBlocks(content, debug)
         }
         measure("removeContentPatterns.recommendationSiblingRuns") {
-            removeRecommendationSiblingRuns(content, debug)
+            removeRecommendationSiblingRuns(content, debug, checkCancelled)
         }
         measure("removeContentPatterns.trailingContentPatterns") {
-            TrailingContentPatterns.remove(content, debug)
+            TrailingContentPatterns.remove(content, debug, checkCancelled)
         }
         measure("removeContentPatterns.nestedArticleFooterBlocks") {
-            removeNestedArticleFooterBlocks(content, debug)
+            removeNestedArticleFooterBlocks(content, debug, checkCancelled)
         }
         measure("removeContentPatterns.trailingChildren") {
             removeTrailingChildPatterns(content, debug)
@@ -140,46 +179,47 @@ internal object RemovalPipeline {
 
     private fun removeTrailingChildPatterns(content: Element, debug: MutableList<RemovalRecord>) {
         for (element in content.children().toList().asReversed()) {
-            val text = element.text().trim()
+            val scan = BlockScan(element)
+            val text = scan.trimmedText
             if (text.isBlank()) continue
-            if (isProtected(element)) break
+            if (isProtected(element, scan.haystack)) break
             if (SUBSCRIBE_PATTERN.containsMatchIn(text) && text.length < 180) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing subscribe call to action")
                 continue
             }
-            if (isAuthorFollowBlock(element)) {
+            if (isAuthorFollowBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing author follow links")
                 continue
             }
-            if (isTrailingRecommendationHeading(element)) {
+            if (isTrailingRecommendationHeading(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing recommendation heading")
                 continue
             }
-            if (isTrailingRecommendationBlock(element)) {
+            if (isTrailingRecommendationBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing recommendation block")
                 continue
             }
-            if (isTagListBlock(element)) {
+            if (isTagListBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing tag list")
                 continue
             }
-            if (isCommentCountBlock(element)) {
+            if (isCommentCountBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing comment count")
                 continue
             }
-            if (isBackToTopBlock(element)) {
+            if (isBackToTopBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing back-to-top control")
                 continue
             }
-            if (isCommentPromptBlock(element)) {
+            if (isCommentPromptBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing comment prompt")
                 continue
             }
-            if (isStorySuggestionBlock(element)) {
+            if (isStorySuggestionBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing story suggestion prompt")
                 continue
             }
-            if (isLocalNewsFollowBlock(element)) {
+            if (isLocalNewsFollowBlock(scan)) {
                 recordAndRemove(element, debug, "removeContentPatterns", null, "trailing local news follow prompt")
                 continue
             }
@@ -213,10 +253,15 @@ internal object RemovalPipeline {
         return candidates
     }
 
-    private fun removeRecommendationSiblingRuns(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removeRecommendationSiblingRuns(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        checkCancelled: () -> Unit,
+    ) {
         for (headingBlock in content.select("h1, h2, h3, h4, h5, h6, div, p, section").toList()) {
+            checkCancelled()
             if (!headingBlock.isAttachedTo(content)) continue
-            if (!isRecommendationSectionHeadingBlock(headingBlock)) continue
+            if (!isRecommendationSectionHeadingBlock(BlockScan(headingBlock))) continue
 
             val enclosingBlock = headingBlock.enclosingRecommendationBlock(content)
             if (enclosingBlock != null) {
@@ -232,7 +277,7 @@ internal object RemovalPipeline {
 
             var sibling = headingBlock.nextElementSibling()
             var removedSibling = false
-            while (sibling != null && isRecommendationSiblingAfterHeading(sibling)) {
+            while (sibling != null && isRecommendationSiblingAfterHeading(BlockScan(sibling))) {
                 val next = sibling.nextElementSibling()
                 recordAndRemove(
                     sibling,
@@ -261,7 +306,7 @@ internal object RemovalPipeline {
             if (
                 current.isAttachedTo(root) &&
                 current.startsWithHeadingBlock(this) &&
-                isTrailingRecommendationBlock(current)
+                isTrailingRecommendationBlock(BlockScan(current))
             ) {
                 return current
             }
@@ -315,18 +360,27 @@ internal object RemovalPipeline {
             (isOpeningArticleHeaderCandidate() && select("h1, h2").isNotEmpty())
     }
 
-    private fun removeNestedArticleFooterBlocks(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removeNestedArticleFooterBlocks(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        checkCancelled: () -> Unit,
+    ) {
+        val caps = ChromeBlockCaps.compute(content)
         for (element in content.descendantsWithTagNamesSnapshot(NESTED_ARTICLE_FOOTER_TAGS)) {
+            checkCancelled()
             if (!element.isAttachedTo(content)) continue
             if (element.isNestedListContent()) continue
-            if (element.isPlainParagraphWithoutFooterSignal()) continue
-            removeNestedArticleFooterBlock(element, content, debug)
+            if (caps.exceeds(element)) continue
+            val scan = BlockScan(element)
+            if (scan.isPlainParagraphWithoutFooterSignal()) continue
+            removeNestedArticleFooterBlock(scan, content, debug)
         }
     }
 
-    private fun removeNestedArticleFooterBlock(element: Element, content: Element, debug: MutableList<RemovalRecord>) {
-        val removal = nestedArticleFooterRemoval(element, content) ?: return
-        if (isProtected(element)) return
+    private fun removeNestedArticleFooterBlock(scan: BlockScan, content: Element, debug: MutableList<RemovalRecord>) {
+        val removal = nestedArticleFooterRemoval(scan, content) ?: return
+        val element = scan.element
+        if (isProtected(element, scan.haystack)) return
 
         if (removal.tableOfContents) {
             removeTableOfContentsBlock(element, debug, "removeContentPatterns", null)
@@ -335,108 +389,108 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun nestedArticleFooterRemoval(element: Element, content: Element): NestedFooterRemoval? = when {
-        isOrphanSeparatorBlock(element) -> {
+    private fun nestedArticleFooterRemoval(scan: BlockScan, content: Element): NestedFooterRemoval? = when {
+        isOrphanSeparatorBlock(scan) -> {
             NestedFooterRemoval("orphan separator block")
         }
 
-        isTrailingDividerBlock(element, content) -> {
+        isTrailingDividerBlock(scan.element, content) -> {
             NestedFooterRemoval("trailing divider")
         }
 
-        isSkeletonRecirculationBlock(element) -> {
+        isSkeletonRecirculationBlock(scan) -> {
             NestedFooterRemoval("skeleton recirculation block")
         }
 
-        isPostedByBylineBlock(element) -> {
+        isPostedByBylineBlock(scan) -> {
             NestedFooterRemoval("posted-by byline strip")
         }
 
-        isBreadcrumbBlock(element) -> {
+        isBreadcrumbBlock(scan) -> {
             NestedFooterRemoval("breadcrumb block")
         }
 
-        isTableOfContentsBlock(element) -> {
+        isTableOfContentsBlock(scan) -> {
             NestedFooterRemoval("table of contents block", tableOfContents = true)
         }
 
-        isSocialCounterBlock(element) -> {
+        isSocialCounterBlock(scan) -> {
             NestedFooterRemoval("social counter block")
         }
 
-        isTrailingRecirculationLinkCluster(element) -> {
+        isTrailingRecirculationLinkCluster(scan) -> {
             NestedFooterRemoval("trailing recirculation link cluster")
         }
 
-        isRecommendationSectionHeadingBlock(element) -> {
+        isRecommendationSectionHeadingBlock(scan) -> {
             NestedFooterRemoval("orphan recommendation heading")
         }
 
-        isAboutAuthorFooterBlock(element) -> {
+        isAboutAuthorFooterBlock(scan) -> {
             NestedFooterRemoval("about-author footer block")
         }
 
-        isArticleFooterDetailsBlock(element) -> {
+        isArticleFooterDetailsBlock(scan) -> {
             NestedFooterRemoval("article details footer block")
         }
 
-        isRelatedTermsBlock(element) -> {
+        isRelatedTermsBlock(scan) -> {
             NestedFooterRemoval("related terms footer block")
         }
 
-        isTagListBlock(element) -> {
+        isTagListBlock(scan) -> {
             NestedFooterRemoval("article footer tag list")
         }
 
-        isCommentCountBlock(element) -> {
+        isCommentCountBlock(scan) -> {
             NestedFooterRemoval("article footer comment count")
         }
 
-        isBackToTopBlock(element) -> {
+        isBackToTopBlock(scan) -> {
             NestedFooterRemoval("article footer back-to-top control")
         }
 
-        isCommentPromptBlock(element) -> {
+        isCommentPromptBlock(scan) -> {
             NestedFooterRemoval("article footer comment prompt")
         }
 
-        isReadyForMoreBlock(element) -> {
+        isReadyForMoreBlock(scan) -> {
             NestedFooterRemoval("article footer subscription call to action")
         }
 
-        isMobileAppPromoBlock(element) -> {
+        isMobileAppPromoBlock(scan) -> {
             NestedFooterRemoval("mobile app promo")
         }
 
-        isNewsletterSignupBlock(element) -> {
+        isNewsletterSignupBlock(scan) -> {
             NestedFooterRemoval("newsletter signup")
         }
 
-        isDonationWidgetBlock(element) -> {
+        isDonationWidgetBlock(scan) -> {
             NestedFooterRemoval("donation widget")
         }
 
-        isBylineMetadataStrip(element) -> {
+        isBylineMetadataStrip(scan) -> {
             NestedFooterRemoval("byline metadata strip")
         }
 
-        isArticlePackageBlock(element) -> {
+        isArticlePackageBlock(scan) -> {
             NestedFooterRemoval("article package card")
         }
 
-        isInlineAuthorBioBlock(element) -> {
+        isInlineAuthorBioBlock(scan) -> {
             NestedFooterRemoval("inline author bio")
         }
 
-        isFollowTopicsBlock(element) -> {
+        isFollowTopicsBlock(scan) -> {
             NestedFooterRemoval("follow topics prompt")
         }
 
-        isStorySuggestionBlock(element) -> {
+        isStorySuggestionBlock(scan) -> {
             NestedFooterRemoval("story suggestion prompt")
         }
 
-        isLocalNewsFollowBlock(element) -> {
+        isLocalNewsFollowBlock(scan) -> {
             NestedFooterRemoval("local news follow prompt")
         }
 
@@ -444,10 +498,43 @@ internal object RemovalPipeline {
     }
 }
 
+// A delimited id (e.g. "feedback-form") is substring-matched like the other
+// attributes, but a delimiter-less id is usually a content anchor concatenated
+// from heading words (e.g. "correlatedvariables", "marketshareanalysis") —
+// substring matching would wrongly strip it (hitting "related"/"share"), so it
+// must equal a selector token outright.
+private fun Element.matchesPartialClutter(): Boolean {
+    val nonIdHaystack = elementHintHaystack(this, includeId = false)
+    if (PARTIAL_PATTERNS.any { it in nonIdHaystack }) return true
+
+    val id = id().trim().lowercase()
+    if (id.isEmpty()) return false
+    val idHasDelimiter = id.any { it == ' ' || it == '_' || it == '-' || it == ':' || it == '.' }
+    return if (idHasDelimiter) PARTIAL_PATTERNS.any { it in id } else id in PARTIAL_PATTERNS
+}
+
+private fun Element.isInsideTableCell(): Boolean = parents().any { it.normalName() == "td" || it.normalName() == "th" }
+
 private fun Element.isInlineTextButton(): Boolean {
     if (normalName() != "button") return false
-    if (parents().none { it.normalName() == "p" }) return false
+    if (parents().none { it.normalName() in INLINE_BUTTON_CONTEXTS }) return false
     if (text().trim().isBlank()) return false
     if (select("svg, img, picture, iframe, input, select, textarea").isNotEmpty()) return false
     return true
+}
+
+private val INLINE_BUTTON_CONTEXTS =
+    setOf("p", "li", "td", "th", "span", "h1", "h2", "h3", "h4", "h5", "h6")
+
+// Move an element's media descendants (img/picture/video) to just before it, so a
+// wrapper that is about to be removed doesn't take the media with it. Nested media
+// (e.g. an <img> inside a <picture>) is skipped — only the outermost is lifted.
+private fun Element.liftButtonMedia() {
+    val media = select("img, picture, video")
+    if (media.isEmpty()) return
+    val mediaSet = media.toSet()
+    for (item in media) {
+        if (item.parents().any { it in mediaSet }) continue
+        before(item)
+    }
 }

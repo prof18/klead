@@ -22,10 +22,12 @@ import com.prof18.klead.internal.media.TrustedEmbeds
 import com.prof18.klead.internal.metadata.MetadataExtractor
 import com.prof18.klead.internal.metadata.PageMetadataExtractor
 import com.prof18.klead.internal.metadata.SchemaOrgResult
+import com.prof18.klead.internal.removal.DiscardedRemovals
 import com.prof18.klead.internal.removal.RemovalPipeline
 import com.prof18.klead.internal.removal.RemovalPolicy
 import com.prof18.klead.internal.standardize.HtmlStandardizer
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Comment
@@ -59,6 +61,8 @@ internal object KleadParser {
         options: KleadOptions,
         parserDispatcher: CoroutineDispatcher,
     ): KleadResult = withContext(parserDispatcher) {
+        val parseContext = coroutineContext
+        val checkCancelled: () -> Unit = { parseContext.ensureActive() }
         val timings = ParseTimings(options.debug)
         val retryAttempts = mutableListOf<Map<String, Any?>>()
         val timed = measureTimedValue {
@@ -97,6 +101,7 @@ internal object KleadParser {
 
             val retryCandidate = timings.measure("retry") {
                 RetryController.run { removalPolicy ->
+                    checkCancelled()
                     val attemptName = "attempt${retryAttempts.size + 1}"
                     val result = timings.measure("$attemptName.total") {
                         parseInternal(
@@ -110,6 +115,7 @@ internal object KleadParser {
                             removalPolicy = removalPolicy,
                             timings = timings,
                             timingPrefix = attemptName,
+                            checkCancelled = checkCancelled,
                         )
                     }
                     if (options.debug) {
@@ -151,13 +157,14 @@ internal object KleadParser {
         removalPolicy: RemovalPolicy,
         timings: ParseTimings,
         timingPrefix: String,
+        checkCancelled: () -> Unit = {},
     ): ParsedResult {
         val extractorContext = ExtractorContext(
             url = url,
             host = url.hostOrNull(),
             document = document,
         )
-        val removals = mutableListOf<RemovalRecord>()
+        val removals: MutableList<RemovalRecord> = if (options.debug) mutableListOf() else DiscardedRemovals
         timings.measure("$timingPrefix.preContentRemovals") {
             ExtractorRemovalPipeline.applyPreContentRemovals(document, matchedExtractors, removals)
         }
@@ -201,6 +208,7 @@ internal object KleadParser {
                 measure = { step, block ->
                     timings.measure("$timingPrefix.removalPipeline.$step", block)
                 },
+                checkCancelled = checkCancelled,
             )
         }
         timings.measure("$timingPrefix.postContentRemovals") {
@@ -443,6 +451,7 @@ internal object KleadParser {
         content.select("iframe").filterNot(::isTrustedVideoIframe).forEach { it.remove() }
 
         for (element in content.select("*")) {
+            if (element.attributesSize() == 0) continue
             for (attribute in element.attributes().asList()) {
                 val key = attribute.key.lowercase()
                 val value = attribute.value

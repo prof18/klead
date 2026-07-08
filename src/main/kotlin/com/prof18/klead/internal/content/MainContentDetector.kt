@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.content
 
+import com.prof18.klead.internal.dom.SimpleSelectorIndex
 import com.prof18.klead.internal.dom.normalizeSpace
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.dom.selectSafe
@@ -46,6 +47,8 @@ internal object MainContentDetector {
         "body",
     )
 
+    private val ENTRY_POINT_INDEX = SimpleSelectorIndex(entryPointSelectors)
+
     fun detect(
         document: Document,
         extractorContentSelector: String? = null,
@@ -77,8 +80,9 @@ internal object MainContentDetector {
             )
         }
 
+        val entryPointBuckets = ENTRY_POINT_INDEX.collect(document)
         val candidates = entryPointSelectors.flatMapIndexed { index, selector ->
-            document.selectSafe(selector).map { element ->
+            entryPointBuckets[selector].orEmpty().map { element ->
                 Candidate(
                     element = element,
                     selector = selector,
