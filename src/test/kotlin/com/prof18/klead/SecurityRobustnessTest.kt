@@ -38,6 +38,32 @@ class SecurityRobustnessTest {
     }
 
     @Test
+    fun `security sanitizer strips blob non-image data and whitespace-padded schemes`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>Body text long enough that the article survives the removal pipeline intact.</p>
+                  <a href="blob:https://example.com/6f0f0b0e">blob href</a>
+                  <a href="data:application/xhtml+xml,<html/>">xhtml data href</a>
+                  <a href="java&#9;script:alert(1)">tab-padded scheme</a>
+                  <a href="java&#10;script:alert(2)">newline-padded scheme</a>
+                  <a href="  JavaScript:alert(3)">padded uppercase scheme</a>
+                  <a href="/relative/path">safe relative link</a>
+                  <img src="data:image/png;base64,AAAA" alt="safe inline image">
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/security",
+        )
+
+        val html = result.content.requireHtml()
+        assertFalse(html.contains("blob:"), html)
+        assertFalse(html.contains("data:application"), html)
+        assertFalse(html.contains("alert("), html)
+        assertTrue(html.contains("/relative/path"), html)
+        assertTrue(html.contains("data:image/png"), html)
+    }
+
+    @Test
     fun `malformed html missing head bad url and invalid json ld do not crash`() {
         val result = parseHtmlForTest(
             html = """<article><h1>Broken</h1><p>Still readable<script type="application/ld+json">{bad</script>""",
