@@ -2,6 +2,7 @@ package com.prof18.klead.internal.standardize
 
 import com.prof18.klead.internal.dom.isAttachedTo
 import org.jsoup.nodes.Element
+import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 
 // Collects generically structured footnote definitions — footnote-classed lists, paragraph and
@@ -52,6 +53,46 @@ internal object HtmlFootnoteListNormalizer {
             item.appendChild(definition)
             section.appendChild(item)
             removeEmptyAncestors(oldParent, content)
+        }
+    }
+
+    // Several definitions packed into one block and separated by <br>, each segment opening with a
+    // named anchor:
+    //   <p><a name="one"><sup>1</sup></a> text… ↩<br><br><a name="two">…</p>
+    // Anchor names must be targeted by inline numeric links, so ordinary <br>-separated prose is
+    // not mistaken for footnotes.
+    fun normalizeBrSeparatedNamedAnchorFootnotes(content: Element) {
+        val linkedFragments = content.select("a[href^=#]")
+            .filter { it.text().trim().normalizeFootnoteNumberText().matches(FOOTNOTE_NUMBER_PATTERN) }
+            .map { it.attr("href").removePrefix("#").lowercase() }
+            .filter { it.isNotBlank() }
+            .toSet()
+        if (linkedFragments.size < 2) return
+
+        for (block in content.select("p, div").toList()) {
+            if (!block.isAttachedTo(content)) continue
+            if (block.selectFirst("br") == null) continue
+
+            val definitions = block.segmentsBetweenLineBreaks().mapNotNull { segment ->
+                val anchor = segment.leadingNamedAnchor() ?: return@mapNotNull null
+                val id = anchor.namedAnchorId().takeIf { it in linkedFragments } ?: return@mapNotNull null
+                NamedAnchorFootnote(id = id, nodes = segment.filterNot { it === anchor })
+            }
+            if (definitions.size < 2) continue
+
+            val section = lazyFootnoteSection(content)
+            definitions.forEach { definition ->
+                val item = Element("li").attr("id", definition.id)
+                definition.nodes.forEach { item.appendChild(it.clone()) }
+                item.removeFootnoteBackrefs()
+                item.trimSurroundingWhitespace()
+                section.appendChild(item)
+            }
+            // Drop the divider that set the block off from the article body
+            val divider = block.previousElementSibling()?.takeIf { it.normalName() == "hr" }
+            block.remove()
+            divider?.remove()
+            return
         }
     }
 
@@ -130,9 +171,14 @@ internal object HtmlFootnoteListNormalizer {
                 }.forEach { it.remove() }
                 item.removeFootnoteBackrefs()
             }
+            val heading = list.previousElementSibling()?.takeIf { list.isOnlyInFootnoteWrapperWith(it, content) }
             val section = Element("section").attr("data-footnotes", "true").addClass("footnotes")
             list.before(section)
             section.appendChild(list)
+            // A wrapper holding nothing but the heading and the list is the page's footnote
+            // container, so its heading is chrome once the definitions render as footnotes. A
+            // heading sitting inline in the article body is part of the prose and stays.
+            heading?.remove()
         }
     }
 
@@ -217,6 +263,12 @@ internal object HtmlFootnoteListNormalizer {
                 "a[aria-label*=Jump], a[aria-label*=jump], " +
                 ".footnote-backref, .footnote-back-link, .data-footnote-backref",
         ).remove()
+        // Return arrows are often the only thing marking a backref — the link itself can be a bare
+        // "#" with the navigation done in an onclick handler.
+        select("a").filter { BACKREF_SYMBOL_PATTERN.matches(it.text().trim()) }.forEach { link ->
+            val wrapper = link.parent()
+            if (wrapper?.normalName() == "sup" && wrapper.childrenSize() == 1) wrapper.remove() else link.remove()
+        }
         select(".easy-footnote-margin-adjust").remove()
     }
 
@@ -291,10 +343,59 @@ internal object HtmlFootnoteListNormalizer {
         marker.remove()
     }
 
-    private fun String.normalizeFootnoteNumberText(): String = trim().trim('[', ']')
+    // Child nodes grouped into runs delimited by <br>. Consecutive breaks yield no empty runs, so
+    // <br><br> reads as a single separator.
+    private fun Element.segmentsBetweenLineBreaks(): List<List<Node>> {
+        val segments = mutableListOf<List<Node>>()
+        var current = mutableListOf<Node>()
+        for (node in childNodes()) {
+            if (node is Element && node.normalName() == "br") {
+                if (current.isNotEmpty()) segments += current
+                current = mutableListOf()
+            } else {
+                current += node
+            }
+        }
+        if (current.isNotEmpty()) segments += current
+        return segments
+    }
+
+    // The anchor a segment opens with, ignoring leading whitespace. Null when the segment starts
+    // with text or any other element.
+    private fun List<Node>.leadingNamedAnchor(): Element? {
+        for (node in this) {
+            if (node is TextNode) {
+                if (node.wholeText.isNotBlank()) return null
+                continue
+            }
+            if (node !is Element) continue
+            if (node.normalName() != "a") return null
+            return node.takeIf { it.hasAttr("name") || it.id().isNotBlank() }
+        }
+        return null
+    }
+
+    private fun Element.namedAnchorId(): String = attr("name").ifBlank { id() }.lowercase()
+
+    private fun Element.trimSurroundingWhitespace() {
+        (childNodes().firstOrNull() as? TextNode)?.let { it.text(it.wholeText.trimStart()) }
+        (childNodes().lastOrNull() as? TextNode)?.let { it.text(it.wholeText.trimEnd()) }
+    }
+
+    private data class NamedAnchorFootnote(val id: String, val nodes: List<Node>)
+
+    private fun String.normalizeFootnoteNumberText(): String = trim().trim('[', ']', '(', ')')
+
+    // A list is a footnote section when a footnote heading introduces it and its items are link
+    // targets — the id may sit on the item itself or on a nested anchor. Without ids the list is a
+    // plain bibliography under a "References" heading, which stays as an ordinary list.
+    private fun Element.isOnlyInFootnoteWrapperWith(heading: Element, content: Element): Boolean {
+        val wrapper = parent()?.takeIf { it !== content } ?: return false
+        return wrapper.children().toList() == listOf(heading, this)
+    }
 
     private fun Element.isReferenceFootnoteList(): Boolean {
-        if (select("> li [id]").isEmpty()) return false
+        if (select("> li[id], > li [id]").isEmpty()) return false
         val previous = previousElementSibling()
         return previous != null &&
             previous.normalName().matches(HEADING_TAG_PATTERN) &&
@@ -309,4 +410,5 @@ internal object HtmlFootnoteListNormalizer {
     private val PARAGRAPH_FOOTNOTE_ID_PATTERN = Regex("""(?i)^(?:ftnt|_ftn)\d+$""")
     private val NAMED_FOOTNOTE_DEFINITION_ID_PATTERN = Regex("""(?i)^(?:Footnote|_ftn)\D*\d+$""")
     private val FOOTNOTE_MARKER_TAGS = setOf("sup", "strong", "b")
+    private val BACKREF_SYMBOL_PATTERN = Regex("""[\^↩↥↑↵⤴⤵⏎︎]+""")
 }

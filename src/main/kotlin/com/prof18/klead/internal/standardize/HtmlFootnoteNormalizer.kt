@@ -15,6 +15,7 @@ internal object HtmlFootnoteNormalizer {
         HtmlFootnoteFormats.normalizeInlineFootnoteContainers(content)
         HtmlFootnoteListNormalizer.normalizeParagraphFootnoteDefinitions(content)
         HtmlFootnoteListNormalizer.normalizeNamedAnchorFootnotes(content)
+        HtmlFootnoteListNormalizer.normalizeBrSeparatedNamedAnchorFootnotes(content)
         HtmlFootnoteFormats.normalizeSidenoteFootnotes(content)
         HtmlFootnoteFormats.normalizeOrgModeFootdefs(content)
         HtmlFootnoteFormats.normalizeSubstackFootnotes(content)

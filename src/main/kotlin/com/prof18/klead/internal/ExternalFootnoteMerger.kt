@@ -24,10 +24,14 @@ internal object ExternalFootnoteMerger {
         if (!EXTERNAL_FOOTNOTE_HINT_PATTERN.containsMatchIn(hints)) return false
 
         val definitionNumbers = select("p, li")
-            .mapNotNull { it.leadingFootnoteDefinitionNumber() }
+            .mapNotNull { it.leadingFootnoteDefinitionNumber() ?: it.footnoteIdNumber() }
             .toSet()
         return definitionNumbers.any { it in referencedNumbers }
     }
+
+    // List-shaped sections carry the number in the item id rather than in a leading marker:
+    // <li id="footnote-1">. Anchored so an arbitrary id ending in a digit cannot match.
+    private fun Element.footnoteIdNumber(): String? = FOOTNOTE_ID_NUMBER_PATTERN.find(id())?.groupValues?.get(1)
 
     private fun Element.leadingFootnoteDefinitionNumber(): String? {
         val marker = children().firstOrNull() ?: return null
@@ -44,5 +48,6 @@ internal object ExternalFootnoteMerger {
         .takeIf { it.matches(FOOTNOTE_NUMBER_PATTERN) }
 
     private val FOOTNOTE_NUMBER_PATTERN = Regex("""\d{1,4}""")
+    private val FOOTNOTE_ID_NUMBER_PATTERN = Regex("""(?i)^(?:fn|ftn|ftnt|footnote|note|endnote)[-_:.]?(\d{1,4})$""")
     private val EXTERNAL_FOOTNOTE_HINT_PATTERN = Regex("""(?i)(footnotes?|endnotes?)""")
 }
