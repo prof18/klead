@@ -1,7 +1,8 @@
 # Release Scope
 
 This repository currently provides an internal Kotlin Multiplatform library for extracting
-clean Markdown from static HTML on JVM, iOS, and native Apple-silicon macOS.
+clean Markdown from static HTML on JVM, iOS, and native macOS on Apple silicon and Intel.
+The Intel-native `macosX64` target is transitional because Kotlin deprecated it in 2.3.20.
 
 Included:
 

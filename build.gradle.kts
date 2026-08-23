@@ -1,4 +1,6 @@
 import dev.detekt.gradle.Detekt
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
     kotlin("multiplatform") version "2.3.21"
@@ -13,9 +15,24 @@ kotlin {
     jvmToolchain(21)
     jvm()
     iosArm64()
-    iosSimulatorArm64()
+    iosSimulatorArm64 {
+        binaries {
+            test("benchmark", listOf(NativeBuildType.RELEASE))
+        }
+        testRuns.create("releaseBenchmark") {
+            setExecutionSourceFrom(binaries.getTest("benchmark", NativeBuildType.RELEASE))
+        }
+    }
     iosX64()
-    macosArm64()
+    macosArm64 {
+        binaries {
+            test("benchmark", listOf(NativeBuildType.RELEASE))
+        }
+        testRuns.create("releaseBenchmark") {
+            setExecutionSourceFrom(binaries.getTest("benchmark", NativeBuildType.RELEASE))
+        }
+    }
+    macosX64()
 
     sourceSets {
         commonMain.dependencies {
@@ -47,6 +64,23 @@ tasks.withType<Detekt>().configureEach {
 
 tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+    if (name == "iosSimulatorArm64ReleaseBenchmarkTest" || name == "macosArm64ReleaseBenchmarkTest") {
+        filter.includeTestsMatching("com.prof18.klead.CommonPerformanceSmokeTest")
+        outputs.upToDateWhen { false }
+    }
+    if (name == "macosArm64Test" || name == "macosX64Test") {
+        environment("KLEAD_PROJECT_DIR", projectDir.absolutePath)
+        environment("KLEAD_NATIVE_TARGET", name.removeSuffix("Test"))
+    }
+}
+
+tasks.register("nativeReleaseBenchmark") {
+    group = "verification"
+    description = "Runs optimized benchmark smoke tests on iOS Simulator arm64 and macOS arm64."
+    dependsOn("iosSimulatorArm64ReleaseBenchmarkTest", "macosArm64ReleaseBenchmarkTest")
 }
 
 tasks.register("docsCheck") {

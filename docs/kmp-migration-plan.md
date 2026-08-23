@@ -76,7 +76,7 @@ replacements for anything marked VERIFY — check the referenced source of truth
 - Targets: `jvm()`, `androidLibrary` **not needed** (FeedFlow consumes the JVM artifact
   fine on Android today; keep it that way — see §9 decision D3), `iosArm64()`,
   `iosSimulatorArm64()`, `iosX64()` (x64 optional; include for CI simulators on Intel),
-  and the post-plan extension `macosArm64()`.
+  and the post-plan extension targets `macosArm64()` and `macosX64()`.
 - HTML parsing: **Ksoup** (`com.fleeksoft.ksoup`) on ALL targets, replacing jsoup
   everywhere. One source tree, no expect/actual DOM facade.
 - URL handling, identity maps, locking: small portable replacements (Phase 4).
@@ -384,10 +384,11 @@ The fixture harness (file IO, env vars) stays `jvmTest`. Add a portable smoke la
 
 1. JVM: re-run the corpus timing test; record `final-jvm-ksoup` next to
    `baseline-jvm-jsoup` and `spike-jvm-ksoup` in the notes.
-2. iOS: add a `commonTest` micro-benchmark (not a unit-test assert — print-only, like
-   `FeedFlowReaderDumpTimingTest`): parse the embedded medium fixture 10× on
-   `iosSimulatorArm64Test`, print min/median ms. Record numbers. Simulator numbers are
-   indicative only; a device run happens later inside FeedFlow.
+2. iOS: add a `commonTest` micro-benchmark: parse the embedded medium fixture 10× on
+   `iosSimulatorArm64Test`, print min/median/max ms, and record the debug numbers.
+   Add dedicated release test binaries and a `nativeReleaseBenchmark` task so runtime
+   decisions use optimized iOS Simulator arm64 and macOS arm64 numbers. Simulator
+   numbers remain indicative; a device run happens later inside FeedFlow.
 
 **Decision points for the maintainer (not the executor):**
 - **D1** — Ksoup version pinning: pin exact (`0.2.6`) and add a renovate rule; upgrade
@@ -407,15 +408,16 @@ The fixture harness (file IO, env vars) stays `jvmTest`. Add a portable smoke la
 
 ### Native macOS extension
 
-After the original migration gate, add `macosArm64()` and reuse the complete
+After the original migration gate, add `macosArm64()` and `macosX64()` and reuse the complete
 `commonMain` and `commonTest` source sets without platform-specific implementations.
-Compile the target, run `macosArm64Test`, generate its Maven publication POM, and record
-the common micro-benchmark output. Keep the JVM target for desktop and Intel-macOS
-consumers. Do not add `macosX64`: Kotlin 2.3.20 deprecated the target ahead of its
-planned removal.
+Compile both targets, run their native tests, generate their Maven publication POMs, and
+record the common and corpus benchmark output. `macosX64` is included at the maintainer's
+request as transitional Intel-native support despite Kotlin 2.3.20 deprecating the target
+ahead of its planned removal. Keep the JVM target as the long-term Intel-macOS path.
 
-**Gate P7:** `compileKotlinMacosArm64` and `macosArm64Test` green; the target POM is
-generated as `com.prof18:klead-macosarm64`; JVM/iOS gates and snapshots remain green.
+**Gate P7:** both macOS targets compile and their native tests are green; target POMs are
+generated as `com.prof18:klead-macosarm64` and `com.prof18:klead-macosx64`; JVM/iOS gates
+and snapshots remain green. Running `macosX64Test` on Apple silicon requires Rosetta.
 
 ---
 

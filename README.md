@@ -2,7 +2,22 @@
 
 Kotlin Multiplatform library for turning static article HTML into clean Markdown.
 
-Supported targets: JVM (including desktop macOS), iOS, and native Apple-silicon macOS.
+Supported targets: JVM (including desktop macOS), iOS, and native macOS on Apple
+silicon and Intel. Kotlin deprecates the `macosX64` target as of 2.3.20, so Intel
+native support is transitional.
+
+## Native release benchmarks
+
+Run the optimized iOS Simulator arm64 and macOS arm64 benchmark smoke tests with:
+
+```shell
+./gradlew -q --console=plain nativeReleaseBenchmark
+```
+
+The task builds dedicated Kotlin/Native release test binaries and runs only
+`CommonPerformanceSmokeTest`. Timing output is recorded in the corresponding XML files
+under `build/test-results/iosSimulatorArm64ReleaseBenchmarkTest` and
+`build/test-results/macosArm64ReleaseBenchmarkTest`.
 
 ## Usage
 
