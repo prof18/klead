@@ -38,9 +38,13 @@ interface Extractor {
 
     fun extract(context: ExtractorContext): ExtractorResult? = null
 
-    fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) = Unit
 }
 ```
+
+The public extension contract deliberately exposes no parser DOM types. Custom
+extractors can use domain matching, scoped selectors, or return direct HTML and
+metadata. DOM-specific post-processing is reserved for built-in extractors so
+Ksoup remains an implementation dependency rather than part of Klead's API.
 
 Default extractors are always included. Custom extractors can be added with
 `KleadOptions.customExtractors`:
@@ -65,7 +69,7 @@ Pipeline order:
 3. Try matching extractor `contentSelectors` before generic scoring.
 4. Run the generic removal pipeline.
 5. Apply matching `postContentRemoveSelectors`.
-6. Run extractor `postProcess`, standardization, and Markdown conversion.
+6. Run built-in DOM post-processing, standardization, and Markdown conversion.
 
 When `debug = true`, extractor-aware runs can report:
 

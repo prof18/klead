@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.extractors.document
 
 internal object DaringFireballProfile : com.prof18.klead.extractors.Extractor {
     override val id: String = "daring-fireball"

@@ -2,6 +2,7 @@ package com.prof18.klead.internal.extractors.site
 
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
+import com.prof18.klead.internal.extractors.document
 
 internal object ScpWikiProfile : Extractor {
     override val id: String = "scp-wiki"

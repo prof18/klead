@@ -4,8 +4,10 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
+import com.prof18.klead.internal.extractors.ExtractorPostProcessor
+import com.prof18.klead.internal.extractors.document
 
-internal object StripeDocsProfile : Extractor {
+internal object StripeDocsProfile : Extractor, ExtractorPostProcessor {
     override val id: String = "stripe-docs"
     override val contentSelectors: List<String> = listOf("article#content")
     override val postContentRemoveSelectors: List<String> = listOf(

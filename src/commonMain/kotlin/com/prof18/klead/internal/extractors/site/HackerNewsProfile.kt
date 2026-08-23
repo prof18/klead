@@ -7,6 +7,7 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
+import com.prof18.klead.internal.extractors.document
 
 internal object HackerNewsProfile : Extractor {
     override val id: String = "hacker-news"

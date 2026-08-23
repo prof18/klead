@@ -6,8 +6,9 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.extractors.ExtractorPostProcessor
 
-internal object MaggieAppletonProfile : Extractor {
+internal object MaggieAppletonProfile : Extractor, ExtractorPostProcessor {
     override val id: String = "maggie-appleton"
     override val domains: Set<String> = setOf("maggieappleton.com")
     override val contentSelectors: List<String> = listOf("article.prose-wrapper")

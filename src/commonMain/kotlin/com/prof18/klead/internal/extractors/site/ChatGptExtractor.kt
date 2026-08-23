@@ -5,6 +5,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.extractors.document
 
 internal object ChatGptExtractor : Extractor {
     override val id: String = "chatgpt"

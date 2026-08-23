@@ -10,7 +10,6 @@ import com.prof18.klead.KleadOutput
 import com.prof18.klead.KleadResult
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.content.ContentDetectionDebug
 import com.prof18.klead.internal.content.DetectedContent
@@ -19,6 +18,8 @@ import com.prof18.klead.internal.dom.cloneDocument
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.ExtractorRegistry
+import com.prof18.klead.internal.extractors.createExtractorContext
+import com.prof18.klead.internal.extractors.postProcess
 import com.prof18.klead.internal.extractors.site.ExtractorRemovalPipeline
 import com.prof18.klead.internal.markdown.KleadMarkdownWriter
 import com.prof18.klead.internal.metadata.MetadataExtractor
@@ -71,7 +72,7 @@ internal object KleadParser {
             timings.measure("prepareDocument") {
                 DocumentPreparation.prepare(document)
             }
-            val extractorContext = ExtractorContext(
+            val extractorContext = createExtractorContext(
                 url = url,
                 host = url.hostOrNull(),
                 document = document,
@@ -155,7 +156,7 @@ internal object KleadParser {
         timingPrefix: String,
         checkCancelled: () -> Unit = {},
     ): ParsedResult {
-        val extractorContext = ExtractorContext(
+        val extractorContext = createExtractorContext(
             url = url,
             host = url.hostOrNull(),
             document = document,
@@ -210,7 +211,11 @@ internal object KleadParser {
         timings.measure("$timingPrefix.postContentRemovals") {
             ExtractorRemovalPipeline.applyPostContentRemovals(content, matchedExtractors, removals)
         }
-        val contentExtractorContext = extractorContext.copy(document = content.ownerDocument() ?: document)
+        val contentExtractorContext = createExtractorContext(
+            url = extractorContext.url,
+            host = extractorContext.host,
+            document = content.ownerDocument() ?: document,
+        )
         timings.measure("$timingPrefix.extractorPostProcess") {
             matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
         }

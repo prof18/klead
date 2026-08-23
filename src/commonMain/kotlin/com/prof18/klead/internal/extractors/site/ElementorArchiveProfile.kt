@@ -7,9 +7,11 @@ import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isAttachedTo
+import com.prof18.klead.internal.extractors.ExtractorPostProcessor
+import com.prof18.klead.internal.extractors.document
 import com.prof18.klead.internal.removal.recordAndRemove
 
-internal object ElementorArchiveProfile : Extractor {
+internal object ElementorArchiveProfile : Extractor, ExtractorPostProcessor {
     override val id: String = "elementor-archive"
     override val contentSelectors: List<String> = listOf(
         """[data-elementor-type="archive"].elementor-location-archive""",

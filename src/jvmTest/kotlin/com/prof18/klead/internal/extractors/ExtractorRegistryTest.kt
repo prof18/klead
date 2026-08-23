@@ -98,5 +98,5 @@ class ExtractorRegistryTest {
     }
 
     private fun com.fleeksoft.ksoup.nodes.Document.context(url: String): ExtractorContext =
-        ExtractorContext(url = url, host = java.net.URI(url).host, document = this)
+        createExtractorContext(url = url, host = java.net.URI(url).host, document = this)
 }

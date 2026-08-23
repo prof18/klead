@@ -8,6 +8,7 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.selectFirstSafe
+import com.prof18.klead.internal.extractors.document
 
 internal object ObsidianPublishProfile : Extractor {
     override val id: String = "obsidian-publish"

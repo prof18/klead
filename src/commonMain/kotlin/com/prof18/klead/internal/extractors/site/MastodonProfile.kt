@@ -7,6 +7,7 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.resolveKleadUri
+import com.prof18.klead.internal.extractors.document
 
 internal object MastodonProfile : Extractor {
     override val id: String = "mastodon"

@@ -7,6 +7,8 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.extractors.ExtractorPostProcessor
+import com.prof18.klead.internal.extractors.document
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -14,7 +16,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 
-internal object IlPostProfile : Extractor {
+internal object IlPostProfile : Extractor, ExtractorPostProcessor {
     override val id: String = "ilpost"
     override val domains: Set<String> = setOf("ilpost.it")
     override val postContentRemoveSelectors: List<String> = listOf(

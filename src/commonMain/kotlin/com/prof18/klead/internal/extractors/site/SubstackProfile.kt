@@ -7,6 +7,7 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.selectFirstSafe
+import com.prof18.klead.internal.extractors.document
 
 internal object SubstackProfile : com.prof18.klead.extractors.Extractor {
     override val id: String = "substack"

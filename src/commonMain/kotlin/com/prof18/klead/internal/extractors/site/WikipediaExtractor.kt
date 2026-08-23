@@ -6,6 +6,7 @@ import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.textTrimmedOrNull
+import com.prof18.klead.internal.extractors.document
 
 internal object WikipediaExtractor : Extractor {
     override val id: String = "wikipedia"

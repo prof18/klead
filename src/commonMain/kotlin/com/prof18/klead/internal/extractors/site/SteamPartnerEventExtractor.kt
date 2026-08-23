@@ -6,6 +6,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.extractors.document
 import com.prof18.klead.internal.media.TrustedEmbeds
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray

@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.internal.extractors.ExtractorRegistry
+import com.prof18.klead.internal.extractors.createExtractorContext
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -40,7 +41,7 @@ class ExtractorMatchingTest {
         val document = Ksoup.parse(
             """<html><head><link rel="canonical" href="https://www.example.com/story"></head></html>""",
         )
-        val context = ExtractorContext(
+        val context = createExtractorContext(
             url = "https://example.com-story-fixture",
             host = "example.com-story-fixture",
             document = document,
@@ -57,7 +58,7 @@ class ExtractorMatchingTest {
         override val priority: Int = 0,
     ) : Extractor
 
-    private fun context(url: String, html: String): ExtractorContext = ExtractorContext(
+    private fun context(url: String, html: String): ExtractorContext = createExtractorContext(
         url = url,
         host = URI(url).host,
         document = Ksoup.parse(html),

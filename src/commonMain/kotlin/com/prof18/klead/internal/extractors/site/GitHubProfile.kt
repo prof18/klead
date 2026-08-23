@@ -10,6 +10,7 @@ import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
+import com.prof18.klead.internal.extractors.document
 
 internal object GitHubProfile : Extractor {
     override val id: String = "github"

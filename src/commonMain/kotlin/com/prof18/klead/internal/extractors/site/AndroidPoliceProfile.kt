@@ -5,8 +5,10 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
+import com.prof18.klead.internal.extractors.ExtractorPostProcessor
+import com.prof18.klead.internal.extractors.document
 
-internal object AndroidPoliceProfile : Extractor {
+internal object AndroidPoliceProfile : Extractor, ExtractorPostProcessor {
     override val id: String = "android-police"
     override val domains: Set<String> = setOf("androidpolice.com")
     override val contentSelectors: List<String> = listOf("#article-body", ".article-body")
