@@ -21,6 +21,7 @@ kotlin {
             implementation("com.fleeksoft.ksoup:ksoup:0.2.6")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+            implementation("org.jetbrains.kotlinx:atomicfu:0.33.0")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

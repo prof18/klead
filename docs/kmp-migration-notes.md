@@ -94,6 +94,13 @@ match the migration plan's requested record.
   `ChromeBlockCaps` identity map found during the plan audit. Added a regression test
   with structurally identical sibling elements to pin the collection semantics.
 
+### Phase 4.4 — Portable selector diagnostics lock
+
+- Added exact `kotlinx-atomicfu` 0.33.0 and replaced JVM `synchronized` with its
+  multiplatform `SynchronizedObject` lock.
+- Preserved insertion order, the 100-entry cap, snapshot-copy reads, and clear behavior;
+  added direct coverage for ordering and the cap.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network

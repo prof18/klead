@@ -34,6 +34,13 @@ class DomSelectorsTest {
     }
 
     @Test
+    fun `selector diagnostics preserve insertion order and cap`() {
+        repeat(120) { index -> SelectorDiagnostics.recordUnsupported("unsupported-$index") }
+
+        assertEquals((0 until 100).map { "unsupported-$it" }, SelectorDiagnostics.unsupportedSelectors())
+    }
+
+    @Test
     fun `case insensitive attribute selectors work`() {
         val article = fixtureArticle()
 

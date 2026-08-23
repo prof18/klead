@@ -1,6 +1,8 @@
 package com.prof18.klead.internal.dom
 
 import com.fleeksoft.ksoup.nodes.Element
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 
 internal fun Element.selectSafe(selector: String): List<Element> {
     val results = mutableListOf<Element>()
@@ -34,7 +36,7 @@ internal fun Element.childrenMatching(selector: String): List<Element> = childre
 internal object SelectorDiagnostics {
     private const val MAX_TRACKED_SELECTORS = 100
     private val unsupported = linkedSetOf<String>()
-    private val lock = Any()
+    private val lock = SynchronizedObject()
 
     fun recordUnsupported(selector: String) {
         synchronized(lock) {
