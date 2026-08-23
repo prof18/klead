@@ -46,6 +46,19 @@ match the migration plan's requested record.
 - Interim gate `./gradlew -q --console=plain jvmTest --rerun` passed with snapshots
   untouched.
 
+## Phase 3 — Publication and FeedFlow consumer
+
+- Added `maven-publish`; KMP now generates umbrella, JVM, and iOS publications.
+- Verified the umbrella POM remains `com.prof18:klead:0.1.0-SNAPSHOT`; the JVM target
+  publication is `com.prof18:klead-jvm:0.1.0-SNAPSHOT` and is selected through Gradle
+  module metadata.
+- In `/Users/mg/Workspace/feedflow/feed-flow-defuddle-kotlin`, moved
+  `implementation(libs.defuddle.kotlin)` from `androidMain` and `jvmMain` to
+  `commonMain` without altering the existing composite-build substitution.
+- Consumer gate passed against this worktree with:
+  `./gradlew -q --console=plain :shared:androidJar -Pfeedflow.useLocalDefuddle=false --include-build /Users/mg/.codex/worktrees/72c0/defuddle-kotlin`.
+- FeedFlow emitted only its existing missing Dropbox-key warning; the build succeeded.
+
 ## Compatibility differences
 
 ### Phase 1 — Ksoup JVM spike

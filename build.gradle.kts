@@ -3,6 +3,7 @@ import dev.detekt.gradle.Detekt
 plugins {
     kotlin("multiplatform") version "2.3.21"
     id("dev.detekt") version "2.0.0-alpha.5"
+    `maven-publish`
 }
 
 group = "com.prof18"
