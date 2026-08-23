@@ -6,8 +6,6 @@ import com.prof18.klead.internal.dom.SimpleSelectorIndex
 import com.prof18.klead.internal.dom.normalizeSpace
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.dom.selectSafe
-import java.util.Collections
-import java.util.IdentityHashMap
 
 internal data class DetectedContent(
     val element: Element,
@@ -55,7 +53,7 @@ internal object MainContentDetector {
         schemaText: String? = null,
         preferredSelectors: List<String> = emptyList(),
     ): DetectedContent {
-        val scoreCache = IdentityHashMap<Element, ContentScore>()
+        val scoreCache = mutableMapOf<Element, ContentScore>()
         val scoreOf: (Element) -> ContentScore = { element ->
             scoreCache.getOrPut(element) { ContentScorer.scoreElement(element) }
         }
@@ -347,7 +345,7 @@ internal object MainContentDetector {
     private data class Candidate(val element: Element, val selector: String, val score: Double)
 
     private fun List<Candidate>.distinctByIdentity(): List<Candidate> {
-        val seen = Collections.newSetFromMap(IdentityHashMap<Element, Boolean>())
+        val seen = mutableSetOf<Element>()
         return filter { seen.add(it.element) }
     }
 

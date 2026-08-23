@@ -15,7 +15,7 @@ import com.fleeksoft.ksoup.select.NodeVisitor
 // never remove. The element cap bounds work on adversarially nested markup. Everything is
 // computed in one bottom-up pass, so the per-candidate check is a map lookup. Compute once per
 // removal pass and discard: counts reflect the tree at computation time.
-internal class ChromeBlockCaps private constructor(private val exceeded: java.util.IdentityHashMap<Element, Boolean>) {
+internal class ChromeBlockCaps private constructor(private val exceeded: Map<Element, Boolean>) {
     fun exceeds(element: Element): Boolean = exceeded[element] ?: false
 
     private class Frame {
@@ -28,7 +28,7 @@ internal class ChromeBlockCaps private constructor(private val exceeded: java.ut
         private const val MAX_ELEMENTS = 1_500
 
         fun compute(root: Element): ChromeBlockCaps {
-            val exceeded = java.util.IdentityHashMap<Element, Boolean>()
+            val exceeded = mutableMapOf<Element, Boolean>()
             val frames = ArrayDeque<Frame>()
             NodeTraversor.traverse(
                 object : NodeVisitor {

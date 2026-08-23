@@ -85,6 +85,15 @@ match the migration plan's requested record.
 - All characterization tests passed unchanged. The complete JVM fixture suite also
   passed with no snapshot modifications.
 
+### Phase 4.3 — Portable identity collections
+
+- Verified Ksoup 0.2.6 `Node.equals` uses reference equality and `Node.hashCode`
+  delegates to the platform object's identity hash. Standard Kotlin maps and sets
+  therefore preserve the old `IdentityHashMap` semantics in O(1) expected time.
+- Replaced both `MainContentDetector` identity collections and the additional
+  `ChromeBlockCaps` identity map found during the plan audit. Added a regression test
+  with structurally identical sibling elements to pin the collection semantics.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network
