@@ -145,16 +145,16 @@ match the migration plan's requested record.
   `median=48ms`, `max=49ms`; long `min=947ms`, `median=954ms`, `max=981ms`.
 - Added `nativeReleaseBenchmark`, backed by dedicated optimized Kotlin/Native test
   binaries and separate tasks that do not inflate the normal `check` lifecycle. Current
-  release medians are: iOS Simulator arm64 small `1ms`, medium `6ms`, long `139ms`;
-  macOS arm64 small `1ms`, medium `6ms`, long `140ms`. The same-run JVM medians were
-  small `5ms`, medium `5ms`, and long `24ms`. Release
+  release medians are: iOS Simulator arm64 small `1ms`, medium `6ms`, long `141ms`;
+  macOS arm64 small `1ms`, medium `6ms`, long `139ms`. The same-run JVM medians were
+  small `4ms`, medium `5ms`, and long `21ms`. Release
   optimization therefore removes the apparent typical-article native slowdown and
-  reduces the synthetic long-case gap to about 5.8 times JVM rather than the debug
+  reduces the synthetic long-case gap to about 6.6 times JVM rather than the debug
   binary's 33–74 times.
 - The 56-page, approximately 18 MB FeedFlow corpus ran five times in release mode on
   macOS arm64. Median wall time was `2,840ms`; the median summed parser retry time was
   `2,244ms`, or about `40ms` per page. The dedicated release corpus task's latest run was
-  `2,824ms` wall / `2,231ms` retry, with the slowest page at `191ms`.
+  `2,736ms` wall / `2,148ms` retry, with the slowest page at `187ms`.
 - `macosX64` compiles and links an x86_64 test executable on this Apple-silicon host.
   Runtime tests and benchmarks remain pending because Rosetta is not installed.
 - Generated target publication POMs as
