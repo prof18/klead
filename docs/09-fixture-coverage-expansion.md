@@ -100,7 +100,7 @@ Allowed only when:
 Naming:
 
 ```text
-src/test/resources/kotlin-expected/<fixture-name>.md
+src/jvmTest/resources/kotlin-expected/<fixture-name>.md
 ```
 
 ## Coverage Report

@@ -76,13 +76,13 @@ DUMP_DIR="$HOME/Library/Application Support/FeedFlow-dev/reader-debug/<bundle-di
 FIXTURE_NAME="<suggestedFixtureName-from-metadata-json>"
 
 cp "$DUMP_DIR/fixture-candidate.html" \
-  "/Users/mg/Workspace/defuddle-kotlin/src/test/resources/feedflow-reader-dumps/$FIXTURE_NAME.html"
+  "/Users/mg/Workspace/defuddle-kotlin/src/jvmTest/resources/feedflow-reader-dumps/$FIXTURE_NAME.html"
 
 cp "$DUMP_DIR/defuddle-content.md" \
-  "/Users/mg/Workspace/defuddle-kotlin/src/test/resources/feedflow-reader-expected/$FIXTURE_NAME.md"
+  "/Users/mg/Workspace/defuddle-kotlin/src/jvmTest/resources/feedflow-reader-expected/$FIXTURE_NAME.md"
 
 cp "$DUMP_DIR/defuddle-content.html" \
-  "/Users/mg/Workspace/defuddle-kotlin/src/test/resources/feedflow-reader-expected/$FIXTURE_NAME.html"
+  "/Users/mg/Workspace/defuddle-kotlin/src/jvmTest/resources/feedflow-reader-expected/$FIXTURE_NAME.html"
 ```
 
 The expected Markdown and HTML are only starting points. If the dump contains known-bad output, edit the expected snapshots to describe the desired clean result before implementing the fix.
@@ -92,7 +92,7 @@ The expected Markdown and HTML are only starting points. If the dump contains kn
 Run the FeedFlow reader dump snapshot suite:
 
 ```bash
-./gradlew test --tests com.prof18.klead.fixtures.FeedFlowReaderDumpRegressionTest -q --console=plain
+./gradlew jvmTest --tests com.prof18.klead.fixtures.FeedFlowReaderDumpRegressionTest -q --console=plain
 ```
 
 For a new failing fixture, the normal loop is:
@@ -111,7 +111,7 @@ For a new failing fixture, the normal loop is:
 If the behavior is already correct and only the snapshots should be refreshed, use the explicit update flag. This writes both `.md` and `.html` expected snapshots for FeedFlow dumps:
 
 ```bash
-KLEAD_UPDATE_FEEDFLOW_SNAPSHOTS=true ./gradlew test \
+KLEAD_UPDATE_FEEDFLOW_SNAPSHOTS=true ./gradlew jvmTest \
   --tests com.prof18.klead.fixtures.FeedFlowReaderDumpRegressionTest \
   -q --console=plain
 ```

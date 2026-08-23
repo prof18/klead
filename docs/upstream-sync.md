@@ -14,19 +14,19 @@ git -C /private/tmp/defuddle-upstream rev-parse HEAD
 Then copy only upstream-owned test assets:
 
 ```sh
-cp /private/tmp/defuddle-upstream/tests/fixtures/*.html src/test/resources/defuddle-fixtures/
-cp /private/tmp/defuddle-upstream/tests/expected/* src/test/resources/defuddle-expected/
-cp /private/tmp/defuddle-upstream/LICENSE src/test/resources/defuddle-license.txt
+cp /private/tmp/defuddle-upstream/tests/fixtures/*.html src/jvmTest/resources/defuddle-fixtures/
+cp /private/tmp/defuddle-upstream/tests/expected/* src/jvmTest/resources/defuddle-expected/
+cp /private/tmp/defuddle-upstream/LICENSE src/jvmTest/resources/defuddle-license.txt
 ```
 
-Update `src/test/resources/defuddle-upstream.sha` to the cloned commit SHA.
+Update `src/jvmTest/resources/defuddle-upstream.sha` to the cloned commit SHA.
 
-Do not edit files under `src/test/resources/defuddle-fixtures/` or `src/test/resources/defuddle-expected/` by hand. Kotlin-specific expected output belongs only in `src/test/resources/kotlin-expected/`.
+Do not edit files under `src/jvmTest/resources/defuddle-fixtures/` or `src/jvmTest/resources/defuddle-expected/` by hand. Kotlin-specific expected output belongs only in `src/jvmTest/resources/kotlin-expected/`.
 
 After syncing, run:
 
 ```sh
-./gradlew test -q --console=plain --tests com.prof18.klead.fixtures.FixtureCoverageTest
+./gradlew jvmTest -q --console=plain --tests com.prof18.klead.fixtures.FixtureCoverageTest
 ```
 
 Classify new failures before changing parser code or Kotlin expected outputs.

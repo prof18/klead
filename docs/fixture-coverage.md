@@ -16,7 +16,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Full diagnostic fixtures: 190
 - Unknown diagnostic failures: 0
 - Strict whole-corpus Markdown parity: enforced for supported fixtures
-- FeedFlow reader-dump regression fixtures: 48
+- FeedFlow reader-dump regression fixtures: 56
 
 ## Active Strict Fixtures
 

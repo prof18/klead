@@ -1,5 +1,8 @@
 import dev.detekt.gradle.Detekt
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeHostTest
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
@@ -19,17 +22,11 @@ kotlin {
         binaries {
             test("benchmark", listOf(NativeBuildType.RELEASE))
         }
-        testRuns.create("releaseBenchmark") {
-            setExecutionSourceFrom(binaries.getTest("benchmark", NativeBuildType.RELEASE))
-        }
     }
     iosX64()
     macosArm64 {
         binaries {
             test("benchmark", listOf(NativeBuildType.RELEASE))
-        }
-        testRuns.create("releaseBenchmark") {
-            setExecutionSourceFrom(binaries.getTest("benchmark", NativeBuildType.RELEASE))
         }
     }
     macosX64()
@@ -46,6 +43,55 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
         }
     }
+}
+
+val iosSimulatorArm64BenchmarkBinary = kotlin.targets
+    .getByName<KotlinNativeTarget>("iosSimulatorArm64")
+    .binaries.getTest("benchmark", NativeBuildType.RELEASE)
+val macosArm64BenchmarkBinary = kotlin.targets
+    .getByName<KotlinNativeTarget>("macosArm64")
+    .binaries.getTest("benchmark", NativeBuildType.RELEASE)
+
+tasks.register<KotlinNativeSimulatorTest>("iosSimulatorArm64ReleaseBenchmarkTest") {
+    group = "verification"
+    description = "Runs optimized benchmark smoke tests on the iOS arm64 Simulator."
+    targetName = "iosSimulatorArm64"
+    workingDir = projectDir.absolutePath
+    binaryResultsDirectory.set(layout.buildDirectory.dir("test-results/$name/binary"))
+    reports.junitXml.outputLocation.set(layout.buildDirectory.dir("test-results/$name"))
+    reports.html.outputLocation.set(layout.buildDirectory.dir("reports/tests/$name"))
+    executable(iosSimulatorArm64BenchmarkBinary.linkTaskProvider.map { iosSimulatorArm64BenchmarkBinary.outputFile })
+    val debugTest = tasks.named<KotlinNativeSimulatorTest>("iosSimulatorArm64Test")
+    device.set(debugTest.flatMap { it.device })
+    standalone.set(true)
+}
+
+tasks.register<KotlinNativeHostTest>("macosArm64ReleaseBenchmarkTest") {
+    group = "verification"
+    description = "Runs optimized benchmark smoke tests on macOS arm64."
+    targetName = "macosArm64"
+    workingDir = projectDir.absolutePath
+    binaryResultsDirectory.set(layout.buildDirectory.dir("test-results/$name/binary"))
+    reports.junitXml.outputLocation.set(layout.buildDirectory.dir("test-results/$name"))
+    reports.html.outputLocation.set(layout.buildDirectory.dir("reports/tests/$name"))
+    executable(macosArm64BenchmarkBinary.linkTaskProvider.map { macosArm64BenchmarkBinary.outputFile })
+}
+
+tasks.register<KotlinNativeHostTest>("macosArm64ReleaseCorpusBenchmarkTest") {
+    group = "verification"
+    description = "Runs the optimized 56-page FeedFlow corpus benchmark on macOS arm64."
+    targetName = "macosArm64"
+    workingDir = projectDir.absolutePath
+    binaryResultsDirectory.set(layout.buildDirectory.dir("test-results/$name/binary"))
+    reports.junitXml.outputLocation.set(layout.buildDirectory.dir("test-results/$name"))
+    reports.html.outputLocation.set(layout.buildDirectory.dir("reports/tests/$name"))
+    executable(macosArm64BenchmarkBinary.linkTaskProvider.map { macosArm64BenchmarkBinary.outputFile })
+    filter.includeTestsMatching("com.prof18.klead.MacosFeedFlowCorpusTimingTest")
+    environment("KLEAD_PROJECT_DIR", projectDir.absolutePath)
+    environment("KLEAD_NATIVE_TARGET", "macosArm64Release")
+    environment("KLEAD_PRINT_FEEDFLOW_TIMINGS", "true")
+    outputs.upToDateWhen { false }
+    mustRunAfter("macosArm64ReleaseBenchmarkTest")
 }
 
 dependencies {
@@ -79,8 +125,12 @@ tasks.withType<KotlinNativeTest>().configureEach {
 
 tasks.register("nativeReleaseBenchmark") {
     group = "verification"
-    description = "Runs optimized benchmark smoke tests on iOS Simulator arm64 and macOS arm64."
-    dependsOn("iosSimulatorArm64ReleaseBenchmarkTest", "macosArm64ReleaseBenchmarkTest")
+    description = "Runs optimized smoke and corpus benchmarks on iOS Simulator arm64 and macOS arm64."
+    dependsOn(
+        "iosSimulatorArm64ReleaseBenchmarkTest",
+        "macosArm64ReleaseBenchmarkTest",
+        "macosArm64ReleaseCorpusBenchmarkTest",
+    )
 }
 
 tasks.register("docsCheck") {
@@ -103,10 +153,14 @@ tasks.register("docsCheck") {
     }
 }
 
-tasks.check {
-    dependsOn("detekt")
+tasks.named("detekt") {
     dependsOn("detektCommonMainSourceSet")
     dependsOn("detektCommonTestSourceSet")
     dependsOn("detektJvmTestSourceSet")
+    dependsOn("detektMacosTestSourceSet")
+}
+
+tasks.check {
+    dependsOn("detekt")
     dependsOn("docsCheck")
 }

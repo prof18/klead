@@ -12,7 +12,7 @@ class CommonPerformanceSmokeTest {
     fun printEmbeddedMediumFixtureTimings() = runTest {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val options = KleadOptions(outputs = setOf(KleadOutput.HTML, KleadOutput.MARKDOWN))
-        val parse: suspend () -> Unit = {
+        val parse: suspend () -> KleadResult = {
             KleadParser.parseHtml(
                 html = COMMON_MEDIUM_FIXTURE,
                 url = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
@@ -20,7 +20,7 @@ class CommonPerformanceSmokeTest {
                 parserDispatcher = dispatcher,
             )
         }
-        parse()
+        parse().assertBenchmarkOutput()
         val samples = sampleTimings(parse)
 
         println("TIMING_COMMON_MEDIUM ${samples.summary()}")
@@ -38,14 +38,14 @@ class CommonPerformanceSmokeTest {
             }
             append("</article>")
         }
-        val parseSmall: suspend () -> Unit = {
+        val parseSmall: suspend () -> KleadResult = {
             KleadParser.parseHtml(smallHtml, "https://example.com/small", options, dispatcher)
         }
-        val parseLong: suspend () -> Unit = {
+        val parseLong: suspend () -> KleadResult = {
             KleadParser.parseHtml(longHtml, "https://example.com/long", options, dispatcher)
         }
-        parseSmall()
-        parseLong()
+        parseSmall().assertBenchmarkOutput()
+        parseLong().assertBenchmarkOutput()
         val smallSamples = sampleTimings(parseSmall)
         val longSamples = sampleTimings(parseLong)
 
@@ -55,19 +55,26 @@ class CommonPerformanceSmokeTest {
         assertTrue(longSamples.last() < LONG_MAX_MILLIS, "long samples exceeded threshold: $longSamples")
     }
 
-    private suspend fun sampleTimings(block: suspend () -> Unit): List<Long> = buildList {
+    private suspend fun sampleTimings(block: suspend () -> KleadResult): List<Long> = buildList {
         repeat(SAMPLE_COUNT) {
             val mark = TimeSource.Monotonic.markNow()
-            block()
-            add(mark.elapsedNow().inWholeMilliseconds)
+            val result = block()
+            val elapsedMillis = mark.elapsedNow().inWholeMilliseconds
+            result.assertBenchmarkOutput()
+            add(elapsedMillis)
         }
     }.sorted()
+
+    private fun KleadResult.assertBenchmarkOutput() {
+        assertTrue(content.html?.isNotBlank() == true, "benchmark HTML output was empty")
+        assertTrue(content.markdown?.isNotBlank() == true, "benchmark Markdown output was empty")
+    }
 
     private fun List<Long>.summary(): String =
         "min=${first()}ms median=${get(size / 2)}ms max=${last()}ms samples=$this"
 
     private companion object {
-        const val SAMPLE_COUNT = 10
+        const val SAMPLE_COUNT = 11
         const val SMALL_MAX_MILLIS = 1_000
         const val LONG_MAX_MILLIS = 5_000
     }

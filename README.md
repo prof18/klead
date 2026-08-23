@@ -14,10 +14,13 @@ Run the optimized iOS Simulator arm64 and macOS arm64 benchmark smoke tests with
 ./gradlew -q --console=plain nativeReleaseBenchmark
 ```
 
-The task builds dedicated Kotlin/Native release test binaries and runs only
-`CommonPerformanceSmokeTest`. Timing output is recorded in the corresponding XML files
-under `build/test-results/iosSimulatorArm64ReleaseBenchmarkTest` and
-`build/test-results/macosArm64ReleaseBenchmarkTest`.
+The task builds dedicated Kotlin/Native release test binaries, runs
+`CommonPerformanceSmokeTest` on iOS Simulator and macOS, and runs the 56-page FeedFlow
+corpus on macOS. Timing output is recorded under
+`build/test-results/iosSimulatorArm64ReleaseBenchmarkTest`,
+`build/test-results/macosArm64ReleaseBenchmarkTest`, and
+`build/test-results/macosArm64ReleaseCorpusBenchmarkTest`. These release benchmarks are
+intentionally separate from the normal `check` lifecycle.
 
 ## Usage
 
@@ -108,7 +111,7 @@ Configured Gradle gates:
 
 ```sh
 ./gradlew detekt -q --console=plain
-./gradlew test -q --console=plain
+./gradlew jvmTest -q --console=plain
 ./gradlew check -q --console=plain
 ```
 

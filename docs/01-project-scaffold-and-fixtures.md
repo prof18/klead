@@ -21,11 +21,11 @@ klead/
   settings.gradle.kts
   README.md
   docs/
-  src/main/kotlin/com/prof18/klead/
-  src/test/kotlin/com/prof18/klead/
-  src/test/resources/defuddle-fixtures/
-  src/test/resources/defuddle-expected/
-  src/test/resources/kotlin-expected/
+  src/commonMain/kotlin/com/prof18/klead/
+  src/jvmTest/kotlin/com/prof18/klead/
+  src/jvmTest/resources/defuddle-fixtures/
+  src/jvmTest/resources/defuddle-expected/
+  src/jvmTest/resources/kotlin-expected/
 ```
 
 ## Dependencies
@@ -58,14 +58,14 @@ tests/expected/*.html
 Also store:
 
 ```text
-src/test/resources/defuddle-upstream.sha
-src/test/resources/defuddle-license.txt
+src/jvmTest/resources/defuddle-upstream.sha
+src/jvmTest/resources/defuddle-license.txt
 ```
 
 Do not modify upstream fixture content. Kotlin-specific expected output belongs in:
 
 ```text
-src/test/resources/kotlin-expected/
+src/jvmTest/resources/kotlin-expected/
 ```
 
 Imported upstream corpus:
@@ -74,7 +74,7 @@ Imported upstream corpus:
 - HTML fixtures: 190
 - Expected Markdown files: 190
 - Expected HTML files: 3
-- License: `src/test/resources/defuddle-license.txt`
+- License: `src/jvmTest/resources/defuddle-license.txt`
 
 ## Fixture Harness
 
@@ -165,7 +165,7 @@ Diagnostic:
 
 ## Acceptance Gate
 
-- `[x]` `./gradlew test -q --console=plain` runs.
+- `[x]` `./gradlew jvmTest -q --console=plain` runs.
 - `[x]` Fixture harness can load upstream inputs and expected outputs.
 - `[d]` Tests fail because parser is empty, not because resources cannot be loaded.
 

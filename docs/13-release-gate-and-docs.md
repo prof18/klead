@@ -72,7 +72,7 @@ Track:
 Use project-specific tasks. Actual project commands:
 
 ```text
-./gradlew test -q --console=plain
+./gradlew jvmTest -q --console=plain
 ./gradlew check -q --console=plain
 ```
 

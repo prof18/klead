@@ -105,7 +105,7 @@ class FeedFlowReaderDumpRegressionTest {
     private fun updateExpectedMarkdown(fixtureName: String, actual: String) {
         val path = Path.of(
             System.getProperty("user.dir"),
-            "src/test/resources/feedflow-reader-expected/$fixtureName.md",
+            "src/jvmTest/resources/feedflow-reader-expected/$fixtureName.md",
         )
         val existing = if (Files.isRegularFile(path)) {
             Files.readString(path).normalizeLineEndings()
@@ -129,7 +129,7 @@ class FeedFlowReaderDumpRegressionTest {
     private fun updateExpectedHtml(fixtureName: String, actual: String) {
         val path = Path.of(
             System.getProperty("user.dir"),
-            "src/test/resources/feedflow-reader-expected/$fixtureName.html",
+            "src/jvmTest/resources/feedflow-reader-expected/$fixtureName.html",
         )
         Files.createDirectories(path.parent)
         Files.writeString(path, normalizeHtmlSnapshot(actual) + "\n")

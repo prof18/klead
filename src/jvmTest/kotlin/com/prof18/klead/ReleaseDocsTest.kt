@@ -13,10 +13,11 @@ class ReleaseDocsTest {
         val build = Path("build.gradle.kts").readText()
 
         assertTrue(readme.contains("./gradlew detekt -q --console=plain"))
-        assertTrue(readme.contains("./gradlew test -q --console=plain"))
+        assertTrue(readme.contains("./gradlew jvmTest -q --console=plain"))
         assertTrue(readme.contains("./gradlew check -q --console=plain"))
         assertTrue(build.contains("dev.detekt"))
         assertTrue(build.contains("detekt-rules-ktlint-wrapper"))
+        assertTrue(build.contains("tasks.named(\"detekt\")"))
         assertTrue(build.contains("docsCheck"))
         assertTrue(build.contains("known-differences.md"))
         assertTrue(build.contains("security-policy.md"))

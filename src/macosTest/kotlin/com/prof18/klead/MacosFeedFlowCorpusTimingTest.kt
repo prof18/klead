@@ -132,11 +132,7 @@ class MacosFeedFlowCorpusTimingTest {
         }
     }
 
-    private data class CorpusTiming(
-        val name: String,
-        val parseTimeMillis: Long,
-        val phases: Map<String, Long>,
-    )
+    private data class CorpusTiming(val name: String, val parseTimeMillis: Long, val phases: Map<String, Long>)
 
     private companion object {
         val URL_FRONTMATTER = Regex("""<!--\s*\{"url":"([^"]+)"}\s*-->""")

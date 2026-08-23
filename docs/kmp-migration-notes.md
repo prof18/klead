@@ -140,21 +140,21 @@ match the migration plan's requested record.
   Both consume the same `commonMain` parser and `commonTest` rendering suite as iOS, with
   no platform-specific production implementation. Kotlin 2.3.21 warns that `macosX64`
   is deprecated; the JVM artifact remains the long-term Intel-macOS path.
-- All 13 macOS arm64 native tests passed. Ten-sample synthetic benchmarks reported:
-  small `min=15ms`, `median=16ms`, `max=16ms`; medium `min=49ms`, `median=49ms`,
-  `max=50ms`; long `min=959ms`, `median=971ms`, `max=978ms`.
+- All 25 macOS arm64 native tests passed. Eleven-sample debug synthetic benchmarks
+  reported: small `min=15ms`, `median=16ms`, `max=16ms`; medium `min=47ms`,
+  `median=48ms`, `max=49ms`; long `min=947ms`, `median=954ms`, `max=981ms`.
 - Added `nativeReleaseBenchmark`, backed by dedicated optimized Kotlin/Native test
-  binaries and filtered to the two common performance tests. Across two invocations,
-  release medians were: iOS Simulator arm64 small `1–2ms`, medium `6ms`, long
-  `140–141ms`; macOS arm64 small `1ms`, medium `6–7ms`, long `141–143ms`. The
-  same-run JVM medians were small `5ms`, medium `6ms`, and long `32ms`. Release
+  binaries and separate tasks that do not inflate the normal `check` lifecycle. Current
+  release medians are: iOS Simulator arm64 small `1ms`, medium `6ms`, long `139ms`;
+  macOS arm64 small `1ms`, medium `6ms`, long `140ms`. The same-run JVM medians were
+  small `5ms`, medium `5ms`, and long `24ms`. Release
   optimization therefore removes the apparent typical-article native slowdown and
-  reduces the synthetic long-case gap to about 4.4 times JVM rather than the debug
+  reduces the synthetic long-case gap to about 5.8 times JVM rather than the debug
   binary's 33–74 times.
-- The 56-page, approximately 18 MB FeedFlow corpus ran five times on macOS arm64. Median
-  wall time was `20,556ms`; the median summed parser retry time was `16,169ms`, or about
-  `289ms` per page. The slowest individual page in the final run was `1,384ms`, below
-  the migration plan's approximately 2-second typical-article fallback threshold.
+- The 56-page, approximately 18 MB FeedFlow corpus ran five times in release mode on
+  macOS arm64. Median wall time was `2,840ms`; the median summed parser retry time was
+  `2,244ms`, or about `40ms` per page. The dedicated release corpus task's latest run was
+  `2,824ms` wall / `2,231ms` retry, with the slowest page at `191ms`.
 - `macosX64` compiles and links an x86_64 test executable on this Apple-silicon host.
   Runtime tests and benchmarks remain pending because Rosetta is not installed.
 - Generated target publication POMs as
@@ -167,10 +167,10 @@ match the migration plan's requested record.
 
 ## Final handoff gate
 
-- `./gradlew -q --console=plain check compileKotlinIosArm64 compileKotlinIosSimulatorArm64 iosSimulatorArm64Test compileKotlinMacosArm64 macosArm64Test compileKotlinMacosX64 macosX64TestBinaries generatePomFileForMacosArm64Publication generatePomFileForMacosX64Publication nativeReleaseBenchmark`
-  passed: 460 JVM tests, 12 iOS Simulator arm64 tests, and 13 native macOS
-  arm64 tests, with zero failures or skips. The macOS x64 test binary compiled and
-  linked; executing its 13 tests still requires Rosetta on this Apple-silicon host.
+- `./gradlew -q --console=plain check compileKotlinIosArm64 macosX64TestBinaries generatePomFileForIosArm64Publication generatePomFileForIosSimulatorArm64Publication generatePomFileForIosX64Publication generatePomFileForMacosArm64Publication generatePomFileForMacosX64Publication nativeReleaseBenchmark`
+  passed: 466 JVM tests, 24 iOS Simulator arm64 tests, and 25 native macOS
+  arm64 tests, with zero failures in the executed suites. The macOS x64 test binary compiled and
+  linked; executing its 25 tests still requires Rosetta on this Apple-silicon host.
 - All 551 JVM fixture/resource files are byte-identical to branch point `60cdc36` after
   accounting for the source-set path move. The sorted Git-blob aggregate SHA-256 is
   `3730df7038e6ee3fe592744aba1361eca73326030e4bc42e2513149029897a1e`

@@ -108,9 +108,9 @@ Known trade-offs to accept up front:
 2. Record baselines into `docs/kmp-migration-notes.md` (create the file):
    ```bash
    ./gradlew check -q --console=plain            # must pass
-   KLEAD_PRINT_FEEDFLOW_TIMINGS=true ./gradlew test -q --console=plain \
+   KLEAD_PRINT_FEEDFLOW_TIMINGS=true ./gradlew jvmTest -q --console=plain \
      --tests "com.prof18.klead.fixtures.FeedFlowReaderDumpTimingTest" --rerun
-   grep -h "TIMING" build/test-results/test/TEST-com.prof18.klead.fixtures.FeedFlowReaderDumpTimingTest.xml
+   grep -h "TIMING" build/test-results/jvmTest/TEST-com.prof18.klead.fixtures.FeedFlowReaderDumpTimingTest.xml
    ```
    Paste the `TIMING_TOTALS` line into the notes file as `baseline-jvm-jsoup`.
 3. Create branch `kmp-migration`.
@@ -162,7 +162,7 @@ Goal: prove Ksoup parses our corpus identically, while the project is still plai
 5. Run the full suite and the timing test:
    ```bash
    ./gradlew check -q --console=plain
-   KLEAD_PRINT_FEEDFLOW_TIMINGS=true ./gradlew test -q --console=plain \
+   KLEAD_PRINT_FEEDFLOW_TIMINGS=true ./gradlew jvmTest -q --console=plain \
      --tests "com.prof18.klead.fixtures.FeedFlowReaderDumpTimingTest" --rerun
    ```
 6. Triage every failure with the Snapshot triage protocol (§10). Classify:
