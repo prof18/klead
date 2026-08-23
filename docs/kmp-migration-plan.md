@@ -1,6 +1,6 @@
-# KMP Migration Plan: klead → Kotlin Multiplatform (Android / Desktop-JVM / iOS)
+# KMP Migration Plan: klead → Kotlin Multiplatform (Android / Desktop-JVM / iOS / native macOS)
 
-**Status:** prepared 2026-07-07, not started.
+**Status:** executed 2026-08-23, including the native macOS extension.
 **Audience:** this document is written to be executed by an engineer or an AI coding agent
 with limited context. Follow it phase by phase. Do not skip gates. Do not improvise
 replacements for anything marked VERIFY — check the referenced source of truth first.
@@ -75,7 +75,8 @@ replacements for anything marked VERIFY — check the referenced source of truth
 - Same single module, converted to `kotlin("multiplatform")`.
 - Targets: `jvm()`, `androidLibrary` **not needed** (FeedFlow consumes the JVM artifact
   fine on Android today; keep it that way — see §9 decision D3), `iosArm64()`,
-  `iosSimulatorArm64()`, `iosX64()` (x64 optional; include for CI simulators on Intel).
+  `iosSimulatorArm64()`, `iosX64()` (x64 optional; include for CI simulators on Intel),
+  and the post-plan extension `macosArm64()`.
 - HTML parsing: **Ksoup** (`com.fleeksoft.ksoup`) on ALL targets, replacing jsoup
   everywhere. One source tree, no expect/actual DOM facade.
 - URL handling, identity maps, locking: small portable replacements (Phase 4).
@@ -403,6 +404,18 @@ The fixture harness (file IO, env vars) stays `jvmTest`. Add a portable smoke la
   either way.
 
 **Gate P6:** numbers recorded; decisions D1–D4 answered in the notes file.
+
+### Native macOS extension
+
+After the original migration gate, add `macosArm64()` and reuse the complete
+`commonMain` and `commonTest` source sets without platform-specific implementations.
+Compile the target, run `macosArm64Test`, generate its Maven publication POM, and record
+the common micro-benchmark output. Keep the JVM target for desktop and Intel-macOS
+consumers. Do not add `macosX64`: Kotlin 2.3.20 deprecated the target ahead of its
+planned removal.
+
+**Gate P7:** `compileKotlinMacosArm64` and `macosArm64Test` green; the target POM is
+generated as `com.prof18:klead-macosarm64`; JVM/iOS gates and snapshots remain green.
 
 ---
 

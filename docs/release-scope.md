@@ -1,6 +1,7 @@
 # Release Scope
 
-This repository currently provides an internal Kotlin/JVM library for extracting clean Markdown from static HTML.
+This repository currently provides an internal Kotlin Multiplatform library for extracting
+clean Markdown from static HTML on JVM, iOS, and native Apple-silicon macOS.
 
 Included:
 

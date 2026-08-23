@@ -1,6 +1,6 @@
 # Klead Implementation Plan
 
-This folder is the execution plan for building Klead, a Kotlin/JVM library that outputs clean Markdown.
+This folder is the execution plan for building Klead, a Kotlin Multiplatform library that outputs clean Markdown.
 
 The project goal is broad article extraction behavior, with Markdown generation as the primary output. Compose, WebView, and UI rendering are out of scope for this repository unless a later product decision adds an example app.
 
@@ -28,7 +28,7 @@ For real-world FeedFlow reader debugging, use [FeedFlow Reader Dump Workflow](fe
 
 ## Scope
 
-- `[x]` SCOPE-001 Kotlin/JVM library accepts static HTML plus URL.
+- `[x]` SCOPE-001 Kotlin Multiplatform library accepts static HTML plus URL on JVM and Apple native targets.
 - `[x]` SCOPE-002 Library emits clean Markdown as the primary content output.
 - `[x]` SCOPE-003 Library may also return cleaned HTML for debugging and test comparison.
 - `[x]` SCOPE-004 No WebView.

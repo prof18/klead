@@ -1,6 +1,8 @@
 # Klead
 
-Kotlin/JVM library for turning static article HTML into clean Markdown.
+Kotlin Multiplatform library for turning static article HTML into clean Markdown.
+
+Supported targets: JVM (including desktop macOS), iOS, and native Apple-silicon macOS.
 
 ## Usage
 
