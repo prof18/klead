@@ -129,6 +129,10 @@ match the migration plan's requested record.
 - Against `baseline-jvm-jsoup`, final total retry improved about 1.2%, first-attempt
   total improved about 1.8%, and document parsing regressed about 8.3%. The end-to-end
   corpus result did not regress and every submetric remains comfortably inside +25%.
+- Added a print-only common micro-benchmark that parses the embedded medium MDN article
+  ten times. iOS Simulator arm64: `min=50ms`, `median=51ms`, samples
+  `[50, 50, 50, 50, 51, 51, 51, 51, 51, 65]`. JVM reference: `min=7ms`,
+  `median=11ms`, samples `[7, 7, 8, 8, 8, 11, 11, 12, 15, 170]`.
 
 ### Phase 1 — Ksoup JVM spike
 
@@ -162,4 +166,6 @@ match the migration plan's requested record.
   changes despite Ksoup's jsoup 1.22.1 alignment.
 - D3 Android target: follow the plan and keep the JVM target unless consumer validation
   demonstrates an R8 or variant-metadata problem.
-- D4 iOS fallback: pending the Phase 6 simulator micro-benchmark commit.
+- D4 iOS fallback: not needed. The 51ms simulator median is far below the plan's
+  approximate 2-second fallback threshold; keep native Ksoup and confirm later on a
+  physical device inside FeedFlow as planned.
