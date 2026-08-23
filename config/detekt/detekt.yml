@@ -12,11 +12,15 @@ complexity:
     allowedLines: 600
     excludes:
       - '**/src/test/**'
+      - '**/src/commonTest/**'
+      - '**/src/jvmTest/**'
   LongMethod:
     active: true
     allowedLines: 90
     excludes:
       - '**/src/test/**'
+      - '**/src/commonTest/**'
+      - '**/src/jvmTest/**'
   TooManyFunctions:
     ignorePrivate: true
     ignoreInternal: true
@@ -36,6 +40,8 @@ naming:
     active: true
     excludes:
       - '**/src/test/**'
+      - '**/src/commonTest/**'
+      - '**/src/jvmTest/**'
 
 style:
   LoopWithTooManyJumpStatements:

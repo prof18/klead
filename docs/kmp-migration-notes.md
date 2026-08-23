@@ -32,6 +32,20 @@ match the migration plan's requested record.
 - Detekt KMP task names must be discovered from the resolved build rather than assuming
   the names in the prepared plan.
 
+## Phase 2 — Kotlin Multiplatform build conversion
+
+- Replaced the JVM plugin with `kotlin("multiplatform")` 2.3.21 and registered `jvm`,
+  `iosArm64`, `iosSimulatorArm64`, and `iosX64` targets.
+- Moved production sources to `src/commonMain/kotlin`, JVM tests to
+  `src/jvmTest/kotlin`, and all 551 fixture resources to `src/jvmTest/resources`.
+- Resolved detekt task names from the configured build:
+  `detektCommonMainSourceSet`, `detektCommonTestSourceSet`, and
+  `detektJvmTestSourceSet` are wired into `check`.
+- Preserved the existing detekt test exclusions for the new `commonTest` and `jvmTest`
+  source-set paths.
+- Interim gate `./gradlew -q --console=plain jvmTest --rerun` passed with snapshots
+  untouched.
+
 ## Compatibility differences
 
 ### Phase 1 — Ksoup JVM spike

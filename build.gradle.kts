@@ -1,7 +1,7 @@
 import dev.detekt.gradle.Detekt
 
 plugins {
-    kotlin("jvm") version "2.3.21"
+    kotlin("multiplatform") version "2.3.21"
     id("dev.detekt") version "2.0.0-alpha.5"
 }
 
@@ -10,17 +10,26 @@ version = "0.1.0-SNAPSHOT"
 
 kotlin {
     jvmToolchain(21)
+    jvm()
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation("com.fleeksoft.ksoup:ksoup:0.2.6")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+        }
+    }
 }
 
 dependencies {
-    implementation("com.fleeksoft.ksoup:ksoup:0.2.6")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.5")
-
-    testImplementation(kotlin("test"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
 }
 
 detekt {
@@ -33,7 +42,7 @@ tasks.withType<Detekt>().configureEach {
     jvmTarget.set("21")
 }
 
-tasks.test {
+tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
 }
 
@@ -59,5 +68,8 @@ tasks.register("docsCheck") {
 
 tasks.check {
     dependsOn("detekt")
+    dependsOn("detektCommonMainSourceSet")
+    dependsOn("detektCommonTestSourceSet")
+    dependsOn("detektJvmTestSourceSet")
     dependsOn("docsCheck")
 }
