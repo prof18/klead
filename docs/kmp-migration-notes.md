@@ -119,6 +119,17 @@ match the migration plan's requested record.
 - `./gradlew -q --console=plain iosSimulatorArm64Test` passed all common tests on the
   native simulator target. The same smoke tests passed on JVM.
 
+### Phase 6 — Final performance validation
+
+- `final-jvm-ksoup` five-run median: `retry=1035ms`, `attempt1.total=965ms`,
+  `attempt1.removalPipeline=498ms`, `attempt1.removalPipeline.removeContentPatterns=313ms`,
+  `documentParse=236ms`, `attempt1.removalPipeline.removeContentPatterns.nestedArticleFooterBlocks=214ms`,
+  `attempt1.mainContentDetection=159ms`, `attempt1.htmlStandardizer=84ms`.
+- Five-run `retry` samples: `1106ms`, `1035ms`, `1035ms`, `1026ms`, `1042ms`.
+- Against `baseline-jvm-jsoup`, final total retry improved about 1.2%, first-attempt
+  total improved about 1.8%, and document parsing regressed about 8.3%. The end-to-end
+  corpus result did not regress and every submetric remains comfortably inside +25%.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network
@@ -151,4 +162,4 @@ match the migration plan's requested record.
   changes despite Ksoup's jsoup 1.22.1 alignment.
 - D3 Android target: follow the plan and keep the JVM target unless consumer validation
   demonstrates an R8 or variant-metadata problem.
-- D4 iOS fallback: pending Phase 6 simulator performance results.
+- D4 iOS fallback: pending the Phase 6 simulator micro-benchmark commit.
