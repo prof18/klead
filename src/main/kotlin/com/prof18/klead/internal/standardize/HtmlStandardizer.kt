@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.standardize
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.replaceWithChildren
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.TextNode
 
 // Orchestrates the standardization passes that run after content detection and clutter removal.
 // The pass order matters: callouts and embeds are rewritten before headings so title matching

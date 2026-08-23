@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.standardize
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 // Orchestrates footnote normalization: format-specific converters run first (their markup is
 // the most distinctive), then the generic list/definition collectors, then loose trailing

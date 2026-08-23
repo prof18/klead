@@ -1,10 +1,10 @@
 package com.prof18.klead.internal.removal
 
+import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
-import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 class RemovalPipelineTest {
     @Test
     fun `delimiter-less anchor id is kept even when it contains a clutter token`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <article>
               <p>Intro paragraph with enough words to clearly be the article content and remain present here.</p>
@@ -36,7 +36,7 @@ class RemovalPipelineTest {
 
     @Test
     fun `link-heavy block inside a table cell is not removed`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <article>
               <table>
@@ -60,7 +60,7 @@ class RemovalPipelineTest {
 
     @Test
     fun `button wrapping an image keeps the image when the button is removed`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <article>
               <p>Article body text long enough to be treated as the main content of the page.</p>
@@ -160,7 +160,7 @@ class RemovalPipelineTest {
 
     @Test
     fun `hidden parent section body keeps heading when visible child section follows`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <article>
               <h1>Parent section</h1>
@@ -183,7 +183,7 @@ class RemovalPipelineTest {
 
     @Test
     fun `plain author bio blocks are not removed by global exact selectors`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <article>
               <p>Article body remains.</p>
@@ -205,7 +205,7 @@ class RemovalPipelineTest {
 
     @Test
     fun `math hidden wrappers are preserved`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <article>
               <span aria-hidden="true" class="katex">

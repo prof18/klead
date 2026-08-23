@@ -1,11 +1,11 @@
 package com.prof18.klead.internal
 
+import com.fleeksoft.ksoup.nodes.Comment
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.parseFragment
-import org.jsoup.nodes.Comment
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
 
 // Fixes applied to the raw document before extraction: promotes real images out of <noscript>
 // fallbacks (Next.js lazy images) and replays React streaming-SSR segment moves ($RC calls) so
@@ -52,9 +52,9 @@ internal object DocumentPreparation {
         }
     }
 
-    private fun Node.isReactBoundaryStart(): Boolean = this is Comment && data.trim() == "$?"
+    private fun Node.isReactBoundaryStart(): Boolean = this is Comment && getData().trim() == "$?"
 
-    private fun Node.isReactBoundaryEnd(): Boolean = this is Comment && data.trim() == "/$"
+    private fun Node.isReactBoundaryEnd(): Boolean = this is Comment && getData().trim() == "/$"
 
     private fun promoteNoscriptImages(document: Document) {
         for (noscript in document.select("noscript").toList()) {

@@ -1,12 +1,12 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import org.jsoup.nodes.Element
 
 internal object XProfile : Extractor {
     override val id: String = "x"
@@ -201,14 +201,16 @@ internal object XProfile : Extractor {
         }
     }
 
-    private fun org.jsoup.nodes.Document.xArticleTitle(): String? = selectFirst(
+    private fun com.fleeksoft.ksoup.nodes.Document.xArticleTitle(): String? = selectFirst(
         """[data-testid="twitter-article-title"]""",
     )
         ?.text()
         ?.trim()
         ?.ifBlank { null }
 
-    private fun org.jsoup.nodes.Document.authorFromXOgTitle(): String? = selectFirst("""meta[property="og:title"]""")
+    private fun com.fleeksoft.ksoup.nodes.Document.authorFromXOgTitle(): String? = selectFirst(
+        """meta[property="og:title"]""",
+    )
         ?.attr("content")
         ?.trim()
         ?.let { title ->

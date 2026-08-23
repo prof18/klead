@@ -1,9 +1,9 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.internal.extractors.ExtractorRegistry
-import org.jsoup.Jsoup
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -37,7 +37,7 @@ class ExtractorMatchingTest {
         val registry = ExtractorRegistry(
             listOf(TestExtractor(id = "profile", domains = setOf("example.com"))),
         )
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """<html><head><link rel="canonical" href="https://www.example.com/story"></head></html>""",
         )
         val context = ExtractorContext(
@@ -60,6 +60,6 @@ class ExtractorMatchingTest {
     private fun context(url: String, html: String): ExtractorContext = ExtractorContext(
         url = url,
         host = URI(url).host,
-        document = Jsoup.parse(html),
+        document = Ksoup.parse(html),
     )
 }

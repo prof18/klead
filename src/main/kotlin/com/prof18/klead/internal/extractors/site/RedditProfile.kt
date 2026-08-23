@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
@@ -9,7 +10,6 @@ import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import org.jsoup.nodes.Element
 
 internal object RedditProfile : Extractor {
     override val id: String = "reddit"

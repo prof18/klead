@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.markdown
 
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
+import com.fleeksoft.ksoup.nodes.TextNode
 
 // Block assembly and final document cleanup: classifying nodes into block vs inline flow,
 // joining rendered blocks with the right separators, and the whole-document post-processing

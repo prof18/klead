@@ -1,7 +1,7 @@
 package com.prof18.klead.internal.removal
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.dom.descendants
-import org.jsoup.nodes.Element
 
 internal fun Element.descendantsSnapshot(): List<Element> = descendants()
 

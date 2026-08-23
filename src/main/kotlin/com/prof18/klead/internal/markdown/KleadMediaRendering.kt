@@ -1,11 +1,11 @@
 package com.prof18.klead.internal.markdown
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.resolveUrl
 import com.prof18.klead.internal.media.TrustedEmbeds
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.TextNode
 
 // Leaf renderers for media and link destinations: images, video embeds, trusted raw iframes,
 // inline math, and link/image URL resolution. None of these recurse back into the block or

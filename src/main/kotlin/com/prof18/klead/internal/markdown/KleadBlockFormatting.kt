@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.markdown
 
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
+import com.fleeksoft.ksoup.nodes.TextNode
 
 /**
  * Stateless block-level markdown formatting helpers (blockquotes, list items, code blocks and
@@ -97,7 +97,7 @@ internal fun Element.isBlockCodeElement(): Boolean = normalName() == "code" && c
 
 private fun Node.codeBlockText(trimSurroundingWhitespace: Boolean): String {
     val text = when (this) {
-        is TextNode -> wholeText
+        is TextNode -> getWholeText()
         is Element -> childNodes().joinToString("") { it.codeBlockText(trimSurroundingWhitespace = false) }
         else -> ""
     }

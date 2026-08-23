@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.content
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 import kotlin.math.max
 
 internal data class ContentScore(

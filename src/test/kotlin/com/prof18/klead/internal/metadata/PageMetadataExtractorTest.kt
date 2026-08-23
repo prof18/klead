@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.metadata
 
-import org.jsoup.Jsoup
+import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -165,7 +165,7 @@ class PageMetadataExtractorTest {
 
     @Test
     fun `schema and meta values fill image and description`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <html lang="en"><head>
               <meta name="description" content="Meta description">
@@ -219,7 +219,7 @@ class PageMetadataExtractorTest {
     }
 
     private fun extract(html: String, url: String = "https://example.com/article"): PageMetadata {
-        val document = Jsoup.parse(html, url)
+        val document = Ksoup.parse(html, url)
         val schema = MetadataExtractor.extractSchemaOrg(document, debug = false)
         return PageMetadataExtractor.extract(
             document = document,

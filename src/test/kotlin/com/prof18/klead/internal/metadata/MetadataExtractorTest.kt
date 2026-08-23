@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.metadata
 
-import org.jsoup.Jsoup
+import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class MetadataExtractorTest {
     @Test
     fun `meta tag collector preserves name property and content`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <html><head>
               <meta name="description" content="Description">
@@ -27,7 +27,7 @@ class MetadataExtractorTest {
 
     @Test
     fun `json ld article fields are extracted`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <html><head>
               <script type="application/ld+json">
@@ -57,7 +57,7 @@ class MetadataExtractorTest {
 
     @Test
     fun `json ld arrays and graph entries are flattened`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <script type="application/ld+json">
               [
@@ -79,7 +79,7 @@ class MetadataExtractorTest {
 
     @Test
     fun `invalid json ld is ignored safely and reported in debug`() {
-        val document = Jsoup.parse("""<script type="application/ld+json">{ invalid json }</script>""")
+        val document = Ksoup.parse("""<script type="application/ld+json">{ invalid json }</script>""")
 
         val schema = MetadataExtractor.extractSchemaOrg(document, debug = true)
 

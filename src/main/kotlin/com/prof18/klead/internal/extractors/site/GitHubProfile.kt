@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
@@ -8,7 +9,6 @@ import com.prof18.klead.internal.dom.appendChildNodesFrom
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import org.jsoup.nodes.Element
 import java.net.URI
 
 internal object GitHubProfile : Extractor {
@@ -89,7 +89,7 @@ internal object GitHubProfile : Extractor {
         )
     }
 
-    private fun org.jsoup.nodes.Document.githubIssueTitle(): String? {
+    private fun com.fleeksoft.ksoup.nodes.Document.githubIssueTitle(): String? {
         val rawTitle = selectFirst("""meta[property="og:title"]""")
             ?.attr("content")
             ?.ifBlank { null }

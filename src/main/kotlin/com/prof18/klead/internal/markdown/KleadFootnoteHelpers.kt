@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.markdown
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 /**
  * Stateless helpers for normalizing footnote ids and cleaning up footnote definition markup.

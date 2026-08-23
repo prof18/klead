@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.dom
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 // Matches a fixed list of simple selectors (tag, #id, .class, [attr=v], [attr*=v], with optional
 // quotes around the value) using hash lookups in a single tree walk, instead of one jsoup

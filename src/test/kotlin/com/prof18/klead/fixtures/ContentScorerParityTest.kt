@@ -1,8 +1,8 @@
 package com.prof18.klead.fixtures
 
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.content.ContentScorer
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import kotlin.math.max
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,7 +36,7 @@ class ContentScorerParityTest {
             """<div></div>""",
         )
         for (html in cases) {
-            val element = Jsoup.parse(html).body().children().first()!!
+            val element = Ksoup.parse(html).body().children().first()!!
             assertSameScore(element, "crafted: $html")
         }
     }
@@ -46,7 +46,7 @@ class ContentScorerParityTest {
         val cases = FeedFlowReaderDumpLoader.loadAll(requireExpectedSnapshots = false)
         assertTrue(cases.isNotEmpty(), "no reader dumps found")
         for (case in cases) {
-            val document = Jsoup.parse(case.rawHtml, case.sourceUrl)
+            val document = Ksoup.parse(case.rawHtml, case.sourceUrl)
             val body = document.body()
             val all = body.select("*")
             val step = max(1, all.size / SAMPLES_PER_DOCUMENT)

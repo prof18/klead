@@ -1,7 +1,7 @@
 package com.prof18.klead.internal
 
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
 
 // When the detected content references footnotes (<sup>N</sup>) whose definitions live outside
 // the content element — a sibling "Footnotes" section, say — clones the matching definition

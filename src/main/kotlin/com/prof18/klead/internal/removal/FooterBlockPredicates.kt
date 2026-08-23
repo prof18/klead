@@ -1,7 +1,7 @@
 package com.prof18.klead.internal.removal
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import org.jsoup.nodes.Element
 
 internal fun isTrailingRecommendationHeading(scan: BlockScan): Boolean {
     if (!HEADING_TAG_PATTERN.matches(scan.element.normalName())) return false

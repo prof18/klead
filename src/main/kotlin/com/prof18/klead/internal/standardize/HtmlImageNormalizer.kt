@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.standardize
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 internal object HtmlImageNormalizer {
     fun normalizeImages(content: Element) {

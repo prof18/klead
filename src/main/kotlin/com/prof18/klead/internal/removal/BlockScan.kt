@@ -1,11 +1,11 @@
 package com.prof18.klead.internal.removal
 
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
-import org.jsoup.select.Elements
-import org.jsoup.select.NodeTraversor
-import org.jsoup.select.NodeVisitor
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
+import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.Elements
+import com.fleeksoft.ksoup.select.NodeTraversor
+import com.fleeksoft.ksoup.select.NodeVisitor
 
 // Marks the elements of a subtree whose own subtrees are too large to be the compact chrome
 // (footers, bylines, tag lists, promos) the removal predicates target. The text cap sits above
@@ -37,7 +37,7 @@ internal class ChromeBlockCaps private constructor(private val exceeded: java.ut
                             is Element -> frames.addLast(Frame())
 
                             is TextNode -> frames.lastOrNull()?.let { frame ->
-                                frame.nonWhitespaceChars += node.wholeText.count { !it.isWhitespace() }
+                                frame.nonWhitespaceChars += node.getWholeText().count { !it.isWhitespace() }
                             }
 
                             else -> Unit

@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.metadata
 
+import com.fleeksoft.ksoup.nodes.Document
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -8,7 +9,6 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import org.jsoup.nodes.Document
 
 internal data class MetaTagItem(val name: String?, val property: String?, val content: String?)
 

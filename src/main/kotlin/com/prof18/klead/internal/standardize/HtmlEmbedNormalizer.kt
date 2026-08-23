@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.standardize
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.media.TrustedEmbeds
 import com.prof18.klead.internal.media.TrustedMarkdownMedia
-import org.jsoup.nodes.Element
 
 // Rewrites trusted video embeds (and lazy video placeholders) into uniform iframes carrying the
 // canonical watch URL, so downstream output can render or link them consistently.

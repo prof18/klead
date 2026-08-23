@@ -1,10 +1,10 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
-import org.jsoup.nodes.Element
 
 internal object ChatGptExtractor : Extractor {
     override val id: String = "chatgpt"

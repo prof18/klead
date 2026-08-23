@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.removal
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 internal fun isProtected(element: Element, hints: String = partialHaystack(element)): Boolean =
     element.`is`("pre, code, figure, picture, table, math, blockquote") ||

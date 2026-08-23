@@ -1,7 +1,7 @@
 package com.prof18.klead.internal.standardize
 
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.TextNode
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 
 // One converter per publishing format: each rewrites that format's footnote markup into the
 // canonical inline <sup><a href="#id"> reference plus a <li id> definition inside the shared
@@ -87,7 +87,7 @@ internal object HtmlFootnoteFormats {
 
     private fun Element.trimLeadingTextWhitespace() {
         val first = childNodes().firstOrNull() as? TextNode ?: return
-        val trimmed = first.wholeText.trimStart()
+        val trimmed = first.getWholeText().trimStart()
         if (trimmed.isBlank()) first.remove() else first.text(trimmed)
     }
 
@@ -321,7 +321,7 @@ internal object HtmlFootnoteFormats {
 
     private fun Element.removeLeadingFootnoteDefinitionPunctuation() {
         val first = childNodes().firstOrNull() as? TextNode ?: return
-        val cleaned = first.wholeText.trimStart().removePrefix(".").trimStart()
+        val cleaned = first.getWholeText().trimStart().removePrefix(".").trimStart()
         if (cleaned.isBlank()) {
             first.remove()
         } else {
@@ -357,29 +357,29 @@ internal object HtmlFootnoteFormats {
 
     private fun Element.removeLeadingNumberMarker() {
         val first = childNodes().firstOrNull() as? TextNode ?: return
-        first.text(FOOTNOTE_NUMBER_DOT_PREFIX_PATTERN.replaceFirst(first.wholeText, ""))
+        first.text(FOOTNOTE_NUMBER_DOT_PREFIX_PATTERN.replaceFirst(first.getWholeText(), ""))
     }
 
     private fun Element.removeTerminalPeriodAfterTrailingLink() {
         val nodes = childNodes()
         val lastTextIndex = nodes.indexOfLast { node ->
-            node !is TextNode || node.wholeText.isNotBlank()
+            node !is TextNode || node.getWholeText().isNotBlank()
         }
         val lastText = nodes.getOrNull(lastTextIndex) as? TextNode ?: return
-        if (!TRAILING_LINK_PERIOD_TEXT_PATTERN.matches(lastText.wholeText)) return
+        if (!TRAILING_LINK_PERIOD_TEXT_PATTERN.matches(lastText.getWholeText())) return
 
         val previousElement = nodes
             .take(lastTextIndex)
             .lastOrNull { node ->
                 when (node) {
-                    is TextNode -> node.wholeText.isNotBlank()
+                    is TextNode -> node.getWholeText().isNotBlank()
                     is Element -> true
                     else -> false
                 }
             } as? Element
         if (previousElement?.normalName() != "a") return
 
-        lastText.text(lastText.wholeText.replace(TRAILING_PERIOD_PATTERN, ""))
+        lastText.text(lastText.getWholeText().replace(TRAILING_PERIOD_PATTERN, ""))
     }
 
     private val FOOTNOTE_NUMBER_DOT_PREFIX_PATTERN = Regex("""^\s*\d{1,4}\.\s*""")

@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.extractors
 
+import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
@@ -7,7 +8,6 @@ import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.extractors.site.WikipediaExtractor
 import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
-import org.jsoup.Jsoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 class ExtractorRegistryTest {
     @Test
     fun `registry priority is deterministic`() {
-        val document = Jsoup.parse("<main></main>", "https://example.com")
+        val document = Ksoup.parse("<main></main>", "https://example.com")
         val registry = ExtractorRegistry(listOf(namedExtractor("first"), namedExtractor("second")))
 
         val result = registry.extract(document.context("https://example.com"))
@@ -27,7 +27,7 @@ class ExtractorRegistryTest {
 
     @Test
     fun `registry extracts direct content by priority`() {
-        val document = Jsoup.parse("<main></main>", "https://example.com")
+        val document = Ksoup.parse("<main></main>", "https://example.com")
         val registry = ExtractorRegistry(
             listOf(
                 namedExtractor("low", priority = 1),
@@ -42,7 +42,7 @@ class ExtractorRegistryTest {
 
     @Test
     fun `static extractor can return content selector`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <html><body>
               <div id="mw-content-text">
@@ -97,6 +97,6 @@ class ExtractorRegistryTest {
         override fun extract(context: ExtractorContext) = ExtractorResult(metadata = ExtractorMetadata(site = name))
     }
 
-    private fun org.jsoup.nodes.Document.context(url: String): ExtractorContext =
+    private fun com.fleeksoft.ksoup.nodes.Document.context(url: String): ExtractorContext =
         ExtractorContext(url = url, host = java.net.URI(url).host, document = this)
 }

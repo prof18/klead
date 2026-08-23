@@ -34,12 +34,36 @@ match the migration plan's requested record.
 
 ## Compatibility differences
 
-None recorded yet.
+### Phase 1 — Ksoup JVM spike
+
+- Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network
+  extension artifact is required for string parsing.
+- Ksoup 0.2.6 is aligned with jsoup 1.22.1.
+- `TextNode.wholeText` is exposed as `TextNode.getWholeText()` in Ksoup's Kotlin API.
+- `Comment.data` is exposed as `Comment.getData()` in Ksoup's Kotlin API.
+- `Ksoup.parse`, `Ksoup.parseBodyFragment`, `Document.outputSettings().prettyPrint(false)`,
+  `Element.`is``, `TextNode(String)`, and attribute iteration compiled without further
+  compatibility code.
+- `./gradlew -q --console=plain check --rerun` passed with the complete fixture suite.
+- The 305 checked-in expected snapshot files were unchanged; their aggregate SHA-256
+  remained `07b03dac327957296bed4079a2c30ee7c62f65eb0e83a7f3de09ae94be92425d`.
+- No parser, selector, serialization, content, metadata, or rendering differences were
+  observed, so no snapshot triage items were needed.
+- `spike-jvm-ksoup` five-run median: `retry=1026ms`, `attempt1.total=952ms`,
+  `attempt1.removalPipeline=505ms`, `attempt1.removalPipeline.removeContentPatterns=318ms`,
+  `documentParse=230ms`, `attempt1.removalPipeline.removeContentPatterns.nestedArticleFooterBlocks=222ms`,
+  `attempt1.mainContentDetection=155ms`, `attempt1.htmlStandardizer=79ms`.
+- Five-run `retry` samples: `1083ms`, `1026ms`, `1057ms`, `1015ms`, `976ms`.
+- Compared with the jsoup median, total retry time improved by about 2.1%, total first
+  attempt time improved by about 3.2%, and document parsing regressed by about 5.5%.
+  All are comfortably within the plan's +25% gate.
 
 ## Decision points
 
-- D1 Ksoup version pinning: pending Phase 1 version verification.
-- D2 jsoup/Ksoup parser parity: pending Phase 1 fixture results.
+- D1 Ksoup version pinning: pin exactly `0.2.6`; upgrades require the full fixture and
+  performance gates.
+- D2 jsoup/Ksoup parser parity: the full JVM corpus passed without rendering or snapshot
+  changes despite Ksoup's jsoup 1.22.1 alignment.
 - D3 Android target: follow the plan and keep the JVM target unless consumer validation
   demonstrates an R8 or variant-metadata problem.
 - D4 iOS fallback: pending Phase 6 simulator performance results.

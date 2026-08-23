@@ -1,7 +1,7 @@
 package com.prof18.klead.internal.standardize
 
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Element
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -1820,5 +1820,5 @@ class HtmlStandardizerTest {
     }
 
     private fun article(html: String): Element =
-        Jsoup.parse(html, "https://example.com").selectFirst("article") ?: error("missing article")
+        Ksoup.parse(html, "https://example.com").selectFirst("article") ?: error("missing article")
 }

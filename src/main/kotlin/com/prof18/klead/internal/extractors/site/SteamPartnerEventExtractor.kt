@@ -1,5 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
@@ -10,8 +12,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 
 internal object SteamPartnerEventExtractor : Extractor {
     override val id: String = "steam-partner-event"

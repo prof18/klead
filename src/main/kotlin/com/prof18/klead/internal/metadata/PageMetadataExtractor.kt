@@ -1,9 +1,9 @@
 package com.prof18.klead.internal.metadata
 
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.dom.resolveUrl
 import com.prof18.klead.internal.dom.textTrimmedOrNull
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import java.net.URI
 
 internal data class PageMetadata(

@@ -1,9 +1,9 @@
 package com.prof18.klead.internal.standardize
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.isAttachedTo
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
 
 // Collects generically structured footnote definitions — footnote-classed lists, paragraph and
 // named-anchor definitions, and loose "Notes" sections delimited by a heading or divider — into
@@ -284,7 +284,7 @@ internal object HtmlFootnoteListNormalizer {
         val firstElement = children().firstOrNull() ?: return false
         return childNodes()
             .takeWhile { it !== firstElement }
-            .all { it !is TextNode || it.wholeText.isBlank() }
+            .all { it !is TextNode || it.getWholeText().isBlank() }
     }
 
     private fun Element.looseFootnoteNumber(): String? {
@@ -365,7 +365,7 @@ internal object HtmlFootnoteListNormalizer {
     private fun List<Node>.leadingNamedAnchor(): Element? {
         for (node in this) {
             if (node is TextNode) {
-                if (node.wholeText.isNotBlank()) return null
+                if (node.getWholeText().isNotBlank()) return null
                 continue
             }
             if (node !is Element) continue
@@ -378,8 +378,8 @@ internal object HtmlFootnoteListNormalizer {
     private fun Element.namedAnchorId(): String = attr("name").ifBlank { id() }.lowercase()
 
     private fun Element.trimSurroundingWhitespace() {
-        (childNodes().firstOrNull() as? TextNode)?.let { it.text(it.wholeText.trimStart()) }
-        (childNodes().lastOrNull() as? TextNode)?.let { it.text(it.wholeText.trimEnd()) }
+        (childNodes().firstOrNull() as? TextNode)?.let { it.text(it.getWholeText().trimStart()) }
+        (childNodes().lastOrNull() as? TextNode)?.let { it.text(it.getWholeText().trimEnd()) }
     }
 
     private data class NamedAnchorFootnote(val id: String, val nodes: List<Node>)

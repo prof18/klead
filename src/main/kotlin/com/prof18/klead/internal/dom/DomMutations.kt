@@ -1,9 +1,9 @@
 package com.prof18.klead.internal.dom
 
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
 
 internal fun Element.removeSafely() {
     if (parent() != null) {
@@ -42,7 +42,7 @@ internal fun Element.replaceChildrenWith(source: Element) {
 
 internal fun Document.cloneDocument(): Document = clone()
 
-internal fun parseFragment(html: String, baseUri: String): List<Node> = Jsoup.parseBodyFragment(html, baseUri)
+internal fun parseFragment(html: String, baseUri: String): List<Node> = Ksoup.parseBodyFragment(html, baseUri)
     .body()
     .childNodes()
     .toList()

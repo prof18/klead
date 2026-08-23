@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.removal
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.internal.dom.isAttachedTo
-import org.jsoup.nodes.Element
 
 internal object HiddenElementRemoval {
     fun apply(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit = {}) {

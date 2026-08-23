@@ -1,10 +1,10 @@
 package com.prof18.klead.internal.markdown
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.resolveUrl
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
 
 internal object KleadMarkdownWriter {
     fun write(root: Element, baseUrl: String): String {

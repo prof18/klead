@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.standardize
 
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
+import com.fleeksoft.ksoup.nodes.TextNode
 
 internal object HtmlCodeNormalizer {
     fun normalizeCodeBlocks(content: Element) {
@@ -224,8 +224,8 @@ internal object HtmlCodeNormalizer {
         fun appendNode(node: Node, preserveBlankText: Boolean = false) {
             when (node) {
                 is TextNode -> {
-                    if (preserveBlankText || node.wholeText.isNotBlank()) {
-                        builder.append(node.wholeText)
+                    if (preserveBlankText || node.getWholeText().isNotBlank()) {
+                        builder.append(node.getWholeText())
                     }
                 }
 
@@ -262,7 +262,7 @@ internal object HtmlCodeNormalizer {
 
         val hasStructuredLines = hasStructuredCodeLines()
         childNodes()
-            .filterNot { hasStructuredLines && it is TextNode && it.wholeText.isBlank() }
+            .filterNot { hasStructuredLines && it is TextNode && it.getWholeText().isBlank() }
             .filterNot { hasStructuredLines && it.isLineBreakAfterCodeLine() }
             .forEach { appendNode(it, preserveBlankText = !hasStructuredLines) }
         return builder.toString().replace("\u00A0", " ")
@@ -295,8 +295,8 @@ internal object HtmlCodeNormalizer {
         className().contains("gutter", ignoreCase = true)
 
     private fun Node.isFormattingWhitespaceText(): Boolean = this is TextNode &&
-        wholeText.isBlank() &&
-        wholeText.contains('\n')
+        getWholeText().isBlank() &&
+        getWholeText().contains('\n')
 
     private fun normalizeCodeText(value: String): String = value
         .replace("\r\n", "\n")

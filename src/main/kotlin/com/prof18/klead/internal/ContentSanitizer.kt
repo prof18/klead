@@ -1,8 +1,8 @@
 package com.prof18.klead.internal
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.media.TrustedEmbeds
-import org.jsoup.nodes.Element
 
 // Strips active and dangerous markup from the detected content before any other processing:
 // scripts (except math sources), style/embed/frame elements, untrusted iframes, event-handler

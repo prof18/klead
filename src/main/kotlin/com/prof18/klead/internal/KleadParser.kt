@@ -1,5 +1,8 @@
 package com.prof18.klead.internal
 
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.KleadContent
 import com.prof18.klead.KleadMetadata
 import com.prof18.klead.KleadOptions
@@ -28,9 +31,6 @@ import com.prof18.klead.internal.standardize.HtmlStandardizer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import java.net.URI
 import kotlin.math.max
 import kotlin.time.measureTimedValue
@@ -64,7 +64,7 @@ internal object KleadParser {
         val retryAttempts = mutableListOf<Map<String, Any?>>()
         val timed = measureTimedValue {
             val document = timings.measure("documentParse") {
-                Jsoup.parse(html, url).also {
+                Ksoup.parse(html, url).also {
                     it.outputSettings().prettyPrint(false)
                 }
             }
@@ -90,7 +90,7 @@ internal object KleadParser {
             }
             val parseDocument = extractorResult?.contentHtml?.let { contentHtml ->
                 timings.measure("extractorContentParse") {
-                    Jsoup.parseBodyFragment(contentHtml, url).also { parsed ->
+                    Ksoup.parseBodyFragment(contentHtml, url).also { parsed ->
                         parsed.outputSettings().prettyPrint(false)
                     }
                 }

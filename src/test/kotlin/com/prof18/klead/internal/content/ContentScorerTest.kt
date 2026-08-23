@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.content
 
-import org.jsoup.Jsoup
+import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -91,5 +91,5 @@ class ContentScorerTest {
     }
 
     private fun article(html: String) =
-        Jsoup.parse(html).body().children().firstOrNull() ?: error("missing test element")
+        Ksoup.parse(html).body().children().firstOrNull() ?: error("missing test element")
 }

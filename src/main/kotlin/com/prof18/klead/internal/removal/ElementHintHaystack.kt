@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.removal
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 internal fun elementHintHaystack(element: Element, includeId: Boolean = true): String {
     val parts = buildList {

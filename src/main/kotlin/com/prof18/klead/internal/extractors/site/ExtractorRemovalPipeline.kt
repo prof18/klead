@@ -1,10 +1,10 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.internal.dom.selectSafe
 import com.prof18.klead.internal.removal.recordAndRemove
-import org.jsoup.nodes.Element
 
 internal object ExtractorRemovalPipeline {
     fun applyPreContentRemovals(root: Element, extractors: List<Extractor>, debug: MutableList<RemovalRecord>) {

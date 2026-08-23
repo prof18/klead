@@ -1,7 +1,7 @@
 package com.prof18.klead.internal.standardize
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
-import org.jsoup.nodes.Element
 
 internal val HEADING_TAG_PATTERN = Regex("""h[1-6]""")
 internal val EMPTY_WRAPPER_TAGS = setOf("div", "section", "header")

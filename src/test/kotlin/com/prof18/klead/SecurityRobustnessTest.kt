@@ -1,5 +1,6 @@
 package com.prof18.klead
 
+import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.internal.dom.SelectorDiagnostics
 import com.prof18.klead.internal.dom.selectSafe
 import kotlinx.coroutines.Dispatchers
@@ -7,7 +8,6 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jsoup.Jsoup
 import kotlin.system.measureTimeMillis
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -78,7 +78,7 @@ class SecurityRobustnessTest {
     @Test
     fun `unsupported selector logs debug and continues`() {
         SelectorDiagnostics.clear()
-        val document = Jsoup.parse("<article><p>Text</p></article>")
+        val document = Ksoup.parse("<article><p>Text</p></article>")
 
         val result = document.selectFirst("article")?.selectSafe("a:made-up(")
 

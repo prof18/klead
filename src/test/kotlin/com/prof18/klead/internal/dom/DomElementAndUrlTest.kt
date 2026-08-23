@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.dom
 
-import org.jsoup.Jsoup
+import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 class DomElementAndUrlTest {
     @Test
     fun `element helpers expose stable jsoup values`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <html>
               <body>
@@ -37,7 +37,7 @@ class DomElementAndUrlTest {
 
     @Test
     fun `url helpers resolve safe relative urls`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """<a href="next.html">Next</a><img src="/image.png">""",
             "https://example.com/articles/current/index.html",
         )

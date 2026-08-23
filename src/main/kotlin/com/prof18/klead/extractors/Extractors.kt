@@ -1,8 +1,8 @@
 package com.prof18.klead.extractors
 
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import java.net.URI
 
 interface Extractor {

@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.standardize
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 // Plumbing shared by the footnote normalizers: the canonical target section that collected
 // definitions are appended to, and the patterns that recognize footnote headings and numbers.

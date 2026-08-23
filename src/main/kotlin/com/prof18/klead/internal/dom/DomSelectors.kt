@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.dom
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 internal fun Element.selectSafe(selector: String): List<Element> {
     val results = mutableListOf<Element>()

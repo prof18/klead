@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.dom
 
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.TextNode
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotSame
@@ -11,7 +11,7 @@ import kotlin.test.assertNull
 class DomMutationsTest {
     @Test
     fun `removeSafely removes attached element and ignores detached element`() {
-        val document = Jsoup.parse("""<article><aside>Clutter</aside><p>Keep</p></article>""")
+        val document = Ksoup.parse("""<article><aside>Clutter</aside><p>Keep</p></article>""")
         val aside = document.selectFirst("aside") ?: error("missing aside")
 
         aside.removeSafely()
@@ -23,7 +23,7 @@ class DomMutationsTest {
 
     @Test
     fun `unwrapSafely preserves child order`() {
-        val document = Jsoup.parse("""<article>Before <span id="wrap">one <em>two</em> three</span> after</article>""")
+        val document = Ksoup.parse("""<article>Before <span id="wrap">one <em>two</em> three</span> after</article>""")
         val wrapper = document.selectFirst("#wrap") ?: error("missing wrapper")
 
         wrapper.unwrapSafely()
@@ -33,7 +33,7 @@ class DomMutationsTest {
 
     @Test
     fun `replaceWithChildren preserves text and element nodes`() {
-        val document = Jsoup.parse("""<article>A <div id="replace">one <strong>two</strong> three</div> B</article>""")
+        val document = Ksoup.parse("""<article>A <div id="replace">one <strong>two</strong> three</div> B</article>""")
         val wrapper = document.selectFirst("#replace") ?: error("missing wrapper")
 
         wrapper.replaceWithChildren()
@@ -43,7 +43,7 @@ class DomMutationsTest {
 
     @Test
     fun `transferChildrenTo moves children in order`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """<article><div id="source">one <em>two</em></div><div id="target">zero </div></article>""",
         )
         val source = document.selectFirst("#source") ?: error("missing source")
@@ -57,7 +57,7 @@ class DomMutationsTest {
 
     @Test
     fun `replaceChildrenWith uses cloned source children`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """<article><div id="source">one <em>two</em></div><div id="target"><p>old</p></div></article>""",
         )
         val source = document.selectFirst("#source") ?: error("missing source")
@@ -72,7 +72,7 @@ class DomMutationsTest {
 
     @Test
     fun `cloneDocument returns independent document copy`() {
-        val document = Jsoup.parse("""<article><p>Original</p></article>""", "https://example.com/base/")
+        val document = Ksoup.parse("""<article><p>Original</p></article>""", "https://example.com/base/")
 
         val clone = document.cloneDocument()
         clone.selectFirst("p")?.text("Changed")

@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.standardize
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.replaceWithChildren
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.TextNode
 
 // Rewrites arXiv LaTeXML markup: bibliography lists become footnote definitions, citations
 // become footnote references, cross-reference links unwrap, and footnote marks get spacing.
@@ -76,7 +76,7 @@ internal object HtmlArxivNormalizer {
     private fun Element.needsLeadingSpaceBeforeInlineFootnoteMark(): Boolean {
         val previous = previousSibling() ?: return false
         val previousText = when (previous) {
-            is TextNode -> previous.wholeText
+            is TextNode -> previous.getWholeText()
             is Element -> previous.text()
             else -> ""
         }

@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.standardize
 
-import org.jsoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Element
 
 // Removes standalone metadata chrome — bare dates, read times, "By" labels, timezone widgets,
 // live-update labels, edge dividers — and trailing boilerplate sections like "See also".

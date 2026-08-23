@@ -1,5 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
@@ -11,8 +13,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 
 internal object IlPostProfile : Extractor {
     override val id: String = "ilpost"

@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.dom
 
-import org.jsoup.Jsoup
+import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -74,7 +74,7 @@ class DomSelectorsTest {
         )
     }
 
-    private fun fixtureArticle() = Jsoup.parse(
+    private fun fixtureArticle() = Ksoup.parse(
         """
         <article id="article">
           <a id="direct-link" href="/direct">Direct</a>

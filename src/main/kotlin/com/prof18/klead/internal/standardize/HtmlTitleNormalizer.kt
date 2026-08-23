@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.standardize
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.replaceWithChildren
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.TextNode
 
 // Removes headings that duplicate the page title (and the byline/date chrome hugging them) and
 // normalizes heading markup: permalink anchors, inline formatting, line breaks, h1 demotion.

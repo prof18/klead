@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.content
 
-import org.jsoup.Jsoup
+import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class MainContentDetectorTest {
     @Test
     fun `extractor content selector wins`() {
-        val document = Jsoup.parse(
+        val document = Ksoup.parse(
             """
             <main><article id="article"><p>Article text should lose.</p></article></main>
             <section id="manual"><p>Manual selection should win.</p></section>
@@ -28,7 +28,7 @@ class MainContentDetectorTest {
     @Test
     fun `article beats body`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <nav>Navigation</nav>
@@ -45,7 +45,7 @@ class MainContentDetectorTest {
     @Test
     fun `focused article beats body containing recommendations`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <article id="story">
@@ -71,7 +71,7 @@ class MainContentDetectorTest {
     @Test
     fun `semantic main beats body with navigation and latest-news lists`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <header>
@@ -106,7 +106,7 @@ class MainContentDetectorTest {
     @Test
     fun `article text wrapper beats non semantic hero container`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <div id="main-content">
@@ -133,7 +133,7 @@ class MainContentDetectorTest {
     @Test
     fun `focused content descendant beats broad main with legal footer prose`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <main>
                   <div class="page-wrapper">
@@ -162,7 +162,7 @@ class MainContentDetectorTest {
     @Test
     fun `updates scroll content beats page chrome`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <div class="announcement-banner"><a href="/press">Announcement link</a></div>
@@ -188,7 +188,7 @@ class MainContentDetectorTest {
     @Test
     fun `short semantic main beats noisy body with teaser modules`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <header>
@@ -222,7 +222,7 @@ class MainContentDetectorTest {
     @Test
     fun `child article can beat parent main`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <main id="container">
                   <header>Header</header>
@@ -238,7 +238,7 @@ class MainContentDetectorTest {
     @Test
     fun `single focused article beats parent main with footer modules`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <main id="container">
                   <article id="story">
@@ -267,7 +267,7 @@ class MainContentDetectorTest {
     @Test
     fun `multiple article cards keep parent listing container`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <main id="listing">
                   <article><h2>First card</h2><p>Short summary for the first item.</p></article>
@@ -284,7 +284,7 @@ class MainContentDetectorTest {
     @Test
     fun `body fallback works when no entry point has content`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """<body><section><p>Loose readable body text without semantic wrappers.</p></section></body>""",
             ),
         )
@@ -296,7 +296,7 @@ class MainContentDetectorTest {
     @Test
     fun `debug report includes selected selector and candidates`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse("""<main><article><p>Readable article for diagnostics.</p></article></main>"""),
+            Ksoup.parse("""<main><article><p>Readable article for diagnostics.</p></article></main>"""),
         )
 
         assertEquals("article", detected.debug.selectedSelector)
@@ -307,7 +307,7 @@ class MainContentDetectorTest {
     @Test
     fun `table based layout selects main cell`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <table width="900" align="center">
@@ -332,7 +332,7 @@ class MainContentDetectorTest {
     @Test
     fun `table layout with spacer and content cells selects main cell without table width`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <table>
@@ -357,7 +357,7 @@ class MainContentDetectorTest {
     @Test
     fun `peripheral table does not steal content`() {
         val detected = MainContentDetector.detect(
-            Jsoup.parse(
+            Ksoup.parse(
                 """
                 <body>
                   <table width="900" align="center"><tr><td>Tiny table</td></tr></table>
@@ -376,7 +376,7 @@ class MainContentDetectorTest {
     @Test
     fun `schema text can refine body selection`() {
         val detected = MainContentDetector.detect(
-            document = Jsoup.parse(
+            document = Ksoup.parse(
                 """
                 <body>
                   <header>Site chrome</header>
@@ -396,7 +396,7 @@ class MainContentDetectorTest {
     @Test
     fun `schema text can refine broad selection when headings split article body text`() {
         val detected = MainContentDetector.detect(
-            document = Jsoup.parse(
+            document = Ksoup.parse(
                 """
                 <body>
                   <section id="hero"><img src="/hero.jpg"></section>

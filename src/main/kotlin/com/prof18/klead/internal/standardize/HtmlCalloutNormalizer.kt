@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.standardize
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
 import com.prof18.klead.internal.dom.textTrimmedOrNull
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
 
 // Converts callout-like markup — Obsidian-style [!type] blockquotes, Bootstrap alerts, and
 // admonition blocks — into the uniform .callout/data-callout structure the writer understands.

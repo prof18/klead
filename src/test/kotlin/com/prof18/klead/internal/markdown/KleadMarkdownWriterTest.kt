@@ -1,6 +1,6 @@
 package com.prof18.klead.internal.markdown
 
-import org.jsoup.Jsoup
+import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -1645,7 +1645,7 @@ class KleadMarkdownWriterTest {
     }
 
     private fun render(html: String): String = KleadMarkdownWriter.write(
-        root = Jsoup.parse(html, "https://example.com/base/").selectFirst("article") ?: error("missing article"),
+        root = Ksoup.parse(html, "https://example.com/base/").selectFirst("article") ?: error("missing article"),
         baseUrl = "https://example.com/base/",
     )
 }

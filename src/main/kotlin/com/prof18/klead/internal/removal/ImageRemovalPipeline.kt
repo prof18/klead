@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.removal
 
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.RemovalRecord
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.TextNode
 
 internal object ImageRemovalPipeline {
     fun apply(

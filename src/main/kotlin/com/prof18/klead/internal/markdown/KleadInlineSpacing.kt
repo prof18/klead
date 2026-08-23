@@ -1,8 +1,8 @@
 package com.prof18.klead.internal.markdown
 
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
+import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.Node
+import com.fleeksoft.ksoup.nodes.TextNode
 
 /**
  * Stateless spacing/whitespace normalization helpers used while rendering inline markdown.
@@ -153,7 +153,7 @@ private fun String?.needsTrailingSpaceBeforeClosingQuoteAfterLink(): Boolean {
 private fun List<Node>.nextInlineTextAfter(index: Int): String? {
     for (nextIndex in index + 1 until size) {
         val text = when (val node = get(nextIndex)) {
-            is TextNode -> node.wholeText
+            is TextNode -> node.getWholeText()
             is Element -> node.text()
             else -> ""
         }
@@ -166,7 +166,7 @@ private fun List<Node>.nextInlineTextAfter(index: Int): String? {
 private fun List<Node>.previousInlineElementBefore(index: Int): Element? {
     for (previousIndex in index - 1 downTo 0) {
         val node = get(previousIndex)
-        if (node is TextNode && node.wholeText.isBlank()) continue
+        if (node is TextNode && node.getWholeText().isBlank()) continue
         return node as? Element
     }
     return null
@@ -194,7 +194,7 @@ private fun List<Node>.shouldSeparateFootnote(index: Int, previous: Char?): Bool
     var sawWhitespace = false
     for (nextIndex in index + 1 until size) {
         val text = when (val node = get(nextIndex)) {
-            is TextNode -> node.wholeText
+            is TextNode -> node.getWholeText()
             is Element -> node.text()
             else -> ""
         }
@@ -248,7 +248,7 @@ private fun List<Node>.shouldSeparateNumericVariableSubscript(index: Int, previo
     if (previous?.isLetter() != true) return false
     for (nextIndex in index + 1 until size) {
         val text = when (val node = get(nextIndex)) {
-            is TextNode -> node.wholeText
+            is TextNode -> node.getWholeText()
             is Element -> node.text()
             else -> ""
         }

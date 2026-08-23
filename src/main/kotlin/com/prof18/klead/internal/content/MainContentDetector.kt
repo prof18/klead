@@ -1,11 +1,11 @@
 package com.prof18.klead.internal.content
 
+import com.fleeksoft.ksoup.nodes.Document
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.dom.SimpleSelectorIndex
 import com.prof18.klead.internal.dom.normalizeSpace
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.dom.selectSafe
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
 import java.util.Collections
 import java.util.IdentityHashMap
 

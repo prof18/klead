@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
@@ -7,7 +8,6 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isAttachedTo
 import com.prof18.klead.internal.removal.recordAndRemove
-import org.jsoup.nodes.Element
 
 internal object ElementorArchiveProfile : Extractor {
     override val id: String = "elementor-archive"

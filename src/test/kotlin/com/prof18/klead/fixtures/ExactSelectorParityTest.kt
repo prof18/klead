@@ -1,11 +1,11 @@
 package com.prof18.klead.fixtures
 
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.content.MainContentDetector
 import com.prof18.klead.internal.dom.SimpleSelectorIndex
 import com.prof18.klead.internal.dom.selectSafe
 import com.prof18.klead.internal.removal.EXACT_SELECTORS
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -40,7 +40,7 @@ class ExactSelectorParityTest {
             """<div><header>h</header><p>x</p></div>""",
         )
         for (html in cases) {
-            val document = Jsoup.parse(html)
+            val document = Ksoup.parse(html)
             assertParity(exactIndex, EXACT_SELECTORS, document.body(), "crafted: $html")
             assertParity(entryPointIndex, MainContentDetector.entryPointSelectors, document, "crafted: $html")
         }
@@ -51,7 +51,7 @@ class ExactSelectorParityTest {
         val cases = FeedFlowReaderDumpLoader.loadAll(requireExpectedSnapshots = false)
         assertTrue(cases.isNotEmpty(), "no reader dumps found")
         for (case in cases) {
-            val document = Jsoup.parse(case.rawHtml, case.sourceUrl)
+            val document = Ksoup.parse(case.rawHtml, case.sourceUrl)
             assertParity(exactIndex, EXACT_SELECTORS, document.body(), case.name)
             // The entry-point index is collected from the document root, mirroring detect().
             assertParity(entryPointIndex, MainContentDetector.entryPointSelectors, document, case.name)
