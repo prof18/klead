@@ -101,6 +101,15 @@ match the migration plan's requested record.
 - Preserved insertion order, the 100-entry cap, snapshot-copy reads, and clear behavior;
   added direct coverage for ordering and the cap.
 
+### Phase 4.5 — Portability sweep
+
+- The Java/JVM API sweep found no remaining imports or runtime calls. Native compilation
+  additionally exposed `MutableMap.putIfAbsent`, which is not in the common collection
+  API; replaced it with an equivalent contains-and-set operation that keeps the first
+  rendered footnote definition.
+- `compileKotlinIosArm64` and `compileKotlinIosSimulatorArm64` passed. The full
+  `./gradlew -q --console=plain check --rerun` gate passed with no snapshot changes.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network

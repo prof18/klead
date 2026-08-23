@@ -434,7 +434,9 @@ private class Renderer(private val baseUrl: String) {
             val id = cleanedId.takeIf { it.matches(footnoteNumberPattern) } ?: (index + 1).toString()
             footnoteTargets[rawId] = id
             footnoteTargets[cleanedId] = id
-            footnotes.putIfAbsent(id, renderFootnoteDefinition(item))
+            if (id !in footnotes) {
+                footnotes[id] = renderFootnoteDefinition(item)
+            }
         }
     }
 
