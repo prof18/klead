@@ -72,6 +72,19 @@ match the migration plan's requested record.
 - `./gradlew -q --console=plain jvmTest --rerun` passed with the complete JVM fixture
   suite and unchanged snapshots.
 
+### Phase 4.2 — Multiplatform URL facade
+
+- Ksoup 0.2.6 contains URL resolution helpers only in internal packages, so they are not
+  a supported library API. `uri-kmp` 0.0.21 does not provide relative resolution.
+  Ktor 3.5.2's `URLBuilder.takeFrom` source does not normalize `..` segments and changes
+  the base path for fragment-only references, conflicting with the characterization
+  suite. Per the plan's fallback order, implemented the small resolver locally.
+- The portable facade preserves Java's decoded `path` versus raw path/query split,
+  null host for non-ASCII authority, uppercase UTF-8 percent encoding in the ASCII form,
+  query-only and fragment-only resolution quirks, and malformed-input null behavior.
+- All characterization tests passed unchanged. The complete JVM fixture suite also
+  passed with no snapshot modifications.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network
