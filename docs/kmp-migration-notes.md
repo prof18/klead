@@ -110,6 +110,15 @@ match the migration plan's requested record.
 - `compileKotlinIosArm64` and `compileKotlinIosSimulatorArm64` passed. The full
   `./gradlew -q --console=plain check --rerun` gate passed with no snapshot changes.
 
+### Phase 5 — Non-JVM smoke tests
+
+- Added ten portable, string-only parser tests covering empty input, exact Markdown,
+  HTML sanitization, dangerous URLs and attributes, malformed HTML/URL/JSON-LD,
+  footnotes, metadata, relative URL resolution, valid JSON-LD, and an embedded MDN
+  article adapted from the JVM fixture corpus.
+- `./gradlew -q --console=plain iosSimulatorArm64Test` passed all common tests on the
+  native simulator target. The same smoke tests passed on JVM.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network
