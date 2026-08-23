@@ -7,9 +7,9 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.appendChildNodesFrom
 import com.prof18.klead.internal.dom.isoDatePart
+import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import java.net.URI
 
 internal object GitHubProfile : Extractor {
     override val id: String = "github"
@@ -127,7 +127,8 @@ internal object GitHubProfile : Extractor {
 
     private fun ExtractorContext.repositorySiteName(): String {
         val repositoryFromUrl = runCatching {
-            URI(url.orEmpty()).path
+            parseKleadUri(url.orEmpty())?.path
+                .orEmpty()
                 .trim('/')
                 .split('/')
                 .take(2)

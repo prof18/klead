@@ -6,8 +6,8 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.selectFirstSafe
-import java.net.URI
 
 internal object ObsidianPublishProfile : Extractor {
     override val id: String = "obsidian-publish"
@@ -92,9 +92,7 @@ internal object ObsidianPublishProfile : Extractor {
     private fun String.toAsciiHref(): String {
         val trimmed = trim()
         if (trimmed.isBlank()) return trimmed
-        return runCatching {
-            URI(trimmed).toASCIIString()
-        }.getOrDefault(trimmed)
+        return parseKleadUri(trimmed)?.asciiString ?: trimmed
     }
 
     private const val OBSIDIAN_CONTENT_SELECTOR = ".markdown-preview-view .markdown-preview-section"

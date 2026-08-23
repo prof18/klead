@@ -6,7 +6,7 @@ import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isoDatePart
-import java.net.URI
+import com.prof18.klead.internal.dom.resolveKleadUri
 
 internal object MastodonProfile : Extractor {
     override val id: String = "mastodon"
@@ -187,7 +187,7 @@ internal object MastodonProfile : Extractor {
 
     private fun String.toAbsoluteUrl(baseUrl: String): String {
         if (isBlank()) return this
-        return runCatching { URI(baseUrl).resolve(this).toString() }.getOrElse { this }
+        return resolveKleadUri(baseUrl, this) ?: this
     }
 
     private data class MastodonStatus(

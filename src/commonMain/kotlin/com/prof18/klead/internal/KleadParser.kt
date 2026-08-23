@@ -16,6 +16,7 @@ import com.prof18.klead.internal.content.ContentDetectionDebug
 import com.prof18.klead.internal.content.DetectedContent
 import com.prof18.klead.internal.content.MainContentDetector
 import com.prof18.klead.internal.dom.cloneDocument
+import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.ExtractorRegistry
 import com.prof18.klead.internal.extractors.site.ExtractorRemovalPipeline
@@ -31,7 +32,6 @@ import com.prof18.klead.internal.standardize.HtmlStandardizer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import java.net.URI
 import kotlin.math.max
 import kotlin.time.measureTimedValue
 
@@ -343,7 +343,7 @@ internal object KleadParser {
         return debug
     }
 
-    private fun String.hostOrNull(): String? = runCatching { URI(this).host?.lowercase() }.getOrNull()
+    private fun String.hostOrNull(): String? = parseKleadUri(this)?.host?.lowercase()
 
     private fun KleadOptions.effectiveExtractors(): List<Extractor> = customExtractors + DefaultExtractors.all
 

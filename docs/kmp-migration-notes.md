@@ -61,6 +61,17 @@ match the migration plan's requested record.
 
 ## Compatibility differences
 
+### Phase 4.1 — JVM URL characterization
+
+- Consolidated the eight `java.net.URI` call sites behind `parseKleadUri` and
+  `resolveKleadUri` while retaining `java.net.URI` as the implementation.
+- Added characterization coverage for absolute and protocol-relative references,
+  every relative-reference shape in the plan, query and fragment references, malformed
+  input, base trailing-slash behavior, decoded versus raw paths, host casing, opaque
+  URIs, and Java's Unicode/ASCII serialization behavior.
+- `./gradlew -q --console=plain jvmTest --rerun` passed with the complete JVM fixture
+  suite and unchanged snapshots.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network

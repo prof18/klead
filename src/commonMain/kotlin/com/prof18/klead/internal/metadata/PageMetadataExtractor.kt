@@ -2,9 +2,9 @@ package com.prof18.klead.internal.metadata
 
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.resolveUrl
 import com.prof18.klead.internal.dom.textTrimmedOrNull
-import java.net.URI
 
 internal data class PageMetadata(
     val title: String?,
@@ -384,8 +384,7 @@ internal object PageMetadataExtractor {
         "}}" in value ||
         value.startsWith("\${")
 
-    private fun parseDomain(url: String): String? = runCatching { URI(url).host?.removePrefix("www.") }
-        .getOrNull()
+    private fun parseDomain(url: String): String? = parseKleadUri(url)?.host?.removePrefix("www.")
         ?.ifBlank { null }
 
     private fun List<MetaTagItem>.firstContent(vararg keys: String): String? {

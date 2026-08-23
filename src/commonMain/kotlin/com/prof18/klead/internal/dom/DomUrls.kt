@@ -18,10 +18,37 @@ internal fun String.toAbsoluteSiteUrl(domain: String): String = when {
 internal fun resolveUrl(baseUrl: String, value: String): String {
     val trimmed = value.trim()
     if (trimmed.isBlank() || isDangerousUrl(trimmed)) return ""
-    return runCatching {
-        URI(baseUrl).resolve(trimmed).toString()
-    }.getOrDefault("")
+    return resolveKleadUri(baseUrl, trimmed).orEmpty()
 }
+
+/**
+ * The URL surface klead needs from [URI], kept in one place so its exact JVM behavior can be
+ * characterized before the implementation is replaced with a multiplatform one.
+ */
+internal data class KleadUri(
+    val scheme: String?,
+    val host: String?,
+    val path: String?,
+    val rawPath: String?,
+    val rawQuery: String?,
+    val asciiString: String,
+)
+
+internal fun parseKleadUri(value: String): KleadUri? = runCatching {
+    val uri = URI(value)
+    KleadUri(
+        scheme = uri.scheme,
+        host = uri.host,
+        path = uri.path,
+        rawPath = uri.rawPath,
+        rawQuery = uri.rawQuery,
+        asciiString = uri.toASCIIString(),
+    )
+}.getOrNull()
+
+internal fun resolveKleadUri(baseUrl: String, value: String): String? = runCatching {
+    URI(baseUrl).resolve(value).toString()
+}.getOrNull()
 
 // `data:` and `blob:` smuggle a whole document into an attribute, past the script and
 // event-handler stripping done elsewhere. Inline images are the one benign use of `data:`, so

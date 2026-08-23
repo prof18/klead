@@ -3,7 +3,7 @@ package com.prof18.klead.extractors
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import java.net.URI
+import com.prof18.klead.internal.dom.parseKleadUri
 
 interface Extractor {
     val id: String
@@ -32,7 +32,7 @@ data class ExtractorContext(val url: String?, val host: String?, val document: D
             )
                 .mapNotNull { element ->
                     val candidateUrl = element.attr("href").ifBlank { element.attr("content") }
-                    runCatching { URI(candidateUrl).host?.lowercase() }.getOrNull()
+                    parseKleadUri(candidateUrl)?.host?.lowercase()
                 }
                 .forEach { candidate ->
                     if (candidate !in this) add(candidate)

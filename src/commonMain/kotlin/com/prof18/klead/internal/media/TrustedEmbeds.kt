@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.media
 
-import java.net.URI
+import com.prof18.klead.internal.dom.KleadUri
+import com.prof18.klead.internal.dom.parseKleadUri
 
 internal object TrustedEmbeds {
     fun markdownMediaFromUrl(url: String): TrustedMarkdownMedia? {
@@ -89,7 +90,7 @@ internal object TrustedEmbeds {
         }
 
     private fun parseHttpsUrl(url: String): ParsedUrl? {
-        val uri = runCatching { URI(url.trim()) }.getOrNull() ?: return null
+        val uri = parseKleadUri(url.trim()) ?: return null
         if (!uri.scheme.equals("https", ignoreCase = true)) return null
         val host = uri.host?.lowercase()?.removePrefix("www.") ?: return null
         return ParsedUrl(uri, host)
@@ -101,7 +102,7 @@ internal object TrustedEmbeds {
     private val YOUTUBE_EMBED_HOSTS = setOf("youtube.com", "youtube-nocookie.com")
     private val X_STATUS_HOSTS = setOf("x.com", "twitter.com")
 
-    private data class ParsedUrl(val uri: URI, val host: String)
+    private data class ParsedUrl(val uri: KleadUri, val host: String)
 }
 
 internal data class TrustedMarkdownMedia(
