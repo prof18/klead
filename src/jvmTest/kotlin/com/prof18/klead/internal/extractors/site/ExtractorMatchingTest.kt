@@ -2,7 +2,7 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
+import com.prof18.klead.internal.extractors.DomExtractorContext
 import com.prof18.klead.internal.extractors.ExtractorRegistry
 import com.prof18.klead.internal.extractors.createExtractorContext
 import java.net.URI
@@ -58,7 +58,7 @@ class ExtractorMatchingTest {
         override val priority: Int = 0,
     ) : Extractor
 
-    private fun context(url: String, html: String): ExtractorContext = createExtractorContext(
+    private fun context(url: String, html: String): DomExtractorContext = createExtractorContext(
         url = url,
         host = URI(url).host,
         document = Ksoup.parse(html),

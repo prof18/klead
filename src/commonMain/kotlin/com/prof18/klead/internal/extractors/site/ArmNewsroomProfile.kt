@@ -1,13 +1,12 @@
 package com.prof18.klead.internal.extractors.site
 
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.selectFirstSafe
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object ArmNewsroomProfile : Extractor {
+internal object ArmNewsroomProfile : DomExtractor {
     override val id: String = "arm-newsroom"
     override val domains: Set<String> = setOf("newsroom.arm.com", "arm.com")
     override val postContentRemoveSelectors: List<String> = listOf(
@@ -21,10 +20,10 @@ internal object ArmNewsroomProfile : Extractor {
         """p:matches((?i)Any re-use permitted for informational)""",
     )
 
-    override fun matches(context: ExtractorContext): Boolean =
+    override fun matches(context: DomExtractorContext): Boolean =
         context.hostMatches(domains) || context.document.selectFirstSafe("#single_post .single_post__content") != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val author = context.document.selectFirst(".single_post__author__info a[href*=/author/]")
             ?.text()
             ?.trim()

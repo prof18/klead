@@ -1,22 +1,21 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object HackerNewsProfile : Extractor {
+internal object HackerNewsProfile : DomExtractor {
     override val id: String = "hacker-news"
     override val domains: Set<String> = setOf("news.ycombinator.com")
 
-    override fun extract(context: ExtractorContext): ExtractorResult? =
+    override fun extract(context: DomExtractorContext): ExtractorResult? =
         extractSingleComment(context) ?: extractStoryComments(context) ?: extractListing(context)
 
-    private fun extractSingleComment(context: ExtractorContext): ExtractorResult? {
+    private fun extractSingleComment(context: DomExtractorContext): ExtractorResult? {
         val fatItem = context.document.selectFirst("table.fatitem") ?: return null
         val comment = fatItem.selectFirst(".commtext") ?: return null
         val header = fatItem.selectFirst(".comhead") ?: return null
@@ -41,7 +40,7 @@ internal object HackerNewsProfile : Extractor {
         )
     }
 
-    private fun extractListing(context: ExtractorContext): ExtractorResult? {
+    private fun extractListing(context: DomExtractorContext): ExtractorResult? {
         val rows = context.document.select("tr.athing")
             .mapNotNull { row -> row.toHackerNewsListingItem() }
         if (rows.isEmpty()) return null
@@ -67,7 +66,7 @@ internal object HackerNewsProfile : Extractor {
         )
     }
 
-    private fun extractStoryComments(context: ExtractorContext): ExtractorResult? {
+    private fun extractStoryComments(context: DomExtractorContext): ExtractorResult? {
         val story = context.document.selectFirst("table.fatitem tr.athing") ?: return null
         val storyLink = story.selectFirst(".titleline > a[href]") ?: return null
         val storyUrl = storyLink.attr("href").trim()

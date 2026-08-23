@@ -2,14 +2,14 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.selectFirstSafe
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object SubstackProfile : com.prof18.klead.extractors.Extractor {
+internal object SubstackProfile : DomExtractor {
     override val id: String = "substack"
     override val domains: Set<String> = setOf("substack.com", "20percent.berlin")
     override val postContentRemoveSelectors: List<String> = listOf(
@@ -22,10 +22,10 @@ internal object SubstackProfile : com.prof18.klead.extractors.Extractor {
         """[aria-label="Top Posts Footer"]""",
     )
 
-    override fun matches(context: ExtractorContext): Boolean =
+    override fun matches(context: DomExtractorContext): Boolean =
         context.hostMatches(domains) || SUBSTACK_DOM_SIGNALS.any { context.document.selectFirstSafe(it) != null }
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val directNoteUrl = context.url.orEmpty().takeIf { it.contains("/note/c-") }
         if (directNoteUrl == null && context.document.noteUrl() == null) return null
         val description = context.document.metaContent("og:description")

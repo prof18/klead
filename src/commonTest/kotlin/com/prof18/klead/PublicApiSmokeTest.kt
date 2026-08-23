@@ -1,13 +1,18 @@
 package com.prof18.klead
 
 import com.prof18.klead.extractors.Extractor
+import com.prof18.klead.extractors.ExtractorContext
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContains
+import kotlin.test.assertEquals
 
 class PublicApiSmokeTest {
     @Test
     fun `public parser and selector extractor work on every target`() = runTest {
+        val context = ExtractorContext(url = "https://example.com/story", host = "example.com")
+        assertEquals(context, context.copy())
+
         val extractor = object : Extractor {
             override val id: String = "public-api-smoke"
             override val domains: Set<String> = setOf("example.com")

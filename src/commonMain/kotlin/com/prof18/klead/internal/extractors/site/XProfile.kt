@@ -1,25 +1,24 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object XProfile : Extractor {
+internal object XProfile : DomExtractor {
     override val id: String = "x"
     override val domains: Set<String> = setOf("x.com", "twitter.com")
 
-    override fun matches(context: ExtractorContext): Boolean =
+    override fun matches(context: DomExtractorContext): Boolean =
         super.matches(context) || context.document.selectFirst("""[data-testid="twitterArticleRichTextView"]""") != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult? =
+    override fun extract(context: DomExtractorContext): ExtractorResult? =
         extractLongformArticle(context) ?: extractConversation(context)
 
-    private fun extractLongformArticle(context: ExtractorContext): ExtractorResult? {
+    private fun extractLongformArticle(context: DomExtractorContext): ExtractorResult? {
         val richText = context.document.selectFirst("""[data-testid="twitterArticleRichTextView"]""") ?: return null
         if (richText.text().isBlank()) return null
 
@@ -52,7 +51,7 @@ internal object XProfile : Extractor {
         ?.select("""[data-testid="tweetPhoto"] img[src]""")
         ?.firstOrNull { image -> image.parents().none { it === richText } }
 
-    private fun extractConversation(context: ExtractorContext): ExtractorResult? {
+    private fun extractConversation(context: DomExtractorContext): ExtractorResult? {
         val tweets = context.document.select("""article[data-testid="tweet"]""")
             .mapNotNull { it.toTweet() }
         if (tweets.isEmpty()) return null
@@ -221,7 +220,7 @@ internal object XProfile : Extractor {
         ?.trim()
         ?.ifBlank { null }
 
-    private fun ExtractorContext.authorFromStatusUrl(): String? {
+    private fun DomExtractorContext.authorFromStatusUrl(): String? {
         val rawUrl = url.orEmpty()
         val path = when {
             "x.com/" in rawUrl -> rawUrl.substringAfter("x.com/")
@@ -234,7 +233,7 @@ internal object XProfile : Extractor {
             ?.let { "@$it" }
     }
 
-    private fun ExtractorContext.statusId(): String? =
+    private fun DomExtractorContext.statusId(): String? =
         url.orEmpty().substringAfter("/status/", missingDelimiterValue = "")
             .takeIf { it.isNotBlank() }
             ?.takeWhile(Char::isDigit)

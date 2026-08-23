@@ -3,12 +3,10 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
-import com.prof18.klead.internal.extractors.ExtractorPostProcessor
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -16,7 +14,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 
-internal object IlPostProfile : Extractor, ExtractorPostProcessor {
+internal object IlPostProfile : DomExtractor {
     override val id: String = "ilpost"
     override val domains: Set<String> = setOf("ilpost.it")
     override val postContentRemoveSelectors: List<String> = listOf(
@@ -28,7 +26,7 @@ internal object IlPostProfile : Extractor, ExtractorPostProcessor {
         "[data-audio-src]",
     )
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val article = context.document.ilPostArticleData() ?: return null
         return ExtractorResult(
             metadata = ExtractorMetadata(
@@ -37,7 +35,7 @@ internal object IlPostProfile : Extractor, ExtractorPostProcessor {
         )
     }
 
-    override fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) {
+    override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
         val summary = context.document.ilPostArticleData()?.summary
             ?: context.document.selectFirst(
                 """meta[name=description][content], meta[property=og:description][content]""",

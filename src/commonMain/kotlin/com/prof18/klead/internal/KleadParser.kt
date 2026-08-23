@@ -17,9 +17,9 @@ import com.prof18.klead.internal.content.MainContentDetector
 import com.prof18.klead.internal.dom.cloneDocument
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DefaultExtractors
+import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.ExtractorRegistry
 import com.prof18.klead.internal.extractors.createExtractorContext
-import com.prof18.klead.internal.extractors.postProcess
 import com.prof18.klead.internal.extractors.site.ExtractorRemovalPipeline
 import com.prof18.klead.internal.markdown.KleadMarkdownWriter
 import com.prof18.klead.internal.metadata.MetadataExtractor
@@ -217,7 +217,8 @@ internal object KleadParser {
             document = content.ownerDocument() ?: document,
         )
         timings.measure("$timingPrefix.extractorPostProcess") {
-            matchedExtractors.forEach { it.postProcess(content, contentExtractorContext, removals) }
+            matchedExtractors.filterIsInstance<DomExtractor>()
+                .forEach { it.postProcess(content, contentExtractorContext, removals) }
         }
         timings.measure("$timingPrefix.htmlStandardizer") {
             HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title)

@@ -1,7 +1,6 @@
 package com.prof18.klead.internal.extractors
 
 import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.extractors.site.AndroidAuthorityProfile
 import com.prof18.klead.internal.extractors.site.AndroidPoliceProfile
@@ -55,15 +54,19 @@ import com.prof18.klead.internal.extractors.site.WordPressFamilyProfile
 import com.prof18.klead.internal.extractors.site.XProfile
 
 internal class ExtractorRegistry(private val extractors: List<Extractor> = DefaultExtractors.all) {
-    fun resolve(context: ExtractorContext): List<Extractor> = matchingExtractors(context)
+    fun resolve(context: DomExtractorContext): List<Extractor> = matchingExtractors(context)
         .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
         .toList()
 
-    fun extract(context: ExtractorContext): ExtractorResult? = extract(context, resolve(context))
+    fun extract(context: DomExtractorContext): ExtractorResult? = extract(context, resolve(context))
 
-    fun extract(context: ExtractorContext, extractors: List<Extractor>): ExtractorResult? {
+    fun extract(context: DomExtractorContext, extractors: List<Extractor>): ExtractorResult? {
         for (extractor in extractors) {
-            val result = extractor.extract(context)
+            val result = if (extractor is DomExtractor) {
+                extractor.extract(context)
+            } else {
+                extractor.extract(context.publicContext)
+            }
             if (result != null) {
                 return result
             }
@@ -71,9 +74,15 @@ internal class ExtractorRegistry(private val extractors: List<Extractor> = Defau
         return null
     }
 
-    private fun matchingExtractors(context: ExtractorContext): Sequence<Extractor> = extractors
+    private fun matchingExtractors(context: DomExtractorContext): Sequence<Extractor> = extractors
         .asSequence()
-        .filter { it.matches(context) }
+        .filter { extractor ->
+            if (extractor is DomExtractor) {
+                extractor.matches(context)
+            } else {
+                extractor.matches(context.publicContext)
+            }
+        }
 }
 
 internal object DefaultExtractors {

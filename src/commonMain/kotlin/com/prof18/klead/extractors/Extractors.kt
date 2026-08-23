@@ -14,15 +14,18 @@ interface Extractor {
     fun extract(context: ExtractorContext): ExtractorResult? = null
 }
 
-class ExtractorContext internal constructor(
-    val url: String?,
-    val host: String?,
-    internal val documentSource: Any,
-    candidateHosts: () -> List<String>,
-) {
+data class ExtractorContext(val url: String?, val host: String?) {
+    internal var candidateHostsProvider: () -> List<String> = { emptyList() }
     private val normalizedHost: String? = host.normalizedHost()
 
-    private val candidateHosts: List<String> by lazy(LazyThreadSafetyMode.NONE, candidateHosts)
+    private val candidateHosts: List<String> by lazy(LazyThreadSafetyMode.NONE) {
+        buildList {
+            normalizedHost?.let(::add)
+            candidateHostsProvider().forEach { candidate ->
+                if (candidate !in this) add(candidate)
+            }
+        }
+    }
 
     fun hostMatches(domains: Set<String>): Boolean {
         val normalizedDomains = domains.mapNotNull { it.normalizedHost() }

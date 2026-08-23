@@ -2,12 +2,10 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
-import com.prof18.klead.internal.extractors.ExtractorPostProcessor
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object StripeDocsProfile : Extractor, ExtractorPostProcessor {
+internal object StripeDocsProfile : DomExtractor {
     override val id: String = "stripe-docs"
     override val contentSelectors: List<String> = listOf("article#content")
     override val postContentRemoveSelectors: List<String> = listOf(
@@ -16,11 +14,11 @@ internal object StripeDocsProfile : Extractor, ExtractorPostProcessor {
         ".CodeBlock-header",
     )
 
-    override fun matches(context: ExtractorContext): Boolean = context.hostMatches(setOf("stripe.com")) ||
+    override fun matches(context: DomExtractorContext): Boolean = context.hostMatches(setOf("stripe.com")) ||
         context.document.selectFirst("""meta[property=og:site_name][content="Stripe Documentation"]""") != null ||
         context.document.title().contains("Stripe Documentation", ignoreCase = true)
 
-    override fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) {
+    override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
         content.selectFirst("h1")
             ?.takeIf { heading ->
                 heading.parent() === content || heading.parents().any { it === content }

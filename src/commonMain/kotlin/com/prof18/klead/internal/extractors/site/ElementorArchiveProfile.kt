@@ -2,16 +2,14 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isAttachedTo
-import com.prof18.klead.internal.extractors.ExtractorPostProcessor
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 import com.prof18.klead.internal.removal.recordAndRemove
 
-internal object ElementorArchiveProfile : Extractor, ExtractorPostProcessor {
+internal object ElementorArchiveProfile : DomExtractor {
     override val id: String = "elementor-archive"
     override val contentSelectors: List<String> = listOf(
         """[data-elementor-type="archive"].elementor-location-archive""",
@@ -22,11 +20,11 @@ internal object ElementorArchiveProfile : Extractor, ExtractorPostProcessor {
         ".elementor-widget-jet-listing-grid",
     )
 
-    override fun matches(context: ExtractorContext): Boolean =
+    override fun matches(context: DomExtractorContext): Boolean =
         context.document.body()?.hasClass("elementor-default") == true &&
             context.document.selectFirst("""[data-elementor-type="archive"].elementor-location-archive""") != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val content = context.document.selectFirst("""[data-elementor-type="archive"].elementor-location-archive""")
             ?: return null
         return ExtractorResult(
@@ -36,7 +34,7 @@ internal object ElementorArchiveProfile : Extractor, ExtractorPostProcessor {
         )
     }
 
-    override fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) {
+    override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
         content.select(".e-con").toList()
             .filter { it.isAttachedTo(content) }
             .filter { it.isOrphanElementorHeadingContainer() }

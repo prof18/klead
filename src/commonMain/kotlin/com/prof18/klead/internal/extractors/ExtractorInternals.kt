@@ -5,19 +5,20 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
+import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.parseKleadUri
 
-internal val ExtractorContext.document: Document
-    get() = documentSource as Document
+internal class DomExtractorContext(val publicContext: ExtractorContext, val document: Document) {
+    val url: String? get() = publicContext.url
+    val host: String? get() = publicContext.host
 
-internal fun createExtractorContext(url: String?, host: String?, document: Document): ExtractorContext =
-    ExtractorContext(
-        url = url,
-        host = host,
-        documentSource = document,
-        candidateHosts = {
+    fun hostMatches(domains: Set<String>): Boolean = publicContext.hostMatches(domains)
+}
+
+internal fun createExtractorContext(url: String?, host: String?, document: Document): DomExtractorContext {
+    val publicContext = ExtractorContext(url = url, host = host).apply {
+        candidateHostsProvider = {
             buildList {
-                host.normalizedHost()?.let(::add)
                 document.select(
                     """link[rel=canonical][href], meta[property=og:url][content], meta[name=twitter:url][content]""",
                 )
@@ -29,19 +30,15 @@ internal fun createExtractorContext(url: String?, host: String?, document: Docum
                         if (candidate !in this) add(candidate)
                     }
             }
-        },
-    )
-
-internal interface ExtractorPostProcessor {
-    fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>)
+        }
+    }
+    return DomExtractorContext(publicContext = publicContext, document = document)
 }
 
-internal fun Extractor.postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) {
-    (this as? ExtractorPostProcessor)?.postProcess(content, context, debug)
-}
+internal interface DomExtractor : Extractor {
+    fun matches(context: DomExtractorContext): Boolean = matches(context.publicContext)
 
-private fun String?.normalizedHost(): String? = this
-    ?.lowercase()
-    ?.trim()
-    ?.trim('.')
-    ?.takeIf { it.isNotBlank() }
+    fun extract(context: DomExtractorContext): ExtractorResult? = extract(context.publicContext)
+
+    fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) = Unit
+}

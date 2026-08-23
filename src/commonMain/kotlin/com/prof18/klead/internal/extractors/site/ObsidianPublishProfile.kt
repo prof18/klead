@@ -2,22 +2,21 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.selectFirstSafe
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object ObsidianPublishProfile : Extractor {
+internal object ObsidianPublishProfile : DomExtractor {
     override val id: String = "obsidian-publish"
     override val domains: Set<String> = setOf("publish.obsidian.md")
 
-    override fun matches(context: ExtractorContext): Boolean =
+    override fun matches(context: DomExtractorContext): Boolean =
         context.hostMatches(domains) || context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR) != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val content = context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR)?.clone() ?: return null
         content.select(".mod-ui, .mod-footer, .backlinks").remove()
         content.normalizeObsidianLinks()

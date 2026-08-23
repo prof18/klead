@@ -97,6 +97,6 @@ class ExtractorRegistryTest {
         override fun extract(context: ExtractorContext) = ExtractorResult(metadata = ExtractorMetadata(site = name))
     }
 
-    private fun com.fleeksoft.ksoup.nodes.Document.context(url: String): ExtractorContext =
+    private fun com.fleeksoft.ksoup.nodes.Document.context(url: String): DomExtractorContext =
         createExtractorContext(url = url, host = java.net.URI(url).host, document = this)
 }

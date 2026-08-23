@@ -2,11 +2,10 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 import com.prof18.klead.internal.media.TrustedEmbeds
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -14,13 +13,13 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
-internal object SteamPartnerEventExtractor : Extractor {
+internal object SteamPartnerEventExtractor : DomExtractor {
     override val id: String = "steam-partner-event"
 
-    override fun matches(context: ExtractorContext): Boolean =
+    override fun matches(context: DomExtractorContext): Boolean =
         context.document.selectFirst("#application_config[data-partnereventstore]") != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val event = context.document.partnerEvent() ?: return null
         val announcement = event["announcement_body"] as? JsonObject ?: return null
         val body = announcement.string("body") ?: return null

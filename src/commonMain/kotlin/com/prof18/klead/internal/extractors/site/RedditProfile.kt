@@ -1,8 +1,6 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.appendChildNodesFrom
@@ -10,13 +8,14 @@ import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object RedditProfile : Extractor {
+internal object RedditProfile : DomExtractor {
     override val id: String = "reddit"
     override val domains: Set<String> = setOf("reddit.com")
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val post = context.document.selectFirst(".thing.link") ?: return null
         val body = post.selectFirst(".entry .usertext-body .md")?.clone()
             ?: return null

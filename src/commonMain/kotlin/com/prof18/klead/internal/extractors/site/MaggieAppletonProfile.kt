@@ -2,13 +2,13 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
-import com.prof18.klead.internal.extractors.ExtractorPostProcessor
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object MaggieAppletonProfile : Extractor, ExtractorPostProcessor {
+internal object MaggieAppletonProfile : DomExtractor {
     override val id: String = "maggie-appleton"
     override val domains: Set<String> = setOf("maggieappleton.com")
     override val contentSelectors: List<String> = listOf("article.prose-wrapper")
@@ -28,7 +28,7 @@ internal object MaggieAppletonProfile : Extractor, ExtractorPostProcessor {
     override fun extract(context: ExtractorContext): ExtractorResult? =
         ExtractorResult(metadata = ExtractorMetadata(site = "maggieappleton.com"))
 
-    override fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) {
+    override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
         content.select("figure.container")
             .filter { it.selectFirst("figcaption") == null }
             .forEach { figure ->

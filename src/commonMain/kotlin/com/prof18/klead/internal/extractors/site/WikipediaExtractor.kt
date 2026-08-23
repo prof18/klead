@@ -1,20 +1,19 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.textTrimmedOrNull
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object WikipediaExtractor : Extractor {
+internal object WikipediaExtractor : DomExtractor {
     override val id: String = "wikipedia"
 
-    override fun matches(context: ExtractorContext): Boolean = context.isWikipediaPage() &&
+    override fun matches(context: DomExtractorContext): Boolean = context.isWikipediaPage() &&
         context.document.selectFirst(WIKIPEDIA_CONTENT_SELECTOR) != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val content = context.document.selectFirst(WIKIPEDIA_CONTENT_SELECTOR)?.clone() ?: return null
         content.cleanWikipediaChrome()
         if (content.text().isBlank()) return null
@@ -89,7 +88,7 @@ internal object WikipediaExtractor : Extractor {
             host.endsWith(".wikipedia.org")
     }
 
-    private fun ExtractorContext.isWikipediaPage(): Boolean {
+    private fun DomExtractorContext.isWikipediaPage(): Boolean {
         if (host.orEmpty().isWikipediaHost()) return true
 
         val siteName = document.selectFirst("""meta[property="og:site_name"]""")

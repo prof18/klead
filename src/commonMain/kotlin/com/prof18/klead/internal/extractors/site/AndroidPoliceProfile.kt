@@ -3,17 +3,15 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
-import com.prof18.klead.internal.extractors.ExtractorPostProcessor
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object AndroidPoliceProfile : Extractor, ExtractorPostProcessor {
+internal object AndroidPoliceProfile : DomExtractor {
     override val id: String = "android-police"
     override val domains: Set<String> = setOf("androidpolice.com")
     override val contentSelectors: List<String> = listOf("#article-body", ".article-body")
 
-    override fun postProcess(content: Element, context: ExtractorContext, debug: MutableList<RemovalRecord>) {
+    override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
         prependFeatureImage(content, context.document)
     }
 

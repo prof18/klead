@@ -1,8 +1,6 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.appendChildNodesFrom
@@ -10,16 +8,17 @@ import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object GitHubProfile : Extractor {
+internal object GitHubProfile : DomExtractor {
     override val id: String = "github"
     override val domains: Set<String> = setOf("github.com")
 
-    override fun extract(context: ExtractorContext): ExtractorResult? =
+    override fun extract(context: DomExtractorContext): ExtractorResult? =
         extractPullRequest(context) ?: extractIssue(context)
 
-    private fun extractPullRequest(context: ExtractorContext): ExtractorResult? {
+    private fun extractPullRequest(context: DomExtractorContext): ExtractorResult? {
         if (!context.isPullRequestPage()) return null
         val bodies = context.document.select(".pull-discussion-timeline .comment-body.markdown-body")
         val body = bodies.firstOrNull() ?: return null
@@ -50,7 +49,7 @@ internal object GitHubProfile : Extractor {
         )
     }
 
-    private fun extractIssue(context: ExtractorContext): ExtractorResult? {
+    private fun extractIssue(context: DomExtractorContext): ExtractorResult? {
         val issueBody = context.document.selectFirst("""[data-testid="issue-body"]""") ?: return null
         val body = issueBody.selectFirst("""[data-testid="issue-body-viewer"] [data-testid="markdown-body"]""")
             ?: issueBody.selectFirst("""[data-testid="markdown-body"]""")
@@ -101,7 +100,7 @@ internal object GitHubProfile : Extractor {
             ?.ifBlank { null }
     }
 
-    private fun ExtractorContext.isPullRequestPage(): Boolean = url.orEmpty().contains("/pull/") ||
+    private fun DomExtractorContext.isPullRequestPage(): Boolean = url.orEmpty().contains("/pull/") ||
         document.selectFirst(".pull-discussion-timeline") != null
 
     private fun Element.githubComment(): GitHubComment? {
@@ -126,7 +125,7 @@ internal object GitHubProfile : Extractor {
         quote.appendChildNodesFrom(comment.body)
     }
 
-    private fun ExtractorContext.repositorySiteName(): String {
+    private fun DomExtractorContext.repositorySiteName(): String {
         val repositoryFromUrl = runCatching {
             parseKleadUri(url.orEmpty())?.path
                 .orEmpty()

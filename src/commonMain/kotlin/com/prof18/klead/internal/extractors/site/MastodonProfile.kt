@@ -1,22 +1,21 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.resolveKleadUri
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object MastodonProfile : Extractor {
+internal object MastodonProfile : DomExtractor {
     override val id: String = "mastodon"
 
-    override fun matches(context: ExtractorContext): Boolean =
+    override fun matches(context: DomExtractorContext): Boolean =
         context.document.selectFirst(".detailed-status") != null &&
             context.document.selectFirst("#mastodon, .app-holder, script#initial-state") != null
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val baseUrl = context.baseUrl()
         val mainStatus = context.document.selectFirst(".detailed-status") ?: return null
         val mainContent = mainStatus.selectFirst(".status__content__text")?.clone() ?: return null
@@ -178,7 +177,7 @@ internal object MastodonProfile : Extractor {
         }
     }
 
-    private fun ExtractorContext.baseUrl(): String = url?.takeIf { it.isNotBlank() }
+    private fun DomExtractorContext.baseUrl(): String = url?.takeIf { it.isNotBlank() }
         ?: document.selectFirst("""meta[property=og:url][content]""")?.attr("content").orEmpty()
 
     private fun String.matchesMainAccount(mainAccount: String): Boolean {

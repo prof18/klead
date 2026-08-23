@@ -1,17 +1,16 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
-import com.prof18.klead.extractors.Extractor
-import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
-import com.prof18.klead.internal.extractors.document
+import com.prof18.klead.internal.extractors.DomExtractor
+import com.prof18.klead.internal.extractors.DomExtractorContext
 
-internal object ChatGptExtractor : Extractor {
+internal object ChatGptExtractor : DomExtractor {
     override val id: String = "chatgpt"
     override val domains: Set<String> = setOf("chatgpt.com")
 
-    override fun extract(context: ExtractorContext): ExtractorResult? {
+    override fun extract(context: DomExtractorContext): ExtractorResult? {
         val turns = context.document.select("""[data-testid^="conversation-turn-"]""")
         if (turns.isEmpty()) return null
 
