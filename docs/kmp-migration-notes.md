@@ -134,6 +134,17 @@ match the migration plan's requested record.
   `[50, 50, 50, 50, 51, 51, 51, 51, 51, 65]`. JVM reference: `min=7ms`,
   `median=11ms`, samples `[7, 7, 8, 8, 8, 11, 11, 12, 15, 170]`.
 
+## Final handoff gate
+
+- `./gradlew -q --console=plain check compileKotlinIosArm64 compileKotlinIosSimulatorArm64 iosSimulatorArm64Test --rerun`
+  passed: 459 JVM tests and 11 iOS Simulator arm64 tests, with zero failures or skips.
+- All 551 JVM fixture/resource files are byte-identical to branch point `60cdc36` after
+  accounting for the source-set path move. The sorted Git-blob aggregate SHA-256 is
+  `3730df7038e6ee3fe592744aba1361eca73326030e4bc42e2513149029897a1e`
+  at both revisions.
+- The final FeedFlow consumer gate passed against this worktree with
+  `:shared:androidJar`; only its existing missing Dropbox-key warning was emitted.
+
 ### Phase 1 — Ksoup JVM spike
 
 - Verified current core artifact: `com.fleeksoft.ksoup:ksoup:0.2.6`; no IO or network
