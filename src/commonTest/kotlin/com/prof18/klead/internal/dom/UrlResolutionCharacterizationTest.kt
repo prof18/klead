@@ -49,6 +49,37 @@ class UrlResolutionCharacterizationTest {
     }
 
     @Test
+    fun `preserves repeated slashes in root relative references`() {
+        assertEquals("https://example.com/a//b", resolveUrl(base, "/a//b"))
+        assertEquals("https://example.com/a//", resolveUrl(base, "/a//"))
+        assertEquals("https://example.com/a/../b", resolveUrl(base, "/a/../b"))
+        assertEquals("https://cdn.test/a//b", resolveUrl(base, "//cdn.test/a//b"))
+        assertEquals("https://cdn.test/a/../b", resolveUrl(base, "//cdn.test/a/../b"))
+    }
+
+    @Test
+    fun `resolves query-only references against a bare origin`() {
+        assertEquals("https://example.com?q=1", resolveUrl("https://example.com", "?q=1"))
+        assertEquals("https://example.com?q=1#frag", resolveUrl("https://example.com", "?q=1#frag"))
+    }
+
+    @Test
+    fun `rejects an invalid empty authority`() {
+        assertNull(parseKleadUri("//"))
+        assertEquals("", resolveUrl(base, "//"))
+        assertEquals("/path", parseKleadUri("https:///path")?.path)
+        assertEquals("q", parseKleadUri("//?q")?.rawQuery)
+    }
+
+    @Test
+    fun `encodes non-BMP characters as one UTF-8 sequence`() {
+        val parsed = parseKleadUri("https://example.com/😀")
+
+        assertEquals("/😀", parsed?.path)
+        assertEquals("https://example.com/%F0%9F%98%80", parsed?.asciiString)
+    }
+
+    @Test
     fun `parses host decoded path raw components and ascii form like java URI`() {
         val parsed = parseKleadUri("https://www.Example.COM/a%20b?q=x%20y")
 

@@ -51,7 +51,7 @@ internal fun resolveKleadUri(baseUrl: String, value: String): String? {
         reference.authority != null -> buildUri(
             scheme = base.scheme,
             authority = reference.authority,
-            path = removeDotSegments(reference.rawPath.orEmpty()),
+            path = reference.rawPath.orEmpty(),
             query = reference.rawQuery,
             fragment = reference.rawFragment,
         )
@@ -67,11 +67,15 @@ internal fun resolveKleadUri(baseUrl: String, value: String): String? {
         else -> {
             val path = reference.rawPath.orEmpty()
             val resolvedPath = if (path.startsWith('/')) {
-                removeDotSegments(path)
+                path
             } else {
-                removeDotSegments(
-                    base.rawPath.orEmpty().substringBeforeLast('/', missingDelimiterValue = "") + "/" + path,
-                )
+                val basePath = base.rawPath.orEmpty()
+                val mergedPath = when {
+                    basePath.isEmpty() && path.isEmpty() -> ""
+                    basePath.isEmpty() -> "/$path"
+                    else -> basePath.substringBeforeLast('/', missingDelimiterValue = "") + "/" + path
+                }
+                removeDotSegments(mergedPath)
             }
             buildUri(base.scheme, base.authority, resolvedPath, reference.rawQuery, reference.rawFragment)
         }
@@ -87,6 +91,7 @@ private data class UriReference(
     val opaque: Boolean,
 )
 
+@Suppress("ReturnCount")
 private fun parseUriReference(value: String): UriReference? {
     if (value.any { it.isForbiddenUriCharacter() } || value.hasMalformedPercentEscape()) return null
 
@@ -111,15 +116,16 @@ private fun parseUriReference(value: String): UriReference? {
         return UriReference(scheme, null, null, null, rawFragment, opaque = true)
     }
 
-    val authority = if (afterScheme.startsWith("//")) {
-        afterScheme.substring(2).substringBefore('/')
-    } else {
-        null
+    val hasAuthorityMarker = afterScheme.startsWith("//")
+    val authorityValue = afterScheme.substringAfter("//", missingDelimiterValue = "").substringBefore('/')
+    if (afterScheme == "//" && rawQuery == null && rawFragment == null) {
+        return null
     }
-    val rawPath = if (authority == null) {
-        afterScheme
-    } else {
-        afterScheme.substring(2 + authority.length)
+    val authority = authorityValue.takeIf { hasAuthorityMarker && it.isNotEmpty() }
+    val rawPath = when {
+        !hasAuthorityMarker -> afterScheme
+        authority != null -> afterScheme.substring(2 + authority.length)
+        else -> afterScheme.substring(2)
     }
     return UriReference(scheme, authority, rawPath, rawQuery, rawFragment, opaque = false)
 }
@@ -158,16 +164,30 @@ private fun String.decodePercentEncoded(): String {
 }
 
 private fun String.encodeNonAscii(): String = buildString(length) {
-    for (char in this@encodeNonAscii) {
+    var index = 0
+    while (index < this@encodeNonAscii.length) {
+        val char = this@encodeNonAscii[index]
         if (char.code <= ASCII_MAX) {
             append(char)
         } else {
-            char.toString().encodeToByteArray().forEach { byte ->
+            val end = if (
+                char in '\uD800'..'\uDBFF' &&
+                index + 1 < this@encodeNonAscii.length &&
+                this@encodeNonAscii[index + 1] in '\uDC00'..'\uDFFF'
+            ) {
+                index + 2
+            } else {
+                index + 1
+            }
+            this@encodeNonAscii.substring(index, end).encodeToByteArray().forEach { byte ->
                 append('%')
                 append(HEX_DIGITS[(byte.toInt() ushr 4) and 0xF])
                 append(HEX_DIGITS[byte.toInt() and 0xF])
             }
+            index = end
+            continue
         }
+        index++
     }
 }
 
