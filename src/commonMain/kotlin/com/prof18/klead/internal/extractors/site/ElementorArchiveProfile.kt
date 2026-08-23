@@ -21,7 +21,7 @@ internal object ElementorArchiveProfile : DomExtractor {
     )
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.document.body()?.hasClass("elementor-default") == true &&
+        context.document.body().hasClass("elementor-default") &&
             context.document.selectFirst("""[data-elementor-type="archive"].elementor-location-archive""") != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {

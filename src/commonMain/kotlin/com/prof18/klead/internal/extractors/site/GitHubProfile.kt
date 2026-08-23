@@ -61,7 +61,7 @@ internal object GitHubProfile : DomExtractor {
         if (authorName != null) {
             article.appendElement("p")
                 .appendElement("a")
-                .attr("href", author?.attr("href").orEmpty().toGitHubUrl())
+                .attr("href", author.attr("href").toGitHubUrl())
                 .text(authorName)
         }
 

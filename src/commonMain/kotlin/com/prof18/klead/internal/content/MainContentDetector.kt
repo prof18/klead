@@ -90,7 +90,7 @@ internal object MainContentDetector {
         }.distinctByIdentity()
 
         if (candidates.isEmpty()) {
-            val body = document.body() ?: Element("body")
+            val body = document.body()
             return detected(body, "body", emptyList())
         }
 
@@ -296,9 +296,9 @@ internal object MainContentDetector {
     ): Candidate? {
         val needle = schemaText?.normalizeSchemaText()?.takeIf { it.length >= SCHEMA_TEXT_MIN_LENGTH } ?: return null
         return document.body()
-            ?.select("article, main, section, div")
-            ?.filter { it.matchesSchemaText(needle) }
-            ?.minByOrNull { scoreOf(it).wordCount }
+            .select("article, main, section, div")
+            .filter { it.matchesSchemaText(needle) }
+            .minByOrNull { scoreOf(it).wordCount }
             ?.let { element ->
                 Candidate(
                     element = element,
