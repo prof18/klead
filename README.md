@@ -123,7 +123,10 @@ suspend fun renderStory(html: String): String {
 
 ## Verification
 
-Portable parser tests, the 190-page upstream fixture corpus, and new site regressions live in `commonTest` and run through every target's test task. Only JVM reflection, documentation, upstream fixture-sync, and explicit snapshot-writing tooling remain in `jvmTest` because they exercise host tooling rather than cross-platform parser behavior.
+Portable parser tests, the upstream fixture corpus, and new site regressions live in
+`commonTest` and run through every target's test task. Only JVM reflection,
+documentation, upstream fixture-sync, and explicit snapshot-writing tooling remain in
+`jvmTest` because they exercise host tooling rather than cross-platform parser behavior.
 
 Configured Gradle gates:
 
@@ -133,12 +136,21 @@ Configured Gradle gates:
 ./gradlew check -q --console=plain
 ```
 
-To turn a broken live page into a portable regression, follow the [site regression workflow](docs/site-regression-workflow.md). Capture generates Markdown and cleaned-HTML snapshots from the current engine; after the fix, regenerate those outputs from the same frozen HTML and review the diff.
+To turn a broken live page into a portable regression, use the shared
+`klead-regression-fix` skill. The underlying commands are
+`./scripts/capture-site-regression '<url>' <name>` and
+`./scripts/update-site-regression <name>`. Capture preserves the current Markdown and
+cleaned-HTML behavior before the engine fix; update regenerates both expectations from
+the same frozen input HTML after the fix.
 
 `check` includes Detekt, tests, and documentation checks. Detekt builds on its
 default Kotlin rule configuration and adds ktlint formatting rules.
 
-See [docs/README.md](docs/README.md) for the implementation plan and [docs/fixture-coverage.md](docs/fixture-coverage.md) for current fixture coverage.
+## Documentation
+
+- [Markdown output policy](docs/markdown-policy.md)
+- [Security policy](docs/security-policy.md)
+- [Cross-platform benchmarking](docs/benchmarking.md)
 
 ## Cross-platform regression benchmarks
 

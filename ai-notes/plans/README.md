@@ -1,6 +1,8 @@
-# Klead Implementation Plan
+# Klead AI And Implementation Plans
 
-This folder is the execution plan for building Klead, a Kotlin Multiplatform library that outputs clean Markdown.
+This folder contains AI-authored and engineer-facing execution plans for building and evolving Klead. Human-facing documentation is linked from the project [`README`](../../README.md).
+
+The original 00–13 implementation plan is complete and retained here as an execution record. Later planning material includes the [Kotlin Multiplatform migration](kmp-migration-plan.md), its [execution notes](../notes/kmp-migration-notes.md), the [extractor refactor](site-extractor-refactor-plan.md), and the superseded [performance notes](../notes/performance-notes.md).
 
 The project goal is broad article extraction behavior, with Markdown generation as the primary output. Compose, WebView, and UI rendering are out of scope for this repository unless a later product decision adds an example app.
 
@@ -16,7 +18,9 @@ The project goal is broad article extraction behavior, with Markdown generation 
 
 Small commits are preferred. A commit may be smaller than a phase when it completes one coherent behavior, such as "fixture URL parser", "case-insensitive selector wrapper", or "Markdown image rendering".
 
-For real-world issue reports, use the standalone [Site Regression Workflow](site-regression-workflow.md). It starts from a URL and screenshot, captures the page, and runs the resulting regression on every supported target without extracting data from FeedFlow.
+For real-world issue reports, use the shared `klead-regression-fix` skill. It starts
+from a URL and screenshot, captures the page, and runs the resulting regression on
+every supported target without extracting data from FeedFlow.
 
 ## Status Legend
 
@@ -209,5 +213,5 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-16 - PHASE-06 - complete - Added a PhoneArena FeedFlow reader-dump regression and removed comment counters, author/date/disclaimer chrome, author bio/latest-post blocks, community discussions, and related-device footer links from reader Markdown.
 2026-06-16 - PHASE-06 - complete - Added an SI/MinuteMedia FeedFlow reader-dump regression and removed preferred-source widgets, recommendation loaders, publish/modified metadata, author bio/follow cards, and breadcrumb footers from reader Markdown.
 2026-06-16 - PHASE-06 - complete - Added a Motorsport.com FeedFlow reader-dump regression and removed share/save, previous-article, top-comments, more-from, latest-news, prime-content, and adblock subscription footer modules from reader Markdown.
-2026-06-16 - PHASE-10 - planned - Added `docs/site-extractor-refactor-plan.md` with a Mercury-style site extractor/profile refactor plan and an inventory of site-specific selectors currently embedded in the global removal pipeline.
+2026-06-16 - PHASE-10 - planned - Added `ai-notes/plans/site-extractor-refactor-plan.md` with a Mercury-style site extractor/profile refactor plan and an inventory of site-specific selectors currently embedded in the global removal pipeline.
 2026-06-16 - PHASE-10 - planned - Updated the site extractor refactor plan from Codex thread `019ec81f-e095-7a32-98dd-9c8dafb02ec1`, adding the June 15 FeedFlow dump sites and selectors that were missing from the first inventory.

@@ -1,8 +1,9 @@
 # Release Scope
 
-This repository currently provides an internal Kotlin Multiplatform library for extracting
-clean Markdown from static HTML on JVM, iOS, and native macOS on Apple silicon and Intel.
-The Intel-native `macosX64` target is transitional because Kotlin deprecated it in 2.3.20.
+This repository currently provides an alpha Kotlin Multiplatform library for extracting
+clean Markdown and sanitized HTML from static HTML on JVM, Android, iOS, and native macOS
+on Apple silicon and Intel. The Intel-native `macosX64` target is transitional because
+Kotlin deprecated it in 2.3.20.
 
 Included:
 
@@ -11,9 +12,9 @@ Included:
 - schema.org JSON-LD extraction
 - removal pipeline
 - HTML standardization
-- direct Markdown writer
+- direct Markdown writer and cleaned-HTML output
 - upstream fixture harness and diagnostic coverage
-- one static site extractor: Wikipedia
+- built-in domain-scoped extractors plus caller-provided custom extractors
 - security and robustness smoke coverage
 
 Excluded or staged:

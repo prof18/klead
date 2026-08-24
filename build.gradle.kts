@@ -325,22 +325,22 @@ data class BenchmarkResult(
 
 tasks.register("docsCheck") {
     group = "verification"
-    description = "Checks that migration documentation exists."
-    inputs.files(fileTree("docs") { include("*.md") })
+    description = "Checks that human documentation and AI-note indexes exist."
+    inputs.files(
+        fileTree("docs") { include("*.md") },
+        fileTree("ai-notes") { include("**/*.md") },
+    )
     doLast {
-        val requiredDocs = listOf(
-            "docs/README.md",
+        val requiredFiles = listOf(
             "docs/benchmarking.md",
-            "docs/fixture-coverage.md",
-            "docs/known-differences.md",
             "docs/markdown-policy.md",
-            "docs/release-scope.md",
             "docs/security-policy.md",
-            "docs/site-regression-workflow.md",
-            "docs/upstream-sync.md",
+            "ai-notes/README.md",
+            "ai-notes/plans/README.md",
+            "ai-notes/notes/README.md",
         )
-        for (doc in requiredDocs) {
-            check(file(doc).isFile) { "$doc is required" }
+        for (requiredFile in requiredFiles) {
+            check(file(requiredFile).isFile) { "$requiredFile is required" }
         }
     }
 }

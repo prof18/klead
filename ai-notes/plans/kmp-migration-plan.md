@@ -26,7 +26,7 @@ replacements for anything marked VERIFY — check the referenced source of truth
    keep it green but don't run broad autoformatting.
 7. If an API named in this plan doesn't exist in the version you resolve (Ksoup evolves),
    STOP for that item, check the library's README/source for the current name, and record
-   the substitution you made in the migration notes file (`docs/kmp-migration-notes.md`,
+   the substitution you made in the migration notes file (`ai-notes/notes/kmp-migration-notes.md`,
    create it in Phase 1).
 
 ---
@@ -105,7 +105,7 @@ Known trade-offs to accept up front:
 
 1. Ensure working tree is clean; if the current perf fixes are uncommitted, commit them
    first (separate commit, not part of migration).
-2. Record baselines into `docs/kmp-migration-notes.md` (create the file):
+2. Record baselines into `ai-notes/notes/kmp-migration-notes.md` (create the file):
    ```bash
    ./gradlew check -q --console=plain            # must pass
    KLEAD_PRINT_FEEDFLOW_TIMINGS=true ./gradlew jvmTest -q --console=plain \

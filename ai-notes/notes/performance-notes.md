@@ -1,5 +1,7 @@
 # Performance And Robustness
 
+> Historical implementation notes. Current commands, measurements, hardware, and budgets live in [`docs/benchmarking.md`](../../docs/benchmarking.md).
+
 Last updated: 2026-06-14
 
 ## Smoke Targets
