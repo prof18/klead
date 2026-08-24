@@ -38,4 +38,4 @@ jobs:
           key: ${{ runner.os }}-v1-${{ hashFiles('*.gradle.kts') }}
 
       - name: Check
-        run: ./gradlew check -q --console=plain
+        run: ./gradlew check
