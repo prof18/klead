@@ -79,6 +79,22 @@ tasks.register<KotlinNativeHostTest>("macosArm64ReleaseBenchmarkTest") {
     executable(macosArm64BenchmarkBinary.linkTaskProvider.map { macosArm64BenchmarkBinary.outputFile })
 }
 
+tasks.register<KotlinNativeHostTest>("macosArm64ReleaseRegressionBenchmarkTest") {
+    group = "verification"
+    description = "Benchmarks the real-world regression fixture corpus on optimized macOS arm64."
+    targetName = "macosArm64"
+    workingDir = projectDir.absolutePath
+    binaryResultsDirectory.set(layout.buildDirectory.dir("test-results/$name/binary"))
+    reports.junitXml.outputLocation.set(layout.buildDirectory.dir("test-results/$name"))
+    reports.html.outputLocation.set(layout.buildDirectory.dir("reports/tests/$name"))
+    executable(macosArm64BenchmarkBinary.linkTaskProvider.map { macosArm64BenchmarkBinary.outputFile })
+    filter.includeTestsMatching("com.prof18.klead.fixtures.MacosRegressionCorpusBenchmarkTest")
+    environment("KLEAD_RUN_REGRESSION_BENCHMARK", "true")
+    environment("KLEAD_NATIVE_TARGET", "macosArm64Release")
+    outputs.upToDateWhen { false }
+    mustRunAfter("macosArm64ReleaseBenchmarkTest")
+}
+
 dependencies {
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.5")
 }
@@ -130,10 +146,11 @@ tasks.withType<KotlinNativeTest>().configureEach {
 
 tasks.register("nativeReleaseBenchmark") {
     group = "verification"
-    description = "Runs optimized smoke benchmarks on iOS Simulator arm64 and macOS arm64."
+    description = "Runs optimized smoke and real-world corpus benchmarks on Apple arm64 targets."
     dependsOn(
         "iosSimulatorArm64ReleaseBenchmarkTest",
         "macosArm64ReleaseBenchmarkTest",
+        "macosArm64ReleaseRegressionBenchmarkTest",
     )
 }
 

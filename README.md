@@ -14,11 +14,19 @@ Run the optimized iOS Simulator arm64 and macOS arm64 benchmark smoke tests with
 ./gradlew -q --console=plain nativeReleaseBenchmark
 ```
 
-The task builds dedicated Kotlin/Native release test binaries and runs
-`CommonPerformanceSmokeTest` on iOS Simulator and macOS. Timing output is recorded under
+The task builds dedicated Kotlin/Native release test binaries, runs
+`CommonPerformanceSmokeTest` on iOS Simulator and macOS, and benchmarks every captured
+real-world regression fixture on macOS. Timing output is recorded under
 `build/test-results/iosSimulatorArm64ReleaseBenchmarkTest`,
-and `build/test-results/macosArm64ReleaseBenchmarkTest`. These release benchmarks are
+`build/test-results/macosArm64ReleaseBenchmarkTest`, and
+`build/test-results/macosArm64ReleaseRegressionBenchmarkTest`. These release benchmarks are
 intentionally separate from the normal `check` lifecycle.
+
+The corpus benchmark prints the three-sample median and the slowest pages. Its default
+macOS ARM64 median budget is 4,000 ms; the initial reference run on the development Mac
+was 3,301 ms. For a tighter update-to-update comparison, record the pre-update median
+and rerun with `KLEAD_REGRESSION_CORPUS_MAX_MEDIAN_MS=<budget>`. The benchmark fails
+when the measured median exceeds that budget.
 
 ## Usage
 
