@@ -148,12 +148,46 @@ Run the complete real-world regression corpus benchmark with connected Android a
 ./scripts/run-regression-benchmarks
 ```
 
-It measures the same 56 fixtures on JVM, a physical Android device, optimized iOS
-Simulator ARM64, an optimized physical iPhone, and optimized macOS ARM64. Every runner
-performs one warm-up plus three measured passes, enforces its tracked budget, and writes
-a unified comparison report to `build/reports/benchmarks/regression-corpus/latest.json`.
-See [Cross-platform benchmarking](docs/benchmarking.md) for repeated runs, device
-selection, baselines, and individual platform commands.
+Each reported sample is the total parser time for one full pass over the frozen
+real-world regression corpus. On every platform, the benchmark:
+
+- loads fixture files before timing starts
+- times Klead's content extraction and generation of both Markdown and cleaned HTML
+- enables the same debug diagnostics
+- performs one warm-up, then uses the median of three measured corpus passes
+- compares that median with the platform's regression budget
+
+Latest reference medians from 2026-08-24:
+
+| Platform | Reference target | Median | Failure budget |
+|---|---|---:|---:|
+| JVM | OpenJDK 21 on Apple M1 Max | **848 ms** | 1,100 ms |
+| Android | Pixel 4 XL, Android 13 | **12,930 ms** | 17,000 ms |
+| iOS Simulator | iPhone 17 Pro, iOS 26.5 | **3,347 ms** | 4,000 ms |
+| iOS device | iPhone 16e, iOS 26.5 | **2,798 ms** | 4,000 ms |
+| macOS | Apple M1 Max, macOS 26.5.2 | **3,341 ms** | 4,000 ms |
+
+Per-page context from that same dated reference run:
+
+| Platform | Approx. average per page | Slowest page median | Slowest page |
+|---|---:|---:|---|
+| JVM | **15 ms** | **53 ms** | Android Central — Honor Magic V6 review |
+| Android | **231 ms** | **958 ms** | Android Central — Honor Magic V6 review |
+| iOS Simulator | **60 ms** | **251 ms** | The Verge — Sony Xperia 1 VIII review |
+| iOS device | **50 ms** | **209 ms** | The Verge — Sony Xperia 1 VIII review |
+| macOS | **60 ms** | **250 ms** | The Verge — Sony Xperia 1 VIII review |
+
+The average is the full-corpus median divided by the pages in that reference run. The
+slowest-page value is that page's median across the measured passes. Both will evolve
+with the corpus, so they are dated performance snapshots rather than fixed corpus
+statistics.
+
+The same workload runs on JVM, a physical Android device, optimized iOS Simulator
+ARM64, an optimized physical iPhone, and optimized macOS ARM64. The runner writes a
+unified comparison report to `build/reports/benchmarks/regression-corpus/latest.json`.
+See the [cross-platform benchmark results](docs/benchmarking.md#reference-results-2026-08-24)
+for the recorded JVM, Android, iOS Simulator, physical iPhone, and macOS measurements,
+plus repeated runs, device selection, baselines, and individual platform commands.
 
 ## License
 

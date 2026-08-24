@@ -31,6 +31,22 @@ build/reports/benchmarks/regression-corpus/run-<UTC timestamp>.json
 
 Every timestamped report is retained under `build/` for before-and-after comparison during the current worktree lifecycle.
 
+## Reference Results (2026-08-24)
+
+These are the first tracked cross-platform results from the complete runner. Each sample is the sum of the 56 individual parser-pipeline durations for one corpus pass. Reading fixture files and checking the outputs happen outside the timed region; extraction plus generation of both cleaned HTML and Markdown happen inside it. Debug diagnostics are enabled consistently on every target.
+
+| Platform | Benchmark target | Three measured samples | Median | Failure budget |
+|---|---|---:|---:|---:|
+| JVM | Azul Zulu OpenJDK 21, Apple M1 Max | 806, 848, 950 ms | **848 ms** | 1,100 ms |
+| Android | Pixel 4 XL, Android 13, instrumented test APK | 12,832, 12,930, 13,031 ms | **12,930 ms** | 17,000 ms |
+| iOS Simulator | iPhone 17 Pro, iOS 26.5, Release | 3,331, 3,347, 3,391 ms | **3,347 ms** | 4,000 ms |
+| iOS device | iPhone 16e, iOS 26.5, Release | 2,706, 2,798, 2,892 ms | **2,798 ms** | 4,000 ms |
+| macOS | Mac Studio, Apple M1 Max, macOS 26.5.2, Release | 3,332, 3,341, 3,349 ms | **3,341 ms** | 4,000 ms |
+
+The Apple toolchain was Xcode 26.6. Every target performed one unmeasured warm-up before these samples. These figures are regression baselines, not a ranking of platforms: runtimes and hardware differ, so compare a target only with later runs of the same target under similar device and thermal conditions.
+
+The table records the human-readable baseline. The machine-readable source remains [`benchmarks/regression-corpus-baselines.properties`](../benchmarks/regression-corpus-baselines.properties), while every new local run writes its exact samples and target identifiers to `build/reports/benchmarks/regression-corpus/latest.json`.
+
 ## Repeated Runs
 
 Override the number of measured samples when investigating a smaller change:
