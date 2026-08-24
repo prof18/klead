@@ -14,6 +14,8 @@ plugins {
 group = "com.prof18"
 version = "0.1.0-SNAPSHOT"
 
+val commonTestResources = layout.projectDirectory.dir("src/commonTest/resources")
+
 kotlin {
     jvmToolchain(21)
     jvm()
@@ -77,23 +79,6 @@ tasks.register<KotlinNativeHostTest>("macosArm64ReleaseBenchmarkTest") {
     executable(macosArm64BenchmarkBinary.linkTaskProvider.map { macosArm64BenchmarkBinary.outputFile })
 }
 
-tasks.register<KotlinNativeHostTest>("macosArm64ReleaseCorpusBenchmarkTest") {
-    group = "verification"
-    description = "Runs the optimized 56-page FeedFlow corpus benchmark on macOS arm64."
-    targetName = "macosArm64"
-    workingDir = projectDir.absolutePath
-    binaryResultsDirectory.set(layout.buildDirectory.dir("test-results/$name/binary"))
-    reports.junitXml.outputLocation.set(layout.buildDirectory.dir("test-results/$name"))
-    reports.html.outputLocation.set(layout.buildDirectory.dir("reports/tests/$name"))
-    executable(macosArm64BenchmarkBinary.linkTaskProvider.map { macosArm64BenchmarkBinary.outputFile })
-    filter.includeTestsMatching("com.prof18.klead.MacosFeedFlowCorpusTimingTest")
-    environment("KLEAD_PROJECT_DIR", projectDir.absolutePath)
-    environment("KLEAD_NATIVE_TARGET", "macosArm64Release")
-    environment("KLEAD_PRINT_FEEDFLOW_TIMINGS", "true")
-    outputs.upToDateWhen { false }
-    mustRunAfter("macosArm64ReleaseBenchmarkTest")
-}
-
 dependencies {
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.5")
 }
@@ -110,26 +95,45 @@ tasks.withType<Detekt>().configureEach {
 
 tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
+    filter.excludeTestsMatching("com.prof18.klead.fixtures.SiteRegressionSnapshotWriterTest")
+    environment("TEST_RESOURCES_ROOT", commonTestResources.asFile.absolutePath)
+}
+
+tasks.register<Test>("writeSiteRegressionSnapshot") {
+    group = "verification"
+    description = "Writes current Klead Markdown and HTML snapshots for one captured regression input."
+    val jvmTest = tasks.named<Test>("jvmTest")
+    testClassesDirs = jvmTest.get().testClassesDirs
+    classpath = jvmTest.get().classpath
+    useJUnitPlatform()
+    filter.includeTestsMatching("com.prof18.klead.fixtures.SiteRegressionSnapshotWriterTest")
+    environment("TEST_RESOURCES_ROOT", commonTestResources.asFile.absolutePath)
+    outputs.upToDateWhen { false }
+
+    val fixtureName = providers.gradleProperty("siteRegressionName")
+    doFirst {
+        systemProperty(
+            "klead.siteRegressionName",
+            fixtureName.orNull ?: error("Pass -PsiteRegressionName=<fixture-name>"),
+        )
+    }
 }
 
 tasks.withType<KotlinNativeTest>().configureEach {
+    environment("TEST_RESOURCES_ROOT", commonTestResources.asFile.absolutePath)
+    environment("SIMCTL_CHILD_TEST_RESOURCES_ROOT", commonTestResources.asFile.absolutePath)
     if (name == "iosSimulatorArm64ReleaseBenchmarkTest" || name == "macosArm64ReleaseBenchmarkTest") {
         filter.includeTestsMatching("com.prof18.klead.CommonPerformanceSmokeTest")
         outputs.upToDateWhen { false }
-    }
-    if (name == "macosArm64Test" || name == "macosX64Test") {
-        environment("KLEAD_PROJECT_DIR", projectDir.absolutePath)
-        environment("KLEAD_NATIVE_TARGET", name.removeSuffix("Test"))
     }
 }
 
 tasks.register("nativeReleaseBenchmark") {
     group = "verification"
-    description = "Runs optimized smoke and corpus benchmarks on iOS Simulator arm64 and macOS arm64."
+    description = "Runs optimized smoke benchmarks on iOS Simulator arm64 and macOS arm64."
     dependsOn(
         "iosSimulatorArm64ReleaseBenchmarkTest",
         "macosArm64ReleaseBenchmarkTest",
-        "macosArm64ReleaseCorpusBenchmarkTest",
     )
 }
 
@@ -145,6 +149,7 @@ tasks.register("docsCheck") {
             "docs/markdown-policy.md",
             "docs/release-scope.md",
             "docs/security-policy.md",
+            "docs/site-regression-workflow.md",
             "docs/upstream-sync.md",
         )
         for (doc in requiredDocs) {

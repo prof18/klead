@@ -16,7 +16,7 @@ The project goal is broad article extraction behavior, with Markdown generation 
 
 Small commits are preferred. A commit may be smaller than a phase when it completes one coherent behavior, such as "fixture URL parser", "case-insensitive selector wrapper", or "Markdown image rendering".
 
-For real-world FeedFlow reader debugging, use [FeedFlow Reader Dump Workflow](feedflow-reader-dump-workflow.md).
+For real-world issue reports, use the standalone [Site Regression Workflow](site-regression-workflow.md). It starts from a URL and screenshot, captures the page, and runs the resulting regression on every supported target without extracting data from FeedFlow.
 
 ## Status Legend
 

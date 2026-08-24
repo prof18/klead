@@ -22,10 +22,16 @@ klead/
   README.md
   docs/
   src/commonMain/kotlin/com/prof18/klead/
-  src/jvmTest/kotlin/com/prof18/klead/
-  src/jvmTest/resources/defuddle-fixtures/
-  src/jvmTest/resources/defuddle-expected/
-  src/jvmTest/resources/kotlin-expected/
+  src/commonTest/kotlin/com/prof18/klead/
+  src/commonTest/resources/fixtures/
+    defuddle/
+      input-html/
+      expected-markdown/
+      expected-html/
+    regressions/
+      input-html/
+      expected-markdown/
+      expected-html/
 ```
 
 ## Dependencies
@@ -55,17 +61,10 @@ tests/expected/*.md
 tests/expected/*.html
 ```
 
-Also store:
-
-```text
-src/jvmTest/resources/defuddle-upstream.sha
-src/jvmTest/resources/defuddle-license.txt
-```
-
 Do not modify upstream fixture content. Kotlin-specific expected output belongs in:
 
 ```text
-src/jvmTest/resources/kotlin-expected/
+src/commonTest/resources/fixtures/regressions/
 ```
 
 Imported upstream corpus:
@@ -74,7 +73,7 @@ Imported upstream corpus:
 - HTML fixtures: 190
 - Expected Markdown files: 190
 - Expected HTML files: 3
-- License: `src/jvmTest/resources/defuddle-license.txt`
+- The imported commit is recorded in the reviewed sync report.
 
 ## Fixture Harness
 
@@ -84,7 +83,6 @@ Implement:
 - `FixtureLoader`
 - `ExpectedResultLoader`
 - `FixtureCategory`
-- `FixtureMode`
 
 `FixtureCase` should include:
 
@@ -133,26 +131,12 @@ Create test helpers:
 
 Do not hide behavior differences with broad normalization.
 
-## Test Modes
+## Test Gate
 
-Strict:
-
-- exact metadata fields
+- exact supported metadata fields
 - exact Markdown after minimal whitespace normalization
-- exact HTML only where stable
-
-Relaxed:
-
-- content exists
-- important text is present
-- known clutter text absent
-- metadata fields pass required assertions
-
-Diagnostic:
-
-- run everything
-- produce failure report
-- not necessarily gating at first
+- exact HTML where a stable expected HTML fixture exists
+- explicit exclusions for unsupported math/rendering conversion
 
 ## TDD Checklist
 
@@ -165,7 +149,7 @@ Diagnostic:
 
 ## Acceptance Gate
 
-- `[x]` `./gradlew jvmTest -q --console=plain` runs.
+- `[x]` The common fixture suite runs on JVM, iOS Simulator, and native macOS.
 - `[x]` Fixture harness can load upstream inputs and expected outputs.
 - `[d]` Tests fail because parser is empty, not because resources cannot be loaded.
 

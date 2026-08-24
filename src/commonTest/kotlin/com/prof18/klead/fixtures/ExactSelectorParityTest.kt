@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 // SimpleSelectorIndex matches simple selector shapes with hash lookups in one walk. This test
 // pins that matching to the per-selector jsoup queries it replaced — for both selector lists
-// that use it — on crafted selector-semantics corners and across the real FeedFlow reader dumps.
+// that use it — on crafted selector-semantics corners and across the portable Defuddle fixture corpus.
 class ExactSelectorParityTest {
     private val exactIndex = SimpleSelectorIndex(EXACT_SELECTORS)
     private val entryPointIndex = SimpleSelectorIndex(MainContentDetector.entryPointSelectors)
@@ -47,9 +47,9 @@ class ExactSelectorParityTest {
     }
 
     @Test
-    fun `index matches per-selector queries across reader dump corpus`() {
-        val cases = FeedFlowReaderDumpLoader.loadAll(requireExpectedSnapshots = false)
-        assertTrue(cases.isNotEmpty(), "no reader dumps found")
+    fun `index matches per-selector queries across fixture corpus`() {
+        val cases = FixtureLoader.loadAll()
+        assertTrue(cases.isNotEmpty(), "no fixtures found")
         for (case in cases) {
             val document = Ksoup.parse(case.rawHtml, case.sourceUrl)
             assertParity(exactIndex, EXACT_SELECTORS, document.body(), case.name)

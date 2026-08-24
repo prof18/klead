@@ -4,6 +4,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.readBytes
 import kotlin.io.path.readText
@@ -25,7 +26,8 @@ object FixtureSync {
     fun sync(
         upstreamRoot: Path,
         fixtureDestination: Path,
-        expectedDestination: Path,
+        expectedMarkdownDestination: Path,
+        expectedHtmlDestination: Path,
         shaFile: Path,
         reportFile: Path,
         newSha: String,
@@ -36,8 +38,14 @@ object FixtureSync {
         require(Files.isDirectory(upstreamExpected)) { "Missing upstream expected directory: $upstreamExpected" }
 
         val previousSha = shaFile.takeIf { it.exists() }?.readText()?.trim()?.ifBlank { null }
-        val fixtureChanges = syncDirectory(upstreamFixtures, fixtureDestination)
-        val expectedChanges = syncDirectory(upstreamExpected, expectedDestination)
+        val fixtureChanges = syncDirectory(upstreamFixtures, fixtureDestination, extension = "html")
+        val expectedMarkdownChanges = syncDirectory(
+            upstreamExpected,
+            expectedMarkdownDestination,
+            extension = "md",
+        )
+        val expectedHtmlChanges = syncDirectory(upstreamExpected, expectedHtmlDestination, extension = "html")
+        val expectedChanges = expectedMarkdownChanges + expectedHtmlChanges
         shaFile.parent?.createDirectories()
         shaFile.writeText("$newSha\n")
 
@@ -56,9 +64,11 @@ object FixtureSync {
         return report
     }
 
-    private fun syncDirectory(upstreamDir: Path, destinationDir: Path): DirectoryChanges {
+    private fun syncDirectory(upstreamDir: Path, destinationDir: Path, extension: String): DirectoryChanges {
         destinationDir.createDirectories()
-        val upstreamFiles = listRegularFiles(upstreamDir).associateBy { it.relativeTo(upstreamDir).toString() }
+        val upstreamFiles = listRegularFiles(upstreamDir)
+            .filter { it.extension == extension }
+            .associateBy { it.relativeTo(upstreamDir).toString() }
         val destinationFiles = listRegularFiles(destinationDir).associateBy { it.relativeTo(destinationDir).toString() }
 
         val added = mutableListOf<String>()
@@ -90,6 +100,12 @@ object FixtureSync {
     private fun listRegularFiles(directory: Path): List<Path> = Files.walk(directory).use { stream ->
         stream.filter { it.isRegularFile() }.toList()
     }
+
+    private operator fun DirectoryChanges.plus(other: DirectoryChanges): DirectoryChanges = DirectoryChanges(
+        added = (added + other.added).sorted(),
+        removed = (removed + other.removed).sorted(),
+        changed = (changed + other.changed).sorted(),
+    )
 
     private fun FixtureSyncReport.toMarkdown(): String = buildString {
         appendLine("# Klead Fixture Sync Report")

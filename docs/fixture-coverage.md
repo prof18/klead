@@ -9,30 +9,23 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Total upstream HTML fixtures: 190
 - Strict supported Defuddle Markdown snapshots: 176
 - Strict supported Defuddle metadata snapshots: 176
-- Dropped math/rendering fixtures: 3
-- Focused metadata fixtures: 3
-- Relaxed removal fixtures: 2
-- MVP relaxed allowlist: 16
-- Full diagnostic fixtures: 190
-- Unknown diagnostic failures: 0
+- Explicitly excluded math/rendering fixtures: 14
+- Focused hidden-content cleaned-HTML fixtures: 2
 - Strict whole-corpus Markdown parity: enforced for supported fixtures
-- FeedFlow reader-dump regression fixtures: 56
+- Captured site regression snapshots: 57 (56 recovered captures plus one harness fixture)
 
 ## Active Strict Fixtures
 
 - `DefuddleFixtureMarkdownSnapshotTest`: compares supported upstream Defuddle expected Markdown against parser output after minimal Markdown normalization.
 - `DefuddleFixtureMarkdownSnapshotTest`: compares supported upstream Defuddle frontmatter fields `title`, `author`, and `site` against parser metadata. The upstream `published` field is intentionally not compared because the public metadata model does not expose it.
-- `metadata--h1-sibling-byline`
-- `metadata--placeholder-values`
-- `metadata--rel-author-in-bio-container`
+## Focused Semantic Fixtures
 
-## Active Relaxed Fixtures
-
-- MVP allowlist from `docs/09-fixture-coverage-expansion.md`
 - `hidden--nodes`
 - `hidden--visibility`
 
-## FeedFlow Reader-Dump Regressions
+## Captured Site Regressions
+
+The original 56 FeedFlow captures are retained as ordinary application-independent regressions, alongside the portable harness fixture. `SiteRegressionTest` compares both Markdown and cleaned HTML for all 57 cases on every target.
 
 - `general--www.ilpost.it-2026-06-15-ufc-casa-bianca`: verifies that broad body selection, breadcrumbs, and bottom recommendation sections do not leak into reader Markdown.
 - `general--www.ilpost.it-2026-06-15-lisbona-funicolare-gloria-ferme`: verifies that WordPress-style captioned image wrappers keep body images in Markdown.

@@ -2,10 +2,10 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.extractors.Extractor
+import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DomExtractorContext
 import com.prof18.klead.internal.extractors.ExtractorRegistry
 import com.prof18.klead.internal.extractors.createExtractorContext
-import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -60,7 +60,7 @@ class ExtractorMatchingTest {
 
     private fun context(url: String, html: String): DomExtractorContext = createExtractorContext(
         url = url,
-        host = URI(url).host,
+        host = parseKleadUri(url)?.host,
         document = Ksoup.parse(html),
     )
 }

@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 // ContentScorer.scoreElement collects its signals in a single subtree walk. This test pins
 // that walk to the selector-based reference implementation it replaced, both on crafted
-// edge cases (selector semantics corners) and across the real FeedFlow reader dumps.
+// edge cases (selector semantics corners) and across the portable Defuddle fixture corpus.
 class ContentScorerParityTest {
     @Test
     fun `single-pass scorer matches selector-based reference on crafted edge cases`() {
@@ -42,9 +42,9 @@ class ContentScorerParityTest {
     }
 
     @Test
-    fun `single-pass scorer matches selector-based reference across reader dump corpus`() {
-        val cases = FeedFlowReaderDumpLoader.loadAll(requireExpectedSnapshots = false)
-        assertTrue(cases.isNotEmpty(), "no reader dumps found")
+    fun `single-pass scorer matches selector-based reference across fixture corpus`() {
+        val cases = FixtureLoader.loadAll()
+        assertTrue(cases.isNotEmpty(), "no fixtures found")
         for (case in cases) {
             val document = Ksoup.parse(case.rawHtml, case.sourceUrl)
             val body = document.body()

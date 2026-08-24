@@ -8,10 +8,10 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.system.measureTimeMillis
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.measureTime
 
 class SecurityRobustnessTest {
     @Test
@@ -116,32 +116,10 @@ class SecurityRobustnessTest {
                 completed = true
             }
             delay(250)
-            val cancelMillis = measureTimeMillis { parseJob.cancelAndJoin() }
+            val cancelMillis = measureTime { parseJob.cancelAndJoin() }.inWholeMilliseconds
 
             assertFalse(completed, "parse finished before cancellation; deepen the fixture")
             assertTrue(cancelMillis < 5_000, "cancellation took ${cancelMillis}ms")
         }
-    }
-
-    @Test
-    fun `benchmark fixtures run within smoke thresholds`() {
-        val smallHtml = "<article><p>Small article text.</p></article>"
-        val longHtml = buildString {
-            append("<article>")
-            repeat(300) { append("<p>Long article paragraph $it with enough words for a benchmark smoke test.</p>") }
-            append("</article>")
-        }
-
-        val smallTime = measureTimeMillis {
-            val result = parseHtmlForTest(smallHtml, "https://example.com/small")
-            assertTrue(result.content.requireMarkdown().isNotBlank())
-        }
-        val longTime = measureTimeMillis {
-            val result = parseHtmlForTest(longHtml, "https://example.com/long")
-            assertTrue(result.content.requireMarkdown().contains("Long article paragraph 299"))
-        }
-
-        assertTrue(smallTime < 1_000, "small parse took ${smallTime}ms")
-        assertTrue(longTime < 5_000, "long parse took ${longTime}ms")
     }
 }

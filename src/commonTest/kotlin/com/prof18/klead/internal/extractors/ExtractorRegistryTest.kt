@@ -5,6 +5,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorContext
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.site.WikipediaExtractor
 import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
@@ -98,5 +99,5 @@ class ExtractorRegistryTest {
     }
 
     private fun com.fleeksoft.ksoup.nodes.Document.context(url: String): DomExtractorContext =
-        createExtractorContext(url = url, host = java.net.URI(url).host, document = this)
+        createExtractorContext(url = url, host = parseKleadUri(url)?.host, document = this)
 }

@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: $0 <url> <fixture-name>" >&2
+  echo "Example: $0 https://example.com/article example--article-title" >&2
+  exit 2
+fi
+
+url=$1
+fixture_name=$2
+
+if [[ ! $fixture_name =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+  echo "Fixture name must contain only lowercase letters, digits, and hyphens." >&2
+  exit 2
+fi
+
+project_dir=$(cd "$(dirname "$0")/.." && pwd)
+fixture_root="$project_dir/src/commonTest/resources/fixtures/regressions"
+input_dir="$fixture_root/input-html"
+markdown_dir="$fixture_root/expected-markdown"
+html_dir="$fixture_root/expected-html"
+input_file="$input_dir/$fixture_name.html"
+markdown_file="$markdown_dir/$fixture_name.md"
+html_file="$html_dir/$fixture_name.html"
+temporary_input="$input_dir/.$fixture_name.html.tmp"
+capture_complete=false
+
+if [[ -e $input_file || -e $markdown_file || -e $html_file ]]; then
+  echo "Refusing to overwrite an existing regression: $fixture_name" >&2
+  exit 1
+fi
+
+mkdir -p "$input_dir" "$markdown_dir" "$html_dir"
+cleanup() {
+  rm -f "$temporary_input"
+  if [[ $capture_complete != true ]]; then
+    rm -f "$input_file" "$markdown_file" "$html_file"
+  fi
+}
+trap cleanup EXIT
+
+curl --fail --location --compressed \
+  --user-agent "Mozilla/5.0 (Klead regression capture)" \
+  --output "$temporary_input" \
+  "$url"
+
+python3 - "$url" "$temporary_input" "$input_file" <<'PY'
+import json
+import pathlib
+import sys
+
+url = sys.argv[1]
+temporary_input = pathlib.Path(sys.argv[2])
+input_file = pathlib.Path(sys.argv[3])
+
+source_html = temporary_input.read_text(encoding="utf-8", errors="replace")
+frontmatter = json.dumps({"url": url}, separators=(",", ":"), ensure_ascii=False)
+input_file.write_text(f"<!-- {frontmatter} -->\n{source_html}", encoding="utf-8")
+PY
+
+"$project_dir/scripts/update-site-regression" "$fixture_name"
+capture_complete=true
+
+echo "Captured $input_file"
+echo "Generated current-behavior snapshots at $markdown_file and $html_file"

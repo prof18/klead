@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: $0 <fixture-name>" >&2
+  exit 2
+fi
+
+fixture_name=$1
+
+if [[ ! $fixture_name =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+  echo "Fixture name must contain only lowercase letters, digits, and hyphens." >&2
+  exit 2
+fi
+
+project_dir=$(cd "$(dirname "$0")/.." && pwd)
+input_file="$project_dir/src/commonTest/resources/fixtures/regressions/input-html/$fixture_name.html"
+
+if [[ ! -f $input_file ]]; then
+  echo "Missing captured regression input: $input_file" >&2
+  exit 1
+fi
+
+(
+  cd "$project_dir"
+  ./gradlew -q --console=plain writeSiteRegressionSnapshot \
+    -PsiteRegressionName="$fixture_name"
+)
+
+echo "Updated current-behavior Markdown and HTML snapshots for $fixture_name"

@@ -74,14 +74,4 @@ class FixtureHarnessTest {
 
         assertEquals("Line one\nLine two", normalized)
     }
-
-    @Test
-    fun `diagnostic report includes fixture categories`() {
-        val report = FixtureDiagnostics.report(FixtureLoader.loadAll())
-
-        assertEquals(190, report.totalFixtures)
-        assertTrue(report.categoryCounts.getValue(FixtureCategory.GENERAL) > 0)
-        assertTrue(report.categoryCounts.getValue(FixtureCategory.MATH) > 0)
-        assertTrue(report.categoryCounts.getValue(FixtureCategory.UNCATEGORIZED) > 0)
-    }
 }

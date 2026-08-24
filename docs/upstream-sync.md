@@ -14,22 +14,26 @@ git -C /private/tmp/defuddle-upstream rev-parse HEAD
 Then copy only upstream-owned test assets:
 
 ```sh
-cp /private/tmp/defuddle-upstream/tests/fixtures/*.html src/jvmTest/resources/defuddle-fixtures/
-cp /private/tmp/defuddle-upstream/tests/expected/* src/jvmTest/resources/defuddle-expected/
-cp /private/tmp/defuddle-upstream/LICENSE src/jvmTest/resources/defuddle-license.txt
+cp /private/tmp/defuddle-upstream/tests/fixtures/*.html \
+  src/commonTest/resources/fixtures/defuddle/input-html/
+cp /private/tmp/defuddle-upstream/tests/expected/*.md \
+  src/commonTest/resources/fixtures/defuddle/expected-markdown/
+cp /private/tmp/defuddle-upstream/tests/expected/*.html \
+  src/commonTest/resources/fixtures/defuddle/expected-html/
 ```
 
-Update `src/jvmTest/resources/defuddle-upstream.sha` to the cloned commit SHA.
+Record the imported upstream commit in the reviewed sync report.
 
-Do not edit files under `src/jvmTest/resources/defuddle-fixtures/` or `src/jvmTest/resources/defuddle-expected/` by hand. Kotlin-specific expected output belongs only in `src/jvmTest/resources/kotlin-expected/`.
+Do not edit files under `src/commonTest/resources/fixtures/defuddle/` by hand. Project-specific regressions belong under `src/commonTest/resources/fixtures/regressions/`.
 
 After syncing, run:
 
 ```sh
-./gradlew jvmTest -q --console=plain --tests com.prof18.klead.fixtures.FixtureCoverageTest
+./gradlew -q --console=plain jvmTest \
+  --tests com.prof18.klead.fixtures.DefuddleFixtureMarkdownSnapshotTest
 ```
 
-Classify new failures before changing parser code or Kotlin expected outputs.
+Review exact Markdown and supported metadata failures before changing parser code or expected outputs.
 
 ## Programmatic Sync Helper
 
