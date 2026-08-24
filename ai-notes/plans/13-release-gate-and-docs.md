@@ -101,7 +101,7 @@ Also run:
 ## TDD Checklist
 
 - `[x]` README example is covered by a test or sample compile check.
-- `[x]` Known differences fixtures are covered by the fixture diagnostics and release docs test.
+- `[x]` Known differences fixtures are covered by the fixture diagnostics.
 - `[x]` Release command docs match actual Gradle tasks.
 
 ## Acceptance Gate
