@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "description": "Keep Kotlin Gradle plugins aligned",
+      "matchPackageNames": ["/^org\\.jetbrains\\.kotlin(?::|\\.|$)/"],
+      "groupName": "Kotlin"
+    },
+    {
+      "description": "Keep KotlinX libraries aligned",
+      "matchPackageNames": ["/^org\\.jetbrains\\.kotlinx:/"],
+      "groupName": "KotlinX libraries"
+    },
+    {
+      "description": "Keep Detekt plugin and rules aligned",
+      "matchPackageNames": ["/^dev\\.detekt(?::|\\.|$)/"],
+      "groupName": "Detekt"
+    },
+    {
+      "description": "Group routine GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "groupName": "GitHub Actions"
+    }
+  ]
+}
