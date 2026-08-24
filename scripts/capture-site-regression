@@ -49,6 +49,7 @@ curl --fail --location --compressed \
 python3 - "$url" "$temporary_input" "$input_file" <<'PY'
 import json
 import pathlib
+import re
 import sys
 
 url = sys.argv[1]
@@ -56,6 +57,11 @@ temporary_input = pathlib.Path(sys.argv[2])
 input_file = pathlib.Path(sys.argv[3])
 
 source_html = temporary_input.read_text(encoding="utf-8", errors="replace")
+source_html = re.sub(
+    r"AIza[0-9A-Za-z_-]{35}",
+    "REDACTED_FIXTURE_API_KEY",
+    source_html,
+)
 frontmatter = json.dumps({"url": url}, separators=(",", ":"), ensure_ascii=False)
 input_file.write_text(f"<!-- {frontmatter} -->\n{source_html}", encoding="utf-8")
 PY

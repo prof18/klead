@@ -49,6 +49,25 @@ tasks.register("docsCheck") {
     }
 }
 
+tasks.register("fixtureSecretsCheck") {
+    group = "verification"
+    description = "Checks that captured fixture resources do not contain Google API keys."
+    val fixtureFiles = fileTree(commonTestResources.dir("fixtures")) {
+        include("**/*")
+    }
+    inputs.files(fixtureFiles)
+    doLast {
+        val googleApiKey = Regex("AIza[0-9A-Za-z_-]{35}")
+        val filesWithKeys = fixtureFiles.files
+            .filter { file -> file.isFile && googleApiKey.containsMatchIn(file.readText()) }
+            .map { file -> file.relativeTo(projectDir).path }
+            .sorted()
+        check(filesWithKeys.isEmpty()) {
+            "Fixture resources contain Google API keys:\n${filesWithKeys.joinToString("\n")}"
+        }
+    }
+}
+
 tasks.named("detekt") {
     dependsOn("detektAndroidDeviceTestSourceSet")
     dependsOn("detektAndroidMainSourceSet")
@@ -61,4 +80,5 @@ tasks.named("detekt") {
 tasks.named("check") {
     dependsOn("detekt")
     dependsOn("docsCheck")
+    dependsOn("fixtureSecretsCheck")
 }
