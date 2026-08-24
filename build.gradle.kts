@@ -5,14 +5,11 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 plugins {
     kotlin("multiplatform") version "2.3.21"
     id("com.android.kotlin.multiplatform.library") version "9.2.0"
+    id("com.vanniktech.maven.publish") version "0.37.0"
     id("dev.detekt") version "2.0.0-alpha.5"
     id("klead.benchmarking") apply false
     id("klead.verification") apply false
-    `maven-publish`
 }
-
-group = "com.prof18"
-version = "0.1.0-SNAPSHOT"
 
 val commonTestResources = layout.projectDirectory.dir("src/commonTest/resources")
 
