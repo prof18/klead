@@ -3,6 +3,7 @@ package com.prof18.klead.fixtures
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toKString
+import platform.Foundation.NSBundle
 import platform.Foundation.NSData
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSString
@@ -27,10 +28,12 @@ internal actual fun readCommonTestResource(path: String): String {
 }
 
 @OptIn(ExperimentalForeignApi::class)
+internal actual fun commonTestEnvironment(name: String): String? = getenv(name)?.toKString()
+
+@OptIn(ExperimentalForeignApi::class)
 private val testResourcesRoot: String by lazy {
-    requireNotNull(getenv(TEST_RESOURCES_ROOT)?.toKString()) {
-        "$TEST_RESOURCES_ROOT must point to the common test resources directory"
-    }
+    getenv(TEST_RESOURCES_ROOT)?.toKString()
+        ?: "${requireNotNull(NSBundle.mainBundle.resourcePath)}/test-resources"
 }
 
 private const val TEST_RESOURCES_ROOT = "TEST_RESOURCES_ROOT"

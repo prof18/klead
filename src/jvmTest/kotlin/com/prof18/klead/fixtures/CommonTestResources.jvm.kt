@@ -10,6 +10,8 @@ internal actual fun commonTestResourcePaths(): Set<String> = testResourcesRoot
 
 internal actual fun readCommonTestResource(path: String): String = testResourcesRoot.resolve(path).readText()
 
+internal actual fun commonTestEnvironment(name: String): String? = System.getenv(name)
+
 private val testResourcesRoot: File by lazy {
     val path = requireNotNull(System.getenv(TEST_RESOURCES_ROOT)) {
         "$TEST_RESOURCES_ROOT must point to the common test resources directory"

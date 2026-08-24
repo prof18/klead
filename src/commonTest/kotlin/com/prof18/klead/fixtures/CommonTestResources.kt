@@ -9,3 +9,5 @@ internal object CommonTestResources {
 internal expect fun commonTestResourcePaths(): Set<String>
 
 internal expect fun readCommonTestResource(path: String): String
+
+internal expect fun commonTestEnvironment(name: String): String?

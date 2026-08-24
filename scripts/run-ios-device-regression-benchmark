@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -gt 1 ]]; then
+  echo "Usage: $0 [ios-core-device-id]" >&2
+  exit 2
+fi
+
+project_dir=$(cd "$(dirname "$0")/.." && pwd)
+device=${1:-}
+detected_target=
+device_json=
+if [[ -z $device ]]; then
+  if ! command -v jq >/dev/null; then
+    echo "jq is required to auto-detect an iPhone; pass a CoreDevice identifier explicitly." >&2
+    exit 1
+  fi
+  device_json=$(mktemp "${TMPDIR:-/tmp}/klead-ios-devices.XXXXXX")
+  trap 'rm -f "$device_json"' EXIT
+  xcrun devicectl list devices --json-output "$device_json" --quiet
+  device=$(jq -r '
+    [.result.devices[]
+      | select(.hardwareProperties.productType | startswith("iPhone"))
+      | select(.connectionProperties.transportType != null)][0].identifier // empty
+  ' "$device_json")
+  detected_target=$(jq -r '
+    [.result.devices[]
+      | select(.identifier == $device)][0].hardwareProperties.productType // empty
+  ' --arg device "$device" "$device_json" | tr '[:upper:],' '[:lower:]_')
+fi
+if [[ -z $device ]]; then
+  echo "No connected physical iPhone found." >&2
+  exit 1
+fi
+host_dir="$project_dir/benchmarks/ios-device-host"
+derived_data="$project_dir/build/ios-device-benchmark"
+project_file="$host_dir/KleadBenchmarkHost.xcodeproj"
+app_path="$derived_data/Build/Products/Release-iphoneos/KleadBenchmarkHost.app"
+result_dir="$project_dir/build/test-results/iosArm64PhysicalRegressionBenchmark"
+result_file="$result_dir/output.txt"
+sample_count=${KLEAD_BENCHMARK_SAMPLES:-3}
+benchmark_target=${KLEAD_IOS_BENCHMARK_TARGET:-${detected_target:-ios-arm64-device}}
+baseline_file="$project_dir/benchmarks/regression-corpus-baselines.properties"
+default_maximum_median=$(awk -F= '$1 == "ios-device.maxMedianMillis" { print $2 }' "$baseline_file")
+maximum_median=${KLEAD_REGRESSION_CORPUS_MAX_MEDIAN_MS:-$default_maximum_median}
+
+cd "$project_dir"
+./gradlew -q --console=plain linkBenchmarkReleaseTestIosArm64
+
+xcodegen generate --spec "$host_dir/project.yml" --project "$host_dir"
+xcodebuild \
+  -quiet \
+  -project "$project_file" \
+  -scheme KleadBenchmarkHost \
+  -configuration Release \
+  -destination "id=$device" \
+  -derivedDataPath "$derived_data" \
+  -allowProvisioningUpdates \
+  clean build
+
+xcrun devicectl device install app --device "$device" "$app_path"
+mkdir -p "$result_dir"
+xcrun devicectl device process launch \
+  --console \
+  --terminate-existing \
+  --timeout 900 \
+  --environment-variables \
+  "{\"KLEAD_RUN_REGRESSION_BENCHMARK\":\"true\",\"KLEAD_BENCHMARK_PLATFORM\":\"ios-device\",\"KLEAD_BENCHMARK_TARGET\":\"$benchmark_target\",\"KLEAD_BENCHMARK_SAMPLES\":\"$sample_count\",\"KLEAD_REGRESSION_CORPUS_MAX_MEDIAN_MS\":\"$maximum_median\"}" \
+  --device "$device" \
+  com.prof18.klead.benchmark \
+  --ktest_filter=com.prof18.klead.fixtures.RegressionCorpusBenchmarkTest.* \
+  | tee "$result_file"
+
+echo "Physical iOS benchmark output: $result_file"

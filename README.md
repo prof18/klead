@@ -1,32 +1,42 @@
 # Klead
 
-Kotlin Multiplatform library for turning static article HTML into clean Markdown.
+Klead is a Kotlin Multiplatform library for extracting the main content from web
+pages. Give it a page's HTML and source URL, and it removes navigation, ads,
+related-content blocks, and other clutter before returning clean Markdown, cleaned
+HTML, or both—depending on the outputs you request.
 
-Supported targets: JVM (including desktop macOS), iOS, and native macOS on Apple
+Supported targets: JVM, Android, iOS, and native macOS on Apple
 silicon and Intel. Kotlin deprecates the `macosX64` target as of 2.3.20, so Intel
 native support is transitional.
 
-## Native release benchmarks
+## Alpha status
 
-Run the optimized iOS Simulator arm64 and macOS arm64 benchmark smoke tests with:
+Klead is currently in alpha. Its API and output may change as it is tested against
+more sites.
 
-```shell
-./gradlew -q --console=plain nativeReleaseBenchmark
-```
+It is already being used as an experimental article-extraction engine in
+[FeedFlow](https://www.feedflow.dev/), the open-source RSS reader available for
+Android, iOS, macOS, Windows, and Linux. The results have been very promising so
+far. Klead will evolve toward a stable release based on real-world FeedFlow usage
+and the reports received through the [FeedFlow issue
+tracker](https://github.com/prof18/feed-flow/issues). You can also browse the
+[FeedFlow source code](https://github.com/prof18/feed-flow).
 
-The task builds dedicated Kotlin/Native release test binaries, runs
-`CommonPerformanceSmokeTest` on iOS Simulator and macOS, and benchmarks every captured
-real-world regression fixture on macOS. Timing output is recorded under
-`build/test-results/iosSimulatorArm64ReleaseBenchmarkTest`,
-`build/test-results/macosArm64ReleaseBenchmarkTest`, and
-`build/test-results/macosArm64ReleaseRegressionBenchmarkTest`. These release benchmarks are
-intentionally separate from the normal `check` lifecycle.
+## Features
 
-The corpus benchmark prints the three-sample median and the slowest pages. Its default
-macOS ARM64 median budget is 4,000 ms; the initial reference run on the development Mac
-was 3,301 ms. For a tighter update-to-update comparison, record the pre-update median
-and rerun with `KLEAD_REGRESSION_CORPUS_MAX_MEDIAN_MS=<budget>`. The benchmark fails
-when the measured median exceeds that budget.
+- Extracts the main article content and metadata from static HTML.
+- Removes common page clutter and unsafe markup.
+- Returns Markdown, cleaned HTML, or both in a single parse.
+- Supports domain-scoped custom extractors for sites that need specialized handling.
+- Runs from shared Kotlin code across JVM, Android, iOS, and macOS targets.
+
+## Inspiration and credit
+
+Klead is heavily inspired by [Defuddle](https://github.com/kepano/defuddle), an
+excellent project for extracting readable content from web pages. Defuddle's ideas,
+extraction behavior, and fixture corpus provided the foundation and reference point
+for much of Klead's development. Many thanks to Steph Ango and the Defuddle
+contributors for their work.
 
 ## Usage
 
@@ -41,17 +51,17 @@ suspend fun renderArticle(html: String, url: String): String {
 }
 ```
 
-Request only the outputs you need:
+Choose the output that fits your use case. To request both Markdown and cleaned HTML:
 
 ```kotlin
-suspend fun renderMarkdown(html: String, url: String): String? {
-    val result = Klead.parseHtml(
+suspend fun parseArticle(html: String, url: String): KleadResult =
+    Klead.parseHtml(
         html = html,
         url = url,
-        options = KleadOptions(outputs = setOf(KleadOutput.MARKDOWN)),
+        options = KleadOptions(
+            outputs = setOf(KleadOutput.MARKDOWN, KleadOutput.HTML),
+        ),
     )
-    return result.content.markdown
-}
 ```
 
 Debug output:
@@ -129,3 +139,23 @@ To turn a broken live page into a portable regression, follow the [site regressi
 default Kotlin rule configuration and adds ktlint formatting rules.
 
 See [docs/README.md](docs/README.md) for the implementation plan and [docs/fixture-coverage.md](docs/fixture-coverage.md) for current fixture coverage.
+
+## Cross-platform regression benchmarks
+
+Run the complete real-world regression corpus benchmark with connected Android and iPhone devices:
+
+```shell
+./scripts/run-regression-benchmarks
+```
+
+It measures the same 56 fixtures on JVM, a physical Android device, optimized iOS
+Simulator ARM64, an optimized physical iPhone, and optimized macOS ARM64. Every runner
+performs one warm-up plus three measured passes, enforces its tracked budget, and writes
+a unified comparison report to `build/reports/benchmarks/regression-corpus/latest.json`.
+See [Cross-platform benchmarking](docs/benchmarking.md) for repeated runs, device
+selection, baselines, and individual platform commands.
+
+## License
+
+Klead is released under the [Apache License 2.0](LICENSE). Vendored Defuddle test
+fixtures retain their original MIT attribution in [Third-party notices](THIRD_PARTY_NOTICES.md).

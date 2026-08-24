@@ -1,0 +1,33 @@
+name: KleadBenchmarkHost
+options:
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: Q7CUB3RNAK
+targets:
+  KleadBenchmarkHost:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prof18.klead.benchmark
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        TARGETED_DEVICE_FAMILY: "1"
+    postCompileScripts:
+      - name: Install Kotlin benchmark executable and fixtures
+        basedOnDependencyAnalysis: false
+        script: |
+          set -euo pipefail
+          KOTLIN_EXECUTABLE="$SRCROOT/../../build/bin/iosArm64/benchmarkReleaseTest/benchmark.kexe"
+          RESOURCE_SOURCE="$SRCROOT/../../src/commonTest/resources"
+          RESOURCE_DESTINATION="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/test-resources"
+          test -x "$KOTLIN_EXECUTABLE"
+          cp "$KOTLIN_EXECUTABLE" "$TARGET_BUILD_DIR/$EXECUTABLE_PATH"
+          mkdir -p "$RESOURCE_DESTINATION"
+          ditto "$RESOURCE_SOURCE" "$RESOURCE_DESTINATION"

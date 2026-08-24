@@ -4,3 +4,5 @@ build/
 /.kotlin/
 .DS_Store
 *.hprof
+/local.properties
+/benchmarks/ios-device-host/KleadBenchmarkHost.xcodeproj/
