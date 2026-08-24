@@ -11,6 +11,21 @@ project_dir=$(cd "$(dirname "$0")/.." && pwd)
 device=${1:-}
 detected_target=
 device_json=
+development_team=${KLEAD_IOS_DEVELOPMENT_TEAM:-}
+local_properties="$project_dir/local.properties"
+if [[ -z $development_team && -f $local_properties ]]; then
+  while IFS='=' read -r key value; do
+    if [[ $key == "klead.iosDevelopmentTeam" ]]; then
+      development_team=$value
+      break
+    fi
+  done < "$local_properties"
+fi
+development_team=${development_team//[[:space:]]/}
+if [[ ! $development_team =~ ^[A-Z0-9]{10}$ ]]; then
+  echo "Set KLEAD_IOS_DEVELOPMENT_TEAM or klead.iosDevelopmentTeam in local.properties to a 10-character Apple development team ID." >&2
+  exit 1
+fi
 if [[ -z $device ]]; then
   if ! command -v jq >/dev/null; then
     echo "jq is required to auto-detect an iPhone; pass a CoreDevice identifier explicitly." >&2
@@ -57,6 +72,7 @@ xcodebuild \
   -destination "id=$device" \
   -derivedDataPath "$derived_data" \
   -allowProvisioningUpdates \
+  DEVELOPMENT_TEAM="$development_team" \
   clean build
 
 xcrun devicectl device install app --device "$device" "$app_path"

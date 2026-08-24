@@ -64,7 +64,19 @@ KLEAD_ANDROID_DEVICE_SERIAL='<adb serial>' \
   ./scripts/run-regression-benchmarks '<CoreDevice identifier>'
 ```
 
-The runner auto-detects the first connected Android device and physical iPhone. iPhone auto-detection requires `jq`; the signed iOS benchmark host also requires XcodeGen and a valid local development signing identity. This checkout uses development team `Q7CUB3RNAK`.
+The runner auto-detects the first connected Android device and physical iPhone. iPhone auto-detection requires `jq`; the signed iOS benchmark host also requires XcodeGen and a valid local development signing identity. Provide the Apple development team locally with either:
+
+```sh
+export KLEAD_IOS_DEVELOPMENT_TEAM='<10-character team ID>'
+```
+
+or add this entry to the ignored `local.properties` file:
+
+```properties
+klead.iosDevelopmentTeam=<10-character team ID>
+```
+
+The environment variable takes precedence over `local.properties`. The team ID selects a signing team; the signing certificate and private key remain in the local Keychain.
 
 ## Budgets And Baselines
 
