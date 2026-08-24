@@ -1,5 +1,9 @@
 # KMP Migration Notes
 
+> Historical execution record for the 2026 Kotlin Multiplatform migration. Commands,
+> paths, and measurements describe that migration unless a maintained document says
+> otherwise.
+
 ## Phase 0 — JVM/jsoup baseline
 
 - Date: 2026-08-23
@@ -52,12 +56,12 @@ match the migration plan's requested record.
 - Verified the umbrella POM remains `com.prof18:klead:0.1.0-SNAPSHOT`; the JVM target
   publication is `com.prof18:klead-jvm:0.1.0-SNAPSHOT` and is selected through Gradle
   module metadata.
-- In `/Users/mg/Workspace/feedflow/feed-flow-defuddle-kotlin`, moved
+- In a separate FeedFlow consumer checkout, moved
   `implementation(libs.defuddle.kotlin)` from `androidMain` and `jvmMain` to
   `commonMain` without altering the existing composite-build substitution.
-- Consumer gate passed against this worktree with:
-  `./gradlew -q --console=plain :shared:androidJar -Pfeedflow.useLocalDefuddle=false --include-build /Users/mg/.codex/worktrees/72c0/defuddle-kotlin`.
-- FeedFlow emitted only its existing missing Dropbox-key warning; the build succeeded.
+- The consumer gate passed with a local composite build of Klead:
+  `./gradlew -q --console=plain :shared:androidJar -Pfeedflow.useLocalDefuddle=false --include-build <path-to-klead>`.
+- FeedFlow emitted only a pre-existing optional-integration warning; the build succeeded.
 
 ## Compatibility differences
 
@@ -155,8 +159,9 @@ match the migration plan's requested record.
   macOS arm64. Median wall time was `2,840ms`; the median summed parser retry time was
   `2,244ms`, or about `40ms` per page. The dedicated release corpus task's latest run was
   `2,765ms` wall / `2,167ms` retry, with the slowest page at `188ms`.
-- `macosX64` compiles and links an x86_64 test executable on this Apple-silicon host.
-  Runtime tests and benchmarks remain pending because Rosetta is not installed.
+- `macosX64` compiled and linked an x86_64 test executable on the Apple-silicon
+  migration host. Runtime tests and benchmarks were not executed because Rosetta was
+  unavailable in that environment.
 - Generated target publication POMs as
   `com.prof18:klead-macosarm64:0.1.0-SNAPSHOT` and
   `com.prof18:klead-macosx64:0.1.0-SNAPSHOT`, each with the expected native Ksoup,
@@ -175,9 +180,9 @@ match the migration plan's requested record.
   accounting for the source-set path move. The sorted Git-blob aggregate SHA-256 is
   `3730df7038e6ee3fe592744aba1361eca73326030e4bc42e2513149029897a1e`
   at both revisions.
-- The final FeedFlow consumer gate passed against this worktree with
-  `:shared:androidJar` after the native macOS variant was added; only its existing
-  missing Dropbox-key warning was emitted.
+- The final FeedFlow consumer gate passed with `:shared:androidJar` and a local Klead
+  composite build after the native macOS variant was added; only a pre-existing
+  optional-integration warning was emitted.
 
 ### Phase 1 — Ksoup JVM spike
 

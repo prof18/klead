@@ -1,26 +1,30 @@
 # Klead AI And Implementation Plans
 
-This folder contains AI-authored and engineer-facing execution plans for building and evolving Klead. Human-facing documentation is linked from the project [`README`](../../README.md).
+> These plans are historical execution records, not the current project roadmap.
+> Unchecked or deferred items are not commitments unless they are adopted again in a
+> current issue or maintained document. See the project [`README`](../../README.md) and
+> [`docs/`](../../docs/) for authoritative behavior and contributor guidance.
+
+This folder contains AI-assisted and engineer-authored execution plans for building
+and evolving Klead.
 
 The original 00–13 implementation plan is complete and retained here as an execution record. Later planning material includes the [Kotlin Multiplatform migration](kmp-migration-plan.md), its [execution notes](../notes/kmp-migration-notes.md), the [extractor refactor](site-extractor-refactor-plan.md), and the superseded [performance notes](../notes/performance-notes.md).
 
 The project goal is broad article extraction behavior, with Markdown generation as the primary output. Compose, WebView, and UI rendering are out of scope for this repository unless a later product decision adds an example app.
 
-## How To Use This Folder
+## How To Read This Folder
 
-1. Start with the first unchecked item in this README.
-2. Open the linked phase file for implementation details.
-3. Write the test first.
-4. Implement the smallest behavior that passes the test.
-5. Run the targeted test and relevant fixture subset.
-6. Commit when the change is self-contained, even if the phase is not complete.
-7. Update this README and the phase file notes before moving on.
+The status markers and instructions below record how the original implementation was
+executed. Before resuming any incomplete item, confirm it against the current code and
+open project work. For newly approved work, preserve the useful workflow: write the
+test first, implement the smallest passing behavior, run the relevant fixture gate,
+and keep commits self-contained.
 
 Small commits are preferred. A commit may be smaller than a phase when it completes one coherent behavior, such as "fixture URL parser", "case-insensitive selector wrapper", or "Markdown image rendering".
 
-For real-world issue reports, use the shared `klead-regression-fix` skill. It starts
-from a URL and screenshot, captures the page, and runs the resulting regression on
-every supported target without extracting data from FeedFlow.
+For real-world issue reports, use `scripts/capture-site-regression` and
+`scripts/update-site-regression`. They capture a page into the portable regression
+corpus and regenerate its expected outputs without extracting data from FeedFlow.
 
 ## Status Legend
 
@@ -59,7 +63,6 @@ every supported target without extracting data from FeedFlow.
 - `[x]` [09 Fixture Coverage Expansion](09-fixture-coverage-expansion.md)
 - `[x]` [10 Site Extractors](10-site-extractors.md)
 - `[x]` [11 Performance, Security, And Robustness](11-performance-security-robustness.md)
-- `[x]` [12 Upstream Sync Process](12-upstream-sync-process.md)
 - `[x]` [13 Release Gate And Docs](13-release-gate-and-docs.md)
 
 ## Suggested Commit Slices
@@ -105,7 +108,6 @@ These are examples. Commit whenever a unit of behavior is complete and tested.
 - Prefer narrow unit tests before fixture tests.
 - A fixture failure must be classified before it is ignored.
 - Kotlin-specific expected outputs are allowed only for intentional differences.
-- Do not edit upstream fixture files by hand.
 - Do not update dependency versions and fixture baselines in the same commit.
 - Do not add broad rewrites without a fixture or unit test proving the behavior.
 
@@ -153,7 +155,6 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-14 - PHASE-09 - in progress - Added full-corpus diagnostic fixture runner with zero unknown classifications, MVP relaxed allowlist, and documented fixture coverage report.
 2026-06-14 - PHASE-10 - complete - Added extractor registry, default Wikipedia content-selector extractor, direct-content extractor support, and extractor metadata overrides.
 2026-06-14 - PHASE-11 - complete - Added security/robustness tests, unsupported selector diagnostics coverage, repeated parse smoke, benchmark smoke tests, and performance/threading notes.
-2026-06-14 - PHASE-12 - complete - Added tested fixture sync helper plus manual upstream sync documentation with SHA/report workflow and kotlin-expected safety guard.
 2026-06-14 - PHASE-13 - complete - Added release README examples, release scope, security policy, Markdown policy, known differences, docsCheck coverage, and compile-tested API snippets. Supported upstream Markdown fixture parity is enforced by strict snapshots, with math/rendering differences documented.
 2026-06-14 - PHASE-09 - complete - Closed the fixture expansion phase for this broad practical port with strict metadata fixtures, relaxed MVP fixtures, full diagnostic coverage, zero unknown diagnostic failures, and documented math/rendering scope exclusions.
 2026-06-15 - COMMIT-029 - superseded - Added a separate coroutine entry point with internal dispatcher selection; this was later replaced by a suspending-only `parseHtml` API with no library-owned blocking wrapper.
@@ -214,4 +215,4 @@ YYYY-MM-DD - STEP-ID - status - note
 2026-06-16 - PHASE-06 - complete - Added an SI/MinuteMedia FeedFlow reader-dump regression and removed preferred-source widgets, recommendation loaders, publish/modified metadata, author bio/follow cards, and breadcrumb footers from reader Markdown.
 2026-06-16 - PHASE-06 - complete - Added a Motorsport.com FeedFlow reader-dump regression and removed share/save, previous-article, top-comments, more-from, latest-news, prime-content, and adblock subscription footer modules from reader Markdown.
 2026-06-16 - PHASE-10 - planned - Added `ai-notes/plans/site-extractor-refactor-plan.md` with a Mercury-style site extractor/profile refactor plan and an inventory of site-specific selectors currently embedded in the global removal pipeline.
-2026-06-16 - PHASE-10 - planned - Updated the site extractor refactor plan from Codex thread `019ec81f-e095-7a32-98dd-9c8dafb02ec1`, adding the June 15 FeedFlow dump sites and selectors that were missing from the first inventory.
+2026-06-16 - PHASE-10 - planned - Updated the site extractor refactor plan with the June 15 FeedFlow dump sites and selectors that were missing from the first inventory.

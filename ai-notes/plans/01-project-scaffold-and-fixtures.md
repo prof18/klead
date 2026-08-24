@@ -9,7 +9,7 @@ Create a Kotlin/JVM project that can run tests and load upstream Defuddle fixtur
 - Gradle/Kotlin JVM module.
 - Public API skeleton.
 - Test framework.
-- Vendored or synced upstream Defuddle fixtures.
+- Vendored Defuddle fixtures used to establish the initial regression corpus.
 - Fixture harness that can discover fixtures and expected outputs.
 - Pinned upstream Defuddle commit SHA.
 
@@ -51,29 +51,15 @@ testImplementation(kotlin("test"))
 
 Use project conventions if the repo already has a preferred test stack.
 
-## Fixture Import
+## Imported Fixture Provenance
 
-Copy from upstream Defuddle:
-
-```text
-tests/fixtures/*.html
-tests/expected/*.md
-tests/expected/*.html
-```
-
-Do not modify upstream fixture content. Kotlin-specific expected output belongs in:
-
-```text
-src/commonTest/resources/fixtures/regressions/
-```
-
-Imported upstream corpus:
+The initial corpus was imported once from Defuddle while the project was scaffolded.
+It is retained as a frozen regression baseline, not as part of ongoing maintenance.
 
 - SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - HTML fixtures: 190
 - Expected Markdown files: 190
 - Expected HTML files: 3
-- The imported commit is recorded in the reviewed sync report.
 
 ## Fixture Harness
 

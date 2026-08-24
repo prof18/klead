@@ -1,11 +1,19 @@
 # Klead AI Notes
 
-This folder keeps material intended for coding agents and project-maintenance history
-out of the human-facing `docs/` folder.
+> These files are historical development records. They may describe superseded plans,
+> interim measurements, or repository layouts that no longer match the current code.
+> The project [`README`](../README.md) and [`docs/`](../docs/) are the authoritative
+> sources for current behavior and contributor guidance.
+
+This folder keeps public AI-assisted plans and project-maintenance history separate
+from the maintained documentation. The records are retained to explain engineering
+decisions and trade-offs to contributors and future maintainers.
 
 - [`plans/`](plans/README.md) contains implementation plans and completed execution
   records.
-- [`notes/`](notes/README.md) contains agent-oriented project notes, fixture inventory,
-  migration notes, and maintenance procedures.
+- [`notes/`](notes/README.md) contains project notes, fixture inventory, migration
+  records, and maintenance procedures.
 
-Human-facing documentation is linked directly from the project [README](../README.md).
+Keep new records portable: use repository-relative paths or placeholders, and do not
+include local worktree identifiers, agent task IDs, credentials, signing identities,
+or other machine-specific configuration.

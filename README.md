@@ -125,7 +125,7 @@ suspend fun renderStory(html: String): String {
 
 Portable parser tests, the upstream fixture corpus, and new site regressions live in
 `commonTest` and run through every target's test task. Only JVM reflection,
-documentation, upstream fixture-sync, and explicit snapshot-writing tooling remain in
+documentation, fixture-maintenance, and explicit snapshot-writing tooling remain in
 `jvmTest` because they exercise host tooling rather than cross-platform parser behavior.
 
 Configured Gradle gates:

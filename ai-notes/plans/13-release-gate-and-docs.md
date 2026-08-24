@@ -2,7 +2,9 @@
 
 ## Goal
 
-Prepare a usable internal release of the Kotlin Markdown extractor with clear coverage, limitations, and commands.
+Prepare the initial usable release of the Kotlin Markdown extractor with clear
+coverage, limitations, and commands. This is a historical execution plan; maintained
+release documentation belongs in the project README and `docs/`.
 
 ## Required Docs
 
@@ -11,7 +13,6 @@ Prepare a usable internal release of the Kotlin Markdown extractor with clear co
 - Fixture coverage report.
 - Security policy for output sanitization.
 - Markdown output policy.
-- Upstream sync process.
 - Release scope.
 
 ## README Examples

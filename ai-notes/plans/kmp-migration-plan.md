@@ -65,8 +65,8 @@ replacements for anything marked VERIFY — check the referenced source of truth
   `java.io`, uses `System.getenv` / `System.getProperty("user.dir")`, JUnit platform,
   `kotlinx-coroutines-test`. Plan: fixtures stay JVM-only; common tests get a small
   portable subset (Phase 5).
-- Consumer: FeedFlow worktree `/Users/mg/Workspace/feedflow/feed-flow-defuddle-kotlin`
-  substitutes `com.prof18:klead` with `includeBuild("../../defuddle-kotlin")` behind
+- Consumer: a separate FeedFlow checkout substitutes `com.prof18:klead` with
+  `includeBuild("<path-to-klead>")` behind
   Gradle property `feedflow.useLocalDefuddle` (default `true`). It currently declares the
   dependency in `androidMain` and `jvmMain` of `:shared`.
 
@@ -249,7 +249,7 @@ Only after Gate P1. No source-code changes in this phase beyond moving directori
 1. Add `maven-publish` (KMP publishes per-target artifacts automatically; root module
    `com.prof18:klead` remains the umbrella). Keep group/artifact/version identical so
    FeedFlow's `libs.versions.toml` entry keeps working.
-2. FeedFlow side (worktree `feed-flow-defuddle-kotlin`):
+2. FeedFlow consumer checkout:
    - `shared/build.gradle.kts`: move `implementation(libs.defuddle.kotlin)` from
      `androidMain` and `jvmMain` into `commonMobileMain`/`commonMain` — concretely: add to
      `commonMain` once klead's iOS targets exist, delete the two per-target declarations.
@@ -259,8 +259,9 @@ Only after Gate P1. No source-code changes in this phase beyond moving directori
      directly; the existing `AndroidFeedItemParserWorker`/`DesktopFeedItemParserWorker`
      pattern gains an iOS sibling (out of scope for this plan; note only).
 
-**Gate P3:** `cd feed-flow-defuddle-kotlin && ./gradlew :shared:androidJar -q --console=plain`
-green with local substitution (Android unaffected by the KMP conversion).
+**Gate P3:** From the FeedFlow checkout, run
+`./gradlew :shared:androidJar -q --console=plain` and verify it is green with local
+substitution (Android unaffected by the KMP conversion).
 
 ---
 
@@ -393,8 +394,8 @@ The fixture harness (file IO, env vars) stays `jvmTest`. Add a portable smoke la
 **Decision points for the maintainer (not the executor):**
 - **D1** — Ksoup version pinning: pin exact (`0.2.6`) and add a renovate rule; upgrade
   only with a full fixture run.
-- **D2** — jsoup version note: klead was synced against defuddle/jsoup 1.22.2; Ksoup is
-  at 1.22.1 parity. If a 1.22.2-specific parser fix matters, it will show up in the
+- **D2** — jsoup version note: Klead's imported corpus was validated with jsoup 1.22.2;
+  Ksoup is at 1.22.1 parity. If a 1.22.2-specific parser fix matters, it will show up in the
   Phase-1 fixture diff — otherwise ignore.
 - **D3** — Android target: keep consuming the `jvm()` artifact from `androidMain`
   (current setup works; a dedicated `androidTarget()` adds AGP coupling for no gain in a
