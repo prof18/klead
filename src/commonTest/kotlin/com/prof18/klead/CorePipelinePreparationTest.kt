@@ -245,6 +245,49 @@ class CorePipelinePreparationTest {
     }
 
     @Test
+    fun `medium code wrappers on custom publication hosts survive safely`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>The article introduction has enough prose to keep content detection stable while the embedded code examples are prepared for safe reader output.</p>
+                  <iframe src="https://publication.example/media/f3777200497d4a015ceae5d8bde2d2b0" title="APK patch workflow" onclick="bad()" srcdoc="<p>bad</p>" sandbox="allow-same-origin" style="position: fixed"></iframe>
+                  <iframe src="https://medium.com/media/0294744cafcb5df1a92253ccdf562865" title="Signature verification"></iframe>
+                  <iframe src="http://medium.com/media/cc708732fad37a8dfd4d5d51ff511158"></iframe>
+                  <iframe src="https://medium.com/media/short"></iframe>
+                  <iframe src="https://medium.com/media/cc708732fad37a8dfd4d5d51ff511158/extra"></iframe>
+                  <iframe src="https://evil.example/media/cc708732fad37a8dfd4d5d51ff511158"></iframe>
+                  <p>The article continues after the embedded code with more useful prose for the reader.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://publication.example/example",
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(html.contains("""src="https://publication.example/media/f3777200497d4a015ceae5d8bde2d2b0"""))
+        assertTrue(html.contains("""src="https://medium.com/media/0294744cafcb5df1a92253ccdf562865"""))
+        assertTrue(html.contains("""sandbox="allow-scripts"""))
+        assertFalse(html.contains("allow-same-origin"))
+        assertFalse(html.contains("onclick"))
+        assertFalse(html.contains("srcdoc"))
+        assertFalse(html.contains("position: fixed"))
+        assertFalse(html.contains("http://medium.com"))
+        assertFalse(html.contains("/short"))
+        assertFalse(html.contains("/extra"))
+        assertFalse(html.contains("evil.example"))
+        assertTrue(
+            markdown.contains(
+                "[APK patch workflow](https://publication.example/media/f3777200497d4a015ceae5d8bde2d2b0)",
+            ),
+        )
+        assertTrue(
+            markdown.contains(
+                "[Signature verification](https://medium.com/media/0294744cafcb5df1a92253ccdf562865)",
+            ),
+        )
+    }
+
+    @Test
     fun `parse timing is present when debug is requested`() {
         val result = parseHtmlForTest(
             html = "<html><body><article><p>Profile on.</p></article></body></html>",

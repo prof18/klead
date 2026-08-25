@@ -23,7 +23,7 @@ internal object HtmlEmbedNormalizer {
     fun normalizeEmbeds(content: Element) {
         content.select("iframe[src]").forEach { iframe ->
             val mediaUrl = iframe.attr("data-klead-video-url").trim().ifBlank { iframe.attr("src") }
-            val media = TrustedEmbeds.markdownMediaFromUrl(mediaUrl) ?: return@forEach
+            val media = TrustedEmbeds.markdownMediaFromUrl(mediaUrl, iframe.baseUri()) ?: return@forEach
             val title = iframe.attr("title").trim().ifBlank { media.defaultTitle }
             val preserveLeadingSpacer = iframe.hasAttr("data-klead-leading-spacer")
             iframe.clearAttributes()
@@ -52,6 +52,7 @@ internal object HtmlEmbedNormalizer {
         iframe.attr("src", media.normalizedIframeSrc.orEmpty())
         iframe.attr("title", title.ifBlank { media.defaultTitle })
         iframe.attr("loading", "lazy")
+        media.iframeSandbox?.let { sandbox -> iframe.attr("sandbox", sandbox) }
         if (media.markdownLinkLabel == null) {
             iframe.attr("allowfullscreen", "")
             iframe.attr(

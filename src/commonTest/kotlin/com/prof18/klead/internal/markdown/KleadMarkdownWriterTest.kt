@@ -1591,6 +1591,34 @@ class KleadMarkdownWriterTest {
     }
 
     @Test
+    fun `medium code wrappers use their iframe title for markdown links`() {
+        val markdown = render(
+            """
+            <article>
+              <p>A code example:</p>
+              <iframe title="APK patch workflow" src="https://levelup.gitconnected.com/media/f3777200497d4a015ceae5d8bde2d2b0"></iframe>
+              <p>An untitled example:</p>
+              <iframe src="https://medium.com/media/0294744cafcb5df1a92253ccdf562865"></iframe>
+            </article>
+            """.trimIndent(),
+            baseUrl = "https://levelup.gitconnected.com/article",
+        )
+
+        assertEquals(
+            """
+            A code example:
+
+            [APK patch workflow](https://levelup.gitconnected.com/media/f3777200497d4a015ceae5d8bde2d2b0)
+
+            An untitled example:
+
+            [Embedded code](https://medium.com/media/0294744cafcb5df1a92253ccdf562865)
+            """.trimIndent() + "\n",
+            markdown,
+        )
+    }
+
+    @Test
     fun `trusted raw vimeo iframe renders as sanitized html`() {
         val markdown = render(
             """
@@ -1644,8 +1672,8 @@ class KleadMarkdownWriterTest {
         assertTrue(markdown.contains("a < b stays"), "non-tag '<' should be left intact, got: $markdown")
     }
 
-    private fun render(html: String): String = KleadMarkdownWriter.write(
-        root = Ksoup.parse(html, "https://example.com/base/").selectFirst("article") ?: error("missing article"),
-        baseUrl = "https://example.com/base/",
+    private fun render(html: String, baseUrl: String = "https://example.com/base/"): String = KleadMarkdownWriter.write(
+        root = Ksoup.parse(html, baseUrl).selectFirst("article") ?: error("missing article"),
+        baseUrl = baseUrl,
     )
 }

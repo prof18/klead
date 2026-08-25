@@ -4,7 +4,7 @@ import com.prof18.klead.internal.dom.KleadUri
 import com.prof18.klead.internal.dom.parseKleadUri
 
 internal object TrustedEmbeds {
-    fun markdownMediaFromUrl(url: String): TrustedMarkdownMedia? {
+    fun markdownMediaFromUrl(url: String, sourceUrl: String? = null): TrustedMarkdownMedia? {
         val parsed = parseHttpsUrl(url) ?: return null
         val host = parsed.host
         val path = parsed.uri.rawPath.orEmpty()
@@ -28,6 +28,18 @@ internal object TrustedEmbeds {
 
             host in X_STATUS_HOSTS -> xStatusFromPath(path)
 
+            isMediumMediaWrapper(parsed, sourceUrl) -> {
+                val mediaUrl = "https://$host$path"
+                TrustedMarkdownMedia(
+                    watchUrl = mediaUrl,
+                    normalizedIframeSrc = mediaUrl,
+                    defaultTitle = "Embedded code",
+                    markdownLinkLabel = "Embedded code",
+                    useIframeTitleAsMarkdownLabel = true,
+                    iframeSandbox = "allow-scripts",
+                )
+            }
+
             else -> null
         }
     }
@@ -43,7 +55,8 @@ internal object TrustedEmbeds {
         )
     }
 
-    fun isTrustedIframeSrc(url: String): Boolean = markdownMediaFromUrl(url) != null || isTrustedRawIframeSrc(url)
+    fun isTrustedIframeSrc(url: String, sourceUrl: String? = null): Boolean =
+        markdownMediaFromUrl(url, sourceUrl) != null || isTrustedRawIframeSrc(url)
 
     fun isTrustedRawIframeSrc(url: String): Boolean {
         val parsed = parseHttpsUrl(url) ?: return false
@@ -88,6 +101,13 @@ internal object TrustedEmbeds {
 
     private fun twitterEmbedUrl(id: String): String = "https://platform.twitter.com/embed/Tweet.html?id=$id"
 
+    private fun isMediumMediaWrapper(parsed: ParsedUrl, sourceUrl: String?): Boolean {
+        if (!MEDIUM_MEDIA_PATH.matches(parsed.uri.rawPath.orEmpty()) || parsed.uri.rawQuery != null) return false
+        if (parsed.host == "medium.com") return true
+        val sourceHost = sourceUrl?.let(::parseHttpsUrl)?.host
+        return sourceHost == parsed.host
+    }
+
     private fun queryParameter(query: String, name: String): String? = query.split('&')
         .firstNotNullOfOrNull { part ->
             val pieces = part.split('=', limit = 2)
@@ -104,6 +124,7 @@ internal object TrustedEmbeds {
     private val YOUTUBE_ID = Regex("""[A-Za-z0-9_-]{6,32}""")
     private val TWEET_ID = Regex("""\d{5,32}""")
     private val VIMEO_ID = Regex("""\d{5,32}""")
+    private val MEDIUM_MEDIA_PATH = Regex("""/media/[0-9a-fA-F]{32}""")
     private val YOUTUBE_EMBED_HOSTS = setOf("youtube.com", "youtube-nocookie.com")
     private val X_STATUS_HOSTS = setOf("x.com", "twitter.com")
 
@@ -115,4 +136,6 @@ internal data class TrustedMarkdownMedia(
     val normalizedIframeSrc: String?,
     val defaultTitle: String,
     val markdownLinkLabel: String?,
+    val useIframeTitleAsMarkdownLabel: Boolean = false,
+    val iframeSandbox: String? = null,
 )

@@ -30,11 +30,16 @@ internal fun renderEmbeddedMedia(element: Element, baseUrl: String): String {
     val mediaUrl = element.attr("data-klead-video-url").trim().ifBlank {
         element.attr("src").trim()
     }
-    val media = TrustedEmbeds.markdownMediaFromUrl(mediaUrl)
+    val media = TrustedEmbeds.markdownMediaFromUrl(mediaUrl, baseUrl)
     if (media != null) {
+        val label = if (media.useIframeTitleAsMarkdownLabel) {
+            element.attr("title").trim().ifBlank { media.defaultTitle }
+        } else {
+            media.markdownLinkLabel
+        }
         return renderMarkdownMedia(
             href = media.watchUrl,
-            label = media.markdownLinkLabel,
+            label = label,
             baseUrl = baseUrl,
             preserveLeadingSpacer = element.hasKleadLeadingSpacer(),
         )

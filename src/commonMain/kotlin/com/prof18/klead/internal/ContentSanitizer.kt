@@ -33,7 +33,7 @@ internal object ContentSanitizer {
     private fun isTrustedVideoIframe(element: Element): Boolean {
         val src = element.absUrl("src").ifBlank { element.attr("src").trim() }
         if (src.isBlank() || isDangerousUrl(src)) return false
-        return TrustedEmbeds.isTrustedIframeSrc(src)
+        return TrustedEmbeds.isTrustedIframeSrc(src, element.baseUri())
     }
 
     private val DANGEROUS_URL_ATTRIBUTES = setOf("href", "src", "action", "formaction", "xlink:href")
