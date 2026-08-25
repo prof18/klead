@@ -1222,6 +1222,28 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `legacy WordPress image caption is normalized to semantic figure markup`() {
+        val article = article(
+            """
+            <article>
+              <div id="attachment_42" class="wp-caption alignnone">
+                <img src="/photo.jpg" alt="" width="1200" height="675">
+                <p class="wp-caption-text" style="--width: 100%">Useful caption.</p>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val figure = article.selectFirst("figure.wp-caption")
+        assertNotNull(figure)
+        assertNotNull(figure.selectFirst("img"))
+        assertEquals("Useful caption.", figure.selectFirst("figcaption.wp-caption-text")?.text())
+        assertTrue(article.select("p.wp-caption-text").isEmpty())
+    }
+
+    @Test
     fun `image aspect placeholder padding is removed from responsive wrappers`() {
         val article = article(
             """

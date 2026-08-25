@@ -4,6 +4,8 @@ import com.fleeksoft.ksoup.nodes.Element
 
 internal object HtmlImageNormalizer {
     fun normalizeImages(content: Element) {
+        normalizeWordPressCaptionFigures(content)
+
         content.select("img").forEach { image ->
             if (image.parent() == null) return@forEach
             image.removeBrowserManagedImageLayoutStyle()
@@ -74,6 +76,17 @@ internal object HtmlImageNormalizer {
 
             list.tagName("div")
             items.forEach { it.tagName("div") }
+        }
+    }
+
+    private fun normalizeWordPressCaptionFigures(content: Element) {
+        content.select(".wp-caption").forEach { wrapper ->
+            if (wrapper.selectFirst("img, picture") == null) return@forEach
+            val caption = wrapper.children().firstOrNull { it.hasClass("wp-caption-text") }
+                ?: return@forEach
+
+            wrapper.tagName("figure")
+            caption.tagName("figcaption")
         }
     }
 

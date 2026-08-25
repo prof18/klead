@@ -23,7 +23,7 @@ Tuttavia secondo alcuni la suddivisione di fatto delle partite in quattro tempi 
 
 ![](https://www.ilpost.it/wp-content/uploads/2026/06/15/1781515599-AP26164817753525.jpg)
 
-Il brasiliano Bruno Guimaraes si rinfresca durante una partita contro il Marocco, giocata alle 18 (AP Photo/Adam Hunger)
+*Il brasiliano Bruno Guimaraes si rinfresca durante una partita contro il Marocco, giocata alle 18 (AP Photo/Adam Hunger)*
 
 Domenica durante Germania-[Curaçao](https://www.ilpost.it/2026/06/14/che-posto-e-curacao-mondiali/), quest’ultima ha segnato il suo primo, storico gol ai Mondiali appena prima del primo *hydration break*, che è sembrato fermare il momento di grande slancio della squadra. La partita poi è finita 7-1 per la Germania. Nella partita di venerdì tra Cechia e Corea del Sud, nel primo tempo la squadra europea aveva messo sotto pressione gli avversari: ma dopo l’*hydration break* del primo tempo la partita si è addormentata, e il ritmo è risalito di fatto soltanto nel secondo tempo. «Durante quei minuti la partita può davvero cambiare, lo slancio può davvero cambiare», [ha detto](https://eu.usatoday.com/story/sports/soccer/worldcup/2026/06/10/2026-world-cup-hydration-breaks-dome-stadium-heat/90144538007/) per esempio Roberto Martínez, l’allenatore del Portogallo.
 

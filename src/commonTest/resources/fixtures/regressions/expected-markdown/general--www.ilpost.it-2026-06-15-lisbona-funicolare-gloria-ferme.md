@@ -22,7 +22,7 @@ Da allora tutti i mezzi storici in servizio da fine Ottocento come la Glória so
 
 ![](https://www.ilpost.it/wp-content/uploads/2026/06/10/1781102727-AP25247486877208.jpg)
 
-La funicolare della Glória dopo l’incidente, il 4 settembre 2025 (AP Photo/Armando Franca)
+*La funicolare della Glória dopo l’incidente, il 4 settembre 2025 (AP Photo/Armando Franca)*
 
 I vagoni fermi, diventati sfondo da selfie, sono una buona rappresentazione di una città ormai popolarissima all’estero, ma piena di problemi legati a mancanza di fondi e a un modello di crescita molto focalizzato sul turismo, che fatica a risolvere i problemi di chi in città ci abita. Molte questioni aperte riguardano proprio i trasporti, sia quelli storici sia quelli più moderni.
 
@@ -32,7 +32,7 @@ Da ottobre 2025 non sono stati resi pubblici ulteriori risultati delle indagini.
 
 ![](https://www.ilpost.it/wp-content/uploads/2026/06/10/1781102238-CLV-ILPOST-LISBONA-0626-11.jpg)
 
-Un tratto della discesa lungo il percorso della funicolare della Glória, il 4 giugno 2026 (Valerio Clari/il Post)
+*Un tratto della discesa lungo il percorso della funicolare della Glória, il 4 giugno 2026 (Valerio Clari/il Post)*
 
 Oltre a Carris, le indagini riguardano anche l’azienda a cui fu affidato l’appalto della manutenzione, la MNTC – Serviços Técnicos de Engenharia. Il fatto che sia un’azienda esterna è diventata una questione rilevante. Così come i termini del contratto fra le due, piuttosto vaghi e scaduti alcuni giorni prima dell’incidente, il 31 agosto 2025.
 
@@ -42,11 +42,11 @@ Le funicolari, del resto, per Lisbona sono qualcosa in più che un mezzo di tras
 
 ![](https://www.ilpost.it/wp-content/uploads/2026/06/10/1781102247-CLV-ILPOST-LISBONA-0626-19.jpg)
 
-L’elevador Santa Justa, il 4 giugno 2026 (Valerio Clari/il Post)
+*L’elevador Santa Justa, il 4 giugno 2026 (Valerio Clari/il Post)*
 
 ![](https://www.ilpost.it/wp-content/uploads/2026/06/10/1781102242-CLV-ILPOST-LISBONA-0626-17.jpg)
 
-I cartelli che indicano che l’ascensore è monumento nazionale, ma anche che è fuori servizio, il 4 giugno 2026 (Valerio Clari/il Post)
+*I cartelli che indicano che l’ascensore è monumento nazionale, ma anche che è fuori servizio, il 4 giugno 2026 (Valerio Clari/il Post)*
 
 In una città costruita a valle di molte colline, l’unica funicolare tornata attiva è [quella di Graça](https://www.theportugalnews.com/it/notizia/2026-04-30/la-funicolare-di-lisbona-riprende-il-suo-funzionamento/1015254). Che però è una struttura moderna, inaugurata nel 2024 su una linea che era chiusa dal 1909. Al momento è tutt’altro che affollata: in quelle storiche c’erano sempre code, questa viaggia semivuota. Forse per un po’ di timore, forse perché senza il fascino dell’antico ha meno presa [sui turisti](https://www.dn.pt/sociedade/carris-alarga-horrio-do-funicular-da-graa-e-estima-que-70-dos-utilizadores-sejam-turistas#goog_rewarded).
 
@@ -58,7 +58,7 @@ I giornali portoghesi dicono che durante le indagini è stato creato un modello 
 
 ![](https://www.ilpost.it/wp-content/uploads/2026/06/10/1781102252-CLV-ILPOST-LISBONA-0626-12.jpg)
 
-Il tratto della discesa dove la funicolare è deragliata, il 4 giugno 2026 (Valerio Clari/il Post)
+*Il tratto della discesa dove la funicolare è deragliata, il 4 giugno 2026 (Valerio Clari/il Post)*
 
 Secondo Simone Tulumello, ricercatore dell’Istituto di Scienze sociali dell’Università di Lisbona, l’incidente della funicolare della Glória è avvenuto nell’ambito di un «degrado generalizzato dei trasporti, che non si sono mai ripresi dalle politiche di austerità del 2011».
 
@@ -68,7 +68,7 @@ Meno fondi significano meno mezzi – e mantenuti peggio – ma anche meno autis
 
 ![](https://www.ilpost.it/wp-content/uploads/2026/06/10/1781103379-AP23094818018940.jpg)
 
-Il tram storico numero 28 nel quartiere Alfama di Lisbona, il 4 aprile 2023 (AP Photo/Armando Franca)
+*Il tram storico numero 28 nel quartiere Alfama di Lisbona, il 4 aprile 2023 (AP Photo/Armando Franca)*
 
 A Lisbona inoltre il sistema dei trasporti è molto frammentato fra metropolitana di Metro Lisboa (statale), altri mezzi pubblici di Carris (comunale), treni suburbani di Comboios de Portugal (statale) e traghetti di Transtejo (statale). Tutte le aziende hanno vari problemi economici, ma i riferimenti sono diversi: da una parte il sindaco Carlos Moedas, di centrodestra e al secondo mandato, dall’altra il governo centrale, dal 2024 guidato da Luís Montenegro e sostenuto da una minoranza di centrodestra, che tratta l’approvazione delle singole leggi ora con la sinistra, ora con [l’estrema destra di Chega.](https://www.ilpost.it/2024/03/11/chega-vincitore-elezioni-portogallo/) Ma la situazione non era molto diversa sotto il governo di sinistra di António Costa, in carica dal 2015 al 2024.
 
