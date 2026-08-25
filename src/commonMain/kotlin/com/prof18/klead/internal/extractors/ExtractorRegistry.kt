@@ -41,6 +41,7 @@ import com.prof18.klead.internal.extractors.site.RedditProfile
 import com.prof18.klead.internal.extractors.site.RollingStoneLayoutProfile
 import com.prof18.klead.internal.extractors.site.RollingStoneProfile
 import com.prof18.klead.internal.extractors.site.ScpWikiProfile
+import com.prof18.klead.internal.extractors.site.SimonWillisonProfile
 import com.prof18.klead.internal.extractors.site.SocketProfile
 import com.prof18.klead.internal.extractors.site.SteamPartnerEventExtractor
 import com.prof18.klead.internal.extractors.site.StripeDocsProfile
@@ -122,6 +123,7 @@ internal object DefaultExtractors {
         SocketProfile,
         ElementorArchiveProfile,
         ScpWikiProfile,
+        SimonWillisonProfile,
         LessWrongProfile,
         MaggieAppletonProfile,
         BloggerProfile,

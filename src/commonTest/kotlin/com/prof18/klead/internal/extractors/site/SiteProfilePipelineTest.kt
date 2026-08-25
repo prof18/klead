@@ -308,6 +308,43 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `simon willison profile selects entry and removes repeated posting footer`() {
+        val result = parseHtmlForTest(
+            html = """
+                <body>
+                  <div id="smallhead"><h1><a href="/">Simon Willison’s Weblog</a></h1></div>
+                  <div id="wrapper">
+                    <div id="primary">
+                      <div class="entry entryPage">
+                        <p class="mobile-date-eyebrow">23rd August 2026 - Link Blog</p>
+                        <div data-permalink-context="/2026/Aug/23/example/">
+                          <p><strong><a href="https://example.com/report">The linked report title</a></strong> introduces the article with enough natural prose and context for the preferred content selector.</p>
+                          <p>A second paragraph keeps this representative entry substantial while the surrounding site chrome remains outside the selected reader content.</p>
+                        </div>
+                        <div class="entryFooter">Posted 23rd August 2026 at 8:24 pm</div>
+                      </div>
+                      <div class="recent-articles"><h2>Recent articles</h2><p>Older post link</p></div>
+                    </div>
+                    <div id="secondary"><p>This is a link post by Simon Willison.</p></div>
+                  </div>
+                </body>
+            """.trimIndent(),
+            url = "https://simonwillison.net/2026/Aug/23/example/",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.startsWith("23rd August 2026 - Link Blog"))
+        assertTrue(markdown.contains("The linked report title"))
+        assertFalse(markdown.contains("Simon Willison’s Weblog"))
+        assertFalse(markdown.contains("Posted 23rd August 2026"))
+        assertFalse(markdown.contains("Recent articles"))
+        assertFalse(markdown.contains("This is a link post"))
+        assertEquals(".entry.entryPage", result.debug["selectedContentSelector"])
+        assertEquals(listOf("simon-willison"), result.debug["extractorIds"])
+    }
+
+    @Test
     fun `nasa profile removes social icon list before contents`() {
         val result = parseHtmlForTest(
             html = """
