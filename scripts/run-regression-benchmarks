@@ -10,8 +10,10 @@ fi
 project_dir=$(cd "$(dirname "$0")/.." && pwd)
 baseline_file="$project_dir/benchmarks/regression-corpus-baselines.properties"
 ios_device=${1:-}
-samples=${KLEAD_BENCHMARK_SAMPLES:-3}
-android_max=$(awk -F= '$1 == "android.maxMedianMillis" { print $2 }' "$baseline_file")
+samples=${KLEAD_BENCHMARK_SAMPLES:-5}
+android_max=$(awk -F= '$1 == "android.core.maxMedianMillis" { print $2 }' "$baseline_file")
+android_p95_max=$(awk -F= '$1 == "android.core.maxP95ArticleMillis" { print $2 }' "$baseline_file")
+android_worst_max=$(awk -F= '$1 == "android.core.maxWorstArticleMillis" { print $2 }' "$baseline_file")
 android_serial=${KLEAD_ANDROID_DEVICE_SERIAL:-$(adb devices | awk 'NR > 1 && $2 == "device" { print $1; exit }')}
 if [[ -z $android_serial ]]; then
   echo "No connected Android benchmark device found." >&2
@@ -31,7 +33,9 @@ ANDROID_SERIAL="$android_serial" ./gradlew -q --console=plain connectedAndroidDe
   -Pandroid.testInstrumentationRunnerArguments.KLEAD_BENCHMARK_PLATFORM=android \
   -Pandroid.testInstrumentationRunnerArguments.KLEAD_BENCHMARK_TARGET="$android_target" \
   -Pandroid.testInstrumentationRunnerArguments.KLEAD_BENCHMARK_SAMPLES="$samples" \
-  -Pandroid.testInstrumentationRunnerArguments.KLEAD_REGRESSION_CORPUS_MAX_MEDIAN_MS="$android_max"
+  -Pandroid.testInstrumentationRunnerArguments.KLEAD_REGRESSION_CORE_MAX_MEDIAN_MS="$android_max" \
+  -Pandroid.testInstrumentationRunnerArguments.KLEAD_REGRESSION_CORE_MAX_P95_ARTICLE_MS="$android_p95_max" \
+  -Pandroid.testInstrumentationRunnerArguments.KLEAD_REGRESSION_CORE_MAX_WORST_ARTICLE_MS="$android_worst_max"
 
 if [[ -n $ios_device ]]; then
   KLEAD_BENCHMARK_SAMPLES="$samples" \

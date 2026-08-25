@@ -54,11 +54,15 @@ project_file="$host_dir/KleadBenchmarkHost.xcodeproj"
 app_path="$derived_data/Build/Products/Release-iphoneos/KleadBenchmarkHost.app"
 result_dir="$project_dir/build/test-results/iosArm64PhysicalRegressionBenchmark"
 result_file="$result_dir/output.txt"
-sample_count=${KLEAD_BENCHMARK_SAMPLES:-3}
+sample_count=${KLEAD_BENCHMARK_SAMPLES:-5}
 benchmark_target=${KLEAD_IOS_BENCHMARK_TARGET:-${detected_target:-ios-arm64-device}}
 baseline_file="$project_dir/benchmarks/regression-corpus-baselines.properties"
-default_maximum_median=$(awk -F= '$1 == "ios-device.maxMedianMillis" { print $2 }' "$baseline_file")
-maximum_median=${KLEAD_REGRESSION_CORPUS_MAX_MEDIAN_MS:-$default_maximum_median}
+default_maximum_median=$(awk -F= '$1 == "ios-device.core.maxMedianMillis" { print $2 }' "$baseline_file")
+default_maximum_p95=$(awk -F= '$1 == "ios-device.core.maxP95ArticleMillis" { print $2 }' "$baseline_file")
+default_maximum_worst=$(awk -F= '$1 == "ios-device.core.maxWorstArticleMillis" { print $2 }' "$baseline_file")
+maximum_median=${KLEAD_REGRESSION_CORE_MAX_MEDIAN_MS:-$default_maximum_median}
+maximum_p95=${KLEAD_REGRESSION_CORE_MAX_P95_ARTICLE_MS:-$default_maximum_p95}
+maximum_worst=${KLEAD_REGRESSION_CORE_MAX_WORST_ARTICLE_MS:-$default_maximum_worst}
 
 cd "$project_dir"
 ./gradlew -q --console=plain linkBenchmarkReleaseTestIosArm64
@@ -82,7 +86,7 @@ xcrun devicectl device process launch \
   --terminate-existing \
   --timeout 900 \
   --environment-variables \
-  "{\"KLEAD_RUN_REGRESSION_BENCHMARK\":\"true\",\"KLEAD_BENCHMARK_PLATFORM\":\"ios-device\",\"KLEAD_BENCHMARK_TARGET\":\"$benchmark_target\",\"KLEAD_BENCHMARK_SAMPLES\":\"$sample_count\",\"KLEAD_REGRESSION_CORPUS_MAX_MEDIAN_MS\":\"$maximum_median\"}" \
+  "{\"KLEAD_RUN_REGRESSION_BENCHMARK\":\"true\",\"KLEAD_BENCHMARK_PLATFORM\":\"ios-device\",\"KLEAD_BENCHMARK_TARGET\":\"$benchmark_target\",\"KLEAD_BENCHMARK_SAMPLES\":\"$sample_count\",\"KLEAD_REGRESSION_CORE_MAX_MEDIAN_MS\":\"$maximum_median\",\"KLEAD_REGRESSION_CORE_MAX_P95_ARTICLE_MS\":\"$maximum_p95\",\"KLEAD_REGRESSION_CORE_MAX_WORST_ARTICLE_MS\":\"$maximum_worst\"}" \
   --device "$device" \
   com.prof18.klead.benchmark \
   --ktest_filter=com.prof18.klead.fixtures.RegressionCorpusBenchmarkTest.* \

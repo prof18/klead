@@ -1,6 +1,34 @@
 # Cross-Platform Benchmarking
 
-Klead benchmarks the same frozen real-world regression corpus on every locally runnable platform family. The suite is separate from `check`: correctness tests should be deterministic and frequent, while performance measurements need stable devices, optimized binaries, warm-up, and repeated samples.
+Klead measures the same real-world article-extraction pipeline on every locally runnable platform family. The suite is separate from `check`: correctness tests should be deterministic and frequent, while performance measurements need stable devices, optimized binaries, warm-up, and repeated samples.
+
+## Benchmark Model
+
+Every platform reports two cohorts from the same measured passes:
+
+- **Performance core:** the frozen 56-fixture cohort listed in [`performance-core.txt`](../src/commonTest/resources/fixtures/regressions/performance-core.txt). Its membership does not change when a new site regression is captured, so its total, p95, and worst-article metrics remain comparable. Only this cohort enforces performance budgets.
+- **Full corpus:** every non-harness input under `fixtures/regressions/input-html`. It grows with real-world coverage and reports current workload health without an absolute total-time gate.
+
+Do not add ordinary regression fixtures to the performance-core manifest. Change the manifest only as an explicit benchmark-suite revision, then rerun and recalibrate every platform baseline in the same change.
+
+Each platform performs one unmeasured warm-up and five measured full-corpus passes by default. Fixture loading and output validation are outside the timed region. Parsing, extraction, cleaned HTML generation, and Markdown generation are inside it, with debug diagnostics enabled consistently on every target.
+
+## Metrics
+
+Each cohort reports:
+
+| Metric | Meaning |
+|---|---|
+| `median` | Median total time for one pass over the cohort. It is not one article and does not combine all measured passes. |
+| `meanArticle` | Median cohort-pass time divided by its fixture count. Useful as a simple typical cost, but sensitive to the mix of article sizes. |
+| `p50Article` | Median of the per-fixture medians. This is the best answer to “how long does a typical article take?” |
+| `p95Article` | 95th percentile of the per-fixture medians. This exposes broad tail degradation without letting one outlier dominate. |
+| `maxArticle` / `slowest` | Median time and identity of the slowest fixture. This exposes a single pathological regression. |
+| `throughput` | Total raw input bytes divided by the median cohort-pass time. This adds size context when the full corpus changes. |
+
+The core total catches broad throughput regressions. Its p95 catches degradation across the slow tail, and its worst fixture catches a localized pathological slowdown. The full-corpus versions are observational because newly added websites can legitimately change them.
+
+Timings are measured in microseconds internally and rounded to milliseconds only for the human-readable total and sample list. The console and native test reports retain the 12 slowest fixture medians, including input size and whether each fixture belongs to the core.
 
 ## Complete Run
 
@@ -20,42 +48,40 @@ The command executes:
 | `ios-device` | Optimized Kotlin/Native | Signed Release host on the physical iPhone |
 | `macos` | Optimized Kotlin/Native | macOS ARM64 Release test binary |
 
-Each platform parses all 56 captured site inputs, produces cleaned HTML and Markdown, performs one unmeasured warm-up, then records three corpus passes. The console and platform-native test reports retain the 12 slowest fixture medians.
-
-The collected machine-readable result is written to:
+The collected machine-readable schema-v2 result is written to:
 
 ```text
 build/reports/benchmarks/regression-corpus/latest.json
 build/reports/benchmarks/regression-corpus/run-<UTC timestamp>.json
 ```
 
-Every timestamped report is retained under `build/` for before-and-after comparison during the current worktree lifecycle.
+The top-level fields in each platform result retain the schema-v1 full-corpus total for compatibility. Distribution and throughput fields describe the growing full corpus; the nested `core` object contains the stable performance gate.
 
-## Reference Results (2026-08-24)
+## Core Reference Results (2026-08-24)
 
-These are the first tracked cross-platform results from the complete runner. Each sample is the sum of the 56 individual parser-pipeline durations for one corpus pass. Reading fixture files and checking the outputs happen outside the timed region; extraction plus generation of both cleaned HTML and Markdown happen inside it. Debug diagnostics are enabled consistently on every target.
+The frozen core is the original 56-site corpus used to establish these cross-platform totals:
 
-| Platform | Benchmark target | Three measured samples | Median | Failure budget |
-|---|---|---:|---:|---:|
-| JVM | Azul Zulu OpenJDK 21, Apple M1 Max | 806, 848, 950 ms | **848 ms** | 1,100 ms |
-| Android | Pixel 4 XL, Android 13, instrumented test APK | 12,832, 12,930, 13,031 ms | **12,930 ms** | 17,000 ms |
-| iOS Simulator | iPhone 17 Pro, iOS 26.5, Release | 3,331, 3,347, 3,391 ms | **3,347 ms** | 4,000 ms |
-| iOS device | iPhone 16e, iOS 26.5, Release | 2,706, 2,798, 2,892 ms | **2,798 ms** | 4,000 ms |
-| macOS | Mac Studio, Apple M1 Max, macOS 26.5.2, Release | 3,332, 3,341, 3,349 ms | **3,341 ms** | 4,000 ms |
+| Platform | Benchmark target | Reference median | Total failure budget |
+|---|---|---:|---:|
+| JVM | Azul Zulu OpenJDK 21, Apple M1 Max | 848 ms | 1,100 ms |
+| Android | Pixel 4 XL, Android 13 | 12,930 ms | 17,000 ms |
+| iOS Simulator | iPhone 17 Pro, iOS 26.5, Release | 3,347 ms | 4,000 ms |
+| iOS device | iPhone 16e, iOS 26.5, Release | 2,798 ms | 4,000 ms |
+| macOS | Mac Studio, Apple M1 Max, macOS 26.5.2, Release | 3,341 ms | 4,000 ms |
 
-The Apple toolchain was Xcode 26.6. Every target performed one unmeasured warm-up before these samples. These figures are regression baselines, not a ranking of platforms: runtimes and hardware differ, so compare a target only with later runs of the same target under similar device and thermal conditions.
+The Apple toolchain was Xcode 26.6. These figures are regression baselines, not a ranking of platforms: runtimes and hardware differ, so compare a target only with later runs of the same target under similar device and thermal conditions.
 
-The table records the human-readable baseline. The machine-readable source remains [`benchmarks/regression-corpus-baselines.properties`](../benchmarks/regression-corpus-baselines.properties), while every new local run writes its exact samples and target identifiers to `build/reports/benchmarks/regression-corpus/latest.json`.
+Tracked reference values and maximum accepted core total, p95-article, and worst-article metrics live in [`regression-corpus-baselines.properties`](../benchmarks/regression-corpus-baselines.properties). The JVM, Android, Simulator, and macOS tail references were calibrated with the schema-v2 five-sample runner on 2026-08-25; the physical-iOS tail references use the latest three-sample device run. Update a reference or budget only after confirming a deliberate engine, core-cohort, toolchain, or permanent benchmark-device change. Do not raise a budget merely to make an unexplained slowdown pass.
 
 ## Repeated Runs
 
-Override the number of measured samples when investigating a smaller change:
+Override the number of measured samples when investigating noise:
 
 ```sh
-KLEAD_BENCHMARK_SAMPLES=5 ./scripts/run-regression-benchmarks
+KLEAD_BENCHMARK_SAMPLES=7 ./scripts/run-regression-benchmarks
 ```
 
-Use an odd sample count so the reported median is unambiguous. Run the suite before an engine or dependency update, preserve that timestamped JSON report, apply the update, then run it again and compare the two reports.
+Use an odd sample count so the median is unambiguous. Five is the default balance between stability and device runtime; use seven or more before deciding whether to change a baseline.
 
 Device selection is explicit when the defaults are not connected:
 
@@ -78,15 +104,11 @@ klead.iosDevelopmentTeam=<10-character team ID>
 
 The environment variable takes precedence over `local.properties`. The team ID selects a signing team; the signing certificate and private key remain in the local Keychain.
 
-## Budgets And Baselines
-
-Tracked reference medians and maximum accepted medians live in [`benchmarks/regression-corpus-baselines.properties`](../benchmarks/regression-corpus-baselines.properties). Every runner fails when its median exceeds the corresponding budget. Update a reference or budget only after confirming a deliberate engine change or a permanent benchmark-device change; do not raise a budget merely to make an unexplained slowdown pass.
-
-The baselines are device-specific. Android measurements currently refer to the connected Pixel 4 XL, and physical iOS measurements refer to the iPhone 16e. Simulator, JVM, and macOS results refer to this development Mac.
-
 ## Fixture Packaging
 
 JVM, macOS, and iOS Simulator load `src/commonTest/resources` externally. Android packages the resources only in the instrumented test APK, and physical iOS packages them only in the signed benchmark host app. The published Android AAR, JVM artifact, and Apple framework do not contain the fixture corpus.
+
+The normal test gate validates that every frozen performance-core entry still exists and that the manifest has no duplicates.
 
 ## Individual Runners
 

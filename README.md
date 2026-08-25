@@ -154,52 +154,41 @@ default Kotlin rule configuration and adds ktlint formatting rules.
 
 ## Cross-platform regression benchmarks
 
-Run the complete real-world regression corpus benchmark with connected Android and iPhone devices:
+Klead benchmarks the complete extraction pipeline on JVM, Android, iOS Simulator,
+physical iPhone, and macOS. Each run reports two complementary cohorts:
+
+- A [frozen 56-article performance core](src/commonTest/resources/fixtures/regressions/performance-core.txt)
+  provides stable, apples-to-apples regression gates for total throughput, p95 article
+  latency, and the slowest article.
+- The growing real-world regression corpus reports current mean, p50, p95, worst-case,
+  and input-size throughput without treating added fixtures as a parser slowdown.
+
+Run the complete suite with connected Android and iPhone devices:
 
 ```shell
 ./scripts/run-regression-benchmarks
 ```
 
-Each reported sample is the total parser time for one full pass over the frozen
-real-world regression corpus. On every platform, the benchmark:
+Current reference results for the stable performance core:
 
-- loads fixture files before timing starts
-- times Klead's content extraction and generation of both Markdown and cleaned HTML
-- enables the same debug diagnostics
-- performs one warm-up, then uses the median of three measured corpus passes
-- compares that median with the platform's regression budget
+| Platform | Core pass | p95 article | Slowest article | Core budget |
+|---|---:|---:|---:|---:|
+| JVM | **848 ms** | 46 ms | 55 ms | 1,100 ms |
+| Android | **12,930 ms** | 669 ms | 944 ms | 17,000 ms |
+| iOS Simulator | **3,347 ms** | 166 ms | 237 ms | 4,000 ms |
+| iOS device | **2,798 ms** | 132 ms | 197 ms | 4,000 ms |
+| macOS | **3,341 ms** | 168 ms | 239 ms | 4,000 ms |
 
-Latest reference medians from 2026-08-24:
+The core pass is one complete pass over all 56 stable fixtures. The p95 and slowest
+values are per-article medians across repeated passes. Results are target-specific;
+compare later runs of the same target rather than comparing platforms with each other.
 
-| Platform | Reference target | Median | Failure budget |
-|---|---|---:|---:|
-| JVM | OpenJDK 21 on Apple M1 Max | **848 ms** | 1,100 ms |
-| Android | Pixel 4 XL, Android 13 | **12,930 ms** | 17,000 ms |
-| iOS Simulator | iPhone 17 Pro, iOS 26.5 | **3,347 ms** | 4,000 ms |
-| iOS device | iPhone 16e, iOS 26.5 | **2,798 ms** | 4,000 ms |
-| macOS | Apple M1 Max, macOS 26.5.2 | **3,341 ms** | 4,000 ms |
-
-Per-page context from that same dated reference run:
-
-| Platform | Approx. average per page | Slowest page median | Slowest page |
-|---|---:|---:|---|
-| JVM | **15 ms** | **53 ms** | Android Central — Honor Magic V6 review |
-| Android | **231 ms** | **958 ms** | Android Central — Honor Magic V6 review |
-| iOS Simulator | **60 ms** | **251 ms** | The Verge — Sony Xperia 1 VIII review |
-| iOS device | **50 ms** | **209 ms** | The Verge — Sony Xperia 1 VIII review |
-| macOS | **60 ms** | **250 ms** | The Verge — Sony Xperia 1 VIII review |
-
-The average is the full-corpus median divided by the pages in that reference run. The
-slowest-page value is that page's median across the measured passes. Both will evolve
-with the corpus, so they are dated performance snapshots rather than fixed corpus
-statistics.
-
-The same workload runs on JVM, a physical Android device, optimized iOS Simulator
-ARM64, an optimized physical iPhone, and optimized macOS ARM64. The runner writes a
-unified comparison report to `build/reports/benchmarks/regression-corpus/latest.json`.
-See the [cross-platform benchmark results](docs/benchmarking.md#reference-results-2026-08-24)
-for the recorded JVM, Android, iOS Simulator, physical iPhone, and macOS measurements,
-plus repeated runs, device selection, baselines, and individual platform commands.
+The runner performs one warm-up and five measured passes, then writes the unified
+schema-v2 report to `build/reports/benchmarks/regression-corpus/latest.json`. See the
+[benchmarking guide](docs/benchmarking.md) for metric definitions, dated reference
+results, device setup, repeated runs, and individual platform commands. The tracked
+[platform budgets](benchmarks/regression-corpus-baselines.properties) are the
+machine-readable source for the stable-core gates.
 
 ## License
 
