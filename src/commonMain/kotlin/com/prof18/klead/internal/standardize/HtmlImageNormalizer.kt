@@ -63,6 +63,20 @@ internal object HtmlImageNormalizer {
         }
     }
 
+    fun normalizeGalleryImageLists(content: Element) {
+        content.select("ul, ol").forEach { list ->
+            val items = list.children().filter { it.normalName() == "li" }
+            if (items.isEmpty() || items.size != list.childrenSize()) return@forEach
+            if (!list.hasGalleryHint()) return@forEach
+            if (items.any { it.selectFirst("img, picture") == null && !it.isEmptyGalleryPlaceholder() }) {
+                return@forEach
+            }
+
+            list.tagName("div")
+            items.forEach { it.tagName("div") }
+        }
+    }
+
     private fun Element.removeBrowserManagedImageLayoutStyle() {
         val style = attr("style")
         if (style.isBlank()) return
@@ -91,6 +105,17 @@ internal object HtmlImageNormalizer {
     }
 
     private fun Element.hasImageContent(): Boolean = normalName() == "picture" || selectFirst("img, picture") != null
+
+    private fun Element.isEmptyGalleryPlaceholder(): Boolean = text().isBlank()
+
+    private fun Element.hasGalleryHint(): Boolean = generateSequence(this as Element?) { it.parent() }
+        .any { element ->
+            val hintText = element.componentHintHaystack()
+            GALLERY_HINTS.any { it in hintText } ||
+                element.attributes().asList().any { attribute ->
+                    GALLERY_HINTS.any { it in attribute.key.lowercase() }
+                }
+        }
 
     private fun Element.hasImageAspectPlaceholderHint(): Boolean {
         val haystack = componentHintHaystack()
@@ -202,5 +227,12 @@ internal object HtmlImageNormalizer {
         "ratio-box",
         "ratio-container",
         "responsive-img",
+    )
+    private val GALLERY_HINTS = setOf(
+        "carousel",
+        "gallery",
+        "slider",
+        "slideshow",
+        "splide",
     )
 }

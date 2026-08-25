@@ -1177,6 +1177,51 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `gallery image lists lose list semantics while preserving media wrappers`() {
+        val article = article(
+            """
+            <article>
+              <div class="article-gallery">
+                <ul class="splide__list">
+                  <li class="splide__slide"><picture><img src="/one.jpg" alt="One"></picture></li>
+                  <li class="splide__slide"><picture><img src="/two.jpg" alt="Two"></picture></li>
+                </ul>
+                <ul class="splide__list swiper-wrapper">
+                  <li class="splide__slide placeholder"><div class="body-img responsive-img"></div></li>
+                  <li class="splide__slide placeholder"><div class="body-img responsive-img"></div></li>
+                </ul>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(0, article.select("ul, ol, li").size)
+        assertEquals(2, article.select(".splide__list > .splide__slide > picture > img").size)
+        assertEquals(0, article.select(".placeholder").size)
+    }
+
+    @Test
+    fun `ordinary image lists preserve list semantics`() {
+        val article = article(
+            """
+            <article>
+              <ul class="examples">
+                <li><img src="/one.jpg" alt="One"></li>
+                <li><img src="/two.jpg" alt="Two"></li>
+              </ul>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(1, article.select("ul").size)
+        assertEquals(2, article.select("ul > li > img").size)
+    }
+
+    @Test
     fun `image aspect placeholder padding is removed from responsive wrappers`() {
         val article = article(
             """

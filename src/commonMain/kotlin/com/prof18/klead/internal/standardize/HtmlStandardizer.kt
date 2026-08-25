@@ -16,6 +16,7 @@ internal object HtmlStandardizer {
         HtmlChromeNormalizer.removeMetadataChrome(content)
         HtmlCodeNormalizer.normalizeCodeBlocks(content)
         HtmlImageNormalizer.normalizeImages(content)
+        HtmlImageNormalizer.normalizeGalleryImageLists(content)
         HtmlImageNormalizer.normalizeImageAspectPlaceholders(content)
         HtmlFootnoteNormalizer.normalizeFootnotes(content)
         HtmlChromeNormalizer.removeTrailingSectionHeadings(content)
