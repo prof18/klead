@@ -1,12 +1,3 @@
-```json
-{
-  "title": "Le foto e i video del discusso evento di arti marziali miste davanti alla Casa Bianca",
-  "author": "Giuseppe Scaffidi",
-  "site": "Il Post",
-  "published": "2026-06-15T09:58:41+02:00"
-}
-```
-
 ## Per celebrare gli 80 anni di Trump, che lo ha fatto organizzare da un suo amico e trasmettere in esclusiva su una piattaforma a lui vicina
 
 ![(REUTERS/Evan Vucci)](https://www.ilpost.it/wp-content/uploads/2026/06/15/1781507234-2026-06-15T014624Z_1758137549_RC21ULA57LGV_RTRMADP_3_USA-250-TRUMP-UFC.jpg)
@@ -97,9 +88,13 @@ Gli organizzatori della UFC hanno avuto il permesso di accedere a diverse parti 
 
 La “cerimonia del peso” (uno dei momenti più scenografici degli incontri della UFC: quello in cui i lottatori salgono sulla bilancia per assicurarsi di rientrare nella loro categoria, guardandosi poi in cagnesco davanti ai fotografi) si era svolta invece al Lincoln Memorial, il monumento dedicato al presidente Abraham Lincoln. Prima di entrare nell’ottagono, come viene chiamato il ring degli incontri della UFC, gli atleti venivano filmati mentre attraversavano i corridoi della Casa Bianca.
 
+[X post](https://x.com/Vision4theBlind/status/2065972215770714136)
+
 Le interviste agli atleti sono state condotte dal comico e conduttore televisivo statunitense Joe Rogan, che conduce il [podcast più seguito negli Stati Uniti](https://www.ilpost.it/2024/11/13/influenza-joe-rogan-podcast-stati-uniti/) ed è una delle figure più influenti dell’estrema destra statunitense.
 
 In una di queste il lottatore Josh Hokit ha rilanciato una delle assurdità in voga tra i sostenitori di Trump più complottisti: quella secondo cui l’ex first lady Michelle Obama sarebbe in realtà un uomo. «Michelle Obama è un uomo, ho ragione America?», ha detto.
+
+[X post](https://x.com/Timodc/status/2066356936153469339)
 
 L’operazione è stata fortemente criticata per diversi motivi, dall’opportunità stessa di utilizzare la più importante sede istituzionale degli Stati Uniti per uno spettacolo di questo tipo al fatto che il presidente della UFC Dana White sia un noto amico e sostenitore di Trump. Ma ha fatto discutere anche la presenza di numerosi sponsor commerciali, alcuni piuttosto controversi. Tra questi c’erano anche la società di criptovalute Crypto.com e Polymarket, una piattaforma di mercato predittivo su cui è possibile fare scommesse di ogni genere, che nelle ultime settimane è stata bloccata in oltre 30 paesi.
 

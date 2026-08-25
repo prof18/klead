@@ -1564,7 +1564,7 @@ class KleadMarkdownWriterTest {
     }
 
     @Test
-    fun `trusted social iframes render as markdown media`() {
+    fun `trusted social iframes render as titled markdown links`() {
         val markdown = render(
             """
             <article>
@@ -1580,11 +1580,11 @@ class KleadMarkdownWriterTest {
             """
             A tweet:
 
-            ![](https://x.com/i/status/1675626836821409792)
+            [X post](https://x.com/i/status/1675626836821409792)
 
             An X.com embed:
 
-            ![](https://x.com/kepano/status/1675626836821409792)
+            [X post](https://x.com/kepano/status/1675626836821409792)
             """.trimIndent() + "\n",
             markdown,
         )

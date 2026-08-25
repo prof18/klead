@@ -211,14 +211,37 @@ class CorePipelinePreparationTest {
         assertFalse(html.contains("example.com/embed"))
         assertTrue(html.contains("""data-klead-video-url="https://x.com/i/status/1675626836821409792""""))
         assertTrue(html.contains("""src="https://player.vimeo.com/video/45725193?h=a290f71a57""""))
-        assertTrue(markdown.contains("![](https://x.com/i/status/1675626836821409792)"))
-        assertTrue(markdown.contains("![](https://x.com/kepano/status/1675626836821409792)"))
+        assertTrue(markdown.contains("[X post](https://x.com/i/status/1675626836821409792)"))
+        assertTrue(markdown.contains("[X post](https://x.com/kepano/status/1675626836821409792)"))
         assertTrue(
             markdown.contains(
                 """<iframe src="https://player.vimeo.com/video/45725193?h=a290f71a57" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen=""></iframe>""",
             ),
         )
         assertFalse(markdown.contains("aspect-ratio"))
+    }
+
+    @Test
+    fun `il post twitter placeholders survive cleanup as embeds and markdown links`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>The article introduction has enough prose to keep content detection stable while the embedded posts are prepared for reader output.</p>
+                  <div class="ilPostSocial" data-component="ilPostSocial" data-type="twitter" data-url="https://x.com/afpfr/status/2092163775319159045"></div>
+                  <div class="ilPostSocial" data-component="ilPostSocial" data-type="twitter" data-url="javascript:alert(1)"></div>
+                  <p>The article continues after the embedded post with more useful prose for the reader.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://www.ilpost.it/flashes/example/",
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(html.contains("""src="https://platform.twitter.com/embed/Tweet.html?id=2092163775319159045"""))
+        assertTrue(html.contains("""title="X post"""))
+        assertTrue(html.contains("""data-klead-video-url="https://x.com/afpfr/status/2092163775319159045"""))
+        assertFalse(html.contains("javascript:"))
+        assertTrue(markdown.contains("[X post](https://x.com/afpfr/status/2092163775319159045)"))
     }
 
     @Test

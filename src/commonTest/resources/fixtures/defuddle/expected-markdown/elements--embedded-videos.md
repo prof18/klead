@@ -17,11 +17,11 @@ A YouTube nocookie video:
 
 A tweet:
 
-![](https://x.com/i/status/1675626836821409792)
+[X post](https://x.com/i/status/1675626836821409792)
 
 An X.com embed:
 
-![](https://x.com/kepano/status/1675626836821409792)
+[X post](https://x.com/kepano/status/1675626836821409792)
 
 A Vimeo video should stay as iframe:
 

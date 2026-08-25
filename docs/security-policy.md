@@ -12,6 +12,6 @@ Final output sanitization strips:
 - `javascript:`
 - `data:text/html`
 
-Trusted `https://www.youtube.com/embed/...` and `https://www.youtube-nocookie.com/embed/...` iframes are the only iframe exception. They are normalized to `youtube-nocookie.com` cleaned-HTML embeds and Markdown video links; arbitrary iframe, object, and embed content is still stripped.
+Trusted YouTube, X/Twitter, and Vimeo iframe URLs are narrow iframe exceptions. YouTube and X/Twitter sources are normalized to safe cleaned-HTML embeds and Markdown links; Vimeo retains a sanitized iframe. Known publisher placeholders are converted only when their URLs pass the same trusted-source validation. Arbitrary iframe, object, and embed content is still stripped.
 
 Safe image data URLs such as `data:image/png` are preserved. The parser does not execute JavaScript and does not use WebView, browser DOM, GraalJS, or Compose rendering.

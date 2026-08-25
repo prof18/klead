@@ -9,7 +9,7 @@ import com.prof18.klead.internal.dom.replaceWithChildren
 // sees final markup, and empty-wrapper cleanup runs last to sweep what the other passes left.
 internal object HtmlStandardizer {
     fun apply(content: Element, title: String?) {
-        HtmlEmbedNormalizer.normalizeVideoEmbeds(content)
+        HtmlEmbedNormalizer.normalizeEmbeds(content)
         HtmlCalloutNormalizer.normalizeCallouts(content)
         HtmlTitleNormalizer.normalizeHeadings(content, title)
         HtmlArxivNormalizer.normalize(content)

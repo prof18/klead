@@ -4,23 +4,32 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.media.TrustedEmbeds
 import com.prof18.klead.internal.media.TrustedMarkdownMedia
 
-// Rewrites trusted video embeds (and lazy video placeholders) into uniform iframes carrying the
-// canonical watch URL, so downstream output can render or link them consistently.
+// Rewrites trusted embeds and publisher placeholders into uniform iframes carrying the canonical
+// watch URL, so downstream output can render or link them consistently.
 internal object HtmlEmbedNormalizer {
-    fun normalizeVideoEmbeds(content: Element) {
+    fun normalizePublisherPlaceholders(content: Element) {
+        content.select(
+            """div.ilPostSocial[data-component="ilPostSocial"][data-type="twitter"][data-url]""",
+        ).forEach { placeholder ->
+            val media = TrustedEmbeds.markdownMediaFromUrl(placeholder.attr("data-url"))
+                ?.takeIf { it.markdownLinkLabel != null }
+                ?: return@forEach
+            val iframe = Element("iframe")
+            applyEmbedAttributes(iframe, media, media.defaultTitle)
+            placeholder.replaceWith(iframe)
+        }
+    }
+
+    fun normalizeEmbeds(content: Element) {
         content.select("iframe[src]").forEach { iframe ->
-            val media = TrustedEmbeds.markdownMediaFromUrl(iframe.attr("src")) ?: return@forEach
-            val normalizedSrc = media.normalizedIframeSrc
-            if (normalizedSrc == null) {
-                iframe.attr("data-klead-video-url", media.watchUrl)
-            } else {
-                val title = iframe.attr("title").trim().ifBlank { media.defaultTitle }
-                val preserveLeadingSpacer = iframe.hasAttr("data-klead-leading-spacer")
-                iframe.clearAttributes()
-                applyVideoAttributes(iframe, media, title)
-                if (preserveLeadingSpacer) {
-                    iframe.attr("data-klead-leading-spacer", "true")
-                }
+            val mediaUrl = iframe.attr("data-klead-video-url").trim().ifBlank { iframe.attr("src") }
+            val media = TrustedEmbeds.markdownMediaFromUrl(mediaUrl) ?: return@forEach
+            val title = iframe.attr("title").trim().ifBlank { media.defaultTitle }
+            val preserveLeadingSpacer = iframe.hasAttr("data-klead-leading-spacer")
+            iframe.clearAttributes()
+            applyEmbedAttributes(iframe, media, title)
+            if (preserveLeadingSpacer) {
+                iframe.attr("data-klead-leading-spacer", "true")
             }
         }
 
@@ -34,20 +43,22 @@ internal object HtmlEmbedNormalizer {
                 ?: return@forEach
             if (video.normalizedIframeSrc == null) return@forEach
             val iframe = Element("iframe")
-            applyVideoAttributes(iframe, video, video.defaultTitle)
+            applyEmbedAttributes(iframe, video, video.defaultTitle)
             placeholder.replaceWith(iframe)
         }
     }
 
-    private fun applyVideoAttributes(iframe: Element, video: TrustedMarkdownMedia, title: String) {
-        iframe.attr("src", video.normalizedIframeSrc.orEmpty())
-        iframe.attr("title", title.ifBlank { video.defaultTitle })
+    private fun applyEmbedAttributes(iframe: Element, media: TrustedMarkdownMedia, title: String) {
+        iframe.attr("src", media.normalizedIframeSrc.orEmpty())
+        iframe.attr("title", title.ifBlank { media.defaultTitle })
         iframe.attr("loading", "lazy")
-        iframe.attr("allowfullscreen", "")
-        iframe.attr(
-            "allow",
-            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-        )
-        iframe.attr("data-klead-video-url", video.watchUrl)
+        if (media.markdownLinkLabel == null) {
+            iframe.attr("allowfullscreen", "")
+            iframe.attr(
+                "allow",
+                "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+            )
+        }
+        iframe.attr("data-klead-video-url", media.watchUrl)
     }
 }

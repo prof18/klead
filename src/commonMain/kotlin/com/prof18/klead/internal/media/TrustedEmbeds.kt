@@ -39,6 +39,7 @@ internal object TrustedEmbeds {
             watchUrl = "https://www.youtube.com/watch?v=$id",
             normalizedIframeSrc = "https://www.youtube-nocookie.com/embed/$id",
             defaultTitle = "YouTube video",
+            markdownLinkLabel = null,
         )
     }
 
@@ -58,8 +59,9 @@ internal object TrustedEmbeds {
         if (!TWEET_ID.matches(id)) return null
         return TrustedMarkdownMedia(
             watchUrl = "https://x.com/i/status/$id",
-            normalizedIframeSrc = null,
+            normalizedIframeSrc = twitterEmbedUrl(id),
             defaultTitle = "X post",
+            markdownLinkLabel = "X post",
         )
     }
 
@@ -78,10 +80,13 @@ internal object TrustedEmbeds {
         }
         return TrustedMarkdownMedia(
             watchUrl = "https://x.com/$statusPath",
-            normalizedIframeSrc = null,
+            normalizedIframeSrc = twitterEmbedUrl(id),
             defaultTitle = "X post",
+            markdownLinkLabel = "X post",
         )
     }
+
+    private fun twitterEmbedUrl(id: String): String = "https://platform.twitter.com/embed/Tweet.html?id=$id"
 
     private fun queryParameter(query: String, name: String): String? = query.split('&')
         .firstNotNullOfOrNull { part ->
@@ -109,4 +114,5 @@ internal data class TrustedMarkdownMedia(
     val watchUrl: String,
     val normalizedIframeSrc: String?,
     val defaultTitle: String,
+    val markdownLinkLabel: String?,
 )

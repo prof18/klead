@@ -60,7 +60,7 @@ class SiteRegressionSnapshotWriterTest {
         .trimEnd() + "\n"
 
     private companion object {
-        val FIXTURE_NAME_REGEX = Regex("[a-z0-9][a-z0-9-]*")
+        val FIXTURE_NAME_REGEX = Regex("[a-z0-9][a-z0-9._-]*")
         const val FIXTURE_NAME_PROPERTY = "klead.siteRegressionName"
         const val TEST_RESOURCES_ROOT = "TEST_RESOURCES_ROOT"
     }

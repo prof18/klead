@@ -27,11 +27,17 @@ internal fun renderImage(element: Element, baseUrl: String): String {
 }
 
 internal fun renderEmbeddedMedia(element: Element, baseUrl: String): String {
-    val href = element.attr("data-klead-video-url").trim().ifBlank {
-        TrustedEmbeds.markdownMediaFromUrl(element.attr("src").trim())?.watchUrl.orEmpty()
+    val mediaUrl = element.attr("data-klead-video-url").trim().ifBlank {
+        element.attr("src").trim()
     }
-    if (href.isNotBlank()) {
-        return renderMarkdownMedia(href, baseUrl, preserveLeadingSpacer = element.hasKleadLeadingSpacer())
+    val media = TrustedEmbeds.markdownMediaFromUrl(mediaUrl)
+    if (media != null) {
+        return renderMarkdownMedia(
+            href = media.watchUrl,
+            label = media.markdownLinkLabel,
+            baseUrl = baseUrl,
+            preserveLeadingSpacer = element.hasKleadLeadingSpacer(),
+        )
     }
 
     return renderTrustedRawIframe(element, baseUrl)
@@ -76,11 +82,17 @@ internal fun renderMath(element: Element): String? {
     return if (display) "$$\n$latex\n$$" else "$$latex$"
 }
 
-private fun renderMarkdownMedia(href: String, baseUrl: String, preserveLeadingSpacer: Boolean): String {
+private fun renderMarkdownMedia(
+    href: String,
+    label: String?,
+    baseUrl: String,
+    preserveLeadingSpacer: Boolean,
+): String {
     if (isDangerousUrl(href)) return ""
     val url = resolveUrl(baseUrl, href)
     if (url.isBlank()) return ""
-    val media = "![](${escapeDestination(url)})"
+    val destination = escapeDestination(url)
+    val media = if (label == null) "![]($destination)" else "[${escapeInline(label)}]($destination)"
     return if (preserveLeadingSpacer) "\n$media" else media
 }
 

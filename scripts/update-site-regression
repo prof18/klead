@@ -9,8 +9,8 @@ fi
 
 fixture_name=$1
 
-if [[ ! $fixture_name =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
-  echo "Fixture name must contain only lowercase letters, digits, and hyphens." >&2
+if [[ ! $fixture_name =~ ^[a-z0-9][a-z0-9._-]*$ ]]; then
+  echo "Fixture name contains unsupported characters." >&2
   exit 2
 fi
 

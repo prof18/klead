@@ -29,6 +29,7 @@ import com.prof18.klead.internal.metadata.SchemaOrgResult
 import com.prof18.klead.internal.removal.DiscardedRemovals
 import com.prof18.klead.internal.removal.RemovalPipeline
 import com.prof18.klead.internal.removal.RemovalPolicy
+import com.prof18.klead.internal.standardize.HtmlEmbedNormalizer
 import com.prof18.klead.internal.standardize.HtmlStandardizer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ensureActive
@@ -186,6 +187,9 @@ internal object KleadParser {
         }
         timings.measure("$timingPrefix.stripUnsafe") {
             ContentSanitizer.stripUnsafe(content)
+        }
+        timings.measure("$timingPrefix.normalizePublisherEmbeds") {
+            HtmlEmbedNormalizer.normalizePublisherPlaceholders(content)
         }
         val metadata = timings.measure("$timingPrefix.metadata") {
             PageMetadataExtractor.extract(
