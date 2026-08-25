@@ -2,12 +2,14 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
+import com.prof18.klead.internal.removal.recordAndRemove
 
 internal object SubstackProfile : DomExtractor {
     override val id: String = "substack"
@@ -19,6 +21,7 @@ internal object SubstackProfile : DomExtractor {
         ".portable-archive",
         ".portable-archive-list",
         ".portable-archive-empty",
+        ".image-link-expand",
         """[aria-label="Top Posts Footer"]""",
     )
 
@@ -57,6 +60,31 @@ internal object SubstackProfile : DomExtractor {
         )
     }
 
+    override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
+        val metadataImageKey = (
+            context.document.metaContent("og:image")
+                ?: context.document.metaContent("twitter:image")
+        )?.substackImageKey() ?: return
+
+        for (image in content.select("img[data-attrs]").toList()) {
+            if (!TOP_IMAGE_PATTERN.containsMatchIn(image.attr("data-attrs"))) continue
+            val imageKey = image.absUrl("src").ifBlank { image.attr("src").trim() }.substackImageKey()
+            if (imageKey != metadataImageKey) continue
+            if (image.hasVisibleCaption()) continue
+
+            val target = image.parents().firstOrNull { it.hasClass("captioned-image-container") }
+                ?: image.parents().firstOrNull { it.normalName() == "figure" }
+                ?: image
+            recordAndRemove(
+                element = target,
+                debug = debug,
+                step = "postProcess:substack",
+                selector = "img[data-attrs]",
+                reason = "Substack top image duplicates metadata image",
+            )
+        }
+    }
+
     private fun Document.noteUrl(): String? = listOfNotNull(
         metaContent("og:url"),
         selectFirst("""link[rel=canonical][href]""")?.attrTrimmedOrNull("href"),
@@ -76,6 +104,18 @@ internal object SubstackProfile : DomExtractor {
 
     private fun String.normalizedWhitespace(): String = trim().replace(WHITESPACE_PATTERN, " ")
 
+    private fun Element.hasVisibleCaption(): Boolean = parents().any { ancestor ->
+        ancestor.normalName() == "figure" &&
+            ancestor.select("figcaption, [class*=caption], [class*=credit], [id*=caption], [id*=credit]")
+                .any { it.text().trim().isNotBlank() }
+    }
+
+    private fun String.substackImageKey(): String? {
+        val value = trim().substringBefore('#').ifBlank { return null }
+        val embeddedOriginIndex = value.indexOf(ENCODED_ORIGIN_MARKER, ignoreCase = true)
+        return if (embeddedOriginIndex >= 0) value.substring(embeddedOriginIndex + 1) else value
+    }
+
     private val SUBSTACK_DOM_SIGNALS = listOf(
         "#substack-comments",
         ".portable-archive",
@@ -86,6 +126,8 @@ internal object SubstackProfile : DomExtractor {
     )
 
     private val WHITESPACE_PATTERN = Regex("""\s+""")
+    private val TOP_IMAGE_PATTERN = Regex("""[\"']topImage[\"']\s*:\s*true""", RegexOption.IGNORE_CASE)
 
+    private const val ENCODED_ORIGIN_MARKER = "/https%3A%2F%2F"
     private const val DESCRIPTION_MATCH_PREFIX_LENGTH = 80
 }

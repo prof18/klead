@@ -1665,6 +1665,15 @@ class SiteProfilePipelineTest {
             <article>
               <p>The actual article body should stay because it contains enough realistic prose for deterministic parsing.</p>
               <p>A second paragraph keeps the article body stable while Substack footer and comment chrome appears below it.</p>
+              <figure>
+                <a class="image-link">
+                  <img src="https://example.com/article-image.png" alt="Article image">
+                  <div class="image-link-expand">
+                    <button class="restack-image"></button>
+                    <button class="view-image"><svg><path d="M0 0"></path></svg></button>
+                  </div>
+                </a>
+              </figure>
               <script src="https://substackcdn.com/embed.js"></script>
               <section id="substack-comments">Substack comments chrome</section>
               <section aria-label="Top Posts Footer">Substack top posts chrome</section>
@@ -1685,8 +1694,83 @@ class SiteProfilePipelineTest {
             assertTrue(result.content.requireMarkdown().contains("The actual article body should stay"), url)
             assertFalse(result.content.requireMarkdown().contains("Substack comments chrome"), url)
             assertFalse(result.content.requireMarkdown().contains("Substack top posts chrome"), url)
+            assertTrue(result.content.requireHtml().contains("article-image.png"), url)
+            assertFalse(result.content.requireHtml().contains("image-link-expand"), url)
+            assertFalse(result.content.requireHtml().contains("restack-image"), url)
+            assertFalse(result.content.requireHtml().contains("view-image"), url)
             assertTrue((result.debug["extractorIds"] as List<*>).contains("substack"), url)
         }
+    }
+
+    @Test
+    fun `substack profile removes transformed top image that duplicates metadata`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                <head>
+                  <meta property="og:image" content="https://substackcdn.com/image/fetch/f_auto/https%3A%2F%2Fmedia.example%2Fcover.png">
+                </head>
+                <body>
+                  <article>
+                    <div class="captioned-image-container">
+                      <figure>
+                        <a class="image-link">
+                          <img
+                            src="https://substackcdn.com/image/fetch/w_1456,f_auto/https%3A%2F%2Fmedia.example%2Fcover.png"
+                            data-attrs="{&quot;topImage&quot;:true}"
+                            alt="Cover"
+                          >
+                        </a>
+                      </figure>
+                    </div>
+                    <p>Article prose has enough words to keep the default cleaned parse result. It describes the article content clearly and avoids short retry paths with stable text.</p>
+                    <figure><img src="https://media.example/body.png" alt="Body image"></figure>
+                  </article>
+                </body>
+                </html>
+            """.trimIndent(),
+            url = "https://publication.substack.com/p/example",
+            options = testOptions(debug = true),
+        )
+
+        assertFalse(result.content.requireHtml().contains("cover.png"))
+        assertFalse(result.content.requireHtml().contains("captioned-image-container"))
+        assertTrue(result.content.requireHtml().contains("body.png"))
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("substack"))
+    }
+
+    @Test
+    fun `substack profile preserves a captioned top image`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                <head>
+                  <meta property="og:image" content="https://substackcdn.com/image/fetch/f_auto/https%3A%2F%2Fmedia.example%2Fcover.png">
+                </head>
+                <body>
+                  <article>
+                    <div class="captioned-image-container">
+                      <figure>
+                        <a class="image-link">
+                          <img
+                            src="https://substackcdn.com/image/fetch/w_1456,f_auto/https%3A%2F%2Fmedia.example%2Fcover.png"
+                            data-attrs="{&quot;topImage&quot;:true}"
+                            alt="Cover"
+                          >
+                        </a>
+                        <figcaption>Context that should remain with the cover.</figcaption>
+                      </figure>
+                    </div>
+                    <p>Article prose has enough words to keep the default cleaned parse result. It describes the article content clearly and avoids short retry paths with stable text.</p>
+                  </article>
+                </body>
+                </html>
+            """.trimIndent(),
+            url = "https://publication.substack.com/p/example",
+        )
+
+        assertTrue(result.content.requireHtml().contains("cover.png"))
+        assertTrue(result.content.requireMarkdown().contains("Context that should remain with the cover."))
     }
 
     @Test
