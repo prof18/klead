@@ -158,6 +158,79 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `macstories profile removes full size image icon while preserving image`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <div class="media-wrapper">
+                    <img src="https://cdn.macstories.net/article.jpg" alt="Vision Pro running visionOS 27">
+                    <p class="image-caption">
+                      <a class="view-full-size" href="https://cdn.macstories.net/article.jpg">
+                        <svg viewBox="0 0 120 120"><path d="M71.2 48.8"></path></svg>
+                      </a>
+                    </p>
+                  </div>
+                  <p>The actual article body should stay because it contains enough realistic prose for deterministic parsing after the full-size image control is removed.</p>
+                  <p>A second paragraph keeps the selected article stable and proves the decorative link icon is not treated as meaningful article content.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.macstories.net/stories/example/",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(
+            markdown.contains(
+                "![Vision Pro running visionOS 27](https://cdn.macstories.net/article.jpg)",
+            ),
+            markdown,
+        )
+        assertFalse(markdown.contains("<svg"), markdown)
+        assertFalse(result.content.requireHtml().contains("view-full-size"))
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("macstories"))
+    }
+
+    @Test
+    fun `dw profile removes article chrome and restores templated image`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <section data-tracking-name="sharing-icons-inline">
+                    <a href="https://x.com/share"><svg viewBox="-10 -10 40 40"><path d="M6 0"></path></svg></a>
+                    <div><svg viewBox="0 0 25 25"><path d="m22.5 8.75-10 7.5"></path></svg></div>
+                  </section>
+                  <p>The actual article body should stay because it contains enough realistic prose for deterministic parsing after the sharing toolbar is removed.</p>
+                  <blockquote class="tweet embed" data-id="123"></blockquote>
+                  <figure class="placeholder-image master_landscape big">
+                    <img
+                      data-format="MASTER_LANDSCAPE"
+                      data-url="https://static.dw.com/image/74954369_${'$'}{formatId}.jpg"
+                      alt="Dortmund fans celebrating">
+                    <figcaption>Borussia Dortmund fans in the stadium.</figcaption>
+                  </figure>
+                  <p>A second paragraph keeps the selected article stable and proves meaningful prose remains around the repaired media.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.dw.com/en/example/a-123",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertFalse(markdown.contains("<svg"), markdown)
+        assertFalse(markdown.contains("https://x.com/share"), markdown)
+        assertFalse(markdown.lines().any { it == ">" }, markdown)
+        assertTrue(
+            markdown.contains(
+                "![Dortmund fans celebrating](https://static.dw.com/image/74954369_605.jpg)",
+            ),
+            markdown,
+        )
+        assertTrue(markdown.contains("Borussia Dortmund fans in the stadium."), markdown)
+        assertFalse(result.content.requireHtml().contains("blockquote"))
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("dw"))
+    }
+
+    @Test
     fun `android police profile keeps feature image that sits outside article body`() {
         val result = parseHtmlForTest(
             html = """

@@ -14,6 +14,7 @@ import com.prof18.klead.internal.extractors.site.BuzzFeedProfile
 import com.prof18.klead.internal.extractors.site.ChatGptExtractor
 import com.prof18.klead.internal.extractors.site.CitynewsProfile
 import com.prof18.klead.internal.extractors.site.DaringFireballProfile
+import com.prof18.klead.internal.extractors.site.DwProfile
 import com.prof18.klead.internal.extractors.site.ElementorArchiveProfile
 import com.prof18.klead.internal.extractors.site.EntrepreneurProfile
 import com.prof18.klead.internal.extractors.site.FortuneProfile
@@ -26,6 +27,7 @@ import com.prof18.klead.internal.extractors.site.IlPostProfile
 import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
 import com.prof18.klead.internal.extractors.site.LessWrongProfile
 import com.prof18.klead.internal.extractors.site.MacRumorsProfile
+import com.prof18.klead.internal.extractors.site.MacStoriesProfile
 import com.prof18.klead.internal.extractors.site.MaggieAppletonProfile
 import com.prof18.klead.internal.extractors.site.MashableProfile
 import com.prof18.klead.internal.extractors.site.MastodonProfile
@@ -130,12 +132,14 @@ internal object DefaultExtractors {
         JetBrainsBlogProfile,
         IlPostProfile,
         DaringFireballProfile,
+        DwProfile,
         SubstackProfile,
         CitynewsProfile,
         TechCrunchProfile,
         VoxProfile,
         PianetaBasketProfile,
         MacRumorsProfile,
+        MacStoriesProfile,
         NASAProfile,
         NineToFiveProfile,
         WordPressFamilyProfile,
