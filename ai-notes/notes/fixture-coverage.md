@@ -1,6 +1,6 @@
 # Fixture Coverage
 
-Last updated: 2026-06-20
+Last updated: 2026-08-25
 
 Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
@@ -12,7 +12,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 - Explicitly excluded math/rendering fixtures: 14
 - Focused hidden-content cleaned-HTML fixtures: 2
 - Strict whole-corpus Markdown parity: enforced for supported fixtures
-- Captured site regression snapshots: 57 (56 recovered captures plus one harness fixture)
+- Captured site regression snapshots: 58 (56 recovered captures, one harness fixture, and one new live capture)
 
 ## Active Strict Fixtures
 
@@ -25,7 +25,7 @@ Upstream Defuddle SHA: `9db72600a0cfc568eafb31e85ef68ba16add072e`
 
 ## Captured Site Regressions
 
-The original 56 FeedFlow captures are retained as ordinary application-independent regressions, alongside the portable harness fixture. `SiteRegressionTest` compares both Markdown and cleaned HTML for all 57 cases on every target.
+The original 56 FeedFlow captures are retained as ordinary application-independent regressions, alongside the portable harness fixture and a new live 9to5Mac capture. `SiteRegressionTest` compares both Markdown and cleaned HTML for all 58 cases on every target.
 
 - `general--www.ilpost.it-2026-06-15-ufc-casa-bianca`: verifies that broad body selection, breadcrumbs, and bottom recommendation sections do not leak into reader Markdown.
 - `general--www.ilpost.it-2026-06-15-lisbona-funicolare-gloria-ferme`: verifies that WordPress-style captioned image wrappers keep body images in Markdown.
@@ -53,6 +53,7 @@ The original 56 FeedFlow captures are retained as ordinary application-independe
 - `general--9to5google.com-2026-06-13-the-fitbit-air-made-me-ditch-my-pixel-watch-and-i-couldnt-be-happier`: verifies that embedded top-comment modules do not leak while adjacent article prose is preserved.
 - `general--9to5mac.com-2026-06-13-airpods-pro-3-drop-to-their-best-price-ever-as-apple-announces-new-ios-27-features`: verifies that emphasized affiliate deal link labels are flattened and whitespace-only links do not render as empty Markdown links.
 - `general--9to5mac.com-2026-06-11-iphone-ultra-is-coming-six-new-features-in-apples-top-tier-model`: verifies that orphaned trailing commerce headings are removed after product-link lists are stripped.
+- `general--9to5mac-com-2026-08-24-openai-restores-5-hour-codex-and-work-limits-for-chatgpt-plus-users`: verifies that a trailing "Worth checking out on Amazon" heading is removed after its affiliate product-link list is stripped.
 - `general--9to5linux.com-dietpi-10-5-enables-kms-drm-graphics-system-by-default-for-raspberry-pi-sbcs`: verifies that 9to5Linux share strips, duplicate post thumbnails, and ko-fi donation promos do not leak while the article image metadata remains correct.
 - `general--www.veneziatoday.it-cronaca-contratto-scaduto-sciopero-farmacie-comunali`: verifies that Citynews-style mobile app promos, entry footers, story-card recirculation, most-read sidebars, native footer sections, and Outbrain placeholders do not leak into reader Markdown.
 - `general--www.veneziatoday.it-eventi-estate-insieme-a-vigonovo-programma`: verifies that Citynews event info-square headers and byline chrome do not leak before event article prose.

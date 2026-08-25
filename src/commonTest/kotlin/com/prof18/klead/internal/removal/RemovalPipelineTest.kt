@@ -1053,6 +1053,29 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove trailing Amazon recommendation heading and product list`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The final article paragraph should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries. This makes the trailing affiliate recommendation cleanup deterministic while preserving the legitimate article ending. Additional sentences keep this fixture comfortably above the retry threshold, so the normal content-pattern cleanup remains the selected result and the Amazon recommendation block is evaluated like a real article footer.</p>
+                  <h4>Worth checking out on Amazon</h4>
+                  <ul>
+                    <li><a href="https://amzn.to/example-one">First affiliate product</a></li>
+                    <li><a href="https://amzn.to/example-two">Second affiliate product</a></li>
+                    <li><a href="https://amzn.to/example-three">Third affiliate product</a></li>
+                  </ul>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/amazon-recommendations",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The final article paragraph should stay"))
+        assertFalse(markdown.contains("Worth checking out on Amazon"))
+        assertFalse(markdown.contains("First affiliate product"))
+    }
+
+    @Test
     fun `content patterns remove plain recommendation labels before separator siblings`() {
         val result = parseHtmlForTest(
             html = """
