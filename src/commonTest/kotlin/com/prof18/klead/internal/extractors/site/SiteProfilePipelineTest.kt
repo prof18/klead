@@ -253,6 +253,39 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `karakartal profile isolates responsive article body`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main style="width: 994px">
+                  <div id="haberBody">
+                    <div style="float:right; margin: 5px">
+                      <img src="/story.jpg" alt="Story image" width="301" height="227">
+                    </div>
+                    <span id="contextual">
+                      <p>The first article paragraph contains the report itself, with enough natural language and punctuation to identify this focused news body reliably.</p>
+                      <p>The second article paragraph adds the supporting details readers need while keeping the domain-specific selector safely above its content guard.</p>
+                      <a href="https://www.karakartal.com/mobil">Install the mobile app</a>
+                    </span>
+                  </div>
+                  <aside>Unrelated sidebar recommendations must stay outside the article.</aside>
+                </main>
+            """.trimIndent(),
+            url = "https://www.karakartal.com/futbol/example",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        val html = result.content.requireHtml()
+        assertTrue(markdown.contains("The first article paragraph"))
+        assertTrue(markdown.contains("Story image"))
+        assertFalse(markdown.contains("Install the mobile app"))
+        assertFalse(markdown.contains("Unrelated sidebar recommendations"))
+        assertFalse(html.contains("float:right"))
+        assertEquals("#haberBody", result.debug["selectedContentSelector"])
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("karakartal"))
+    }
+
+    @Test
     fun `macstories profile removes full size image icon while preserving image`() {
         val result = parseHtmlForTest(
             html = """

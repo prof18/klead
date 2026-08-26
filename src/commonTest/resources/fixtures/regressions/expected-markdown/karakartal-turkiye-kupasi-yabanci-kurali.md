@@ -1,0 +1,13 @@
+![TFF'den T�rkiye Kupas� i�in yabanc� kural�na revize](https://cdn.karakartal.com/img/5/2026/hmccmerxmaebbor-1787740127.jpg)
+
+Foto�raf : AA
+
+T�rkiye Futbol Federasyonu (TFF), Ziraat T�rkiye Kupas� 2026-2027 sezonu "yabanc� uyruklu futbolcu" stat�s�n� de�i�tirdi.
+
+TFF'den yap�lan a��klamada, Trendyol S�per Lig kul�plerinin lig ma�lar� kapsam�nda A tak�m listesine yazamad�klar� A Milli Futbol Tak�m�'nda oynama uygunlu�una sahip futbolcu ve/veya yabanc� uyruklu futbolcular� da T�rkiye Kupas� m�sabakalar�nda oynatabilece�ini duyurdu.
+
+Al�nan karar do�rultusunda Trendyol S�per Lig'deki 10+4 yabanc� futbolcu kural�, Ziraat T�rkiye Kupas�'nda uygulanmayacak ve kul�pler belirledi�i 14 yabanc� oyuncuyu ya�� fark etmeksizin oynatabilecek.
+
+A��klamada, "Trendyol S�per Lig kul�pleri taraf�ndan m�sabaka isim listesine 14'den fazla yabanc� uyruklu futbolcu yaz�lamaz." bilgisi de verildi.
+
+**Not:** Bu karar sonras� kul�pler 14 yabanc�dan fazla oyuncuyu kadroda tutabilecek. �lk 14 d���nda kalan yabanc� oyuncular� s�zle�mesi feshedilmeyecek. Bu oyuncular T�rkiye Kupas�'nda oynayabilecek.

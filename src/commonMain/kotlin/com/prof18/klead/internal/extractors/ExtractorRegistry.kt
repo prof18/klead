@@ -27,6 +27,7 @@ import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
 import com.prof18.klead.internal.extractors.site.IlPostProfile
 import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
+import com.prof18.klead.internal.extractors.site.KarakartalProfile
 import com.prof18.klead.internal.extractors.site.KurucInfoProfile
 import com.prof18.klead.internal.extractors.site.LessWrongProfile
 import com.prof18.klead.internal.extractors.site.MacRumorsProfile
@@ -137,6 +138,7 @@ internal object DefaultExtractors {
         MaggieAppletonProfile,
         BloggerProfile,
         JetBrainsBlogProfile,
+        KarakartalProfile,
         KurucInfoProfile,
         IlPostProfile,
         DaringFireballProfile,
