@@ -58,6 +58,7 @@ import com.prof18.klead.internal.extractors.site.TechCrunchProfile
 import com.prof18.klead.internal.extractors.site.ValnetProfile
 import com.prof18.klead.internal.extractors.site.VarietyProfile
 import com.prof18.klead.internal.extractors.site.VoxProfile
+import com.prof18.klead.internal.extractors.site.WallStreetJournalExtractor
 import com.prof18.klead.internal.extractors.site.WikipediaExtractor
 import com.prof18.klead.internal.extractors.site.WordPressFamilyProfile
 import com.prof18.klead.internal.extractors.site.XProfile
@@ -128,6 +129,7 @@ internal object DefaultExtractors {
         RedditProfile,
         StripeDocsProfile,
         SteamPartnerEventExtractor,
+        WallStreetJournalExtractor,
         ObsidianPublishProfile,
         OpenNetProfile,
         SocketProfile,
