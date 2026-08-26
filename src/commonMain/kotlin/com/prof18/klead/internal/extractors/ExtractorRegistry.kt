@@ -51,6 +51,7 @@ import com.prof18.klead.internal.extractors.site.RollingStoneProfile
 import com.prof18.klead.internal.extractors.site.ScpWikiProfile
 import com.prof18.klead.internal.extractors.site.SimonWillisonProfile
 import com.prof18.klead.internal.extractors.site.SocketProfile
+import com.prof18.klead.internal.extractors.site.StatistaProfile
 import com.prof18.klead.internal.extractors.site.SteamPartnerEventExtractor
 import com.prof18.klead.internal.extractors.site.StripeDocsProfile
 import com.prof18.klead.internal.extractors.site.SubstackProfile
@@ -129,6 +130,7 @@ internal object DefaultExtractors {
         RedditProfile,
         StripeDocsProfile,
         SteamPartnerEventExtractor,
+        StatistaProfile,
         WallStreetJournalExtractor,
         ObsidianPublishProfile,
         OpenNetProfile,

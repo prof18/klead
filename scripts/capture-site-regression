@@ -25,6 +25,7 @@ input_file="$input_dir/$fixture_name.html"
 markdown_file="$markdown_dir/$fixture_name.md"
 html_file="$html_dir/$fixture_name.html"
 temporary_input="$input_dir/.$fixture_name.html.tmp"
+temporary_cookie_jar="$input_dir/.$fixture_name.cookies.tmp"
 capture_complete=false
 
 if [[ -e $input_file || -e $markdown_file || -e $html_file ]]; then
@@ -34,7 +35,7 @@ fi
 
 mkdir -p "$input_dir" "$markdown_dir" "$html_dir"
 cleanup() {
-  rm -f "$temporary_input"
+  rm -f "$temporary_input" "$temporary_cookie_jar"
   if [[ $capture_complete != true ]]; then
     rm -f "$input_file" "$markdown_file" "$html_file"
   fi
@@ -43,6 +44,8 @@ trap cleanup EXIT
 
 curl --fail --location --compressed \
   --user-agent "Mozilla/5.0 (Klead regression capture)" \
+  --cookie-jar "$temporary_cookie_jar" \
+  --cookie "$temporary_cookie_jar" \
   --output "$temporary_input" \
   "$url"
 

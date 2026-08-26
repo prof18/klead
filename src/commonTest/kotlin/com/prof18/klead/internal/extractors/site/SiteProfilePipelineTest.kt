@@ -2148,6 +2148,48 @@ It sounds far-fetched but Google is already rolling out the technology to make i
     }
 
     @Test
+    fun `statista extractor promotes anonymous chart preview image`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                <head>
+                  <meta property="og:site_name" content="Statista">
+                  <meta property="og:description" content="Sales by segment description.">
+                </head>
+                <body>
+                  <main>
+                    <h2 id="statisticSectionTitle">Sales by segment (in million U.S. dollars)</h2>
+                    <div data-statistic-chart aria-hidden="true">
+                      <div data-chart-preview class="hide"
+                           data-src="/Statistic/365000/369297-blank-754.png"
+                           data-alt="Statistic: Sales by segment"
+                           data-width="754"
+                           data-height="560"></div>
+                    </div>
+                    <article>
+                      <h2 id="statisticTitle">Global sales by segment</h2>
+                      <div id="readingAidText"><p>The public statistic description remains available.</p></div>
+                    </article>
+                    <aside>Pricing and unrelated recommendation chrome.</aside>
+                  </main>
+                </body>
+                </html>
+            """.trimIndent(),
+            url = "https://www.statista.com/statistics/369297/example/",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(html.contains("369297-blank-754.png"))
+        assertTrue(html.contains("width=\"754\""))
+        assertTrue(markdown.contains("![Statistic: Sales by segment]"))
+        assertTrue(markdown.contains("The public statistic description remains available."))
+        assertFalse(markdown.contains("Pricing and unrelated recommendation chrome."))
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("statista"))
+    }
+
+    @Test
     fun `older migrated profile selectors do not run on unrelated hosts`() {
         val cases = listOf(
             ProfileIsolationCase(
