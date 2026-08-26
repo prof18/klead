@@ -21,6 +21,7 @@ internal object HtmlStandardizer {
         HtmlFootnoteNormalizer.normalizeFootnotes(content)
         HtmlChromeNormalizer.removeTrailingSectionHeadings(content)
         normalizeTables(content)
+        removeEmptySvgElements(content)
         removeEmptyWrappers(content)
     }
 
@@ -45,6 +46,14 @@ internal object HtmlStandardizer {
         }
         return rows.flatMap { row ->
             row.children().filter { it.normalName() == "td" || it.normalName() == "th" }
+        }
+    }
+
+    private fun removeEmptySvgElements(content: Element) {
+        content.select("svg").toList().asReversed().forEach { svg ->
+            if (!svg.isInsidePreformattedCode() && svg.children().isEmpty() && svg.text().isBlank()) {
+                svg.remove()
+            }
         }
     }
 

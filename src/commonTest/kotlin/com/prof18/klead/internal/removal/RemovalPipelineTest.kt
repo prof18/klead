@@ -1053,6 +1053,39 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove inline Polish recommendation cards`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
+                  <section class="article-list-section">
+                    <div class="article-list">
+                      <div class="header"><h2>Zobacz również:</h2></div>
+                      <div class="card">
+                        <a href="/unrelated-story">
+                          <article>
+                            <img src="/unrelated-story.jpg" alt="Unrelated story">
+                            <h2>Unrelated recommended story</h2>
+                            <img src="/author.jpg" alt="Unrelated author">
+                          </article>
+                        </a>
+                      </div>
+                    </div>
+                  </section>
+                  <p>The article conclusion should also stay after the inline recommendation card is removed. It contains normal prose, useful punctuation, and enough words to keep the article body stable in the cleaned result.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/polish-inline-recommendation",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The article introduction should stay"), markdown)
+        assertTrue(markdown.contains("The article conclusion should also stay"), markdown)
+        assertFalse(markdown.contains("Zobacz również"), markdown)
+        assertFalse(markdown.contains("Unrelated recommended story"), markdown)
+    }
+
+    @Test
     fun `content patterns remove trailing Amazon recommendation heading and product list`() {
         val result = parseHtmlForTest(
             html = """

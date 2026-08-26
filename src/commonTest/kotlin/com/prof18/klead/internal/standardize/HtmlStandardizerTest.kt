@@ -667,6 +667,27 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `empty decorative svg icons are removed without dropping rendered diagrams`() {
+        val article = article(
+            """
+            <article>
+              <ul>
+                <li><span class="list-icon"><svg viewBox="0 0 24 24"></svg></span><div>Summary item.</div></li>
+              </ul>
+              <svg viewBox="0 0 100 100"><path d="M0 0L100 100"></path></svg>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertFalse(article.outerHtml().contains("list-icon"), article.outerHtml())
+        assertFalse(article.outerHtml().contains("<svg viewBox=\"0 0 24 24\""), article.outerHtml())
+        assertTrue(article.outerHtml().contains("<svg viewBox=\"0 0 100 100\""), article.outerHtml())
+        assertTrue(article.text().contains("Summary item."))
+    }
+
+    @Test
     fun `trailing resource headings are removed before footnotes`() {
         val article = article(
             """
