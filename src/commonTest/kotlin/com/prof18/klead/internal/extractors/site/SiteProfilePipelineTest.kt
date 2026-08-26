@@ -158,6 +158,71 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `guardian profile removes header chrome while preserving lead media and standfirst`() {
+        val html = """
+            <article>
+              <div data-gu-name="media">
+                <figure>
+                  <img src="https://media.guim.co.uk/lead.jpg" alt="Lead image">
+                  <span>
+                    <label for="the-checkbox">Info</label>
+                    <input id="the-checkbox" type="checkbox">
+                    <figcaption>Duplicate responsive caption.</figcaption>
+                  </span>
+                  <figcaption><span><svg width="18" height="13"><path></path></svg></span>Lead caption should stay.</figcaption>
+                </figure>
+              </div>
+              <aside data-gu-name="title"><a href="/film">Film</a></aside>
+              <div data-gu-name="standfirst">
+                <p>The useful article standfirst should remain in the cleaned reader output.</p>
+              </div>
+              <aside data-gu-name="meta">
+                <svg aria-hidden="true" focusable="false" width="100%" height="13"><line></line></svg>
+                <time>Wed 26 Aug 2026 17.47 CEST</time>
+                <a href="https://www.google.com/preferences/source?q=theguardian.com">
+                  Prefer the Guardian on Google
+                  <svg viewBox="-3 -3 30 30"><path></path></svg>
+                </a>
+              </aside>
+              <div data-gu-name="body">
+                <p>The actual article body should stay because it contains enough realistic prose, punctuation, and context for deterministic parsing.</p>
+                <p>A second article paragraph keeps the selected story stable while Guardian-specific header chrome is removed from the reader output.</p>
+              </div>
+              <svg aria-hidden="true" focusable="false" width="100%" height="13"><line></line></svg>
+            </article>
+        """.trimIndent()
+
+        val matching = parseHtmlForTest(
+            html = html,
+            url = "https://www.theguardian.com/film/example",
+            options = testOptions(debug = true),
+        )
+        val unrelated = parseHtmlForTest(
+            html = html,
+            url = "https://example.com/film/example",
+            options = testOptions(debug = true),
+        )
+
+        val matchingMarkdown = matching.content.requireMarkdown()
+        assertTrue(matchingMarkdown.contains("Lead caption should stay."))
+        assertTrue(matchingMarkdown.contains("The useful article standfirst should remain"))
+        assertTrue(matchingMarkdown.contains("The actual article body should stay"))
+        assertFalse(matchingMarkdown.contains("Duplicate responsive caption."))
+        assertFalse(matchingMarkdown.contains("Film"))
+        assertFalse(matchingMarkdown.contains("Wed 26 Aug 2026"))
+        assertFalse(matchingMarkdown.contains("Prefer the Guardian on Google"))
+        val matchingHtml = matching.content.requireHtml()
+        assertFalse(matchingHtml.contains("the-checkbox"))
+        assertFalse(matchingHtml.contains("<svg"))
+        assertEquals(listOf("guardian"), matching.debug["extractorIds"])
+
+        val unrelatedMarkdown = unrelated.content.requireMarkdown()
+        assertTrue(unrelatedMarkdown.contains("Duplicate responsive caption."))
+        assertTrue(unrelatedMarkdown.contains("Prefer the Guardian on Google"))
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
+    }
+
+    @Test
     fun `macrumors profile selects a short article body instead of nearby guides`() {
         val result = parseHtmlForTest(
             html = """

@@ -24,6 +24,7 @@ import com.prof18.klead.internal.extractors.site.FutureProfile
 import com.prof18.klead.internal.extractors.site.GameSpotProfile
 import com.prof18.klead.internal.extractors.site.GamingOnLinuxProfile
 import com.prof18.klead.internal.extractors.site.GitHubProfile
+import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
 import com.prof18.klead.internal.extractors.site.IlPostProfile
 import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
@@ -124,6 +125,7 @@ internal object DefaultExtractors {
         RollingStoneLayoutProfile,
         ChatGptExtractor,
         GitHubProfile,
+        GuardianProfile,
         XProfile,
         HackerNewsProfile,
         MastodonProfile,
