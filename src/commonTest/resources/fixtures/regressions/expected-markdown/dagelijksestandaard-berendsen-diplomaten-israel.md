@@ -1,0 +1,5 @@
+DEN HAAG (ANP) - Twee Nederlandse diplomaten hoeven Israël toch niet te verlaten, zegt minister Tom Berendsen (Buitenlandse Zaken, CDA) woensdag. Een dag eerder kondigde de Israëlische minister van Buitenlandse Zaken Gideon Saar aan dat de Nederlandse vertegenwoordigers bij het internationaal steuncentrum voor Gaza (IGCS) in Kiryat Gat het land moeten verlaten als vergelding voor een "reeks anti-Israëlische maatregelen genomen door de Nederlandse regering".
+
+Saar zei dat de Nederlanders een week hebben om te vertrekken, maar dat klopt volgens Berendsen niet. "Wij hebben begrepen dat de medewerkers van de ambassade niet meer welkom zijn in het centrum daar, maar vooralsnog niet Israël ook hoeven te verlaten. Ze kunnen hun werkzaamheden op de ambassade gewoon voortzetten."
+
+Dat de beide diplomaten het land niet hoeven te verlaten hangt samen met het feit dat ze niet permanent bij het IGCS zijn gestationeerd. Ze moeten zich daar terugtrekken, maar mogen hun werk op de ambassade in Tel Aviv en de vertegenwoordiging in Ramallah gewoon voortzetten.

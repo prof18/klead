@@ -14,6 +14,7 @@ import com.prof18.klead.internal.extractors.site.BusinessInsiderProfile
 import com.prof18.klead.internal.extractors.site.BuzzFeedProfile
 import com.prof18.klead.internal.extractors.site.ChatGptExtractor
 import com.prof18.klead.internal.extractors.site.CitynewsProfile
+import com.prof18.klead.internal.extractors.site.DagelijkseStandaardProfile
 import com.prof18.klead.internal.extractors.site.DaringFireballProfile
 import com.prof18.klead.internal.extractors.site.DwProfile
 import com.prof18.klead.internal.extractors.site.ElementorArchiveProfile
@@ -143,6 +144,7 @@ internal object DefaultExtractors {
         SubstackProfile,
         BeehiivProfile,
         CitynewsProfile,
+        DagelijkseStandaardProfile,
         TechCrunchProfile,
         VoxProfile,
         PianetaBasketProfile,
