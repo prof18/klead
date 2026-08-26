@@ -9,6 +9,7 @@ internal val EXACT_SELECTORS = listOf(
     "[id*=footer]",
     "form",
     "button",
+    "button.lightbox-trigger",
     "input",
     "select",
     "textarea",
@@ -272,6 +273,7 @@ internal val RELATED_TERMS_PATTERN = Regex(
 )
 
 internal val PROTECTED_EXACT_SELECTOR_OVERRIDES = setOf(
+    "button.lightbox-trigger",
     ".wp-block-post-featured-image__caption",
     "img.hide-when-no-script",
     """img[aria-label="image unavailable"]""",

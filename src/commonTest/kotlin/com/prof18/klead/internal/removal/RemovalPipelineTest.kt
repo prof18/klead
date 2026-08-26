@@ -77,6 +77,30 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `WordPress lightbox trigger inside a figure is removed without removing figure content`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <figure class="wp-block-image wp-lightbox-container">
+                <img src="https://example.com/photo.jpg" alt="Article photo">
+                <button class="lightbox-trigger" type="button" aria-haspopup="dialog">
+                  <svg viewBox="0 0 12 12"><path d="M2 0h2v1.5H2z"></path></svg>
+                </button>
+                <figcaption>Article photo caption</figcaption>
+              </figure>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.select("button.lightbox-trigger").isEmpty(), "lightbox trigger should be removed")
+        assertNotNull(article.selectFirst("img[src=https://example.com/photo.jpg]"), "figure image should survive")
+        assertTrue(article.text().contains("Article photo caption"), "figure caption should survive")
+    }
+
+    @Test
     fun `hidden inline styles and attributes are removed`() {
         val result = parseHtmlForTest(
             html = """
