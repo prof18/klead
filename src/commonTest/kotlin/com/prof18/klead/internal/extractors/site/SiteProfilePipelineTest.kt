@@ -196,6 +196,63 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `beehiiv profile extracts the post body without page chrome and publisher padding`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                  <body>
+                    <main>
+                      <div class="mt-8">
+                        <ul><li><a href="/">Publication</a></li><li>Posts</li><li>Issue</li></ul>
+                      </div>
+                      <div class="rendered-post">
+                        <div id="web-header">
+                          <h2>Publication</h2>
+                          <h2>Issue title</h2>
+                          <div class="bh__byline_wrapper">Author and date</div>
+                          <div class="bh__byline_social_wrapper">
+                            <a href="https://twitter.com/intent/tweet"><svg height="100%"></svg></a>
+                          </div>
+                        </div>
+                        <img src="https://example.com/duplicate-hero.jpg">
+                        <div id="content-blocks">
+                          <div style="padding-bottom:12px;padding-left:15px;padding-right:15px;padding-top:12px;">
+                            <p style="font-size:16px;line-height:1.5">The actual newsletter paragraph contains enough natural language, punctuation, and context for the preferred Beehiiv content selector.</p>
+                          </div>
+                          <div style="font-size:0px;line-height:0px;padding:30px 0px 30px;">
+                            <div style="border-top:3px solid #365f82"></div>
+                          </div>
+                          <div style="padding-bottom:12px;padding-left:15px;padding-right:15px;padding-top:12px;">
+                            <p></p>
+                          </div>
+                          <div style="padding-bottom:12px;padding-left:15px;padding-right:15px;padding-top:12px;">
+                            <p>A second substantial paragraph keeps the body selectable and proves all meaningful prose remains after the Beehiiv layout chrome is removed.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </main>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://publication.beehiiv.com/p/example",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        val html = result.content.requireHtml()
+        assertTrue(markdown.startsWith("The actual newsletter paragraph"), markdown)
+        assertTrue(markdown.contains("A second substantial paragraph"), markdown)
+        assertFalse(markdown.contains("Posts"), markdown)
+        assertFalse(markdown.contains("Author and date"), markdown)
+        assertFalse(markdown.contains("<svg"), markdown)
+        assertFalse(html.contains("duplicate-hero.jpg"), html)
+        assertFalse(html.contains("padding"), html)
+        assertFalse(html.contains("<p></p>"), html)
+        assertEquals("#content-blocks", result.debug["selectedContentSelector"])
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("beehiiv"))
+    }
+
+    @Test
     fun `macstories profile removes full size image icon while preserving image`() {
         val result = parseHtmlForTest(
             html = """

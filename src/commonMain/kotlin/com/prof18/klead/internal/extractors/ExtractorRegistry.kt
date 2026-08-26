@@ -8,6 +8,7 @@ import com.prof18.klead.internal.extractors.site.ArmNewsroomProfile
 import com.prof18.klead.internal.extractors.site.ArsTechnicaProfile
 import com.prof18.klead.internal.extractors.site.AxiosProfile
 import com.prof18.klead.internal.extractors.site.BBCProfile
+import com.prof18.klead.internal.extractors.site.BeehiivProfile
 import com.prof18.klead.internal.extractors.site.BloggerProfile
 import com.prof18.klead.internal.extractors.site.BusinessInsiderProfile
 import com.prof18.klead.internal.extractors.site.BuzzFeedProfile
@@ -140,6 +141,7 @@ internal object DefaultExtractors {
         DaringFireballProfile,
         DwProfile,
         SubstackProfile,
+        BeehiivProfile,
         CitynewsProfile,
         TechCrunchProfile,
         VoxProfile,
