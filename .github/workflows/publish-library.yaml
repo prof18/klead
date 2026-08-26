@@ -20,7 +20,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-home-cache-cleanup: true
+          cache-cleanup: true
 
       - name: Cache Kotlin/Native tooling
         uses: actions/cache@v6

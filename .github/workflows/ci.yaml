@@ -29,7 +29,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
-          gradle-home-cache-cleanup: true
+          cache-cleanup: true
 
       - name: Cache Kotlin/Native tooling
         uses: actions/cache@v6
@@ -38,4 +38,4 @@ jobs:
           key: ${{ runner.os }}-v1-${{ hashFiles('*.gradle.kts') }}
 
       - name: Check
-        run: ./gradlew check
+        run: ./gradlew check -Pkotlin.native.parallelThreads=3
