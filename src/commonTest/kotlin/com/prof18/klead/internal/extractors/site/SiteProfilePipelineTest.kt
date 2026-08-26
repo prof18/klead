@@ -158,6 +158,44 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `kuruc info profile selects schema article body instead of fixed width page chrome`() {
+        val html = """
+            <body>
+              <nav><a href="/latest">Latest stories and unrelated navigation links</a></nav>
+              <div style="width:981px">
+                <aside>Sidebar poll and exchange rates should stay outside reader content.</aside>
+                <div id="cikkcontent">
+                  <h1>Article title rendered separately by the reader</h1>
+                  <div itemprop="articleBody">
+                    <p>The actual article body contains enough natural language, punctuation, and context to pass the profile selector guard cleanly.</p>
+                    <p>A second paragraph keeps the selected body substantial while the fixed-width shell and unrelated sidebar remain outside it.</p>
+                  </div>
+                </div>
+              </div>
+            </body>
+        """.trimIndent()
+
+        val matching = parseHtmlForTest(
+            html = html,
+            url = "https://kuruc.info/r/7/123456/",
+            options = testOptions(debug = true),
+        )
+        val unrelated = parseHtmlForTest(
+            html = html,
+            url = "https://example.com/r/7/123456/",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = matching.content.requireMarkdown()
+        assertTrue(markdown.contains("The actual article body"))
+        assertFalse(markdown.contains("Sidebar poll"))
+        assertFalse(markdown.contains("Article title rendered separately"))
+        assertEquals("[itemprop=articleBody]", matching.debug["selectedContentSelector"])
+        assertEquals(listOf("kuruc-info"), matching.debug["extractorIds"])
+        assertTrue(unrelated.content.requireMarkdown().contains("Sidebar poll"))
+    }
+
+    @Test
     fun `macstories profile removes full size image icon while preserving image`() {
         val result = parseHtmlForTest(
             html = """
