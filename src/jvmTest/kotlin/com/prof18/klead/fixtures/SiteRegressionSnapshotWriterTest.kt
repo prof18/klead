@@ -26,6 +26,14 @@ class SiteRegressionSnapshotWriterTest {
             url = FixtureLoader.extractUrl(fixtureName, inputHtml),
             options = testOptions(debug = true),
         )
+        if (System.getenv(PRINT_TIMINGS_ENV) == "true") {
+            println(
+                "SITE_REGRESSION_TIMINGS name=$fixtureName " +
+                    "parseTimeMillis=${result.debug["parseTimeMillis"]} " +
+                    "timingsMillis=${result.debug["timingsMillis"]} " +
+                    "retryAttempts=${result.debug["retryAttempts"]}",
+            )
+        }
 
         writeAtomically(
             regressionRoot.resolve("expected-markdown/$fixtureName.md"),
@@ -63,5 +71,6 @@ class SiteRegressionSnapshotWriterTest {
         val FIXTURE_NAME_REGEX = Regex("[a-z0-9][a-z0-9._-]*")
         const val FIXTURE_NAME_PROPERTY = "klead.siteRegressionName"
         const val TEST_RESOURCES_ROOT = "TEST_RESOURCES_ROOT"
+        const val PRINT_TIMINGS_ENV = "KLEAD_PRINT_SITE_TIMINGS"
     }
 }

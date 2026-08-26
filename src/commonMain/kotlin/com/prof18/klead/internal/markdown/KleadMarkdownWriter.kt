@@ -33,6 +33,17 @@ private class Renderer(private val baseUrl: String) {
     private fun renderBlocks(nodes: List<Node>, listDepth: Int): String {
         val blocks = mutableListOf<RenderedBlock>()
         val inlineNodes = mutableListOf<Node>()
+        var nextNonBlankIndex = 0
+
+        fun nextNonBlankNodeAfter(index: Int): Node? {
+            if (nextNonBlankIndex <= index) nextNonBlankIndex = index + 1
+            while (nextNonBlankIndex < nodes.size) {
+                val candidate = nodes[nextNonBlankIndex]
+                if (candidate !is TextNode || candidate.text().isNotBlank()) return candidate
+                nextNonBlankIndex += 1
+            }
+            return null
+        }
 
         fun addBlock(markdown: String, standaloneImage: Boolean, codeBlock: Boolean, listBlock: Boolean) {
             if (markdown.isBlank()) return
@@ -66,7 +77,7 @@ private class Renderer(private val baseUrl: String) {
 
         nodes.forEachIndexed { index, node ->
             if (node is TextNode && node.text().isBlank()) {
-                if (inlineNodes.isNotEmpty() && nodes.nextNonBlankNodeAfter(index)?.isInlineFlowNode() == true) {
+                if (inlineNodes.isNotEmpty() && nextNonBlankNodeAfter(index)?.isInlineFlowNode() == true) {
                     inlineNodes += TextNode(" ")
                 }
                 return@forEachIndexed
@@ -87,9 +98,6 @@ private class Renderer(private val baseUrl: String) {
         flushInlineNodes()
         return blocks.joinToStringWithSeparators()
     }
-
-    private fun List<Node>.nextNonBlankNodeAfter(index: Int): Node? =
-        drop(index + 1).firstOrNull { node -> node !is TextNode || node.text().isNotBlank() }
 
     private fun renderBlock(node: Node, listDepth: Int): String = when (node) {
         is TextNode -> escapeInline(node.text()).trim()
