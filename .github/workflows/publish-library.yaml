@@ -2,6 +2,11 @@ name: Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish
+        required: true
+        type: string
   release:
     types: [released, prereleased]
 
@@ -9,8 +14,17 @@ jobs:
   publish:
     runs-on: macos-latest
     steps:
-      - name: Checkout
+      - name: Checkout release tag
+        if: github.event_name == 'release'
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Checkout manually selected release tag
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ inputs.tag }}
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -28,7 +42,7 @@ jobs:
           key: ${{ runner.os }}-v1-${{ hashFiles('*.gradle.kts') }}
 
       - name: Publish to Maven Central
-        run: ./gradlew publishAndReleaseToMavenCentral --no-parallel
+        run: ./gradlew -q --console=plain publishAndReleaseToMavenCentral --no-parallel
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
