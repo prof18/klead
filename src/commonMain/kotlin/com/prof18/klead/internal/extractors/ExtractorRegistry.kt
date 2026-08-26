@@ -36,6 +36,7 @@ import com.prof18.klead.internal.extractors.site.MotorsportProfile
 import com.prof18.klead.internal.extractors.site.NASAProfile
 import com.prof18.klead.internal.extractors.site.NineToFiveProfile
 import com.prof18.klead.internal.extractors.site.ObsidianPublishProfile
+import com.prof18.klead.internal.extractors.site.OpenNetProfile
 import com.prof18.klead.internal.extractors.site.PhoneArenaProfile
 import com.prof18.klead.internal.extractors.site.PhysOrgProfile
 import com.prof18.klead.internal.extractors.site.PianetaBasketProfile
@@ -124,6 +125,7 @@ internal object DefaultExtractors {
         StripeDocsProfile,
         SteamPartnerEventExtractor,
         ObsidianPublishProfile,
+        OpenNetProfile,
         SocketProfile,
         ElementorArchiveProfile,
         ScpWikiProfile,
