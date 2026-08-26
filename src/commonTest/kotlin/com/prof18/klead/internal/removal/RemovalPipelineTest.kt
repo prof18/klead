@@ -2428,6 +2428,61 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `BBC UK cleanup removes metadata image rendition and related stories`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                  <head>
+                    <meta property="og:image" content="https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/abcd/live/hero.jpg">
+                  </head>
+                  <body>
+                    <main>
+                      <article>
+                        <div data-block="image">
+                          <figure>
+                            <img src="https://ichef.bbci.co.uk/ace/standard/2048/cpsprodpb/abcd/live/hero.jpg" alt="Duplicated hero image">
+                          </figure>
+                        </div>
+                        <div data-block="byline">Example Reporter</div>
+                        <div data-block="metadata">Published today</div>
+                        <div data-block="text">
+                          <p>The actual BBC article body should stay because it contains enough normal explanatory prose to remain stable during content selection and cleanup.</p>
+                          <p>A second paragraph provides enough detail for the article body while the metadata image rendition and recirculation block are removed.</p>
+                        </div>
+                        <div data-block="image">
+                          <figure>
+                            <img src="https://ichef.bbci.co.uk/ace/standard/1024/cpsprodpb/efgh/live/body.jpg" alt="Body image">
+                            <figcaption>A meaningful body image caption.</figcaption>
+                          </figure>
+                        </div>
+                        <div data-block="promoList">
+                          <h2>More on this story</h2>
+                          <a href="/news/articles/related">Related recommendation</a>
+                        </div>
+                      </article>
+                    </main>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://www.bbc.co.uk/news/articles/example",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertEquals(
+            "https://ichef.bbci.co.uk/ace/branded_news/1200/cpsprodpb/abcd/live/hero.jpg",
+            result.metadata.image,
+        )
+        assertFalse(markdown.contains("Duplicated hero image"), markdown)
+        assertFalse(markdown.contains("Example Reporter"), markdown)
+        assertFalse(markdown.contains("Published today"), markdown)
+        assertFalse(markdown.contains("More on this story"), markdown)
+        assertFalse(markdown.contains("Related recommendation"), markdown)
+        assertTrue(markdown.contains("The actual BBC article body"), markdown)
+        assertTrue(markdown.contains("![Body image]"), markdown)
+        assertTrue(markdown.contains("A meaningful body image caption."), markdown)
+    }
+
+    @Test
     fun `content cleanup removes BuzzFeed post header byline bio and comments wrapper`() {
         val result = parseHtmlForTest(
             html = """
