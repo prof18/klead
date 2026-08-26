@@ -37,6 +37,7 @@ import com.prof18.klead.internal.extractors.site.NASAProfile
 import com.prof18.klead.internal.extractors.site.NineToFiveProfile
 import com.prof18.klead.internal.extractors.site.ObsidianPublishProfile
 import com.prof18.klead.internal.extractors.site.PhoneArenaProfile
+import com.prof18.klead.internal.extractors.site.PhysOrgProfile
 import com.prof18.klead.internal.extractors.site.PianetaBasketProfile
 import com.prof18.klead.internal.extractors.site.PopCultureProfile
 import com.prof18.klead.internal.extractors.site.RedditProfile
@@ -94,6 +95,7 @@ internal object DefaultExtractors {
         MotorsportProfile,
         MinuteMediaSiProfile,
         PhoneArenaProfile,
+        PhysOrgProfile,
         ArmNewsroomProfile,
         AndroidAuthorityProfile,
         AndroidPoliceProfile,
