@@ -1,0 +1,3 @@
+![Apple Polishing Cloth Gradient](https://images.macrumors.com/t/cOzg8JF8MmO5fVL2JJZsqgFLmko=/400x0/article-new/2026/08/Apple-Polishing-Cloth-Gradient.jpg?lossy)Apple's [new $9 Polishing Cloth](https://www.macrumors.com/2026/08/25/apple-releases-new-polishing-cloth/), whose changes beyond pricing were unclear yesterday, is close in size to the original but noticeably less stiff, according to a [comparison](https://x.com/starryhorizon9/status/2092578531515469940) posted on X.
+
+The user says the new material feels closer to the cloth included with Apple's nano-texture displays or the Vision Pro.

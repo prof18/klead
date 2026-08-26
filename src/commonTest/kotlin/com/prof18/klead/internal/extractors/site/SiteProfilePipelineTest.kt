@@ -158,6 +158,39 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `macrumors profile selects a short article body instead of nearby guides`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main id="maincontent">
+                  <article class="article--hash js-article">
+                    <header><h1>A short MacRumors story</h1></header>
+                    <div class="content--hash js-content">
+                      <div class="ugc--hash" data-io-article-url="/2026/08/26/example/">
+                        <p>The first article paragraph contains the concise report and a small amount of essential context for interested readers.</p>
+                        <p>The second article paragraph adds the remaining important detail while keeping this deliberately short news post complete and understandable.</p>
+                      </div>
+                    </div>
+                  </article>
+                  <section class="guides">
+                    <h2>Guides</h2>
+                    <p><a href="/roundup/ios-26/">iOS 26 Features</a></p>
+                    <p>This comprehensive guide highlights every major addition and links to more unrelated product coverage.</p>
+                  </section>
+                </main>
+            """.trimIndent(),
+            url = "https://www.macrumors.com/2026/08/26/example/",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The first article paragraph"))
+        assertFalse(markdown.contains("iOS 26 Features"))
+        assertEquals("article.js-article .js-content", result.debug["selectedContentSelector"])
+        assertEquals("article.js-article .js-content", result.debug["extractorContentSelector"])
+        assertEquals(listOf("macrumors"), result.debug["extractorIds"])
+    }
+
+    @Test
     fun `kuruc info profile selects schema article body instead of fixed width page chrome`() {
         val html = """
             <body>
