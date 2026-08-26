@@ -6,6 +6,11 @@
   "rangeStrategy": "bump",
   "packageRules": [
     {
+      "description": "Ignore dependencies embedded in test fixtures",
+      "matchFileNames": ["src/commonTest/resources/fixtures/**"],
+      "enabled": false
+    },
+    {
       "description": "Keep Kotlin Gradle plugins aligned",
       "matchPackageNames": ["/^org\\.jetbrains\\.kotlin(?::|\\.|$)/"],
       "groupName": "Kotlin"
