@@ -11,6 +11,7 @@ internal object DwProfile : DomExtractor {
     override val domains: Set<String> = setOf("dw.com")
     override val postContentRemoveSelectors: List<String> = listOf(
         """[data-tracking-name="sharing-icons-inline"]""",
+        ".vjs-wrapper > .headline > svg",
     )
 
     override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {

@@ -457,6 +457,36 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `dw profile removes video headline icon while preserving video`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The first article paragraph contains enough realistic prose to keep this focused news body stable during deterministic content selection.</p>
+                  <div class="vjs-wrapper embed big">
+                    <h2 class="headline">
+                      <svg viewBox="0 0 20 20"><path d="M14.114 7.599H13.5l.002 4.706h.601z"></path></svg>
+                      Malaria research in Germany targets parasite's life cycle
+                    </h2>
+                    <video id="video-74740912" controls>
+                      <source src="https://example.com/malaria.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <p>The second article paragraph proves that removing the decorative camera icon leaves the surrounding story and embedded media intact.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.dw.com/en/example/a-123",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        assertFalse(html.contains("<svg"), html)
+        assertTrue(html.contains("Malaria research in Germany targets parasite's life cycle"), html)
+        assertTrue(html.contains("<video"), html)
+        assertTrue(html.contains("https://example.com/malaria.mp4"), html)
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("dw"))
+    }
+
+    @Test
     fun `android police profile keeps feature image that sits outside article body`() {
         val result = parseHtmlForTest(
             html = """
