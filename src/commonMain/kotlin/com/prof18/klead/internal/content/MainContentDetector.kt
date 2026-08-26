@@ -220,8 +220,15 @@ internal object MainContentDetector {
                     candidate.selector in SEMANTIC_MAIN_SELECTORS &&
                     scoreOf(candidate.element).wordCount >= BODY_REFINEMENT_MIN_WORDS
             }
+        val trustedPostBodies = candidates
+            .filter { candidate ->
+                candidate.element !== selected.element &&
+                    candidate.selector in TRUSTED_BODY_DESCENDANT_SELECTORS &&
+                    scoreOf(candidate.element).wordCount >= BROAD_REFINEMENT_MIN_WORDS
+            }
         return focusedCandidates.firstOrNull { it.selector in ARTICLE_SELECTORS }
             ?: semanticMainCandidates.firstOrNull()
+            ?: trustedPostBodies.singleOrNull()
             ?: focusedCandidates.firstOrNull()
     }
 
@@ -386,6 +393,10 @@ internal object MainContentDetector {
     private val FOCUSED_DESCENDANT_SELECTORS = setOf(
         ".article-text",
         ".js-article-content",
+    )
+
+    private val TRUSTED_BODY_DESCENDANT_SELECTORS = setOf(
+        ".post-body",
     )
 
     private const val BROAD_REFINEMENT_MIN_SCORE_RATIO = 0.45

@@ -220,6 +220,66 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `single post body beats noisy page archive`() {
+        val archiveEntries = buildString {
+            repeat(200) { index ->
+                append("<li><a href=\"/archive/$index\">Archived story $index with a descriptive headline</a></li>")
+            }
+        }
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <body>
+                  <header><a href="/">Publisher home</a></header>
+                  <div class="post-body entry-content" id="story">
+                    <p>The actual article starts here with enough natural language, punctuation, and context to be selected as the focused reading surface even when a publisher includes its complete archive on every article page.</p>
+                    <p>A second paragraph keeps the article substantial while unrelated navigation links remain outside the selected reader content.</p>
+                    <p>The conclusion adds useful context and ensures this compact news story still clears the trusted content guard.</p>
+                  </div>
+                  <aside class="archive"><h2>Archive</h2><ul>$archiveEntries</ul></aside>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals(".post-body", detected.selectedSelector)
+    }
+
+    @Test
+    fun `multiple post bodies do not refine noisy listing body`() {
+        val posts = buildString {
+            repeat(2) { index ->
+                append(
+                    "<div class=\"post-body\"><p>Complete post $index in a multi-post listing " +
+                        "contains enough readable words and context to look like a real article summary while all posts " +
+                        "remain part of the intended listing page.</p></div>",
+                )
+            }
+        }
+        val archiveEntries = buildString {
+            repeat(200) { index ->
+                append("<li><a href=\"/archive/$index\">Archived story $index with a descriptive headline</a></li>")
+            }
+        }
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <body>
+                  <main id="listing">
+                    $posts
+                  </main>
+                  <aside class="archive"><h2>Archive</h2><ul>$archiveEntries</ul></aside>
+                </body>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("body", detected.element.tagName())
+        assertEquals("body", detected.selectedSelector)
+    }
+
+    @Test
     fun `child article can beat parent main`() {
         val detected = MainContentDetector.detect(
             Ksoup.parse(
