@@ -17,3 +17,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "klead"
+
+include(":benchmarks:ios-device-runner")

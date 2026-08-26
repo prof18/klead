@@ -104,6 +104,12 @@ klead.iosDevelopmentTeam=<10-character team ID>
 
 The environment variable takes precedence over `local.properties`. The team ID selects a signing team; the signing certificate and private key remain in the local Keychain.
 
+The physical-iOS runner links a benchmark-only static Kotlin/Native framework into a
+minimal UIKit host. UIKit completes its launch before the host starts the warm-up and
+measured passes on `Dispatchers.Default`, so corpus growth is not constrained by the
+iOS process-launch watchdog. The framework exercises the public `Klead.parseHtml`
+path used by shipping applications; it is not part of Klead's published artifacts.
+
 ## Fixture Packaging
 
 JVM, macOS, and iOS Simulator load `src/commonTest/resources` externally. Android packages the resources only in the instrumented test APK, and physical iOS packages them only in the signed benchmark host app. The published Android AAR, JVM artifact, and Apple framework do not contain the fixture corpus.

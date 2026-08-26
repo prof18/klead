@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 
 plugins {
-    kotlin("multiplatform") version "2.3.21"
-    id("com.android.kotlin.multiplatform.library") version "9.2.0"
-    id("com.vanniktech.maven.publish") version "0.37.0"
-    id("dev.detekt") version "2.0.0-alpha.5"
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
+    alias(libs.plugins.vanniktech.maven.publish)
+    alias(libs.plugins.detekt)
     id("klead.benchmarking") apply false
     id("klead.verification") apply false
 }
@@ -48,28 +48,28 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation("com.fleeksoft.ksoup:ksoup:0.2.6")
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-            implementation("org.jetbrains.kotlinx:atomicfu:0.33.0")
+            implementation(libs.ksoup)
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.atomicfu)
         }
         commonTest.dependencies {
-            implementation(kotlin("test"))
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
         getByName("androidDeviceTest") {
             resources.srcDir(commonTestResources)
             dependencies {
-                implementation("androidx.test:runner:1.7.0")
-                implementation("androidx.test.ext:junit:1.3.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
+                implementation(libs.androidx.test.runner)
+                implementation(libs.androidx.test.ext.junit)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
     }
 }
 
 dependencies {
-    detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:2.0.0-alpha.5")
+    detektPlugins(libs.detekt.rules.ktlint.wrapper)
 }
 
 detekt {

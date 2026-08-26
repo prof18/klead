@@ -65,7 +65,7 @@ maximum_p95=${KLEAD_REGRESSION_CORE_MAX_P95_ARTICLE_MS:-$default_maximum_p95}
 maximum_worst=${KLEAD_REGRESSION_CORE_MAX_WORST_ARTICLE_MS:-$default_maximum_worst}
 
 cd "$project_dir"
-./gradlew -q --console=plain linkBenchmarkReleaseTestIosArm64
+./gradlew -q --console=plain :benchmarks:ios-device-runner:linkReleaseFrameworkIosArm64
 
 xcodegen generate --spec "$host_dir/project.yml" --project "$host_dir"
 xcodebuild \
