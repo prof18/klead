@@ -1316,6 +1316,52 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `gallery image drops full height sizing that depends on carousel layout`() {
+        val article = article(
+            """
+            <article>
+              <div class="article-gallery">
+                <div class="splide__slide gallery-main-img">
+                  <img
+                    src="/gallery.jpg"
+                    alt="Gallery image"
+                    style="width: 100%; height: 100%; object-fit: contain;"
+                  >
+                </div>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(
+            "width: 100%; object-fit: contain",
+            article.selectFirst("img")?.attr("style"),
+        )
+    }
+
+    @Test
+    fun `ordinary image full height sizing is preserved`() {
+        val article = article(
+            """
+            <article>
+              <div class="photo-callout">
+                <img src="/inline.jpg" alt="Inline image" style="width: 100%; height: 100%; object-fit: contain;">
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(
+            "width: 100%; height: 100%; object-fit: contain;",
+            article.selectFirst("img")?.attr("style"),
+        )
+    }
+
+    @Test
     fun `non placeholder image padding style is preserved`() {
         val article = article(
             """

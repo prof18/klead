@@ -93,9 +93,19 @@ internal object HtmlImageNormalizer {
     private fun Element.removeBrowserManagedImageLayoutStyle() {
         val style = attr("style")
         if (style.isBlank()) return
-        if (!style.contains("position:absolute", ignoreCase = true) && attr("data-nimg") != "fill") return
+        if (style.contains("position:absolute", ignoreCase = true) || attr("data-nimg") == "fill") {
+            removeAttr("style")
+            return
+        }
 
-        removeAttr("style")
+        if (!hasGalleryHint() || !style.hasFullHeightDeclaration()) return
+
+        val normalized = style.withoutFullHeightDeclaration()
+        if (normalized.isBlank()) {
+            removeAttr("style")
+        } else {
+            attr("style", normalized)
+        }
     }
 
     fun normalizeImageAspectPlaceholders(content: Element) {
@@ -148,6 +158,21 @@ internal object HtmlImageNormalizer {
         .map { it.trim() }
         .filter { it.isNotBlank() && !it.isAspectPlaceholderPaddingDeclaration() }
         .joinToString("; ")
+
+    private fun String.hasFullHeightDeclaration(): Boolean = split(';').any {
+        it.trim().isFullHeightDeclaration()
+    }
+
+    private fun String.withoutFullHeightDeclaration(): String = split(';')
+        .map { it.trim() }
+        .filter { it.isNotBlank() && !it.isFullHeightDeclaration() }
+        .joinToString("; ")
+
+    private fun String.isFullHeightDeclaration(): Boolean {
+        val parts = split(':', limit = 2)
+        if (parts.size != 2 || !parts[0].trim().equals("height", ignoreCase = true)) return false
+        return FULL_HEIGHT_VALUE.matches(parts[1].trim())
+    }
 
     private fun String.isAspectPlaceholderPaddingDeclaration(): Boolean {
         val parts = split(':', limit = 2)
@@ -225,6 +250,7 @@ internal object HtmlImageNormalizer {
         """(?:\d+(?:\.\d+)?|\.\d+)%\s*(?:!important)?""",
         RegexOption.IGNORE_CASE,
     )
+    private val FULL_HEIGHT_VALUE = Regex("""100%\s*(?:!important)?""", RegexOption.IGNORE_CASE)
     private val IMAGE_ASPECT_PLACEHOLDER_HINTS = setOf(
         "article-image",
         "article-img",
