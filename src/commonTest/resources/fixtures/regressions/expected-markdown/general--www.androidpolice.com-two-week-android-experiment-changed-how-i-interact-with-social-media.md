@@ -1,12 +1,3 @@
-```json
-{
-  "title": "How a simple 2-week Android experiment changed the way I interact with social media",
-  "author": "Rahul Naskar",
-  "site": "Android Police",
-  "published": "2026-06-14T11:00:14Z"
-}
-```
-
 ![Android mascot beside a phone showing social media apps in grayscale mode.](https://static0.anpoimages.com/wordpress/wp-content/uploads/2026/06/android-mascot-beside-a-phone-showing-social-media-apps-in-grayscale-mode.png?&fit=crop&w=1600&h=900)
 
 It's been a long time since an Android update excited me, though I'm fine with that. It gives me more time to visit every nook and corner of the operating system, especially the ones I've ignored all my life.

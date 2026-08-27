@@ -1,12 +1,3 @@
-```json
-{
-  "title": "Overwatch season 3 skins and Mythics revealed by Blizzard",
-  "author": "Michael McWhertor",
-  "site": "Polygon.com",
-  "published": "2026-06-15T18:42:47Z"
-}
-```
-
 [*Overwatch*](https://www.polygon.com/overwatch/) [season 3 starts](https://www.polygon.com/overwatch-season-3-start-time-edt-pdt/) on Tuesday with new Damage hero [Shion](https://www.polygon.com/overwatch-shion-hero-52-gameplay-video/) and a new Hybrid map, Neon Junction, coming to Blizzard's hero shooter. Season 3 will also feature a new battle pass, and new skins themed around the Tokyo-inspired map. Blizzard's newest cosmetics include cat cafe-themed skins and Japanese "street rebel" looks, among others. There's also a new collaboration with Japanese musical duo Yaosobi, which will give Kiriko, Genji, and Hanzo colorful new streetwear looks.
 
 Here's what else *Overwatch* fans can expect in terms of cosmetics for season 3, Into the Tiger's Den.

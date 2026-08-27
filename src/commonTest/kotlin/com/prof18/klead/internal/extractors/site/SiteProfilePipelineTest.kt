@@ -535,6 +535,61 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `valnet profile keeps main gallery images and removes presentation duplicates`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                  <body>
+                    <section id="article-body" class="article-body">
+                      <p>The actual article body contains enough realistic prose to keep content selection stable while the Valnet gallery is cleaned for reader output.</p>
+                      <div class="valnet-gallery">
+                        <div class="article__gallery">
+                          <div class="w-gallery-carousel">
+                            <section class="splide splide-gallery">
+                              <div class="splide__track">
+                                <div class="splide__list">
+                                  <div class="splide__slide gallery-main-img">
+                                    <img src="https://static.example.com/one.jpg?w=705" alt="First gallery image">
+                                  </div>
+                                  <div class="splide__slide gallery-main-img">
+                                    <img src="https://static.example.com/two.jpg?w=705" alt="Second gallery image">
+                                  </div>
+                                </div>
+                              </div>
+                            </section>
+                            <section class="splide gallery-thumbnails">
+                              <img src="https://static.example.com/one.jpg?w=120" alt="First thumbnail">
+                              <img src="https://static.example.com/two.jpg?w=120" alt="Second thumbnail">
+                            </section>
+                          </div>
+                          <div class="w-gallery-carousel-fullscreen">
+                            <img src="https://static.example.com/one.jpg?w=1920" alt="First fullscreen image">
+                            <img src="https://static.example.com/two.jpg?w=1920" alt="Second fullscreen image">
+                          </div>
+                        </div>
+                      </div>
+                      <p>A second substantial article paragraph verifies that removing alternate carousel representations preserves the surrounding story content.</p>
+                    </section>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://www.androidpolice.com/example-gallery/",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertEquals(2, Regex("https://static\\.example\\.com/(one|two)\\.jpg").findAll(markdown).count(), markdown)
+        assertTrue(markdown.contains("one.jpg?w=705"), markdown)
+        assertTrue(markdown.contains("two.jpg?w=705"), markdown)
+        assertFalse(markdown.contains("w=120"), markdown)
+        assertFalse(markdown.contains("w=1920"), markdown)
+        assertFalse(html.contains("gallery-thumbnails"), html)
+        assertFalse(html.contains("w-gallery-carousel-fullscreen"), html)
+        assertTrue((result.debug["extractorIds"] as List<*>).contains("valnet"))
+    }
+
+    @Test
     fun `il post profile restores api summary before article body`() {
         val result = parseHtmlForTest(
             html = """

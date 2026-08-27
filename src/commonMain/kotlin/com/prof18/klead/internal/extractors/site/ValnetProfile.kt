@@ -24,6 +24,8 @@ internal object ValnetProfile : Extractor {
         ".w-tag-interaction-popup-menu",
         ".article-header > p",
         ".article-header-title",
+        ".gallery-thumbnails",
+        ".w-gallery-carousel-fullscreen",
         ".bc-complement",
         ".bc-listing-categories",
     )
