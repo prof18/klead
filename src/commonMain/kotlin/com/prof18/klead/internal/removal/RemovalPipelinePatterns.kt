@@ -91,6 +91,17 @@ internal val SUBSCRIBE_PATTERN = Regex(
     RegexOption.IGNORE_CASE,
 )
 
+internal val INTERACTIVE_QUIZ_PATTERN = Regex(
+    """\b(quiz|trivia|test\s+your\s+knowledge)\b""",
+    RegexOption.IGNORE_CASE,
+)
+
+internal const val INTERACTIVE_QUIZ_CONTAINER_SELECTOR = "div, section, aside, form"
+internal val INTERACTIVE_QUIZ_CONTAINER_TAGS = setOf("div", "section", "aside", "form")
+internal const val INTERACTIVE_QUIZ_CONTROL_SELECTOR =
+    "input[type=radio], input[type=checkbox], [role=radio], [role=option]"
+internal const val MIN_INTERACTIVE_QUIZ_CONTROLS = 2
+
 internal val RECOMMENDATION_HEADING_PATTERN = Regex(
     """\b(recommended|related|related terms|explore more|keep exploring|discover more|more stories|more from|more on|read more|you may also like|popular stories|most viewed|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti|zobacz również)\b|^best(?:\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80})?\s+(accessories|deals|offers|prices?|discounts?|sales?)$|^worth\s+checking\s+out\s+on\s+amazon$""",
     RegexOption.IGNORE_CASE,

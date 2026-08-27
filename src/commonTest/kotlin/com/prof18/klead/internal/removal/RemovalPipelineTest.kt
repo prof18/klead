@@ -13,6 +13,44 @@ import kotlin.test.assertTrue
 
 class RemovalPipelineTest {
     @Test
+    fun `interactive quiz block is removed without taking surrounding article prose`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <div class="content-block-regular">
+                <p>Introductory article prose remains before the embedded widget.</p>
+                <div class="w-display-card-vignette">
+                  <div class="vq">
+                    <input type="radio" id="answer-a" name="answer">
+                    <input type="radio" id="answer-b" name="answer">
+                    <div class="vq-intro">
+                      <h2>Phone history trivia challenge</h2>
+                    </div>
+                    <section>
+                      <p>In what year was the phone released?</p>
+                      <label for="answer-a">2009</label>
+                      <label for="answer-b">2010</label>
+                    </section>
+                  </div>
+                </div>
+                <h2>Article specifications</h2>
+                <p>Closing article prose remains after the embedded widget.</p>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Introductory article prose remains"))
+        assertTrue(article.text().contains("Article specifications"))
+        assertTrue(article.text().contains("Closing article prose remains"))
+        assertFalse(article.text().contains("Phone history trivia challenge"))
+        assertFalse(article.text().contains("In what year was the phone released?"))
+    }
+
+    @Test
     fun `delimiter-less anchor id is kept even when it contains a clutter token`() {
         val document = Ksoup.parse(
             """

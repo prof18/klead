@@ -53,6 +53,11 @@ internal object RemovalPipeline {
         measure: (String, () -> Unit) -> Unit = { _, block -> block() },
         checkCancelled: () -> Unit = {},
     ) {
+        if (policy.removeExactSelectors) {
+            measure("removeInteractiveQuizBlocks") {
+                removeInteractiveQuizBlocks(content, debug, checkCancelled)
+            }
+        }
         if (policy.removeHiddenElements) {
             measure("removeHiddenElements") {
                 removeHiddenElements(content, debug, checkCancelled)
@@ -85,6 +90,55 @@ internal object RemovalPipeline {
 
     private fun removeHiddenElements(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
         HiddenElementRemoval.apply(content, debug, checkCancelled)
+    }
+
+    private fun removeInteractiveQuizBlocks(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        checkCancelled: () -> Unit,
+    ) {
+        val quizContainers = mutableListOf<Element>()
+
+        fun addNearestQuizContainer(signal: Element) {
+            var candidate: Element? = if (signal.normalName() in INTERACTIVE_QUIZ_CONTAINER_TAGS) {
+                signal
+            } else {
+                signal.parent()
+            }
+            while (candidate != null && candidate !== content) {
+                if (candidate.normalName() in INTERACTIVE_QUIZ_CONTAINER_TAGS) {
+                    val optionControlCount = candidate.select(INTERACTIVE_QUIZ_CONTROL_SELECTOR).size
+                    if (optionControlCount >= MIN_INTERACTIVE_QUIZ_CONTROLS) {
+                        val quizContainer = candidate
+                        if (quizContainers.none { it === quizContainer }) quizContainers.add(quizContainer)
+                        return
+                    }
+                }
+                candidate = candidate.parent()
+            }
+        }
+
+        for (heading in content.select("h1, h2, h3, h4, h5, h6, [role=heading]")) {
+            checkCancelled()
+            if (INTERACTIVE_QUIZ_PATTERN.containsMatchIn(heading.text())) addNearestQuizContainer(heading)
+        }
+        for (element in content.select(INTERACTIVE_QUIZ_CONTAINER_SELECTOR)) {
+            checkCancelled()
+            if (INTERACTIVE_QUIZ_PATTERN.containsMatchIn(partialHaystack(element))) addNearestQuizContainer(element)
+        }
+
+        // Work from the leaves upward so a quiz is removed without taking surrounding article
+        // prose with an ancestor that merely inherits the same text and controls.
+        for (element in quizContainers.sortedByDescending { it.parents().size }) {
+            if (!element.isAttachedTo(content) || isProtected(element)) continue
+            recordAndRemove(
+                element,
+                debug,
+                "removeInteractiveQuizBlocks",
+                null,
+                "interactive quiz widget",
+            )
+        }
     }
 
     private fun removeExactSelectors(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
