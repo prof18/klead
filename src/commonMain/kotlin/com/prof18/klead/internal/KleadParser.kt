@@ -185,6 +185,10 @@ internal object KleadParser {
         timings.measure("$timingPrefix.mergeFootnotes") {
             ExternalFootnoteMerger.merge(document, content)
         }
+        timings.measure("$timingPrefix.extractorPreProcess") {
+            matchedExtractors.filterIsInstance<DomExtractor>()
+                .forEach { it.preProcess(content, extractorContext) }
+        }
         timings.measure("$timingPrefix.stripUnsafe") {
             ContentSanitizer.stripUnsafe(content)
         }

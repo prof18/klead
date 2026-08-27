@@ -40,5 +40,7 @@ internal interface DomExtractor : Extractor {
 
     fun extract(context: DomExtractorContext): ExtractorResult? = extract(context.publicContext)
 
+    fun preProcess(content: Element, context: DomExtractorContext) = Unit
+
     fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) = Unit
 }

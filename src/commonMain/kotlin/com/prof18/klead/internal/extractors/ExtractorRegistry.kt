@@ -40,6 +40,7 @@ import com.prof18.klead.internal.extractors.site.MinuteMediaSiProfile
 import com.prof18.klead.internal.extractors.site.MotorsportProfile
 import com.prof18.klead.internal.extractors.site.NASAProfile
 import com.prof18.klead.internal.extractors.site.NineToFiveProfile
+import com.prof18.klead.internal.extractors.site.NprProfile
 import com.prof18.klead.internal.extractors.site.ObsidianPublishProfile
 import com.prof18.klead.internal.extractors.site.OpenNetProfile
 import com.prof18.klead.internal.extractors.site.PhoneArenaProfile
@@ -117,6 +118,7 @@ internal object DefaultExtractors {
         BusinessInsiderProfile,
         MashableProfile,
         BBCProfile,
+        NprProfile,
         BuzzFeedProfile,
         FortuneProfile,
         EntrepreneurProfile,

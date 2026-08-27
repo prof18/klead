@@ -5,6 +5,7 @@ import com.fleeksoft.ksoup.nodes.Element
 internal fun isProtected(element: Element, hints: String = partialHaystack(element)): Boolean =
     element.`is`("pre, code, figure, picture, table, math, blockquote") ||
         element.parents().any { it.`is`("pre, code, figure, picture, table, math, blockquote") } ||
+        element.parents().any { it.hasCalloutProtectionHint() } ||
         element.parents().any { it.hasFootnoteProtectionHint() } ||
         element.select(".footdef, .footref, [role=doc-footnote]").isNotEmpty() ||
         "footnote" in hints ||
@@ -13,6 +14,11 @@ internal fun isProtected(element: Element, hints: String = partialHaystack(eleme
         "footref" in hints ||
         "callout" in hints ||
         "admonition" in hints
+
+private fun Element.hasCalloutProtectionHint(): Boolean {
+    val hints = partialHaystack(this)
+    return "callout" in hints || "admonition" in hints
+}
 
 internal fun Element.isNestedListContent(): Boolean =
     normalName() in setOf("ul", "ol") && parent()?.normalName() == "li"

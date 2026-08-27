@@ -158,6 +158,90 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `npr profile turns image credits into figure captions`() {
+        val html = """
+            <article>
+              <p>The opening article paragraph contains enough natural language, punctuation, and context for deterministic content selection.</p>
+              <div class="bucketwrap image large">
+                <div class="imagewrap"><picture><img src="/performance.jpg" alt="Dolly performs"></picture></div>
+                <div class="credit-caption">
+                  <div class="caption-wrap"><div class="caption"></div></div>
+                  <span class="credit"><a href="https://video.example/performance">The Carter Family Channel</a>/Screenshot by NPR</span>
+                  <b class="hide-caption">hide caption</b>
+                  <b class="toggle-caption">toggle caption</b>
+                </div>
+              </div>
+              <p>The closing article paragraph keeps the selected story substantial and verifies that prose around the image remains intact.</p>
+            </article>
+        """.trimIndent()
+
+        val matching = parseHtmlForTest(
+            html = html,
+            url = "https://www.npr.org/2026/08/27/example",
+            options = testOptions(debug = true),
+        )
+        val unrelated = parseHtmlForTest(
+            html = html,
+            url = "https://example.com/not-npr",
+            options = testOptions(debug = true),
+        )
+
+        val htmlResult = matching.content.requireHtml()
+        val markdown = matching.content.requireMarkdown()
+        assertTrue(htmlResult.contains("<figure class=\"bucketwrap image large\">"), htmlResult)
+        assertTrue(htmlResult.contains("<figcaption class=\"credit-caption\">"), htmlResult)
+        assertTrue(markdown.contains("*The Carter Family Channel/Screenshot by NPR*"), markdown)
+        assertFalse(markdown.contains("hide caption"), markdown)
+        assertFalse(markdown.contains("toggle caption"), markdown)
+        assertEquals(listOf("npr"), matching.debug["extractorIds"])
+        assertFalse(unrelated.content.requireHtml().contains("<figcaption"))
+        assertFalse(unrelated.debug.containsKey("extractorIds"))
+    }
+
+    @Test
+    fun `npr profile preserves related stories as callouts`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The opening article paragraph contains enough natural language, punctuation, and context for deterministic content selection.</p>
+                  <div class="bucketwrap internallink insettwocolumn inset2col">
+                    <div class="bucket img">
+                      <a class="imagewrap" href="/related-story"><img src="/related.jpg" alt="Related story"></a>
+                      <div class="bucketblock">
+                        <h3 class="slug"><a href="/series/only-on-npr">Only on NPR</a></h3>
+                        <h3><a href="/related-story">How Dolly Parton wrote the story of a changing America</a></h3>
+                      </div>
+                    </div>
+                  </div>
+                  <p>The closing article paragraph keeps the selected story substantial and verifies that prose after the related story remains intact.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.npr.org/2026/08/27/example",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(
+            html.contains(
+                "<aside class=\"bucketwrap internallink insettwocolumn inset2col callout\"",
+            ),
+            html,
+        )
+        assertTrue(html.contains("data-callout=\"note\""), html)
+        assertTrue(html.contains("class=\"bucket img callout-content\""), html)
+        assertTrue(html.contains("class=\"imagewrap callout-media\""), html)
+        assertTrue(html.contains("class=\"bucketblock callout-body\""), html)
+        assertTrue(html.contains("class=\"slug callout-label\""), html)
+        assertTrue(html.contains("class=\"callout-title\""), html)
+        assertFalse(html.contains("npr-related-content"), html)
+        assertTrue(markdown.contains("> [!note]"), markdown)
+        assertTrue(markdown.contains("Only on NPR"), markdown)
+        assertTrue(markdown.contains("How Dolly Parton wrote the story of a changing America"), markdown)
+        assertTrue(markdown.contains("The closing article paragraph"), markdown)
+    }
+
+    @Test
     fun `guardian profile removes header chrome while preserving lead media and standfirst`() {
         val html = """
             <article>
