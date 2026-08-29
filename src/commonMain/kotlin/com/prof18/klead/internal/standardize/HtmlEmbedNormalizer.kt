@@ -18,6 +18,20 @@ internal object HtmlEmbedNormalizer {
             applyEmbedAttributes(iframe, media, media.defaultTitle)
             placeholder.replaceWith(iframe)
         }
+
+        content.select(
+            """blockquote.instagram-media[data-instgrm-permalink]""",
+        ).forEach { placeholder ->
+            val media = TrustedEmbeds.markdownMediaFromUrl(placeholder.attr("data-instgrm-permalink"))
+                ?.takeIf { it.markdownLinkLabel == "Instagram post" }
+            if (media == null) {
+                placeholder.remove()
+                return@forEach
+            }
+            val iframe = Element("iframe")
+            applyEmbedAttributes(iframe, media, media.defaultTitle)
+            placeholder.replaceWith(iframe)
+        }
     }
 
     fun normalizeEmbeds(content: Element) {
@@ -53,6 +67,9 @@ internal object HtmlEmbedNormalizer {
         iframe.attr("title", title.ifBlank { media.defaultTitle })
         iframe.attr("loading", "lazy")
         media.iframeSandbox?.let { sandbox -> iframe.attr("sandbox", sandbox) }
+        if (media.allowFullscreen) {
+            iframe.attr("allowfullscreen", "")
+        }
         if (media.markdownLinkLabel == null) {
             iframe.attr("allowfullscreen", "")
             iframe.attr(

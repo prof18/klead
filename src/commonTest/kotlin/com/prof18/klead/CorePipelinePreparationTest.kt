@@ -197,6 +197,8 @@ class CorePipelinePreparationTest {
                   <p>The article introduction should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the default cleaned result rather than invoking short-page retries.</p>
                   <iframe src="https://platform.twitter.com/embed/Tweet.html?id=1675626836821409792" onclick="bad()" srcdoc="<p>bad</p>"></iframe>
                   <iframe src="https://x.com/kepano/status/1675626836821409792"></iframe>
+                  <iframe src="https://www.instagram.com/p/DAbCd_123-4/embed/captioned/" onclick="bad()"></iframe>
+                  <iframe src="https://www.instagram.com/stories/example/12345/embed/"></iframe>
                   <iframe src="https://player.vimeo.com/video/45725193?h=a290f71a57" width="100%" height="100%" style="aspect-ratio: 3 / 1.025" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen=""></iframe>
                   <iframe src="https://example.com/embed/1675626836821409792"></iframe>
                 </article></body></html>
@@ -210,15 +212,47 @@ class CorePipelinePreparationTest {
         assertFalse(html.contains("srcdoc"))
         assertFalse(html.contains("example.com/embed"))
         assertTrue(html.contains("""data-klead-video-url="https://x.com/i/status/1675626836821409792""""))
+        assertTrue(html.contains("""src="https://www.instagram.com/p/DAbCd_123-4/embed/captioned/""""))
+        assertTrue(html.contains("""data-klead-video-url="https://www.instagram.com/p/DAbCd_123-4/""""))
+        assertFalse(html.contains("stories/example"))
         assertTrue(html.contains("""src="https://player.vimeo.com/video/45725193?h=a290f71a57""""))
         assertTrue(markdown.contains("[X post](https://x.com/i/status/1675626836821409792)"))
         assertTrue(markdown.contains("[X post](https://x.com/kepano/status/1675626836821409792)"))
+        assertTrue(markdown.contains("[Instagram post](https://www.instagram.com/p/DAbCd_123-4/)"))
         assertTrue(
             markdown.contains(
                 """<iframe src="https://player.vimeo.com/video/45725193?h=a290f71a57" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen=""></iframe>""",
             ),
         )
         assertFalse(markdown.contains("aspect-ratio"))
+    }
+
+    @Test
+    fun `instagram blockquotes become safe rich embeds with clickable markdown fallbacks`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>The article introduction has enough prose to keep content detection stable while the embedded Instagram reel is prepared for reader output.</p>
+                  <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/reel/DclHZIcM2ss/?utm_source=ig_embed&amp;utm_campaign=loading">
+                    <div><div>View this post on Instagram</div></div>
+                  </blockquote>
+                  <script async src="//www.instagram.com/embed.js"></script>
+                  <blockquote class="instagram-media" data-instgrm-permalink="javascript:alert(1)"><div>Unsafe post</div></blockquote>
+                  <p>The article continues after the embedded post with more useful prose for the reader.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://www.ilpost.it/2026/08/29/example/",
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(html.contains("""src="https://www.instagram.com/reel/DclHZIcM2ss/embed/captioned/""""))
+        assertTrue(html.contains("""title="Instagram post""""))
+        assertTrue(html.contains("allowfullscreen"))
+        assertTrue(html.contains("""data-klead-video-url="https://www.instagram.com/reel/DclHZIcM2ss/""""))
+        assertFalse(html.contains("embed.js"))
+        assertFalse(html.contains("javascript:"))
+        assertTrue(markdown.contains("[Instagram post](https://www.instagram.com/reel/DclHZIcM2ss/)"))
     }
 
     @Test

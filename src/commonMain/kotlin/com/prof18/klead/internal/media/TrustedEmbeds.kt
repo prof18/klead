@@ -28,6 +28,8 @@ internal object TrustedEmbeds {
 
             host in X_STATUS_HOSTS -> xStatusFromPath(path)
 
+            host == INSTAGRAM_HOST -> instagramPostFromPath(path)
+
             isMediumMediaWrapper(parsed, sourceUrl) -> {
                 val mediaUrl = "https://$host$path"
                 TrustedMarkdownMedia(
@@ -101,6 +103,25 @@ internal object TrustedEmbeds {
 
     private fun twitterEmbedUrl(id: String): String = "https://platform.twitter.com/embed/Tweet.html?id=$id"
 
+    private fun instagramPostFromPath(path: String): TrustedMarkdownMedia? {
+        val segments = path.trim('/').split('/').filter { it.isNotBlank() }
+        if (segments.size !in 2..4 || segments[0] !in INSTAGRAM_MEDIA_PATHS) return null
+
+        val shortcode = segments[1]
+        if (!INSTAGRAM_SHORTCODE.matches(shortcode)) return null
+        if (segments.size >= 3 && segments[2] != "embed") return null
+        if (segments.size == 4 && segments[3] != "captioned") return null
+
+        val mediaPath = "${segments[0]}/$shortcode"
+        return TrustedMarkdownMedia(
+            watchUrl = "https://www.instagram.com/$mediaPath/",
+            normalizedIframeSrc = "https://www.instagram.com/$mediaPath/embed/captioned/",
+            defaultTitle = "Instagram post",
+            markdownLinkLabel = "Instagram post",
+            allowFullscreen = true,
+        )
+    }
+
     private fun isMediumMediaWrapper(parsed: ParsedUrl, sourceUrl: String?): Boolean {
         if (!MEDIUM_MEDIA_PATH.matches(parsed.uri.rawPath.orEmpty()) || parsed.uri.rawQuery != null) return false
         if (parsed.host == "medium.com") return true
@@ -123,10 +144,13 @@ internal object TrustedEmbeds {
 
     private val YOUTUBE_ID = Regex("""[A-Za-z0-9_-]{6,32}""")
     private val TWEET_ID = Regex("""\d{5,32}""")
+    private val INSTAGRAM_SHORTCODE = Regex("""[A-Za-z0-9_-]{5,64}""")
     private val VIMEO_ID = Regex("""\d{5,32}""")
     private val MEDIUM_MEDIA_PATH = Regex("""/media/[0-9a-fA-F]{32}""")
     private val YOUTUBE_EMBED_HOSTS = setOf("youtube.com", "youtube-nocookie.com")
     private val X_STATUS_HOSTS = setOf("x.com", "twitter.com")
+    private const val INSTAGRAM_HOST = "instagram.com"
+    private val INSTAGRAM_MEDIA_PATHS = setOf("p", "reel", "tv")
 
     private data class ParsedUrl(val uri: KleadUri, val host: String)
 }
@@ -138,4 +162,5 @@ internal data class TrustedMarkdownMedia(
     val markdownLinkLabel: String?,
     val useIframeTitleAsMarkdownLabel: Boolean = false,
     val iframeSandbox: String? = null,
+    val allowFullscreen: Boolean = false,
 )
