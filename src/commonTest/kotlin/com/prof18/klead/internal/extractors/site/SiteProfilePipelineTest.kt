@@ -739,6 +739,58 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `il post profile promotes wordpress gallery thumbnails`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html>
+                  <head>
+                    <title>Gallery article</title>
+                    <meta property="og:site_name" content="Il Post">
+                  </head>
+                  <body>
+                    <article>
+                      <p>This article introduces a substantial photo gallery whose source markup only exposes small cropped thumbnails in the main story body.</p>
+                      <div class="gallery gallery-size-thumbnail">
+                        <figure class="gallery-item">
+                          <a href="/gallery/photo-one/">
+                            <img
+                              src="https://static-prod.cdnilpost.com/wp-content/uploads/2026/08/29/130x91/photo-one.jpeg?quality=90"
+                              srcset="https://static-prod.cdnilpost.com/wp-content/uploads/2026/08/29/130x91/photo-one.jpeg 130w, https://static-prod.cdnilpost.com/wp-content/uploads/2026/08/29/photo-one.jpeg 980w"
+                              sizes="(max-width: 130px) 100vw, 130px"
+                              width="130"
+                              height="91"
+                              class="attachment-thumbnail size-thumbnail"
+                              alt="Photo one"
+                            >
+                          </a>
+                        </figure>
+                      </div>
+                      <p>A second substantial paragraph keeps the gallery article deterministic during main-content detection and verifies the surrounding prose remains intact.</p>
+                    </article>
+                  </body>
+                </html>
+            """.trimIndent(),
+            url = "https://www.ilpost.it/2026/08/29/gallery-article/",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        assertTrue(
+            html.contains(
+                "src=\"https://static-prod.cdnilpost.com/wp-content/uploads/2026/08/29/photo-one.jpeg?quality=90\"",
+            ),
+            html,
+        )
+        assertTrue(html.contains("srcset="), html)
+        assertFalse(html.contains("sizes="), html)
+        assertFalse(html.contains("width=\"130\""), html)
+        assertFalse(html.contains("height=\"91\""), html)
+        assertFalse(html.contains("attachment-thumbnail"), html)
+        assertFalse(html.contains("class=\"size-thumbnail"), html)
+        assertEquals(listOf("ilpost"), result.debug["extractorIds"])
+    }
+
+    @Test
     fun `daring fireball profile selects article and removes navigation footnote chrome`() {
         val result = parseHtmlForTest(
             html = """

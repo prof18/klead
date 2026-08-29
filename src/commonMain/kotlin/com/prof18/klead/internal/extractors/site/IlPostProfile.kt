@@ -36,6 +36,8 @@ internal object IlPostProfile : DomExtractor {
     }
 
     override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
+        promoteGalleryThumbnails(content)
+
         val summary = context.document.ilPostArticleData()?.summary
             ?: context.document.selectFirst(
                 """meta[name=description][content], meta[property=og:description][content]""",
@@ -48,6 +50,28 @@ internal object IlPostProfile : DomExtractor {
         if (content.visibleText().normalizedText().contains(summary.normalizedText())) return
 
         content.prependChild(Element("h2").text(summary))
+    }
+
+    private fun promoteGalleryThumbnails(content: Element) {
+        content.select(".gallery img.attachment-thumbnail[src], .gallery img.size-thumbnail[src]").forEach { image ->
+            val thumbnailSrc = image.attr("src")
+            if ("/wp-content/uploads/" !in thumbnailSrc) return@forEach
+            val originalSrc = thumbnailSrc.withoutWordPressImageSize() ?: return@forEach
+
+            image.attr("src", originalSrc)
+            image.removeAttr("width")
+            image.removeAttr("height")
+            image.removeAttr("sizes")
+            image.removeClass("attachment-thumbnail")
+            image.removeClass("size-thumbnail")
+        }
+    }
+
+    private fun String.withoutWordPressImageSize(): String? {
+        val original = replace(WORDPRESS_IMAGE_SIZE_PATH) { match ->
+            "/${match.groupValues[1]}${match.groupValues[2]}"
+        }
+        return original.takeIf { it != this }
     }
 
     private fun Document.ilPostArticleData(): IlPostArticleData? {
@@ -111,4 +135,5 @@ internal object IlPostProfile : DomExtractor {
         ignoreUnknownKeys = true
         isLenient = true
     }
+    private val WORDPRESS_IMAGE_SIZE_PATH = Regex("""/\d+x\d+/([^/?#]+)([?#].*)?$""")
 }
