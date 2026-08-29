@@ -791,6 +791,140 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `il post profile restores free and subscriber podcast players`() {
+        fun episodeHtml(rawAudioUrl: String): String =
+            """
+                <html>
+              <head><title>Il Post podcast episode</title></head>
+              <body>
+                <main>
+                  <h2>A podcast episode with a useful title</h2>
+                  <div class="episode_podcast-player-container__UCMc0">
+                    <div class="_podcast-player_2sxyr_1">
+                      <figure><img src="https://www.ilpost.it/cover.jpg" alt="episode"></figure>
+                      <div class="_podcast-player__content_2sxyr_40">
+                        <div id="podcast-player__timeline">
+                          <progress value="0" max="0"></progress>
+                          <div>00:00:00</div>
+                          <div>00:00:00</div>
+                          <div>00:00:00</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p>This episode description contains enough natural prose to remain the detected article content while the custom player is converted into portable output.</p>
+                  <p>A second paragraph keeps content detection stable and verifies that the player replacement stays next to the surrounding editorial copy.</p>
+                </main>
+                <script id="__NEXT_DATA__" type="application/json">
+                  {
+                    "props": {
+                      "pageProps": {
+                        "data": {
+                          "data": {
+                            "episode": {
+                              "data": [{
+                                "episode_raw_url": "$rawAudioUrl",
+                                "url": "https://www.ilpost.it/podcasts/example/a-podcast-episode",
+                                "share_url": "https://www.ilpost.it/episodes/a-podcast-episode/"
+                              }]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                </script>
+              </body>
+                </html>
+            """.trimIndent()
+
+        val freeResult = parseHtmlForTest(
+            html = episodeHtml("https://www.ilpost.it/wp-content/uploads/2026/08/episode.mp3"),
+            url = "https://www.ilpost.it/episodes/a-podcast-episode/",
+            options = testOptions(debug = true),
+        )
+        val freeHtml = freeResult.content.requireHtml()
+        val freeMarkdown = freeResult.content.requireMarkdown()
+        assertTrue(freeHtml.contains("<audio controls=\"\" preload=\"metadata\""), freeHtml)
+        assertTrue(freeHtml.contains("src=\"https://www.ilpost.it/wp-content/uploads/2026/08/episode.mp3\""), freeHtml)
+        assertTrue(
+            freeMarkdown.contains(
+                "[Listen to this episode](https://www.ilpost.it/wp-content/uploads/2026/08/episode.mp3)",
+            ),
+            freeMarkdown,
+        )
+        assertFalse(freeMarkdown.contains("00:00:00"), freeMarkdown)
+
+        val subscriberResult = parseHtmlForTest(
+            html = episodeHtml(""),
+            url = "https://www.ilpost.it/episodes/a-podcast-episode/",
+            options = testOptions(debug = true),
+        )
+        val subscriberHtml = subscriberResult.content.requireHtml()
+        val subscriberMarkdown = subscriberResult.content.requireMarkdown()
+        assertFalse(subscriberHtml.contains("<audio"), subscriberHtml)
+        assertTrue(
+            subscriberMarkdown.contains(
+                "[Listen to this episode on Il Post](https://www.ilpost.it/podcasts/example/a-podcast-episode)",
+            ),
+            subscriberMarkdown,
+        )
+        assertFalse(subscriberMarkdown.contains("00:00:00"), subscriberMarkdown)
+    }
+
+    @Test
+    fun `il post profile compacts related podcast episode cards`() {
+        val result = parseHtmlForTest(
+            html = """
+                <main>
+                  <h2>A podcast episode with related episodes</h2>
+                  <p>The episode description contains enough natural prose to keep the main content stable while related podcast cards are normalized.</p>
+                  <p>A second paragraph ensures the episode body and its related links remain deterministic in the cleaned reader output.</p>
+                  <section class="episode_podcast-episodes-archive-container__iW0Mp">
+                    <h3>Altri episodi</h3>
+                    <div class="_episode-item_1re25_1 _episode-item__with-play_1re25_24">
+                      <figure class="_episode-item__image_1re25_41"><a href="/podcasts/example/episode-one"></a></figure>
+                      <h3 class="_episode-item__title_1re25_103"><a href="/podcasts/example/episode-one">Episode one</a></h3>
+                      <p class="_episode-item__summary_1re25_122"><a href="/podcasts/example/episode-one" title="Episode one">The first episode summary</a></p>
+                      <div class="_episode-item__details_1re25_132">20 ago 2026 - 50 min</div>
+                      <div class="_episode-item__play_1re25_138"><a href="/podcasts/example/episode-one">Duplicate play link</a></div>
+                      <div class="_episode-item__actions_1re25_152">Menu chrome</div>
+                    </div>
+                    <div class="_episode-item_1re25_1 _episode-item__with-play_1re25_24">
+                      <h3 class="_episode-item__title_1re25_103"><a href="/podcasts/example/episode-two">Episode two</a></h3>
+                      <p class="_episode-item__summary_1re25_122"><a href="/podcasts/example/episode-two">The second episode summary</a></p>
+                      <div class="_episode-item__details_1re25_132">13 ago 2026 - 44 min</div>
+                    </div>
+                  </section>
+                </main>
+            """.trimIndent(),
+            url = "https://www.ilpost.it/episodes/current-episode/",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(html.contains("<ul><li><a href=\"/podcasts/example/episode-one\">Episode one</a>"), html)
+        assertTrue(
+            markdown.contains(
+                "- [Episode one](https://www.ilpost.it/podcasts/example/episode-one) — " +
+                    "The first episode summary (20 ago 2026 · 50 min)",
+            ),
+            markdown,
+        )
+        assertTrue(
+            markdown.contains(
+                "- [Episode two](https://www.ilpost.it/podcasts/example/episode-two) — " +
+                    "The second episode summary (13 ago 2026 · 44 min)",
+            ),
+            markdown,
+        )
+        assertFalse(markdown.contains("### [Episode one]"), markdown)
+        assertFalse(markdown.contains("Duplicate play link"), markdown)
+        assertFalse(markdown.contains("Menu chrome"), markdown)
+    }
+
+    @Test
     fun `daring fireball profile selects article and removes navigation footnote chrome`() {
         val result = parseHtmlForTest(
             html = """
