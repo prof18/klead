@@ -48,7 +48,7 @@ private class Renderer(private val baseUrl: String) {
         fun addBlock(markdown: String, standaloneImage: Boolean, codeBlock: Boolean, listBlock: Boolean) {
             if (markdown.isBlank()) return
             if (standaloneImage && blocks.lastOrNull()?.standaloneImage == true) {
-                val previous = blocks.removeLast()
+                val previous = blocks.removeAt(blocks.lastIndex)
                 blocks += previous.copy(markdown = "${previous.markdown} $markdown")
             } else {
                 blocks += RenderedBlock(

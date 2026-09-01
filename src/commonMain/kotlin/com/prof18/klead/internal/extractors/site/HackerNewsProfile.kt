@@ -130,7 +130,7 @@ internal object HackerNewsProfile : DomExtractor {
         val stack = mutableListOf<HackerNewsComment>()
         for (comment in this) {
             while (stack.size > comment.depth) {
-                stack.removeLast()
+                stack.removeAt(stack.lastIndex)
             }
             val parent = stack.lastOrNull()
             if (parent == null) {
