@@ -2766,6 +2766,12 @@ It sounds far-fetched but Google is already rolling out the technology to make i
                 removedText = "Variety comment jump chrome",
                 profileId = "variety",
             ),
+            ProfileIsolationCase(
+                url = "https://www.reuters.com/world/example",
+                selectorHtml = """<ul role="tablist"><li role="tab">Reuters context tabs</li></ul>""",
+                removedText = "Reuters context tabs",
+                profileId = "reuters",
+            ),
         )
 
         for (case in cases) {
