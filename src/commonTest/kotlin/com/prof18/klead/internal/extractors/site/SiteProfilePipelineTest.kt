@@ -158,6 +158,100 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `chip profile removes commerce clutter and restores instagram island`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The opening article paragraph contains enough natural language and context for stable content selection. It introduces an <a href="https://www.instagram.com/p/DZpuKLslz9B/?img_index=4">Instagram post</a> that appears later in the story.</p>
+                  <aside data-qa-ad-slot><span>ANZEIGE</span></aside>
+                  <div class="Affiliate-Note"><strong>Unabhängig und kostenlos dank Ihres Klicks</strong> Affiliate disclosure text.</div>
+                  <div data-island="GooglePreferredSourcesButton"><a href="https://google.com/preferences/source">CHIP auf Google bevorzugen</a></div>
+                  <p>The middle paragraph provides useful reporting before the social embed and should remain in the cleaned article output.</p>
+                  <div id="isl-8-SocialWidget" data-island="SocialWidgetBase">
+                    <div class="Social-Widget"><div class="Social-Widget__Instagram"></div></div>
+                  </div>
+                  <div data-qa-top-list-auto-table><h2>Product comparison</h2><p>Buy these products now.</p></div>
+                  <p>The final paragraph remains after the trusted Instagram post and keeps the article body substantial for extraction.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.chip.de/news/example.html",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("The opening article paragraph"))
+        assertTrue(markdown.contains("The final paragraph remains"))
+        assertTrue(markdown.contains("[Instagram post](https://www.instagram.com/p/DZpuKLslz9B/)"))
+        assertTrue(html.contains("""src="https://www.instagram.com/p/DZpuKLslz9B/embed/captioned/""""))
+        assertFalse(markdown.contains("ANZEIGE"))
+        assertFalse(markdown.contains("Unabhängig und kostenlos"))
+        assertFalse(markdown.contains("CHIP auf Google bevorzugen"))
+        assertFalse(markdown.contains("Buy these products now"))
+        assertEquals(listOf("chip"), result.debug["extractorIds"])
+    }
+
+    @Test
+    fun `chip profile compacts download metadata into a table and keeps editorial review`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article class="Article-Container">
+                  <header><h1>Discord</h1></header>
+                  <section data-qa-download-page-widget>
+                    <a data-qa-download-page-primary-link href="https://x.chip.de/download">DOWNLOAD Discord Deutsch</a>
+                    <ul><li>Virengeprüft &amp; kostenlos</li></ul>
+                    <p data-qa-download-page-product-title>Discord 1.0.9256 Deutsch</p>
+                    <p>
+                      von <a data-qa-download-page-vendor-link href="https://discord.com">Discord</a>
+                      <span data-qa-download-page-version-line>Version 1.0.9256 vom 04.09.2026</span>
+                    </p>
+                    <div data-qa-download-page-chip-rating>Sehr gut</div>
+                    <p data-qa-download-page-rank>Rang 3/1454 in der Kategorie Kommunikation</p>
+                    <dl>
+                      <div class="DownloadPageWidget-MetaField"><dt>Preis:</dt><dd>Kostenlos</dd></div>
+                      <div class="DownloadPageWidget-MetaField"><dt>Downloadzahl:</dt><dd>1.079 mal geladen</dd></div>
+                      <div class="DownloadPageWidget-MetaField"><dt>Sprache:</dt><dd>Deutsch</dd></div>
+                      <div class="DownloadPageWidget-MetaField"><dt>Datei-Größe:</dt><dd>132,3 MB</dd></div>
+                      <div class="DownloadPageWidget-MetaField"><dt>Kompatibel mit:</dt><dd>Windows 10, Windows 11</dd></div>
+                    </dl>
+                    <dl data-qa-pro-con-advantages>
+                      <dt>Vorteile</dt>
+                      <dd>ruckelfreie Bildschirm-Übertragung möglich</dd>
+                      <dd>auch direkt im Browser nutzbar</dd>
+                    </dl>
+                  </section>
+                  <h2>Die CHIP Redaktion sagt:</h2>
+                  <p>The editorial review explains the software in enough detail for stable extraction and should remain visible to the reader.</p>
+                  <p>A second substantive paragraph confirms that only the product header is removed from this CHIP download article.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.chip.de/download/example.html",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("Die CHIP Redaktion sagt"))
+        assertTrue(markdown.contains("The editorial review explains the software"))
+        assertTrue(markdown.contains("| Information | Wert |"))
+        assertTrue(markdown.contains("| Anbieter | Discord |"))
+        assertTrue(markdown.contains("| Version | 1.0.9256 vom 04.09.2026 |"))
+        assertTrue(markdown.contains("| Bewertung | Sehr gut |"))
+        assertTrue(markdown.contains("| Rang | Rang 3/1454 in der Kategorie Kommunikation |"))
+        assertTrue(markdown.contains("| Preis | Kostenlos |"))
+        assertTrue(markdown.contains("| Datei-Größe | 132,3 MB |"))
+        assertTrue(markdown.contains("| Kompatibel mit | Windows 10, Windows 11 |"))
+        assertTrue(
+            markdown.contains(
+                "| Vorteile | ruckelfreie Bildschirm-Übertragung möglich; auch direkt im Browser nutzbar |",
+            ),
+        )
+        assertFalse(markdown.contains("DOWNLOAD Discord Deutsch"))
+        assertFalse(markdown.contains("Virengeprüft"))
+        assertFalse(markdown.contains("Discord 1.0.9256 Deutsch"))
+        assertEquals(listOf("chip"), result.debug["extractorIds"])
+    }
+
+    @Test
     fun `npr profile turns image credits into figure captions`() {
         val html = """
             <article>
@@ -2653,6 +2747,12 @@ It sounds far-fetched but Google is already rolling out the technology to make i
                 selectorHtml = """<div class="google-preferred-source-badge">9to5 preferred source chrome</div>""",
                 removedText = "9to5 preferred source chrome",
                 profileId = "nine-to-five",
+            ),
+            ProfileIsolationCase(
+                url = "https://www.chip.de/news/example.html",
+                selectorHtml = """<div class="Affiliate-Note">CHIP affiliate disclosure chrome</div>""",
+                removedText = "CHIP affiliate disclosure chrome",
+                profileId = "chip",
             ),
             ProfileIsolationCase(
                 url = "https://berlinomagazine.com/example",

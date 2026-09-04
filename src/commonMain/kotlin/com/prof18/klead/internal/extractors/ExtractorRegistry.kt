@@ -13,6 +13,7 @@ import com.prof18.klead.internal.extractors.site.BloggerProfile
 import com.prof18.klead.internal.extractors.site.BusinessInsiderProfile
 import com.prof18.klead.internal.extractors.site.BuzzFeedProfile
 import com.prof18.klead.internal.extractors.site.ChatGptExtractor
+import com.prof18.klead.internal.extractors.site.ChipProfile
 import com.prof18.klead.internal.extractors.site.CitynewsProfile
 import com.prof18.klead.internal.extractors.site.DagelijkseStandaardProfile
 import com.prof18.klead.internal.extractors.site.DaringFireballProfile
@@ -126,6 +127,7 @@ internal object DefaultExtractors {
         ArsTechnicaProfile,
         RollingStoneLayoutProfile,
         ChatGptExtractor,
+        ChipProfile,
         GitHubProfile,
         GuardianProfile,
         XProfile,
