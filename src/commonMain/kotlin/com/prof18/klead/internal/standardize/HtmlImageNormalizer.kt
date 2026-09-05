@@ -26,7 +26,9 @@ internal object HtmlImageNormalizer {
             if (pictureSourceSrcset != null) {
                 image.attr("srcset", pictureSourceSrcset)
             }
-            if (isPlaceholderImage(image.attr("src"))) {
+            if (isPlaceholderImage(image.attr("src")) ||
+                (replacement != null && isExternalPlaceholderImage(image.attr("src")))
+            ) {
                 when {
                     replacement != null -> image.attr("src", replacement)
 
@@ -246,6 +248,14 @@ internal object HtmlImageNormalizer {
         src.startsWith("data:image/svg", ignoreCase = true) ||
         src.startsWith("data:image/gif", ignoreCase = true)
 
+    private fun isExternalPlaceholderImage(src: String): Boolean = EXTERNAL_PLACEHOLDER_FILENAME.matches(
+        src.trim().substringBefore('?').substringBefore('#').substringAfterLast('/'),
+    )
+
+    private val EXTERNAL_PLACEHOLDER_FILENAME = Regex(
+        """placeholder\.(?:png|gif|jpe?g|webp|svg)""",
+        RegexOption.IGNORE_CASE,
+    )
     private val ASPECT_PLACEHOLDER_PADDING_VALUE = Regex(
         """(?:\d+(?:\.\d+)?|\.\d+)%\s*(?:!important)?""",
         RegexOption.IGNORE_CASE,
