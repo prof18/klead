@@ -13,6 +13,32 @@ import kotlin.test.assertTrue
 
 class RemovalPipelineTest {
     @Test
+    fun `favorite post widget is removed without matching article text or similar classes`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Use Add to favorites to save an article for later reading.</p>
+              <div class="mbfp-btn active" data-add="Add to favorites">
+                <svg><path d="M0 0" /></svg>
+                <div class="mbfp-text"><span>Salva nei preferiti</span><span>12</span></div>
+              </div>
+              <div class="mbfp-btn-description">An explanation of the favorites feature.</div>
+              <p>The article conclusion remains after the widget.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.select(".mbfp-btn").isEmpty())
+        assertFalse(article.text().contains("Salva nei preferiti"))
+        assertTrue(article.text().contains("Use Add to favorites to save an article for later reading."))
+        assertTrue(article.text().contains("An explanation of the favorites feature."))
+        assertTrue(article.text().contains("The article conclusion remains after the widget."))
+    }
+
+    @Test
     fun `interactive quiz block is removed without taking surrounding article prose`() {
         val document = Ksoup.parse(
             """

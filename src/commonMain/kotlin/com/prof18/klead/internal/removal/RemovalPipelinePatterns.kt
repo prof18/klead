@@ -10,6 +10,8 @@ internal val EXACT_SELECTORS = listOf(
     "form",
     "button",
     "button.lightbox-trigger",
+    // MB Favorite Posts renders its reusable WordPress action as a div, not a button.
+    ".mbfp-btn",
     "input",
     "select",
     "textarea",
