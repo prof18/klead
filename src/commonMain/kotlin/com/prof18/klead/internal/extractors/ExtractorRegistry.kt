@@ -55,6 +55,7 @@ import com.prof18.klead.internal.extractors.site.RollingStoneLayoutProfile
 import com.prof18.klead.internal.extractors.site.RollingStoneProfile
 import com.prof18.klead.internal.extractors.site.ScpWikiProfile
 import com.prof18.klead.internal.extractors.site.SimonWillisonProfile
+import com.prof18.klead.internal.extractors.site.SmartWorldProfile
 import com.prof18.klead.internal.extractors.site.SocketProfile
 import com.prof18.klead.internal.extractors.site.StatistaProfile
 import com.prof18.klead.internal.extractors.site.SteamPartnerEventExtractor
@@ -107,6 +108,7 @@ internal object DefaultExtractors {
         MotorsportProfile,
         MinuteMediaSiProfile,
         PhoneArenaProfile,
+        SmartWorldProfile,
         PhysOrgProfile,
         ArmNewsroomProfile,
         AndroidAuthorityProfile,

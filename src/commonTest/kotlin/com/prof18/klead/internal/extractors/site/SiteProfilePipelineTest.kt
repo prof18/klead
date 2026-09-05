@@ -2772,6 +2772,12 @@ It sounds far-fetched but Google is already rolling out the technology to make i
                 removedText = "Reuters context tabs",
                 profileId = "reuters",
             ),
+            ProfileIsolationCase(
+                url = "https://www.smartworld.it/news/example.html",
+                selectorHtml = """<div class="tw-google-discover">SmartWorld preferred source prompt</div>""",
+                removedText = "SmartWorld preferred source prompt",
+                profileId = "smartworld",
+            ),
         )
 
         for (case in cases) {
