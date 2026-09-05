@@ -30,6 +30,7 @@ import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
 import com.prof18.klead.internal.extractors.site.IlPostProfile
+import com.prof18.klead.internal.extractors.site.IlSole24OreProfile
 import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
 import com.prof18.klead.internal.extractors.site.KarakartalProfile
 import com.prof18.klead.internal.extractors.site.KurucInfoProfile
@@ -157,6 +158,7 @@ internal object DefaultExtractors {
         KarakartalProfile,
         KurucInfoProfile,
         IlPostProfile,
+        IlSole24OreProfile,
         DaringFireballProfile,
         DwProfile,
         SubstackProfile,
