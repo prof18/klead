@@ -65,6 +65,7 @@ import com.prof18.klead.internal.extractors.site.SteamPartnerEventExtractor
 import com.prof18.klead.internal.extractors.site.StripeDocsProfile
 import com.prof18.klead.internal.extractors.site.SubstackProfile
 import com.prof18.klead.internal.extractors.site.TechCrunchProfile
+import com.prof18.klead.internal.extractors.site.TomshwProfile
 import com.prof18.klead.internal.extractors.site.ValnetProfile
 import com.prof18.klead.internal.extractors.site.VarietyProfile
 import com.prof18.klead.internal.extractors.site.VoxProfile
@@ -170,6 +171,7 @@ internal object DefaultExtractors {
         DDayProfile,
         DagelijkseStandaardProfile,
         TechCrunchProfile,
+        TomshwProfile,
         VoxProfile,
         PianetaBasketProfile,
         MacRumorsProfile,
