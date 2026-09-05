@@ -105,12 +105,12 @@ internal const val INTERACTIVE_QUIZ_CONTROL_SELECTOR =
 internal const val MIN_INTERACTIVE_QUIZ_CONTROLS = 2
 
 internal val RECOMMENDATION_HEADING_PATTERN = Regex(
-    """\b(recommended|related|related terms|explore more|keep exploring|discover more|more stories|more from|more on|read more|you may also like|popular stories|most viewed|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti|zobacz również)\b|^best(?:\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80})?\s+(accessories|deals|offers|prices?|discounts?|sales?)$|^worth\s+checking\s+out\s+on\s+amazon$""",
+    """\b(recommended|related|related terms|explore more|keep exploring|discover more|more stories|more from|more on|read more|you may also like|popular stories|most viewed|consigliati|altre storie|i più letti|in evidenza|potrebbe interessarti(?: anche)?|dalla stessa sezione|i video più visti|le più lette|zobacz również)\b|^best(?:\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80})?\s+(accessories|deals|offers|prices?|discounts?|sales?)$|^worth\s+checking\s+out\s+on\s+amazon$""",
     RegexOption.IGNORE_CASE,
 )
 
 internal val RECOMMENDATION_SECTION_HEADING_PATTERN = Regex(
-    """^(related\s+content|related\s+articles?|related\s+terms|recommended(?:\s+for\s+you)?|explore\s+more|keep\s+exploring|discover\s+more(?:\s+.+)?|what\s+to\s+read\s+next|read\s+more|for\s+more\s+on\s+this\s+topic|popular\s+stories|most\s+viewed|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|worth\s+checking\s+out\s+on\s+amazon|best(?:\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80})?\s+(?:accessories|deals|offers|prices?|discounts?|sales?)|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti|zobacz\s+również)\s*[:：]?$""",
+    """^(related\s+content|related\s+articles?|related\s+terms|recommended(?:\s+for\s+you)?|explore\s+more|keep\s+exploring|discover\s+more(?:\s+.+)?|what\s+to\s+read\s+next|read\s+more|for\s+more\s+on\s+this\s+topic|popular\s+stories|most\s+viewed|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|worth\s+checking\s+out\s+on\s+amazon|best(?:\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80})?\s+(?:accessories|deals|offers|prices?|discounts?|sales?)|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti(?:\s+anche)?|dalla\s+stessa\s+sezione|i\s+video\s+più\s+visti|le\s+più\s+lette|zobacz\s+również)\s*[:：]?$""",
     RegexOption.IGNORE_CASE,
 )
 

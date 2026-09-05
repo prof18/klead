@@ -1141,6 +1141,47 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `Italian recommendation labels remove nested cards while preserving adjacent prose`() {
+        val labels = listOf(
+            "POTREBBE INTERESSARTI ANCHE",
+            "Potrebbe interessarti",
+            "Dalla stessa sezione",
+            "I VIDEO PIÙ VISTI",
+            "Le più lette",
+        )
+        for (label in labels) {
+            val document = Ksoup.parse(
+                """
+                <article>
+                  <p>Opening article prose with useful information and context should remain here.</p>
+                  <div>
+                    <div><h3>$label:</h3></div>
+                    <div><div>
+                      <article><a href="/first"><img src="/first.jpg"><h2>First suggested story</h2></a></article>
+                      <article><a href="/second"><img src="/second.jpg"><h2>Second suggested story</h2></a></article>
+                    </div></div>
+                  </div>
+                  <h2>Potrebbe interessarti anche sapere che</h2>
+                  <p>Questo dettaglio potrebbe interessarti anche per capire il contesto della notizia.</p>
+                  <p>The conclusion contains normal prose and a <a href="/source">source citation</a>.</p>
+                </article>
+                """.trimIndent(),
+            )
+            val article = document.selectFirst("article") ?: error("missing article")
+
+            RemovalPipeline.apply(article, mutableListOf())
+
+            assertFalse(article.text().contains("suggested story"), label)
+            assertTrue(article.select("img").isEmpty(), label)
+            assertTrue(article.text().contains("Opening article prose"), label)
+            assertTrue(article.text().contains("Potrebbe interessarti anche sapere che"), label)
+            assertTrue(article.text().contains("Questo dettaglio potrebbe interessarti anche"), label)
+            assertTrue(article.text().contains("The conclusion"), label)
+            assertEquals("/source", article.selectFirst("a")?.attr("href"), label)
+        }
+    }
+
+    @Test
     fun `content patterns remove inline Polish recommendation cards`() {
         val result = parseHtmlForTest(
             html = """
