@@ -26,6 +26,7 @@ import com.prof18.klead.internal.extractors.site.FortuneProfile
 import com.prof18.klead.internal.extractors.site.FutureProfile
 import com.prof18.klead.internal.extractors.site.GameSpotProfile
 import com.prof18.klead.internal.extractors.site.GamingOnLinuxProfile
+import com.prof18.klead.internal.extractors.site.GeopopProfile
 import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
@@ -170,6 +171,7 @@ internal object DefaultExtractors {
         CitynewsProfile,
         CorriereProfile,
         IlFattoQuotidianoProfile,
+        GeopopProfile,
         DDayProfile,
         DagelijkseStandaardProfile,
         TechCrunchProfile,
