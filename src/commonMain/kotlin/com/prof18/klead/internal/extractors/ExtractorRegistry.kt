@@ -32,6 +32,7 @@ import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
 import com.prof18.klead.internal.extractors.site.HdMotoriProfile
+import com.prof18.klead.internal.extractors.site.IPhoneItaliaProfile
 import com.prof18.klead.internal.extractors.site.ISpazioProfile
 import com.prof18.klead.internal.extractors.site.IlFattoQuotidianoProfile
 import com.prof18.klead.internal.extractors.site.IlPostProfile
@@ -176,6 +177,7 @@ internal object DefaultExtractors {
         IlFattoQuotidianoProfile,
         GeopopProfile,
         AnsaProfile,
+        IPhoneItaliaProfile,
         ISpazioProfile,
         HdMotoriProfile,
         DDayProfile,
