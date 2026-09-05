@@ -29,6 +29,7 @@ import com.prof18.klead.internal.extractors.site.GamingOnLinuxProfile
 import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
+import com.prof18.klead.internal.extractors.site.IlFattoQuotidianoProfile
 import com.prof18.klead.internal.extractors.site.IlPostProfile
 import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
 import com.prof18.klead.internal.extractors.site.KarakartalProfile
@@ -163,6 +164,7 @@ internal object DefaultExtractors {
         BeehiivProfile,
         CitynewsProfile,
         CorriereProfile,
+        IlFattoQuotidianoProfile,
         DDayProfile,
         DagelijkseStandaardProfile,
         TechCrunchProfile,
