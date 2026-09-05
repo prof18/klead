@@ -4,6 +4,7 @@ import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.extractors.site.AndroidAuthorityProfile
 import com.prof18.klead.internal.extractors.site.AndroidPoliceProfile
+import com.prof18.klead.internal.extractors.site.AnsaProfile
 import com.prof18.klead.internal.extractors.site.ArmNewsroomProfile
 import com.prof18.klead.internal.extractors.site.ArsTechnicaProfile
 import com.prof18.klead.internal.extractors.site.AxiosProfile
@@ -172,6 +173,7 @@ internal object DefaultExtractors {
         CorriereProfile,
         IlFattoQuotidianoProfile,
         GeopopProfile,
+        AnsaProfile,
         DDayProfile,
         DagelijkseStandaardProfile,
         TechCrunchProfile,
