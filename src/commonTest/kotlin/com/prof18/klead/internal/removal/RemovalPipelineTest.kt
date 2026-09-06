@@ -392,6 +392,7 @@ class RemovalPipelineTest {
                   <footer>Footer should go</footer>
                   <div id="site-footer">Div footer should go</div>
                   <div id="fps">FPS debug chrome should go</div>
+                  <div id="alert-for-comment">Comment moderation notice should go</div>
                 </article>
             """.trimIndent(),
             url = "https://example.com/exact",
@@ -402,6 +403,7 @@ class RemovalPipelineTest {
         assertFalse(result.content.requireMarkdown().contains("Footer should go"))
         assertFalse(result.content.requireMarkdown().contains("Div footer should go"))
         assertFalse(result.content.requireMarkdown().contains("FPS debug chrome should go"))
+        assertFalse(result.content.requireMarkdown().contains("Comment moderation notice should go"))
         assertFalse(result.content.requireMarkdown().contains("Menu should go"))
         assertTrue(result.content.requireMarkdown().contains("Inline *keyword* text should stay."))
         assertTrue(result.content.requireMarkdown().contains("Footnote should stay."))

@@ -21,6 +21,7 @@ internal val EXACT_SELECTORS = listOf(
     "#article-comments",
     "#comments-loading",
     "#comments-loaded",
+    "#alert-for-comment",
     "#viafoura-comments-container",
     "#viafoura-comment-wrapper",
     ".viafoura-twig-component",
