@@ -84,6 +84,8 @@ Verso le 20:30 ora locale (le 2:30 di lunedì in Italia), le telecamere hanno ri
 
 L’arena in cui si sono svolti gli incontri è stata soprannominata The Claw, cioè “L’artiglio”: è alta 28 metri (più della Casa Bianca), pesa 600 tonnellate, ha una pianta ottagonale e una capienza da oltre 4mila spettatori. Negli scorsi giorni Trump l’aveva [paragonata](https://www.bbc.com/news/articles/c892xnwg5vlo) alla Tour Eiffel. Hanno assistito all’evento 4mila spettatori, soprattutto membri dell’esercito. Altre 80mila persone hanno guardato i combattimenti su alcuni megaschermi posizionati in un parco vicino alla Casa Bianca.
 
+![](https://www.youtube.com/watch?v=3gLp73M5BaE)
+
 Gli organizzatori della UFC hanno avuto il permesso di accedere a diverse parti del complesso della Casa Bianca e ad alcuni luoghi istituzionali di Washington. Per esempio, gli spogliatoi erano stati allestiti all’interno dell’Eisenhower Executive Office Building, un edificio del complesso della Casa Bianca che ospita uffici amministrativi e operativi della presidenza degli Stati Uniti.
 
 La “cerimonia del peso” (uno dei momenti più scenografici degli incontri della UFC: quello in cui i lottatori salgono sulla bilancia per assicurarsi di rientrare nella loro categoria, guardandosi poi in cagnesco davanti ai fotografi) si era svolta invece al Lincoln Memorial, il monumento dedicato al presidente Abraham Lincoln. Prima di entrare nell’ottagono, come viene chiamato il ring degli incontri della UFC, gli atleti venivano filmati mentre attraversavano i corridoi della Casa Bianca.

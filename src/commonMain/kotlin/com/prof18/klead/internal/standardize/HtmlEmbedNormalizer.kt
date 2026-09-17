@@ -20,6 +20,17 @@ internal object HtmlEmbedNormalizer {
         }
 
         content.select(
+            """div.ilPostSocial[data-component="ilPostSocial"][data-type="youtube"][data-url]""",
+        ).forEach { placeholder ->
+            val media = TrustedEmbeds.markdownMediaFromUrl(placeholder.attr("data-url"))
+                ?.takeIf { it.normalizedIframeSrc != null }
+                ?: return@forEach
+            val iframe = Element("iframe")
+            applyEmbedAttributes(iframe, media, media.defaultTitle)
+            placeholder.replaceWith(iframe)
+        }
+
+        content.select(
             """blockquote.instagram-media[data-instgrm-permalink]""",
         ).forEach { placeholder ->
             val media = TrustedEmbeds.markdownMediaFromUrl(placeholder.attr("data-instgrm-permalink"))
