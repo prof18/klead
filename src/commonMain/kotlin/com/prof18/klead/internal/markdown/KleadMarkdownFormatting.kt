@@ -96,7 +96,7 @@ internal fun String.svgLengthValue(): Double? {
     return if (trimmed.endsWith("em")) numeric * CSS_EM_SIZE else numeric
 }
 
-private const val SVG_ICON_MAX_SIZE = 32.0
+private const val SVG_ICON_MAX_SIZE = 33.0
 private const val CSS_EM_SIZE = 16.0
 
 internal fun largestSrcsetUrl(srcset: String): String? = srcset.split(srcsetDelimiter)
