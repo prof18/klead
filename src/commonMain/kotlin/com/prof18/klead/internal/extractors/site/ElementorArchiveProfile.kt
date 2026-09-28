@@ -56,6 +56,7 @@ internal object ElementorArchiveProfile : DomExtractor {
         val clone = clone()
         clone.select("h1, h2, h3, h4, h5, h6").remove()
         clone.select("br").remove()
-        return clone.text().isBlank()
+        return clone.text().isBlank() &&
+            clone.selectFirst("img, picture, iframe, video, audio, svg, canvas, object, embed") == null
     }
 }

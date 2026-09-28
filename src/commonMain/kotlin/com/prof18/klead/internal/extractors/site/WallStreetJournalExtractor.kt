@@ -5,13 +5,10 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonObject
 
 internal object WallStreetJournalExtractor : DomExtractor {
     override val id: String = "wall-street-journal"
@@ -36,9 +33,7 @@ internal object WallStreetJournalExtractor : DomExtractor {
     }
 
     private fun DomExtractorContext.articleData(): JsonObject? {
-        val script = document.selectFirst("script#__NEXT_DATA__") ?: return null
-        val jsonText = script.data().ifBlank { script.html() }.ifBlank { return null }
-        val root = runCatching { JSON.parseToJsonElement(jsonText).jsonObject }.getOrNull() ?: return null
+        val root = document.nextDataJsonObject() ?: return null
         return root.objectAt("props", "pageProps", "articleData")
             ?.takeIf { it.string("type") == "article" }
     }
@@ -95,31 +90,11 @@ internal object WallStreetJournalExtractor : DomExtractor {
         ?.trim()
         ?.ifBlank { null }
 
-    private fun JsonObject.objectAt(vararg keys: String): JsonObject? {
-        var current: JsonElement = this
-        for (key in keys) {
-            current = (current as? JsonObject)?.get(key) ?: return null
-        }
-        return current as? JsonObject
-    }
-
-    private fun JsonObject.stringAt(vararg keys: String): String? {
-        var current: JsonElement = this
-        for (key in keys) {
-            current = (current as? JsonObject)?.get(key) ?: return null
-        }
-        return (current as? JsonPrimitive)?.contentOrNull?.trim()?.ifBlank { null }
-    }
-
     private fun JsonObject.string(key: String): String? =
         (this[key] as? JsonPrimitive)?.contentOrNull?.trim()?.ifBlank { null }
 
     private fun JsonObject.rawString(key: String): String? =
         (this[key] as? JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }
 
-    private val JSON = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-    }
     private val BY_PREFIX = Regex("""(?i)^by\s+""")
 }

@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class KleadMarkdownWriterTest {
@@ -769,12 +770,12 @@ class KleadMarkdownWriterTest {
         val markdown = render("""<article><pre><code>before${"\n"}```${"\n"}after</code></pre></article>""")
 
         assertTrue(markdown.startsWith("````\n"))
-        assertTrue(markdown.contains("\\`\\`\\`\n"))
+        assertTrue(markdown.contains("```\n"))
         assertTrue(markdown.endsWith("\n````\n"))
     }
 
     @Test
-    fun `fenced code escapes template literal backticks`() {
+    fun `fenced code preserves template literal backticks`() {
         val markdown = render(
             """<article><pre><code data-lang="js">console.log(`hello`);</code></pre></article>""",
         )
@@ -782,11 +783,46 @@ class KleadMarkdownWriterTest {
         assertEquals(
             """
             ```js
-            console.log(\`hello\`);
+            console.log(`hello`);
             ```
             """.trimIndent() + "\n",
             markdown,
         )
+    }
+
+    @Test
+    fun `shorter fences inside code do not trim code or swallow following blocks`() {
+        val markdown = render(
+            "<article><pre><code>```\nkept  \n\n\n--\n</code></pre><p>After.</p></article>",
+        )
+
+        assertEquals("````\n```\nkept  \n\n\n--\n````\n\nAfter.\n", markdown)
+    }
+
+    @Test
+    fun `inline code preserves empty link shaped expressions`() {
+        val markdown = render("<article><p><code>[](value)</code></p></article>")
+
+        assertEquals("`[](value)`\n", markdown)
+    }
+
+    @Test
+    fun `generated footnote numbers avoid numeric definitions in either order`() {
+        for (definitions in listOf(
+            "<li id='fn2'>Numeric definition</li><li id='fn:alpha'>Named definition</li>",
+            "<li id='fn:alpha'>Named definition</li><li id='fn1'>Numeric definition</li>",
+        )) {
+            val markdown = render(
+                "<article><p>Reference<sup><a href='#fn:alpha'>note</a></sup></p>" +
+                    "<section data-footnotes><ol>$definitions</ol></section></article>",
+            )
+
+            assertTrue(markdown.contains("Named definition"), markdown)
+            assertTrue(markdown.contains("Numeric definition"), markdown)
+            val namedId = Regex("\\[\\^(\\d+)]: Named definition").find(markdown)?.groupValues?.get(1)
+            assertNotNull(namedId)
+            assertTrue(markdown.contains("Reference[^$namedId]"), markdown)
+        }
     }
 
     @Test
@@ -808,7 +844,7 @@ class KleadMarkdownWriterTest {
     }
 
     @Test
-    fun `empty links are removed after markdown conversion including fenced code`() {
+    fun `empty anchors are omitted without changing fenced code`() {
         val markdown = render(
             """
             <article>
@@ -821,7 +857,7 @@ class KleadMarkdownWriterTest {
         assertEquals(
             """
             ```cpp
-            auto ok =  { return x; }
+            auto ok = [](uint8_t x) { return x; }
             ```
             """.trimIndent() + "\n",
             markdown,

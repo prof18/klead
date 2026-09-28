@@ -49,7 +49,7 @@ class DefuddleFixtureMarkdownSnapshotTest {
     fun `supported defuddle fixtures match expected markdown snapshots`() {
         val cases = supportedSnapshotCases()
 
-        assertEquals(176, cases.size, "Expected supported Defuddle markdown snapshot fixture count")
+        assertEquals(174, cases.size, "Expected supported Defuddle markdown snapshot fixture count")
 
         val failures = mutableListOf<String>()
         for (case in cases) {
@@ -76,7 +76,7 @@ class DefuddleFixtureMarkdownSnapshotTest {
 
     @Test
     fun `supported defuddle fixtures match expected metadata snapshots`() {
-        val cases = supportedSnapshotCases()
+        val cases = FixtureLoader.loadAll().filterNot { it.isDroppedBehaviorFixture() }
 
         assertEquals(176, cases.size, "Expected supported Defuddle metadata snapshot fixture count")
 
@@ -226,6 +226,10 @@ class DefuddleFixtureMarkdownSnapshotTest {
             "issues--169-svg-classname-crash",
         )
 
-        val KNOWN_PORT_DIFFERENCES = emptySet<String>()
+        val KNOWN_PORT_DIFFERENCES = setOf(
+            // Preserve source code literally instead of inheriting upstream Markdown cleanup bugs.
+            "code-blocks--chroma-linenums",
+            "general--obsidian.md-blog-verify-obsidian-sync-encryption",
+        )
     }
 }

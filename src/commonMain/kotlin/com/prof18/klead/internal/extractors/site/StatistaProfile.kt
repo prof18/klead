@@ -1,6 +1,5 @@
 package com.prof18.klead.internal.extractors.site
 
-import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
@@ -48,10 +47,4 @@ internal object StatistaProfile : DomExtractor {
     private fun Element.numericAttribute(name: String): String? = attr(name)
         .trim()
         .takeIf { value -> value.isNotBlank() && value.all(Char::isDigit) }
-
-    private fun Document.metaContent(name: String): String? =
-        selectFirst("""meta[property="$name"], meta[name="$name"]""")
-            ?.attr("content")
-            ?.trim()
-            ?.ifBlank { null }
 }

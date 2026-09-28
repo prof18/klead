@@ -101,14 +101,20 @@ internal fun String.splitInlineWhitespace(): InlineWhitespace {
 internal fun postProcessMarkdown(markdown: String): String {
     val normalized = markdown.replace("\r\n", "\n")
         .replace('\r', '\n')
-        .replace(emptyLinkPattern, "")
     if (normalized.isBlank()) return ""
     val result = mutableListOf<String>()
     var blankCount = 0
-    var inFence = false
+    var fenceLength = 0
     val lines = normalized.lines()
     for ((index, line) in lines.withIndex()) {
-        if (line.startsWith("```")) inFence = !inFence
+        val backtickCount = line.takeWhile { it == '`' }.length
+        val wasInFence = fenceLength > 0
+        if (!wasInFence && backtickCount >= 3) {
+            fenceLength = backtickCount
+        } else if (wasInFence && backtickCount >= fenceLength && line.drop(backtickCount).isBlank()) {
+            fenceLength = 0
+        }
+        val inFence = wasInFence || fenceLength > 0
         if (!inFence && line == PRESERVED_BLANK_SPACER) {
             result += ""
             result += ""

@@ -220,7 +220,7 @@ Put together, you can drop Deno into a Node project, run your existing scripts a
 $ deno link ../my-lib
 Link ../my-lib (my-lib)
 
-$ deno unlink my-lib   # by name, or \`deno unlink ../my-lib\` by path
+$ deno unlink my-lib   # by name, or `deno unlink ../my-lib` by path
 ```
 
 deno.json

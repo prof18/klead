@@ -1,6 +1,5 @@
 package com.prof18.klead.internal.extractors.site
 
-import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -40,12 +39,6 @@ internal object BBCProfile : DomExtractor {
             )
         }
     }
-
-    private fun Document.metaContent(name: String): String? =
-        selectFirst("""meta[property="$name"], meta[name="$name"]""")
-            ?.attr("content")
-            ?.trim()
-            ?.ifBlank { null }
 
     private fun String.bbcImageKey(): String? {
         val path = substringAfter(BBC_IMAGE_PATH_MARKER, missingDelimiterValue = "")

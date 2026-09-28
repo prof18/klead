@@ -89,8 +89,7 @@ internal fun renderCodeBlock(element: Element): String {
         .normalizeFinalNewline()
         .replace("\t", "    ")
     val fence = codeFence(rawText)
-    val text = rawText.replace("`", "\\`")
-    return "$fence$language\n$text$fence"
+    return "$fence$language\n$rawText$fence"
 }
 
 internal fun Element.isBlockCodeElement(): Boolean = normalName() == "code" && classNames().contains("block")

@@ -8,13 +8,9 @@ import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonObject
 
 internal object IlPostProfile : DomExtractor {
     override val id: String = "ilpost"
@@ -146,7 +142,7 @@ internal object IlPostProfile : DomExtractor {
     }
 
     private fun Document.ilPostArticleData(): IlPostArticleData? {
-        val root = ilPostNextData() ?: return null
+        val root = nextDataJsonObject() ?: return null
         val article = root.objectAt("props", "pageProps", "data", "data", "main", "data") ?: return null
         return IlPostArticleData(
             summary = article.stringAt("summary") ?: article.stringAt("excerpt"),
@@ -155,7 +151,7 @@ internal object IlPostProfile : DomExtractor {
     }
 
     private fun Document.ilPostEpisodeData(): IlPostEpisodeData? {
-        val root = ilPostNextData() ?: return null
+        val root = nextDataJsonObject() ?: return null
         val episode = root.objectAt("props", "pageProps", "data", "data", "episode")
             ?.arrayAt("data")
             ?.firstOrNull() as? JsonObject
@@ -164,15 +160,6 @@ internal object IlPostProfile : DomExtractor {
             audioUrl = episode.stringAt("episode_raw_url"),
             pageUrl = episode.stringAt("url") ?: episode.stringAt("share_url"),
         )
-    }
-
-    private fun Document.ilPostNextData(): JsonObject? {
-        val script = selectFirst("script#__NEXT_DATA__") ?: return null
-        val jsonText = script.data()
-            .ifBlank { script.html() }
-            .ifBlank { null }
-            ?: return null
-        return runCatching { JSON.parseToJsonElement(jsonText).jsonObject }.getOrNull()
     }
 
     private fun JsonObject.authorName(): String? {
@@ -185,25 +172,6 @@ internal object IlPostProfile : DomExtractor {
         ).joinToString(" ")
             .trim()
             .ifBlank { null }
-    }
-
-    private fun JsonObject.objectAt(vararg keys: String): JsonObject? {
-        var current: JsonElement = this
-        for (key in keys) {
-            current = (current as? JsonObject)?.get(key) ?: return null
-        }
-        return current as? JsonObject
-    }
-
-    private fun JsonObject.stringAt(vararg keys: String): String? {
-        var current: JsonElement = this
-        for (key in keys) {
-            current = (current as? JsonObject)?.get(key) ?: return null
-        }
-        return (current as? JsonPrimitive)
-            ?.contentOrNull
-            ?.trim()
-            ?.ifBlank { null }
     }
 
     private fun JsonObject.arrayAt(vararg keys: String): JsonArray? {
@@ -249,10 +217,6 @@ internal object IlPostProfile : DomExtractor {
     private data class IlPostArticleData(val summary: String?, val author: String?)
     private data class IlPostEpisodeData(val audioUrl: String?, val pageUrl: String?)
 
-    private val JSON = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-    }
     private val WORDPRESS_IMAGE_SIZE_PATH = Regex("""/\d+x\d+/([^/?#]+)([?#].*)?$""")
     private val AUDIO_EXTENSIONS = setOf("aac", "m4a", "mp3", "ogg", "wav")
     private val DETAIL_SEPARATOR = Regex("""\s+-\s+""")
