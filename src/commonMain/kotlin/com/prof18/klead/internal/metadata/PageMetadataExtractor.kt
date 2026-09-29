@@ -28,10 +28,11 @@ internal object PageMetadataExtractor {
         val canonicalUrl = document.selectFirst("link[rel=canonical]")?.absUrl("href")?.ifBlank { null }
         val metadataBaseUrl = canonicalUrl ?: sourceUrl
         val canonicalDomain = canonicalUrl?.let(::parseDomain)
+        val pageDomain = parseDomain(metadataBaseUrl)
         val h1 = document.selectFirst("h1")?.textTrimmedOrNull()
         val siteName = extractSiteName(metaTags, schemaOrg)
         val author = extractAuthor(document, content, metaTags, schemaOrg)
-        val titleResult = extractTitle(document, metaTags, schemaOrg, siteName, author, h1)
+        val titleResult = extractTitle(document, metaTags, schemaOrg, siteName, author, h1, pageDomain)
         val authorAsSite = author
             ?.takeUnless { "," in it }
             ?.takeIf { it.isNotBlank() }
@@ -76,9 +77,9 @@ internal object PageMetadataExtractor {
         site: String?,
         author: String?,
         h1: String?,
+        pageDomain: String?,
     ): TitleResult {
-        val candidates = listOf(
-            metaTags.firstContent("og:title"),
+        val candidates = metaTags.contents("og:title") + listOf(
             metaTags.firstContent("twitter:title"),
             schemaOrg.firstString("headline"),
             metaTags.firstContent("title"),
@@ -93,7 +94,7 @@ internal object PageMetadataExtractor {
         if (cleanedCandidates.isEmpty()) return TitleResult(title = null, detectedSiteName = null)
 
         val bestTitle = cleanedCandidates
-            .firstOrNull { !it.isSiteIdentifier(site, author) }
+            .firstOrNull { !it.isSiteIdentifier(site, author, pageDomain) }
             ?: cleanedCandidates.first()
 
         return cleanTitle(bestTitle, site)
@@ -335,9 +336,9 @@ internal object PageMetadataExtractor {
         return null
     }
 
-    private fun String.isSiteIdentifier(site: String?, author: String?): Boolean {
+    private fun String.isSiteIdentifier(site: String?, author: String?, pageDomain: String?): Boolean {
         val candidate = trim()
-        for (brand in listOfNotNull(site, author)) {
+        for (brand in listOfNotNull(site, author, pageDomain)) {
             if (candidate.equals(brand, ignoreCase = true)) return true
         }
 

@@ -270,6 +270,24 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `icon only permalink beside heading is removed while another icon link remains`() {
+        val article = article(
+            """
+            <article>
+              <div><a href="#section" aria-label="Copy link to section"><svg><path d="M0 0"></path></svg></a><h2 id="section">Section</h2></div>
+              <p><a href="#section" aria-label="Jump to section"><svg><path d="M0 0"></path></svg></a>Body.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(1, article.select("a[href=#section]").size)
+        assertEquals("Jump to section", article.selectFirst("a[href=#section]")?.attr("aria-label"))
+        assertEquals("Section", article.selectFirst("h2")?.text())
+    }
+
+    @Test
     fun `subtitle paragraph after duplicate title is preserved`() {
         val article = article(
             """

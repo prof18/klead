@@ -51,6 +51,16 @@ internal object HtmlTitleNormalizer {
         content.select(HEADING_TAG_SELECTOR).forEach { heading ->
             heading.select(HEADING_PERMALINK_SELECTOR).remove()
         }
+        content.select("a[href^=#]").forEach { anchor ->
+            val fragment = anchor.attr("href").removePrefix("#")
+            val isHeadingPermalink = fragment.isNotBlank() &&
+                anchor.text().isBlank() &&
+                anchor.selectFirst("svg, img") != null &&
+                anchor.parent()?.children()?.any { sibling ->
+                    sibling.normalName() in HEADING_TAG_NAMES && sibling.id() == fragment
+                } == true
+            if (isHeadingPermalink) anchor.remove()
+        }
     }
 
     private fun unwrapHeadingFormatting(content: Element) {

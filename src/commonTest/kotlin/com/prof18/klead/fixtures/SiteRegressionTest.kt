@@ -23,6 +23,21 @@ class SiteRegressionTest {
     }
 
     @Test
+    fun `Kt Academy article uses its headline and omits oversized heading links`() {
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$KT_ACADEMY_FIXTURE.html")
+        val result = parseHtmlForTest(
+            html = html,
+            url = FixtureLoader.extractUrl(KT_ACADEMY_FIXTURE, html),
+            options = testOptions(),
+        )
+
+        assertEquals("runBlocking in practice: Where it should be used and where not", result.metadata.title)
+        assertFalse(result.content.requireHtml().contains("Copy link to section"))
+        assertFalse(result.content.requireHtml().contains("<svg"))
+        assertTrue(result.content.requireMarkdown().contains("## How `runBlocking` works"))
+    }
+
+    @Test
     fun `captured site regressions match HTML and Markdown on every target`() {
         val cases = SiteRegressionLoader.loadAll()
         assertTrue(cases.isNotEmpty(), "Expected at least one portable site regression fixture")
@@ -54,6 +69,7 @@ class SiteRegressionTest {
         .trimEnd()
 
     private companion object {
+        const val KT_ACADEMY_FIXTURE = "kt-academy-run-blocking"
         const val LOPEZ_MANAS_FIXTURE = "lopez-manas-android-sdk-defense-in-depth"
     }
 }

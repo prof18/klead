@@ -88,6 +88,35 @@ class PageMetadataExtractorTest {
     }
 
     @Test
+    fun `site wide open graph title before article title is skipped`() {
+        val metadata = extract(
+            """
+            <html><head>
+              <meta property="og:title" content="example.com">
+              <meta property="og:title" content="The article title">
+              <title>The article title</title>
+            </head><body><article><h1>The article title</h1></article></body></html>
+            """.trimIndent(),
+        )
+
+        assertEquals("The article title", metadata.title)
+    }
+
+    @Test
+    fun `specific open graph title retains priority over a different document title`() {
+        val metadata = extract(
+            """
+            <html><head>
+              <meta property="og:title" content="Editorial headline">
+              <title>Browser tab headline</title>
+            </head><body><article><h1>Browser tab headline</h1></article></body></html>
+            """.trimIndent(),
+        )
+
+        assertEquals("Editorial headline", metadata.title)
+    }
+
+    @Test
     fun `open graph title matching author falls back to document title`() {
         val metadata = extract(
             """
