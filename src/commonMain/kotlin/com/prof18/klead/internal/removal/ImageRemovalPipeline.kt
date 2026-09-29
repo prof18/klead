@@ -3,6 +3,8 @@ package com.prof18.klead.internal.removal
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.SMALL_IMAGE_MAX_DIMENSION
+import com.prof18.klead.internal.dom.hasLargeResponsiveSource
 
 internal object ImageRemovalPipeline {
     fun apply(
@@ -210,7 +212,8 @@ internal object ImageRemovalPipeline {
             width > 0 &&
             height > 0 &&
             width <= SMALL_IMAGE_MAX_DIMENSION &&
-            height <= SMALL_IMAGE_MAX_DIMENSION
+            height <= SMALL_IMAGE_MAX_DIMENSION &&
+            !hasLargeResponsiveSource()
     }
 
     private fun Element.isLinkedAuthorImage(): Boolean {
@@ -267,6 +270,4 @@ internal object ImageRemovalPipeline {
     private val WHITESPACE_PATTERN = Regex("""\s+""")
     private val WIDTH_STYLE_DIMENSION_PATTERN = Regex("""width\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
     private val HEIGHT_STYLE_DIMENSION_PATTERN = Regex("""height\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
-
-    private const val SMALL_IMAGE_MAX_DIMENSION = 64
 }

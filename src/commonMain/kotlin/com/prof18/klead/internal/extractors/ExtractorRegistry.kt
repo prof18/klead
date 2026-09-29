@@ -50,6 +50,7 @@ import com.prof18.klead.internal.extractors.site.MaggieAppletonProfile
 import com.prof18.klead.internal.extractors.site.MashableProfile
 import com.prof18.klead.internal.extractors.site.MastodonProfile
 import com.prof18.klead.internal.extractors.site.MinuteMediaSiProfile
+import com.prof18.klead.internal.extractors.site.Motor1Profile
 import com.prof18.klead.internal.extractors.site.MotorsportProfile
 import com.prof18.klead.internal.extractors.site.NASAProfile
 import com.prof18.klead.internal.extractors.site.NineToFiveProfile
@@ -119,6 +120,7 @@ internal object DefaultExtractors {
     val all: List<Extractor> = listOf(
         WikipediaExtractor,
         ApostoNewsletterProfile,
+        Motor1Profile,
         MotorsportProfile,
         MinuteMediaSiProfile,
         PhoneArenaProfile,

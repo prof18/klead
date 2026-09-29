@@ -1,6 +1,8 @@
 package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.dom.SMALL_IMAGE_MAX_DIMENSION
+import com.prof18.klead.internal.dom.hasLargeResponsiveSource
 
 internal object HtmlImageNormalizer {
     fun normalizeImages(content: Element) {
@@ -25,6 +27,10 @@ internal object HtmlImageNormalizer {
             val noscriptReplacement = nextNoscript?.noscriptImage()
             if (pictureSourceSrcset != null) {
                 image.attr("srcset", pictureSourceSrcset)
+            }
+            if (image.hasLargeResponsiveSource() && image.hasSmallDeclaredDimensions()) {
+                image.removeAttr("width")
+                image.removeAttr("height")
             }
             if (isPlaceholderImage(image.attr("src")) ||
                 (replacement != null && isExternalPlaceholderImage(image.attr("src")))
@@ -210,6 +216,14 @@ internal object HtmlImageNormalizer {
         val src = attr("src").trim()
         return (src.isNotBlank() && !isPlaceholderImage(src)) ||
             firstAttr(this, "srcset", "srcSet", "data-src", "data-srcset") != null
+    }
+
+    private fun Element.hasSmallDeclaredDimensions(): Boolean {
+        val width = attr("width").trim().toIntOrNull()
+        val height = attr("height").trim().toIntOrNull()
+        return width != null && height != null &&
+            width in 1..SMALL_IMAGE_MAX_DIMENSION &&
+            height in 1..SMALL_IMAGE_MAX_DIMENSION
     }
 
     private fun Element.imageVariantKey(): String? =

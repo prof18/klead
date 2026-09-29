@@ -54,4 +54,28 @@ class HtmlImageNormalizerTest {
 
         assertEquals("https://cdn.example/placeholder.png?width=80", document.selectFirst("img")?.attr("src"))
     }
+
+    @Test
+    fun `responsive photo drops placeholder dimensions while small icon keeps them`() {
+        val document = Ksoup.parse(
+            """
+            <picture>
+              <source srcset="https://cdn.example/photo-small.webp 213w, https://cdn.example/photo-large.webp 889w">
+              <img src="https://cdn.example/16x9.png" width="16" height="9" alt="Photo">
+            </picture>
+            <picture>
+              <source srcset="https://cdn.example/icon-2x.webp 32w">
+              <img src="https://cdn.example/icon.png" width="16" height="16" alt="Icon">
+            </picture>
+            """.trimIndent(),
+        )
+
+        HtmlImageNormalizer.normalizeImages(document)
+
+        val images = document.select("img")
+        assertEquals(false, images[0].hasAttr("width"))
+        assertEquals(false, images[0].hasAttr("height"))
+        assertEquals("16", images[1].attr("width"))
+        assertEquals("16", images[1].attr("height"))
+    }
 }

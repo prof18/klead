@@ -494,6 +494,29 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `small aspect ratio img keeps large picture source but removes small icon`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>This article has enough meaningful prose to retain the responsive picture and its surrounding content during extraction.</p>
+                  <picture>
+                    <source srcset="https://example.com/photo-small.webp 213w, https://example.com/photo-large.webp 889w">
+                    <img src="https://example.com/static/16x9.png" width="16" height="9" alt="Article photo">
+                  </picture>
+                  <img src="https://example.com/icon.png" width="16" height="16" alt="Small icon">
+                  <p>The article continues with more prose after the photo and icon so its body remains a stable extraction candidate.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/article/responsive-picture",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("![Article photo](https://example.com/photo-large.webp)"), markdown)
+        assertFalse(markdown.contains("Small icon"), markdown)
+        assertFalse(result.content.requireHtml().contains("""width="16" height="9"""))
+    }
+
+    @Test
     fun `image cleanup preserves repeated inline prose images`() {
         val result = parseHtmlForTest(
             html = """
