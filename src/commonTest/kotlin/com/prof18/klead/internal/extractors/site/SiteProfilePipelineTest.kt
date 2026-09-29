@@ -595,6 +595,40 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `macstories interactive charts become links while ordinary figures remain`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The benchmark compares two Mac Studios across several prompt sizes, using the same models and testing setup on both machines.</p>
+                  <div class="ms-widget">
+                    <figure class="mx mx-s1race" data-figure="s1race">
+                      <figcaption><h3 class="mx-t" id="compare-models">Two Models at Different Prompt Sizes</h3>
+                        <p class="mx-l">Choose model and prompt size to compare results.</p></figcaption>
+                      <div role="radiogroup"><input type="radio" name="model" checked><label>Qwen</label></div>
+                      <div class="mx-race">M3 Ultra reads 1,163 tokens per second</div>
+                    </figure>
+                  </div>
+                  <figure><img src="https://cdn.macstories.net/chart.png" alt="Static benchmark chart">
+                    <figcaption>A static chart of the same results.</figcaption></figure>
+                  <p>The follow-up analysis explains why prompt processing and generation speed matter for everyday local AI work.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.macstories.net/stories/example/",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+        assertTrue(html.contains("View interactive chart: Two Models at Different Prompt Sizes"), html)
+        assertTrue(html.contains("https://www.macstories.net/stories/example/#compare-models"), html)
+        assertTrue(markdown.contains("Choose model and prompt size to compare results."), markdown)
+        assertFalse(html.contains("radiogroup"), html)
+        assertFalse(html.contains("mx-race"), html)
+        assertTrue(html.contains("Static benchmark chart"), html)
+        assertTrue(markdown.contains("The follow-up analysis explains"), markdown)
+    }
+
+    @Test
     fun `dw profile removes article chrome and restores templated image`() {
         val result = parseHtmlForTest(
             html = """
