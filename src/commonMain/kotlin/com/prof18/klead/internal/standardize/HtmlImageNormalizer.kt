@@ -11,7 +11,11 @@ internal object HtmlImageNormalizer {
         content.select("img").forEach { image ->
             if (image.parent() == null) return@forEach
             image.removeBrowserManagedImageLayoutStyle()
-            val pictureSourceSrcset = image.parents().firstOrNull { it.normalName() == "picture" }
+            val picture = image.parents().firstOrNull { it.normalName() == "picture" }
+            val preserveFallbackSrcset = picture?.hasAttr("data-klead-preserve-fallback-srcset") == true
+            if (preserveFallbackSrcset) picture.removeAttr("data-klead-preserve-fallback-srcset")
+            val pictureSourceSrcset = picture
+                ?.takeUnless { preserveFallbackSrcset }
                 ?.selectFirst("source[srcset], source[srcSet], source[data-srcset]")
                 ?.let { firstAttr(it, "srcset", "srcSet", "data-srcset") }
             val replacement = firstAttr(
