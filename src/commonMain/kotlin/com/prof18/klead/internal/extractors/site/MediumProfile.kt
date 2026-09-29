@@ -23,8 +23,45 @@ internal object MediumProfile : DomExtractor {
         // Medium nests its byline and action toolbar beside the title. Metadata has already been
         // extracted, so the whole header can go without leaving reaction counts or icon links.
         content.selectFirst("h1.pw-post-title")?.parent()?.let { header ->
+            // On some publications the subtitle and the byline/actions share the next sibling.
+            // Remove only the controls so the subtitle remains part of the article.
+            header.nextElementSibling()?.let { details ->
+                if (details.select("p.pw-post-body-paragraph, figure").isEmpty()) {
+                    details.children()
+                        .firstOrNull { child ->
+                            child.selectFirst("[data-testid=storyReadTime]") != null &&
+                                child.selectFirst("[data-testid=headerClapButton]") != null
+                        }
+                        ?.let { controls ->
+                            recordAndRemove(
+                                controls,
+                                debug,
+                                "postProcess:medium",
+                                "[data-testid=storyReadTime]",
+                                "Medium byline and action toolbar",
+                            )
+                        }
+                }
+            }
             if (header != content && header.select("figure, h2, h3, p.pw-post-body-paragraph").isEmpty()) {
                 recordAndRemove(header, debug, "postProcess:medium", "h1.pw-post-title", "Medium article header")
+            }
+        }
+
+        content.select("aside").toList().forEach { aside ->
+            if (aside.text().trim() == "Top highlight") {
+                recordAndRemove(aside, debug, "postProcess:medium", "aside", "Medium highlight control")
+            }
+        }
+
+        content.select("h2").toList().forEach { heading ->
+            val text = heading.text().trim()
+            if (text.startsWith("Get ") && text.endsWith("stories in your inbox")) {
+                heading.parent()?.parent()?.let { signup ->
+                    if (signup.select("p").any { it.text().startsWith("Join Medium for free") }) {
+                        recordAndRemove(signup, debug, "postProcess:medium", "h2", "Medium signup prompt")
+                    }
+                }
             }
         }
 
