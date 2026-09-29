@@ -29,7 +29,30 @@ internal object HtmlFootnoteNormalizer {
         HtmlFootnoteListNormalizer.normalizeLooseFootnoteSections(content)
         HtmlFootnoteListNormalizer.normalizeTrailingLooseFootnoteDefinitions(content)
         removeFootnoteDividers(content)
+        wrapLooseFootnoteItems(content)
     }
+
+    private fun wrapLooseFootnoteItems(content: Element) {
+        content.select("section[data-footnotes]").forEach { section ->
+            val items = section.select("> li").toList()
+            if (items.isEmpty()) return@forEach
+
+            val list = Element("ol")
+            val firstNumber = SIMPLE_FOOTNOTE_ID_NUMBER.matchEntire(items.first().id())
+                ?.groupValues?.get(1)?.toIntOrNull()
+            if (firstNumber != null && firstNumber > 1) list.attr("start", firstNumber.toString())
+            items.first().before(list)
+            items.forEach { item ->
+                // A lone paragraph adds a blank line between the marker and its text in
+                // readers that apply paragraph margins inside list items.
+                val paragraph = item.children().singleOrNull()?.takeIf { it.normalName() == "p" }
+                if (paragraph != null && item.ownText().isBlank()) paragraph.unwrap()
+                list.appendChild(item)
+            }
+        }
+    }
+
+    private val SIMPLE_FOOTNOTE_ID_NUMBER = Regex("""(?i)^(?:fn|footnote[-_]?)?(\d+)$""")
 
     private fun removeFootnoteDividers(content: Element) {
         content.select("hr").forEach { divider ->

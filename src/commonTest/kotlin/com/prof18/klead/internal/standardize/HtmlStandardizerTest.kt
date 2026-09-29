@@ -1567,6 +1567,8 @@ class HtmlStandardizerTest {
         assertEquals("#footnote-1-abc", reference.attr("href"))
         assertEquals("footnote-1-abc", article.selectFirst("section[data-footnotes] li")?.id())
         assertEquals("Definition text.", article.selectFirst("section[data-footnotes] li")?.text())
+        assertNotNull(article.selectFirst("section[data-footnotes] > ol > li#footnote-1-abc"))
+        assertTrue(article.select("section[data-footnotes] > li, li#footnote-1-abc > p").isEmpty())
         assertTrue(article.select("[data-component-name=FootnoteToDOM]").isEmpty())
     }
 
@@ -1662,7 +1664,7 @@ class HtmlStandardizerTest {
         val item = article.selectFirst("section[data-footnotes] li")
         assertEquals("fn2", item?.id())
         assertEquals("Aside definition.", item?.text())
-        assertFalse(article.outerHtml().contains("<ol"))
+        assertEquals("2", article.selectFirst("section[data-footnotes] > ol")?.attr("start"))
     }
 
     @Test
