@@ -5,6 +5,8 @@ internal object AndroidAuthorityProfile : com.prof18.klead.extractors.Extractor 
     override val domains: Set<String> = setOf("androidauthority.com")
     override val postContentRemoveSelectors: List<String> = listOf(
         """div:has(> p:matchesOwn((?i)^Affiliate links on Android Authority may earn us a commission))""",
+        // The article header row leaves "By", the date, and bullet separators in reader content.
+        "div.e_rc.e_Y",
         """a[href="https://www.androidauthority.com/mobile/"]""",
         """div:matchesOwn((?i)^The Android 17-based update brings critical display, camera, and stability patches\.$)""",
         """div:has(> a[href*="AAGooglePrefSource"])""",
