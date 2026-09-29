@@ -4,9 +4,24 @@ import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SiteRegressionTest {
+    @Test
+    fun `Lopez Manas article stays within the requested post`() {
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$LOPEZ_MANAS_FIXTURE.html")
+        val markdown = parseHtmlForTest(
+            html = html,
+            url = FixtureLoader.extractUrl(LOPEZ_MANAS_FIXTURE, html),
+            options = testOptions(),
+        ).content.requireMarkdown()
+
+        assertTrue(markdown.contains("Every Android SDK eventually asks the same question"))
+        assertTrue(markdown.contains("#### Conclusions"))
+        assertFalse(markdown.contains("Building a Defense-in-Depth Talk You Can Actually Run"))
+    }
+
     @Test
     fun `captured site regressions match HTML and Markdown on every target`() {
         val cases = SiteRegressionLoader.loadAll()
@@ -37,6 +52,10 @@ class SiteRegressionTest {
         .lines()
         .joinToString("\n") { it.trimEnd() }
         .trimEnd()
+
+    private companion object {
+        const val LOPEZ_MANAS_FIXTURE = "lopez-manas-android-sdk-defense-in-depth"
+    }
 }
 
 internal data class SiteRegressionCase(
