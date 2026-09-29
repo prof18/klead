@@ -839,6 +839,39 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `devsite code wrapper is removed and article class is not a code language`() {
+        val article = article(
+            """
+            <article class="adb--blog-post">
+              <p>Example:</p>
+              <devsite-code><pre>release {
+                  optimization.keepRules {
+                      it.ignoreFrom("com.somelibrary:somelibrary")
+                  }
+              }</pre></devsite-code>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val code = article.selectFirst("article > pre > code")
+        assertNotNull(code)
+        assertTrue(article.select("devsite-code").isEmpty())
+        assertEquals("", code.attr("data-lang"))
+        assertTrue(code.wholeText().contains("it.ignoreFrom(\"com.somelibrary:somelibrary\")"))
+    }
+
+    @Test
+    fun `explicit language on code wrapper is retained`() {
+        val article = article("""<article><div class="language-kotlin"><pre>val answer = 42</pre></div></article>""")
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("kotlin", article.selectFirst("pre > code")?.attr("data-lang"))
+    }
+
+    @Test
     fun `medium code pre class is preferred over layout wrapper classes`() {
         val article = article(
             """

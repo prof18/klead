@@ -27,6 +27,12 @@ internal object HtmlCodeNormalizer {
             }
             removeCodeBlockChromeAround(pre, language)
         }
+        content.select("devsite-code").forEach { wrapper ->
+            val pre = wrapper.children().singleOrNull()?.takeIf { it.normalName() == "pre" }
+            if (pre != null && wrapper.ownText().isBlank()) {
+                wrapper.replaceWith(pre)
+            }
+        }
         content.select("code > pre").forEach { pre ->
             pre.parent()?.replaceWith(pre)
         }
@@ -212,6 +218,7 @@ internal object HtmlCodeNormalizer {
         var current: Element? = element
         while (current != null) {
             languageFrom(current)?.let { return it }
+            if (current.normalName() == "devsite-code") return null
             current = current.parent()
         }
         return null

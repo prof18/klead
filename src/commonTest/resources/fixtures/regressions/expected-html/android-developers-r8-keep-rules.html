@@ -1,0 +1,418 @@
+<article class="devsite-article"><devsite-toc class="devsite-nav" depth="2" devsite-toc-embedded disabled>
+  </devsite-toc><div class="devsite-article-body clearfix
+  devsite-no-page-title">
+
+
+
+
+    <main>
+
+
+  <section class="adb--post-header-wrapper astro-egg7nqdx">
+    <header class="adb--post-header adb--product-news astro-yl355ysp">
+
+<div class="adb--grid-container astro-tml4bk23">
+
+
+<div class="adb--col-4 adb--col-md-8 adb--col-lg-12 astro-tml4bk23">
+
+      <div class="adb--post-header-headings astro-yl355ysp">
+        <span class="adb--post-header-category-name adb--heading-4 astro-yl355ysp">
+              <a class="adb--post-header-category-link astro-yl355ysp" href="/blog/categories/product-news" data-category="blog-post-header-category" data-label="product-news" data-analytics-post-category>
+                Product News
+              </a>
+            </span>
+        <h2 class="adb--post-header-title astro-yl355ysp" data-analytics-post-title id="configure-and-troubleshoot-r8-keep-rules" data-text="           Configure and troubleshoot R8 Keep Rules         " tabindex="-1">
+          Configure and troubleshoot R8 Keep Rules
+        </h2>
+        <span class="adb--post-header-reading-time adb--heading-6 astro-yl355ysp">
+          7 min read
+        </span>
+      </div>
+
+</div>
+
+<div class="adb--col-4 adb--col-md-8 adb--col-lg-10   adb--offset-lg-1 astro-tml4bk23">
+
+      <div class="adb--post-header-image-container astro-yl355ysp">
+
+
+<img src="/static/blog/assets/performance_Week7_0b86aba329_Z1h1s1q.webp" alt loading="lazy" decoding="async" fetchpriority="auto" width="1252" height="626" class="astro-yl355ysp">
+      </div>
+
+</div>
+
+<div class="adb--col-4 adb--col-md-8 adb--col-lg-8   adb--offset-lg-2 astro-tml4bk23">
+
+      <div class="adb--post-header-body astro-yl355ysp">
+        <div class="adb--post-header-details astro-yl355ysp">
+          <div class="adb--author-info-wrapper astro-yl355ysp">
+            <div class="adb--post-header-author-and-date astro-yl355ysp">
+              <div class="adb--date-chip adb--xlarge adb--product-news astro-sxllvyzd">
+  <time datetime="Tue Nov 18 2025 00:00:00 GMT+0000 (Coordinated Universal Time)" class="astro-sxllvyzd">
+    <span class="adb--date-chip-day astro-sxllvyzd">18</span>
+    <span class="adb--date-chip-month-year astro-sxllvyzd">
+      <span class="adb--date-chip-month astro-sxllvyzd">Nov</span>
+      <span class="adb--date-chip-year astro-sxllvyzd">2025</span>
+    </span>
+  </time>
+</div>
+              <div class="adb--author-avatar-container adb--author-avatar-post-detail adb--author-avatar-2-authors astro-2k2kyznu">
+  <a href="/blog/authors/ajesh-pai" class="adb--author-avatar-link-wrapper adb--author-avatar-mask adb--global-hover-avatar astro-2k2kyznu" data-category="blog-author-avatar" data-label="ajesh-pai">
+
+
+<img src="/static/blog/assets/Ajesh_R_Pai_fc75c62777_1XcV4X.webp" alt="View Ajesh Pai's profile" loading="lazy" decoding="async" fetchpriority="auto" width="600" height="600" class="astro-2k2kyznu">
+          </a><a href="/blog/authors/ben-weiss" class="adb--author-avatar-link-wrapper adb--author-avatar-mask adb--global-hover-avatar astro-2k2kyznu" data-category="blog-author-avatar" data-label="ben-weiss">
+
+
+<img src="/static/blog/assets/1_1_U4_K_Lr4r_A_Kx_Pq0_Crp_L3vr_Q_a4d1920594_2fRTbq.webp" alt="View Ben Weiss's profile" loading="lazy" decoding="async" fetchpriority="auto" width="1760" height="1760" class="astro-2k2kyznu">
+          </a>
+</div>
+            </div>
+
+          </div>
+          <android-share-button mode="short" class="astro-qan2qojn"></android-share-button>
+        </div>
+      </div>
+
+</div>
+
+</div>
+</header>
+  </section>
+  <section class="astro-egg7nqdx">
+    <div class="adb--blog-post astro-bzyetp6z">
+  <p>In modern Android development, shipping a small, fast, and secure application is a fundamental user expectation. The Android build system's primary tool for achieving this is the&nbsp;<strong>R8&nbsp;</strong>optimizer, the compiler that handles dead code and resource removal for shrinking, code renaming or minification, and app optimization.</p><p>Enabling R8 is a critical step in preparing an app for release, but it requires developers to provide guidance in the form of "Keep Rules."</p><p>After reading this article, check out the Performance Spotlight Week video on enabling, debugging and troubleshooting the R8 optimizer on YouTube.</p><p>&nbsp;</p><div class="video-wrapper-full-width">
+  <devsite-video video-id="A0I6pNSM14o" controls="1"></devsite-video>
+</div><p>&nbsp;</p><h2 id="why-keep-rules-are-needed" data-text="Why Keep Rules are needed" tabindex="-1">Why Keep Rules are needed</h2><p>The need to write Keep Rules stems from a core conflict: R8 is a static analysis tool, but Android apps often rely on dynamic execution patterns like reflection or calls in and out of native code using the JNI (Java Native Interface).</p><p>R8 builds a graph of&nbsp;<i>used</i> code by analyzing direct calls. When code is accessed in a dynamic way, R8's static analysis cannot predict that and it will identify that code as&nbsp;<i>unused</i> and remove it, leading to runtime crashes.</p><p>A&nbsp;<strong>keep rule</strong> is an explicit instruction to the R8 compiler, stating: "This specific class, method, or field is an entry point that will be accessed dynamically at runtime. You must keep it, even if you cannot find a direct reference to it."</p><p>See the official guide for more details on&nbsp;<a href="/topic/performance/app-optimization/keep-rules-overview" data-category="blog-post-inline-link" data-label="/topic/performance/app-optimization/keep-rules-overview">Keep Rules</a>.</p><h2 id="where-to-write-keep-rules" data-text="Where to write Keep Rules" tabindex="-1">Where to write Keep Rules</h2><p>Custom Keep Rules for an application are written in text file. By convention, this file is named&nbsp;<code translate="no" dir="ltr">proguard-rules.pro</code> and is located in the root of the app or library module. This file is then specified in your module's&nbsp;<code translate="no" dir="ltr">build.gradle.kts</code> file's&nbsp;<code translate="no" dir="ltr">release</code> build type.</p><pre translate="no" dir="ltr" is-upgraded><code>release {
+
+    isShrinkResources = true
+
+    isMinifyEnabled = true
+
+    proguardFiles(
+
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+
+        "proguard-rules.pro",
+
+    )
+
+}</code></pre><h3 id="use-the-correct-default-file" data-text="Use the correct default file" tabindex="-1">Use the correct default file</h3><p>The&nbsp;<code translate="no" dir="ltr">getDefaultProguardFile</code> method imports a default set of rules provided by the Android SDK. When using the wrong file your app might not be optimized. Make sure to use&nbsp;<code translate="no" dir="ltr">proguard-android-optimize.txt</code>. This file provides the default Keep Rules for standard Android components&nbsp;<i>and</i>&nbsp;<strong>enables R8's code optimizations</strong>. The outdated&nbsp;<code translate="no" dir="ltr">proguard-android.txt</code> only provides the Keep Rules but does&nbsp;<i>not</i> enable R8's optimizations.</p><figure>
+
+
+<img src="/static/blog/assets/progaurd_8bed193ea7_pKgyL.webp" alt="progaurd.png" loading="lazy" decoding="async" fetchpriority="auto" width="750" height="422">
+
+    </figure><p>Since this is a serious performance problem, we are starting to warn developers about using the wrong file, starting in Android Studio Narwhal 3 Feature Drop.&nbsp;<strong>And starting with the Android Gradle Plugin Version 9.0 we're no longer supporting the outdated&nbsp;</strong><code translate="no" dir="ltr"><strong>proguard-android.txt</strong></code><strong> file. So make sure you upgrade to the optimized version.</strong></p><h2 id="how-to-write-keep-rules" data-text="How to write Keep Rules" tabindex="-1">How to write Keep Rules</h2><p>A keep rule consists of three main parts:</p><ol><li><strong>An option&nbsp;</strong>like&nbsp;<code translate="no" dir="ltr">-keep</code> or&nbsp;<code translate="no" dir="ltr">-keepclassmembers</code></li><li><strong>Optional modifiers</strong> like&nbsp;<code translate="no" dir="ltr">allowshrinking</code></li><li><strong>A class specification</strong> that defines the code to match</li></ol><p>For the complete syntax and examples, refer to the guidance to&nbsp;<a href="/topic/performance/app-optimization/add-keep-rules" data-category="blog-post-inline-link" data-label="/topic/performance/app-optimization/add-keep-rules">add Keep Rules</a>.</p><h2 id="keep-rule-anti-patterns" data-text="Keep Rule anti-patterns" tabindex="-1">Keep Rule anti-patterns</h2><p>It's important to know about best practices, but also about anti-patterns. These anti-patterns often arise from misunderstandings or troubleshooting shortcuts and can be catastrophic for a production build's performance.</p><h2 id="global-options" data-text="Global options" tabindex="-1">Global options</h2><p>These flags are global toggles that should&nbsp;<strong>never</strong> be used in a release build. They are only for temporary debugging to isolate a problem.</p><p>Using&nbsp;<code translate="no" dir="ltr">-dontotptimize</code> effectively disables R8's performance optimizations leading to a slower app.</p><p>When using&nbsp;<code translate="no" dir="ltr">-dontobfuscate</code> you disable all renaming and using&nbsp;<code translate="no" dir="ltr">-dontshrink</code> turns off dead code removal. Both of these global rules increase app size.</p><p>Avoid using these global flags in a production environment wherever possible for a more performant app user experience.</p><h2 id="overly-broad-keep-rules" data-text="Overly broad keep rules" tabindex="-1">Overly broad keep rules</h2><p>The easiest way to nullify R8's benefits is to&nbsp;<strong>write overly-broad Keep Rules</strong>. Keep rules like the one below instruct the R8 optimizer to not shrink, not obfuscate, and not optimize&nbsp;<i>any</i> class in this package or&nbsp;<i>any</i> of its sub-packages. This completely removes R8's benefits for that entire package. Try to write narrow and specific Keep Rules instead.<br>&nbsp;</p><pre translate="no" dir="ltr" is-upgraded><code>-keep class com.example.package.** { *;} // WIDE KEEP RULES CAUSE PROBLEMS</code></pre><h2 id="the-inversion-operator" data-text="The inversion operator (!)" tabindex="-1">The inversion operator (!)</h2><p>The inversion operator (!) seems like a powerful way to exclude a package from a rule. But it's not that simple. Take this example:</p><pre translate="no" dir="ltr" is-upgraded><code>-keep class !com.example.my_package.** { *; } // USE WITH CAUTION</code></pre><p>You might think that this rule means "<i>do not keep classes in</i>&nbsp;<code translate="no" dir="ltr">com.example.package</code>." But it actually means "<i>keep every class, method and property<strong>&nbsp;</strong>in the entire application that is not in&nbsp;</i><code translate="no" dir="ltr">com.example.package</code>." If that came as a surprise to you, best check for any negations in your R8 configuration.</p><h2 id="redundant-rules-for-android-components" data-text="Redundant rules for Android components" tabindex="-1">Redundant rules for Android components</h2><p>Another common mistake is to manually add Keep Rules for your app's&nbsp;<code translate="no" dir="ltr">Activities</code>,&nbsp;<code translate="no" dir="ltr">Services</code>, or&nbsp;<code translate="no" dir="ltr">BroadcastReceivers</code>. This is&nbsp;<strong>unnecessary</strong>. The default&nbsp;<code translate="no" dir="ltr">proguard-android-optimize.txt</code> file already includes the relevant rules for these standard Android components to work out of the box.</p><p>Also many libraries bring their own Keep Rules. So you should not have to write your own rules for these. In case there is a problem with Keep Rules from a library you're using, it is best to reach out to the library author to see what the problem is.</p><h2 id="keep-rule-best-practices" data-text="Keep Rule best practices" tabindex="-1">Keep Rule best practices</h2><p>Now that you know what not to do, let's talk about best practices.</p><h2 id="write-narrow-keep-rules" data-text="Write narrow Keep Rules" tabindex="-1">Write narrow Keep Rules</h2><p>Good Keep Rules should be as&nbsp;<strong>narrow and specific as possible</strong>. They should preserve only what is necessary, allowing R8 to optimize everything else.<br>&nbsp;</p><table class="table vertical-rules fixed adb--post-body-table astro-iutvgwze">
+  </table><table class="vertical-rules fixed adb--post-body-table astro-iutvgwze">
+  <thead><tr><th><strong>Rule</strong></th><th><strong>Quality</strong></th></tr></thead><tbody><tr><td><p>&nbsp;</p><p><code translate="no" dir="ltr">-keep&nbsp;class&nbsp;com.example.**&nbsp;{&nbsp;;&nbsp;}</code></p><p>&nbsp;</p></td><td><strong>Low:</strong> Keeps an entire package and its subpackages</td></tr><tr><td><p>&nbsp;</p><p><code translate="no" dir="ltr">-keep&nbsp;class&nbsp;com.example.MyClass&nbsp;{&nbsp;;&nbsp;}</code></p><p>&nbsp;</p></td><td><strong>Low:</strong> Keeps an entire class which is likely still too wide</td></tr><tr><td><pre translate="no" dir="ltr" is-upgraded><code>-keepclassmembers class com.example.MyClass {
+
+    private java.lang.String secretMessage;
+
+    public void onNativeEvent(java.lang.String);
+
+}</code></pre></td><td><strong>High:</strong> Only relevant methods and properties from a specific class are kept</td></tr></tbody>
+</table>
+<h2 id="use-common-ancestors" data-text="Use common ancestors" tabindex="-1">Use common ancestors</h2><p>Instead of writing separate Keep Rules for multiple different data models, write one rule that targets a common base class or interface. The below rule tells R8 to keep any members of classes that implement this interface and is highly scalable.</p><pre translate="no" dir="ltr" is-upgraded><code># Keep all fields of any class that implements SerializableModel
+
+-keepclassmembers class * implements com.example.models.SerializableModel {
+
+    &lt;fields&gt;;
+
+}</code></pre><h2 id="use-annotations-to-target-multiple-classes" data-text="Use Annotations to target multiple classes" tabindex="-1">Use Annotations to target multiple classes</h2><p>Create a custom annotation (e.g.,&nbsp;<code translate="no" dir="ltr">@Serialize</code>) and use it to "tag" classes that need their fields preserved. This is another clean, declarative, and highly scalable pattern. You can create Keep Rules for already existing annotations from frameworks you're using as well.</p><pre translate="no" dir="ltr" is-upgraded><code># Keep all fields of any class annotated with @Serialize
+
+-keepclassmembers class * {
+
+    @com.example.annotations.Serialize &lt;fields&gt;;
+
+}</code></pre><h2 id="choose-the-right-keep-option" data-text="Choose the right Keep Option" tabindex="-1">Choose the right Keep Option</h2><p>The Keep Option is the most critical part of the rule. Choosing the wrong one can needlessly disable optimization.</p><table class="table vertical-rules fixed adb--post-body-table astro-iutvgwze">
+  </table><table class="vertical-rules fixed adb--post-body-table astro-iutvgwze">
+  <tbody><tr><td><strong>Keep Option</strong></td><td><strong>What It Does</strong></td></tr><tr><td><code translate="no" dir="ltr"><strong>-keep</strong></code></td><td>Prevents the class&nbsp;<i>and members mentioned in the declaration&nbsp;</i>from being removed or renamed.</td></tr><tr><td><code translate="no" dir="ltr"><strong>-keepclassmembers</strong></code></td><td>Prevents the&nbsp;<i>specified members</i> from being removed or renamed, but allows the class itself to be removed but only on classes which are not otherwise removed.</td></tr><tr><td><code translate="no" dir="ltr"><strong>-keepclasseswithmembers</strong></code></td><td>A combination: Keeps the class&nbsp;<i>and</i> its members,&nbsp;<i>only if</i> all the specified members are present.</td></tr></tbody>
+</table>
+<p>You can find more about the keep option in our&nbsp;<a href="/topic/performance/app-optimization/add-keep-rules#choose-keep" data-category="blog-post-inline-link" data-label="/topic/performance/app-optimization/add-keep-rules#choose-keep">documentation for Keep Options.</a></p><h2 id="allow-optimization-with-modifiers" data-text="Allow optimization with Modifiers" tabindex="-1">Allow optimization with Modifiers</h2><p>Modifiers like&nbsp;<code translate="no" dir="ltr">allowshrinking</code> and&nbsp;<code translate="no" dir="ltr">allowobfuscation</code> relax a broad&nbsp;<code translate="no" dir="ltr">-keep</code> rule, giving optimization power back to R8. For example, if a legacy library forces you to use&nbsp;<code translate="no" dir="ltr">-keep</code> on an entire class, you might be able to reclaim some optimization by allowing shrinking and obfuscation:</p><pre translate="no" dir="ltr" is-upgraded><code># Keep this class, but allow R8 to remove it if it's unused and allow R8 to rename it.
+
+-keep,allowshrinking,allowobfuscation class com.example.LegacyClass</code></pre><h2 id="add-global-options-for-additional-optimization" data-text="Add global options for additional optimization" tabindex="-1">Add global options for additional optimization</h2><p>Beyond Keep Rules, you can add global flags to your R8 configuration file to encourage even more optimization.</p><p><code translate="no" dir="ltr"><strong>-repackageclasses</strong></code> is a powerful option that instructs R8 to move all obfuscated classes into a single package. This saves significant space in the DEX file by removing redundant package name strings.</p><p><code translate="no" dir="ltr">-allowaccessmodification</code> allows R8 to widen access (e.g.,&nbsp;<code translate="no" dir="ltr">private</code> to&nbsp;<code translate="no" dir="ltr">public</code>) to enable more aggressive inlining. This is now enabled by default when using&nbsp;<code translate="no" dir="ltr">proguard-android-optimize.txt</code>.<br><br><strong>Warning:</strong> Library authors must&nbsp;<strong>never</strong> add these global optimization flags to their consumer rules, as they would be forcibly applied to the entire app.</p><p>And to make it even more clear, in version 9.0 of the Android Gradle Plugin we're going to start ignoring global optimization flags from libraries altogether.&nbsp;</p><h2 id="best-practices-for-libraries" data-text="Best practices for libraries" tabindex="-1">Best practices for libraries</h2><p>Every Android app relies on libraries one way or another. So let's talk about best practices for libraries.</p><h2 id="for-library-developers" data-text="For library developers" tabindex="-1">For library developers</h2><p>If your library uses reflection or JNI, you have the responsibility to provide the necessary Keep Rules to its consumers. These rules are placed in a&nbsp;<code translate="no" dir="ltr">consumer-rules.pro</code> file, which is then automatically bundled inside the library's AAR file.</p><pre translate="no" dir="ltr" is-upgraded><code>android {
+
+    defaultConfig {
+
+        consumerProguardFiles("consumer-rules.pro")
+
+    }
+
+    ...
+
+}</code></pre><h2 id="for-library-consumers" data-text="For library consumers" tabindex="-1">For library consumers</h2><h3 id="filter-out-problematic-keep-rules" data-text="Filter out problematic Keep Rules" tabindex="-1">Filter out problematic Keep Rules</h3><p>If you must use a library that includes problematic Keep Rules, you can filter them out in your&nbsp;<code translate="no" dir="ltr">build.gradle.kts</code> file starting with AGP 9.0 This tells R8 to ignore the rules coming from a specific dependency.</p><pre translate="no" dir="ltr" is-upgraded><code>release {
+
+    optimization.keepRules {
+
+        // Ignore all consumer rules from this specific library
+
+        it.ignoreFrom("com.somelibrary:somelibrary")
+
+    }
+
+}</code></pre><h3 id="the-best-keep-rule-is-no-keep-rule" data-text="The best Keep Rule is no Keep Rule" tabindex="-1">The best Keep Rule is no Keep Rule</h3><p>The ultimate R8 configuration strategy is to&nbsp;<strong>remove the need to write Keep Rules</strong> altogether. For many apps can be achieved by choosing modern libraries that favor&nbsp;<strong>code generation</strong> over reflection.&nbsp;With code generation, the optimizer can more easily determine what code is actually used at runtime and what code can be removed. Also not using any dynamic reflection means no "hidden" entry points, and therefore,&nbsp;<strong>no Keep Rules are needed.&nbsp;</strong>When choosing a new library, always prefer a solution that uses code generation over reflection.</p><p>For more information about how to choose libraries, check&nbsp;<a href="/topic/performance/app-optimization/choose-libraries-wisely#tips" data-category="blog-post-inline-link" data-label="/topic/performance/app-optimization/choose-libraries-wisely#tips">choose library wisely</a>.</p><h2 id="debugging-and-troubleshooting-your-r8-configuration" data-text="Debugging and troubleshooting your R8 configuration" tabindex="-1">Debugging and troubleshooting your R8 configuration</h2><p>When R8 removes code it should have kept, or your APK is larger than expected, use these tools to diagnose the problem.</p><h2 id="find-duplicate-and-global-keep-rules" data-text="Find duplicate and global Keep Rules" tabindex="-1">Find duplicate and global Keep Rules</h2><p>Because R8 merges rules from dozens of sources, it can be hard to know what the "final" ruleset is. Adding this flag to your&nbsp;<code translate="no" dir="ltr">proguard-rules.pro</code> file generates a complete report:</p><pre translate="no" dir="ltr" is-upgraded><code># Outputs the final, merged set of rules to the specified file
+
+-printconfiguration build/outputs/logs/configuration.txt</code></pre><p>You can search this file to find redundant rules or trace a problematic rule (like&nbsp;<code translate="no" dir="ltr">-dontoptimize</code>) back to the specific library that included it.</p><h2 id="ask-r8:-why-are-you-keeping-this" data-text="Ask R8: Why are you keeping this?" tabindex="-1">Ask R8: Why are you keeping this?</h2><p>If a class you expected to be removed is still in your app, R8 can tell you why. Just add this rule:</p><pre translate="no" dir="ltr" is-upgraded><code># Asks R8 to explain why it's keeping a specific class
+
+class com.example.MyUnusedClass
+
+-whyareyoukeeping</code></pre><p>During the build, R8 will print the exact chain of references that caused it to keep that class, allowing you to trace the reference and adjust your rules.</p><p>For a full guide, check out the&nbsp;<a href="/topic/performance/app-optimization/test-and-troubleshoot-the-optimization" data-category="blog-post-inline-link" data-label="/topic/performance/app-optimization/test-and-troubleshoot-the-optimization">troubleshoot R8</a> section.</p><h2 id="next-steps" data-text="Next steps" tabindex="-1">Next steps</h2><p>R8 is a powerful tool for enhancing Android app performance. Its effectiveness, depends on a correct understanding of its operation as a static analysis engine.</p><p>By writing specific, member-level rules, leveraging ancestors and annotations, and carefully choosing the right keep options, you can preserve exactly what is necessary. The most advanced practice is to eliminate the need for rules entirely by choosing modern, codegen-based libraries over their reflection-based predecessors.</p><p>As you're following along Performance Spotlight Week, make sure to check out today's Spotlight Week video on YouTube and continue with our R8 challenge. Use #optimizationEnabled for any questions on enabling or troubleshooting R8. We're here to help.</p><p>It's time to see the benefits for yourself.</p><p>We challenge you to enable R8 full mode for your app&nbsp;<i>today</i>.</p><ol><li>Follow our developer guides to get started:&nbsp;<a href="/topic/performance/app-optimization/enable-app-optimization" data-category="blog-post-inline-link" data-label="/topic/performance/app-optimization/enable-app-optimization">Enable app optimization</a>.</li><li>Check if you still use&nbsp;<code translate="no" dir="ltr">proguard-android.txt</code> and replace it with&nbsp;<code translate="no" dir="ltr">proguard-android-optimize.txt</code>.</li><li>Then,&nbsp;<strong>measure the impact</strong>. Don't just&nbsp;<i>feel</i> the difference,&nbsp;<i>verify</i> it. Measure your performance gains by adapting the code from our<a href="https://github.com/android/performance-samples/blob/main/MacrobenchmarkSample/macrobenchmark/src/main/kotlin/com/example/macrobenchmark/benchmark/startup/FullyDrawnStartupBenchmark.kt" data-category="blog-post-inline-link" data-label="https://github.com/android/performance-samples/blob/main/MacrobenchmarkSample/macrobenchmark/src/main/kotlin/com/example/macrobenchmark/benchmark/startup/FullyDrawnStartupBenchmark.kt">&nbsp;<strong>Macrobenchmark sample app on GitHub</strong></a> to measure your startup times before and after.</li></ol><p>We're confident you'll see a meaningful improvement in your app's performance.</p><p>While you're at it, use the social tag #AskAndroid to bring your questions. Throughout the week our experts are monitoring and answering your questions.</p><p>Stay tuned for tomorrow, where we'll talk about Profile Guided Optimization with Baseline and Startup Profiles, share how Compose rendering performance improved over the past releases and share performance considerations for background work.</p>
+</div>
+    <div class="adb--post-topics astro-egg7nqdx">
+
+<div class="adb--grid-container astro-tml4bk23">
+
+
+<div class="adb--col-4 adb--col-md-4 adb--col-lg-6  adb--offset-md-2 adb--offset-lg-3 astro-tml4bk23">
+
+          <ul class="adb--topic-list adb--topic-list-center astro-3shpcfji">
+
+
+
+</ul>
+
+</div>
+
+</div>
+    </div>
+
+
+<div class="adb--grid-container astro-tml4bk23">
+
+
+<div class="adb--col-4 adb--col-md-6 adb--col-lg-6  adb--offset-md-1 adb--offset-lg-3 astro-tml4bk23">
+
+    <section class="adb--author-list-container adb--author-list-mode-credit astro-lbbjiu7v">
+      <span class="adb--author-list-header adb--heading-6 astro-lbbjiu7v">
+            Written by:
+          </span>
+
+      <ul class="adb--author-list astro-lbbjiu7v">
+        <li class="adb--author-list-item astro-lbbjiu7v">
+
+
+                </li><li class="adb--author-list-item astro-lbbjiu7v">
+
+
+                </li>
+      </ul>
+    </section>
+
+</div>
+
+</div>
+  </section>
+  <span class="adb--post-continue-reading-heading adb--heading-2 astro-egg7nqdx">
+    Continue reading
+  </span>
+
+<div class="adb--grid-container astro-tml4bk23">
+
+
+<div class="adb--col-4 adb--col-md-8 adb--col-lg-8   adb--offset-lg-2 astro-tml4bk23">
+
+    <ul class="adb--post-list adb--post-list-default astro-nni2rj4u">
+      <li class="adb--post-list-item adb--product-news astro-drwsdf4z">
+  <div class="adb--post-list-item-inner astro-drwsdf4z">
+    <div class="adb--post-list-item-header astro-drwsdf4z">
+      <div class="adb--post-list-aside astro-drwsdf4z">
+        <div class="adb--post-list-author-avatar-container astro-drwsdf4z">
+              <div class="adb--author-avatar-container adb--author-avatar-post-list adb--author-avatar-many-authors astro-2k2kyznu">
+  <div class="adb--author-count astro-2k2kyznu">
+        <span class="adb--author-count-number astro-2k2kyznu">3</span>
+        <span class="adb--author-count-text astro-2k2kyznu">Authors</span>
+      </div>
+</div>
+            </div>
+
+<div class="adb--show-sm astro-5vd3otha">
+  <div class="adb--date-chip adb--small adb--product-news astro-sxllvyzd">
+  <time datetime="Thu Sep 17 2026 00:00:00 GMT+0000 (Coordinated Universal Time)" class="astro-sxllvyzd">
+    <span class="adb--date-chip-day astro-sxllvyzd">17</span>
+    <span class="adb--date-chip-month-year astro-sxllvyzd">
+      <span class="adb--date-chip-month astro-sxllvyzd">Sep</span>
+      <span class="adb--date-chip-year astro-sxllvyzd">2026</span>
+    </span>
+  </time>
+</div>
+</div>
+
+<div class="adb--show-md adb--show-lg adb--show-xl astro-5vd3otha">
+  <div class="adb--date-chip adb--medium adb--product-news astro-sxllvyzd">
+  <time datetime="Thu Sep 17 2026 00:00:00 GMT+0000 (Coordinated Universal Time)" class="astro-sxllvyzd">
+    <span class="adb--date-chip-day astro-sxllvyzd">17</span>
+    <span class="adb--date-chip-month-year astro-sxllvyzd">
+      <span class="adb--date-chip-month astro-sxllvyzd">Sep</span>
+      <span class="adb--date-chip-year astro-sxllvyzd">2026</span>
+    </span>
+  </time>
+</div>
+</div>
+      </div>
+      <div class="adb--post-list-image-container astro-drwsdf4z">
+
+
+<img src="/static/blog/assets/Android_X_Security_State_Library_Strapi_d3ecf61180_YYwl5.webp" alt loading="lazy" decoding="async" fetchpriority="auto" width="4001" height="2001" class="astro-drwsdf4z">
+      </div>
+    </div>
+    <div class="adb--post-list-item-body astro-drwsdf4z">
+      <span class="adb--post-list-category-name adb--heading-4 astro-drwsdf4z">
+            <a href="/blog/categories/product-news" data-category="blog-post-list-item-category" data-label="product-news" class="astro-drwsdf4z">
+              Product News
+            </a>
+          </span>
+      <div class="astro-drwsdf4z">
+
+        <div class="adb--post-list-item-description astro-drwsdf4z">
+          <p class="astro-drwsdf4z">Today, we're thrilled to announce the stable release of the AndroidX Security State version 1.1.0 and Security State Provider version 1.0.0 libraries.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</li><li class="adb--post-list-item adb--product-news astro-drwsdf4z">
+  <div class="adb--post-list-item-inner astro-drwsdf4z">
+    <div class="adb--post-list-item-header astro-drwsdf4z">
+      <div class="adb--post-list-aside astro-drwsdf4z">
+        <div class="adb--post-list-author-avatar-container astro-drwsdf4z">
+              <div class="adb--author-avatar-container adb--author-avatar-post-list adb--author-avatar-1-author astro-2k2kyznu">
+  <a href="/blog/authors/matthew-mccullough" class="adb--author-avatar-link-wrapper adb--author-avatar-mask adb--global-hover-avatar astro-2k2kyznu" data-category="blog-author-avatar" data-label="matthew-mccullough">
+
+
+<img src="/static/blog/assets/matthew_mccullough_dc22050a18_51Njy.webp" alt="View Matthew McCullough's profile" loading="lazy" decoding="async" fetchpriority="auto" width="600" height="600" class="astro-2k2kyznu">
+          </a>
+</div>
+            </div>
+
+<div class="adb--show-sm astro-5vd3otha">
+  <div class="adb--date-chip adb--small adb--product-news astro-sxllvyzd">
+  <time datetime="Thu Sep 17 2026 00:00:00 GMT+0000 (Coordinated Universal Time)" class="astro-sxllvyzd">
+    <span class="adb--date-chip-day astro-sxllvyzd">17</span>
+    <span class="adb--date-chip-month-year astro-sxllvyzd">
+      <span class="adb--date-chip-month astro-sxllvyzd">Sep</span>
+      <span class="adb--date-chip-year astro-sxllvyzd">2026</span>
+    </span>
+  </time>
+</div>
+</div>
+
+<div class="adb--show-md adb--show-lg adb--show-xl astro-5vd3otha">
+  <div class="adb--date-chip adb--medium adb--product-news astro-sxllvyzd">
+  <time datetime="Thu Sep 17 2026 00:00:00 GMT+0000 (Coordinated Universal Time)" class="astro-sxllvyzd">
+    <span class="adb--date-chip-day astro-sxllvyzd">17</span>
+    <span class="adb--date-chip-month-year astro-sxllvyzd">
+      <span class="adb--date-chip-month astro-sxllvyzd">Sep</span>
+      <span class="adb--date-chip-year astro-sxllvyzd">2026</span>
+    </span>
+  </time>
+</div>
+</div>
+      </div>
+      <div class="adb--post-list-image-container astro-drwsdf4z">
+
+
+<img src="/static/blog/assets/Bench_2_0_Strapi_bench_8767d57564_ZmnAe.webp" alt loading="lazy" decoding="async" fetchpriority="auto" width="2001" height="1001" class="astro-drwsdf4z">
+      </div>
+    </div>
+    <div class="adb--post-list-item-body astro-drwsdf4z">
+      <span class="adb--post-list-category-name adb--heading-4 astro-drwsdf4z">
+            <a href="/blog/categories/product-news" data-category="blog-post-list-item-category" data-label="product-news" class="astro-drwsdf4z">
+              Product News
+            </a>
+          </span>
+      <div class="astro-drwsdf4z">
+
+        <div class="adb--post-list-item-description astro-drwsdf4z">
+          <p class="astro-drwsdf4z">Today we’re releasing the first set of long-horizon tasks (LHT), which are tasks of great complexity that take an engineer multiple days or even a week to complete. We are also introducing agentic evaluation, starting with agents from corresponding model providers. </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</li><li class="adb--post-list-item adb--product-news astro-drwsdf4z">
+  <div class="adb--post-list-item-inner astro-drwsdf4z">
+    <div class="adb--post-list-item-header astro-drwsdf4z">
+      <div class="adb--post-list-aside astro-drwsdf4z">
+        <div class="adb--post-list-author-avatar-container astro-drwsdf4z">
+              <div class="adb--author-avatar-container adb--author-avatar-post-list adb--author-avatar-many-authors astro-2k2kyznu">
+  <div class="adb--author-count astro-2k2kyznu">
+        <span class="adb--author-count-number astro-2k2kyznu">3</span>
+        <span class="adb--author-count-text astro-2k2kyznu">Authors</span>
+      </div>
+</div>
+            </div>
+
+<div class="adb--show-sm astro-5vd3otha">
+  <div class="adb--date-chip adb--small adb--product-news astro-sxllvyzd">
+  <time datetime="Wed Sep 09 2026 00:00:00 GMT+0000 (Coordinated Universal Time)" class="astro-sxllvyzd">
+    <span class="adb--date-chip-day astro-sxllvyzd">09</span>
+    <span class="adb--date-chip-month-year astro-sxllvyzd">
+      <span class="adb--date-chip-month astro-sxllvyzd">Sep</span>
+      <span class="adb--date-chip-year astro-sxllvyzd">2026</span>
+    </span>
+  </time>
+</div>
+</div>
+
+<div class="adb--show-md adb--show-lg adb--show-xl astro-5vd3otha">
+  <div class="adb--date-chip adb--medium adb--product-news astro-sxllvyzd">
+  <time datetime="Wed Sep 09 2026 00:00:00 GMT+0000 (Coordinated Universal Time)" class="astro-sxllvyzd">
+    <span class="adb--date-chip-day astro-sxllvyzd">09</span>
+    <span class="adb--date-chip-month-year astro-sxllvyzd">
+      <span class="adb--date-chip-month astro-sxllvyzd">Sep</span>
+      <span class="adb--date-chip-year astro-sxllvyzd">2026</span>
+    </span>
+  </time>
+</div>
+</div>
+      </div>
+      <div class="adb--post-list-image-container astro-drwsdf4z">
+
+
+<img src="/static/blog/assets/Introducing_Fast_and_Reliable_Wireless_Debugging_Strapi_cf55ad145b_2vFLdh.webp" alt loading="lazy" decoding="async" fetchpriority="auto" width="2000" height="1000" class="astro-drwsdf4z">
+      </div>
+    </div>
+    <div class="adb--post-list-item-body astro-drwsdf4z">
+      <span class="adb--post-list-category-name adb--heading-4 astro-drwsdf4z">
+            <a href="/blog/categories/product-news" data-category="blog-post-list-item-category" data-label="product-news" class="astro-drwsdf4z">
+              Product News
+            </a>
+          </span>
+      <div class="astro-drwsdf4z">
+
+        <div class="adb--post-list-item-description astro-drwsdf4z">
+          <p class="astro-drwsdf4z">Wireless debugging on Android is now faster, more reliable, and easier to set up than ever. With ADB Wi-Fi 2.0, we’ve introduced a new server stack and smarter network handling to directly address developer feedback around usability gaps.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</li>
+    </ul>
+
+</div>
+
+</div>
+
+            <section class="astro-47vq4obb">
+  <div class="adb--subscribe astro-47vq4obb">
+    <div class="astro-47vq4obb">
+      <span class="adb--heading-1 astro-47vq4obb">Stay in the loop</span>
+      <p class="astro-47vq4obb">
+        Get the latest Android development insights delivered to your inbox
+        weekly.
+      </p>
+    </div>
+
+  </div>
+</section>
+    </main>
+
+
+
+
+
+    <devsite-hats-survey class="nocontent" data-nosnippet hats-id="VxqvKSur40kxBYCLVTd0SSGykbno" listnr-id="5207477"></devsite-hats-survey>
+
+</div></article>
