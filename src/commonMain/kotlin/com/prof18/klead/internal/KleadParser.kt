@@ -30,6 +30,7 @@ import com.prof18.klead.internal.removal.DiscardedRemovals
 import com.prof18.klead.internal.removal.RemovalPipeline
 import com.prof18.klead.internal.removal.RemovalPolicy
 import com.prof18.klead.internal.standardize.HtmlEmbedNormalizer
+import com.prof18.klead.internal.standardize.HtmlPresentationNormalizer
 import com.prof18.klead.internal.standardize.HtmlStandardizer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ensureActive
@@ -261,7 +262,7 @@ internal object KleadParser {
     ): ParsedResult {
         val html = if (KleadOutput.HTML in options.outputs) {
             timings.measure("$timingPrefix.htmlOutput") {
-                content.cleanOuterHtml()
+                content.clone().also(HtmlPresentationNormalizer::normalize).cleanOuterHtml()
             }
         } else {
             null

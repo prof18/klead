@@ -17,3 +17,9 @@ Output rules:
 - image captions emitted as italic Markdown
 - footnote punctuation and spacing follow Klead's deterministic formatting rules
 - math `data-latex` emitted as Markdown math text without conversion/rendering guarantees
+
+Recognized newsletter templates are reduced to editorial content before Markdown
+conversion. Email mastheads, subscription controls and explicitly sponsored
+modules are omitted; editorial sections, links and images remain in reading order.
+Presentation tables are flattened without repeating nested cell text. Tables that
+carry data retain their rows and cells and follow the normal table output rules.

@@ -5,8 +5,10 @@ import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.extractors.site.AndroidAuthorityProfile
 import com.prof18.klead.internal.extractors.site.AndroidPoliceProfile
 import com.prof18.klead.internal.extractors.site.AnsaProfile
+import com.prof18.klead.internal.extractors.site.ApostoNewsletterProfile
 import com.prof18.klead.internal.extractors.site.ArmNewsroomProfile
 import com.prof18.klead.internal.extractors.site.ArsTechnicaProfile
+import com.prof18.klead.internal.extractors.site.AthleticNewsletterProfile
 import com.prof18.klead.internal.extractors.site.AxiosProfile
 import com.prof18.klead.internal.extractors.site.BBCProfile
 import com.prof18.klead.internal.extractors.site.BeehiivProfile
@@ -29,6 +31,7 @@ import com.prof18.klead.internal.extractors.site.GameSpotProfile
 import com.prof18.klead.internal.extractors.site.GamingOnLinuxProfile
 import com.prof18.klead.internal.extractors.site.GeopopProfile
 import com.prof18.klead.internal.extractors.site.GitHubProfile
+import com.prof18.klead.internal.extractors.site.GuardianNewsletterProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
 import com.prof18.klead.internal.extractors.site.HdMotoriProfile
@@ -115,6 +118,7 @@ internal class ExtractorRegistry(private val extractors: List<Extractor> = Defau
 internal object DefaultExtractors {
     val all: List<Extractor> = listOf(
         WikipediaExtractor,
+        ApostoNewsletterProfile,
         MotorsportProfile,
         MinuteMediaSiProfile,
         PhoneArenaProfile,
@@ -144,6 +148,8 @@ internal object DefaultExtractors {
         ChipProfile,
         GitHubProfile,
         GuardianProfile,
+        GuardianNewsletterProfile,
+        AthleticNewsletterProfile,
         XProfile,
         HackerNewsProfile,
         MastodonProfile,
