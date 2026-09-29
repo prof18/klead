@@ -1881,6 +1881,32 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `layout tables preserve every cell in reading order`() {
+        val content = article(
+            """
+            <article><table class="layout">
+              <tr><td><p>First cell.</p></td><td><p>Second cell.</p></td></tr>
+              <tr><td colspan="2"><p>Last row.</p></td></tr>
+            </table></article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(content, title = null)
+
+        assertFalse(content.outerHtml().contains("<table"))
+        assertEquals(listOf("First cell.", "Second cell.", "Last row."), content.select("p").map { it.text() })
+    }
+
+    @Test
+    fun `plain layout cells retain a text boundary`() {
+        val content = article("<article><table class='layout'><tr><td>First</td><td>Second</td></tr></table></article>")
+
+        HtmlStandardizer.apply(content, title = null)
+
+        assertEquals("First Second", content.text())
+    }
+
+    @Test
     fun `nested one cell layout tables are flattened`() {
         val article = article(
             """

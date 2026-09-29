@@ -90,12 +90,6 @@ internal object SubstackProfile : DomExtractor {
         selectFirst("""link[rel=canonical][href]""")?.attrTrimmedOrNull("href"),
     ).firstOrNull { it.contains("/note/c-") }
 
-    private fun Document.metaContent(name: String): String? =
-        selectFirst("""meta[property="$name"], meta[name="$name"]""")
-            ?.attr("content")
-            ?.trim()
-            ?.ifBlank { null }
-
     private fun Document.substackAuthor(): String? = metaContent("author")
         ?: metaContent("og:title")
             ?.replace(Regex("""\s+\(@[^)]+\)$"""), "")

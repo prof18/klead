@@ -6,6 +6,7 @@ The production pipeline does not use flexmark HTML-to-Markdown conversion.
 
 Output rules:
 
+- fenced code preserves literal backticks and code syntax; fence length expands when needed
 - deterministic block spacing
 - one final newline for non-empty Markdown
 - relative links and images resolved against the source URL

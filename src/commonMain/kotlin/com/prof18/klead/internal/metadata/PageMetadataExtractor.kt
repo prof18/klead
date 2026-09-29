@@ -170,22 +170,22 @@ internal object PageMetadataExtractor {
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun imageValue(value: Any?, items: List<Map<String, Any?>>): String? = when (value) {
-        is String -> value.takeIf { it.isNotBlank() }
-
-        is Map<*, *> -> {
-            val map = value as Map<String, Any?>
-            (map["url"] as? String)?.takeIf { it.isNotBlank() }
-                ?: (map["contentUrl"] as? String)?.takeIf { it.isNotBlank() }
-                ?: (map["@id"] as? String)
-                    ?.let { id -> items.firstOrNull { it["@id"] == id } }
-                    ?.let { imageValue(it, items) }
+    private fun imageValue(value: Any?, items: List<Map<String, Any?>>): String? {
+        var current = value
+        val visitedIds = mutableSetOf<String>()
+        while (current is Map<*, *>) {
+            val url = (current["url"] as? String)?.takeIf { it.isNotBlank() }
+                ?: (current["contentUrl"] as? String)?.takeIf { it.isNotBlank() }
+            if (url != null) return url
+            val id = current["@id"] as? String ?: return null
+            if (!visitedIds.add(id)) return null
+            current = items.firstOrNull { it["@id"] == id } ?: return null
         }
-
-        is List<*> -> value.firstNotNullOfOrNull { imageValue(it, items) }
-
-        else -> null
+        return when (current) {
+            is String -> current.takeIf { it.isNotBlank() }
+            is List<*> -> current.firstNotNullOfOrNull { imageValue(it, items) }
+            else -> null
+        }
     }
 
     private fun extractFavicon(document: Document, baseUrl: String): String? =

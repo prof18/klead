@@ -83,6 +83,31 @@ class DomMutationsTest {
     }
 
     @Test
+    fun `cloneDocument preserves mixed nodes and independent attributes and settings`() {
+        val document = Ksoup.parse(
+            """
+            <!doctype html><html><head><script>{"value":1}</script></head>
+                <body><!--comment--><article id="original">Before <b>bold</b> after<img src="image.png"></article></body>
+            </html>
+            """.trimIndent(),
+            "https://example.com/base/",
+        )
+        document.outputSettings().prettyPrint(false)
+        val originalArticle = document.selectFirst("article") ?: error("missing article")
+        originalArticle.children() // Prime Ksoup's element-child cache before copying.
+
+        val copy = document.cloneDocument()
+
+        assertEquals(document.outerHtml(), copy.outerHtml())
+        assertNotSame(originalArticle.child(0), copy.selectFirst("article")?.child(0))
+        assertEquals("https://example.com/base/image.png", copy.selectFirst("img")?.absUrl("src"))
+        copy.selectFirst("article")?.attr("id", "changed")
+        copy.outputSettings().prettyPrint(true)
+        assertEquals("original", document.selectFirst("article")?.id())
+        assertEquals(false, document.outputSettings().prettyPrint())
+    }
+
+    @Test
     fun `parseFragment handles malformed html`() {
         val nodes = parseFragment("""Before <p>Open <strong>bold</p> After""", "https://example.com")
 

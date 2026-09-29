@@ -331,19 +331,35 @@ private class Renderer(private val baseUrl: String) {
         var number = element.attr("start").toIntOrNull() ?: 1
         return element.children().filter { it.normalName() == "li" }.mapIndexedNotNull { itemIndex, item ->
             val indent = listItemIndent(listDepth, itemIndex)
-            val inlineNodes = item.childNodes().filterNot { it is Element && it.normalName() in setOf("ul", "ol") }
-            val firstLine = renderListItemInlineNodes(inlineNodes).trim()
-            val nested = item.children()
-                .filter { it.normalName() == "ul" || it.normalName() == "ol" }
-                .joinToString("\n") { renderElementBlock(it, listDepth + 1) }
-            if (firstLine.isBlank() && nested.isBlank()) {
-                return@mapIndexedNotNull null
+            val marker = if (ordered) "$number." else "-"
+            val parts = mutableListOf<String>()
+            val inlineNodes = mutableListOf<Node>()
+
+            fun flushInlineNodes() {
+                if (inlineNodes.isEmpty()) return
+                val text = renderListItemInlineNodes(inlineNodes).trim()
+                inlineNodes.clear()
+                if (text.isBlank()) return
+                if (parts.isEmpty()) {
+                    parts += renderListItemLine(indent, marker, text)
+                } else {
+                    val continuationIndent = indent + " ".repeat(marker.length + 1)
+                    parts += "\n" + text.lines().joinToString("\n") { "$continuationIndent${it.trim()}" }
+                }
             }
-            val marker = if (ordered) "${number++}." else "-"
-            val currentLine = if (firstLine.isBlank()) "" else renderListItemLine(indent, marker, firstLine)
-            listOf(currentLine, nested)
-                .filter { it.isNotBlank() }
-                .joinToString("\n")
+
+            for (node in item.childNodes()) {
+                if (node is Element && node.normalName() in setOf("ul", "ol")) {
+                    flushInlineNodes()
+                    renderElementBlock(node, listDepth + 1).takeIf { it.isNotBlank() }?.let(parts::add)
+                } else {
+                    inlineNodes += node
+                }
+            }
+            flushInlineNodes()
+            if (parts.isEmpty()) return@mapIndexedNotNull null
+            if (ordered) number++
+            parts.joinToString("\n")
         }.joinToString("\n")
     }
 
@@ -434,12 +450,21 @@ private class Renderer(private val baseUrl: String) {
         footnoteHeading = root.select("section[data-footnotes]").firstOrNull()
             ?.directFootnoteHeadingMarkdown()
 
-        root.select(
+        val items = root.select(
             "section[data-footnotes] li[id], ol.footnotes li[id], ol[class*=footnote] li[id], ol.references li[id]",
-        ).forEachIndexed { index, item ->
+        )
+        val reservedIds = items.map { cleanFootnoteId(it.id()) }
+            .filter { it.matches(footnoteNumberPattern) }.toSet()
+        items.forEachIndexed { index, item ->
             val rawId = item.id()
             val cleanedId = cleanFootnoteId(rawId)
-            val id = cleanedId.takeIf { it.matches(footnoteNumberPattern) } ?: (index + 1).toString()
+            val id = cleanedId.takeIf { it.matches(footnoteNumberPattern) }
+                ?: footnoteTargets[rawId]
+                ?: run {
+                    var candidate = index + 1
+                    while (candidate.toString() in reservedIds || candidate.toString() in footnotes) candidate++
+                    candidate.toString()
+                }
             footnoteTargets[rawId] = id
             footnoteTargets[cleanedId] = id
             if (id !in footnotes) {

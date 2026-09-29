@@ -212,6 +212,42 @@ class PageMetadataExtractorTest {
     }
 
     @Test
+    fun `self referencing schema image falls back to open graph image`() {
+        val metadata = extract(
+            """
+            <meta property="og:image" content="/fallback.png">
+            <script type="application/ld+json">
+              {"@graph": [
+                {"@type": "Article", "image": {"@id": "#image"}},
+                {"@type": "ImageObject", "@id": "#image"}
+              ]}
+            </script>
+            <article><p>Article body.</p></article>
+            """.trimIndent(),
+        )
+
+        assertEquals("https://example.com/fallback.png", metadata.image)
+    }
+
+    @Test
+    fun `image candidate after unresolved self reference is preserved`() {
+        val metadata = extract(
+            """
+            <script type="application/ld+json">
+              {"@graph": [
+                {"@type": "Article", "image": [{"@id": "#missing-url"}, {"@id": "#valid"}]},
+                {"@type": "ImageObject", "@id": "#missing-url"},
+                {"@type": "ImageObject", "@id": "#valid", "contentUrl": "/valid.png"}
+              ]}
+            </script>
+            <article><p>Article body.</p></article>
+            """.trimIndent(),
+        )
+
+        assertEquals("https://example.com/valid.png", metadata.image)
+    }
+
+    @Test
     fun `placeholder author is rejected`() {
         val metadata = extract("""<meta name="author" content="admin"><article><h1>Title</h1></article>""")
 

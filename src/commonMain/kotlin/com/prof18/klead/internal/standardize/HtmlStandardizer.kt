@@ -28,11 +28,18 @@ internal object HtmlStandardizer {
     private fun normalizeTables(content: Element) {
         content.select("table").forEach { table ->
             val cells = table.directTableCells()
-            if (table.hasClass("layout") || cells.size == 1) {
-                val nodes = cells.firstOrNull()?.childNodes()?.toList().orEmpty()
-                nodes.forEach { table.before(it) }
-                table.remove()
+            if (!table.hasClass("layout") && cells.size != 1) return@forEach
+            for (cell in cells) {
+                val nodes = cell.childNodes().toList()
+                if (cells.size == 1) {
+                    nodes.forEach { table.before(it) }
+                } else {
+                    val block = Element("div")
+                    nodes.forEach { block.appendChild(it) }
+                    table.before(block)
+                }
             }
+            table.remove()
         }
     }
 
