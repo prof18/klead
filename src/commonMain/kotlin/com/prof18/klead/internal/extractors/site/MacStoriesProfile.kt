@@ -10,6 +10,7 @@ internal object MacStoriesProfile : DomExtractor {
     override val domains: Set<String> = setOf("macstories.net")
     override val postContentRemoveSelectors: List<String> = listOf(
         ".view-full-size",
+        ".info-box > p.icon",
     )
 
     override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {

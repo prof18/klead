@@ -629,6 +629,31 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `macstories info box keeps its note without the decorative icon`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The article discusses how local models run on the Mac Studio and explains the setup used for everyday agent work.</p>
+                  <aside class="info-box">
+                    <p>The author serves <a href="https://github.com/jundot/omlx">oMLX</a> to an iPhone over Tailscale.</p>
+                    <p class="icon"><svg viewBox="0 0 120 120"><circle r="60"></circle></svg></p>
+                  </aside>
+                  <p>The next paragraph continues the comparison and should stay directly after the note in the reader output.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://www.macstories.net/stories/example/",
+            options = testOptions(debug = true),
+        )
+
+        val html = result.content.requireHtml()
+        assertTrue(html.contains("The author serves"), html)
+        assertTrue(html.contains("https://github.com/jundot/omlx"), html)
+        assertTrue(html.contains("The next paragraph continues"), html)
+        assertFalse(html.contains("<svg"), html)
+        assertFalse(html.contains("class=\"icon\""), html)
+    }
+
+    @Test
     fun `dw profile removes article chrome and restores templated image`() {
         val result = parseHtmlForTest(
             html = """
