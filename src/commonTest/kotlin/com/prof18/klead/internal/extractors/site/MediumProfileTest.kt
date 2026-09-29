@@ -9,6 +9,43 @@ import kotlin.test.assertTrue
 
 class MediumProfileTest {
     @Test
+    fun `medium custom domain keeps subtitle while removing adjacent byline and actions`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><head>
+                  <meta property="al:android:package" content="com.medium.reader">
+                  <meta property="og:title" content="A practical guide">
+                </head><body><article>
+                  <aside><p>Top highlight</p></aside>
+                  <div>
+                    <div><h1 class="pw-post-title">A practical guide</h1></div>
+                    <div>
+                      <h2 class="pw-subtitle-paragraph">A useful subtitle about the article</h2>
+                      <div><a data-testid="authorName" href="/author">Article author</a>
+                        <span data-testid="storyReadTime">5 min read</span>
+                        <a data-testid="headerClapButton" href="/clap">93</a></div>
+                    </div>
+                    <h2>Introduction</h2>
+                    <p class="pw-post-body-paragraph">The first paragraph explains the topic in enough detail to be selected as the article body.</p>
+                    <p class="pw-post-body-paragraph">The second paragraph provides more context and confirms that the substantive text remains.</p>
+                  </div>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://publication.example/story",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertEquals(listOf("medium"), result.debug["extractorIds"])
+        assertTrue(markdown.contains("A useful subtitle about the article"))
+        assertTrue(markdown.contains("The first paragraph explains the topic"))
+        assertFalse(markdown.contains("Top highlight"))
+        assertFalse(markdown.contains("Article author"))
+        assertFalse(markdown.contains("5 min read"))
+        assertFalse(markdown.contains("93"))
+    }
+
+    @Test
     fun `medium custom domain removes header controls and image hint but keeps image and caption`() {
         val result = parseHtmlForTest(
             html = """

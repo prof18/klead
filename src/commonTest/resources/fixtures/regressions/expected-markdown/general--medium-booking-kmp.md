@@ -87,12 +87,6 @@ For organisations considering KMP, it is vital to recognise that performance dat
 
 An unexpected but significant outcome of this migration was the emergence of iOS engineers as active contributors to the shared Kotlin repository.
 
-## Get Diego Gómez Olvera’s stories in your inbox
-
-Join Medium for free to get updates from this writer.
-
-Remember me for faster sign in
-
 Under the previous dual-implementation model, contributing to a different platform was a daunting task that required mastering an entirely different language and codebase, with no defined ownership structure. KMP transformed this dynamic by making the core logic accessible to any developer comfortable with Kotlin. This allowed iOS engineers to engage more deeply with the system: interpreting the logic, validating behaviours, and eventually providing patches. Beyond technical efficiency, KMP fosters a shift from mere code sharing to a model of collaborative, shared ownership.
 
 However, engineering leads must manage expectations regarding the iOS developer experience. Because Xcode lacks native Kotlin support, developers miss out on standard IDE features such as syntax highlighting, code navigation, and autocomplete. While debugging can be handled via the unofficial LLDB-based Xcode Kotlin plugin and symbolicated crash logs provide visibility into Kotlin stack frames, the tooling gap remains a factor to consider.
