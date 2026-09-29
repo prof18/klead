@@ -18,3 +18,10 @@ Trusted YouTube, X/Twitter, Instagram, and Vimeo iframe URLs are narrow iframe e
 Safe image data URLs such as `data:image/png` are preserved. The parser does not execute JavaScript and does not use WebView, browser DOM, GraalJS, or Compose rendering.
 
 Inline layout declarations, image dimensions, code whitespace, semantic emphasis, and SVG/MathML visual styling are preserved in cleaned HTML.
+
+For unrecognized Kill the Newsletter templates, a generic cleanup removes only
+layout declarations (margin, padding, border, `box-shadow`, and non-media width and
+height), legacy layout attributes (`align`, `valign`, `border`, `cellpadding`,
+`cellspacing`) and non-media `width`/`height` attributes. Unknown and semantic
+declarations are kept, media dimensions are kept, and code, SVG/MathML and data
+tables are not modified. This is presentation cleanup, not content deletion.

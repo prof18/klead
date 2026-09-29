@@ -32,6 +32,7 @@ import com.prof18.klead.internal.removal.RemovalPolicy
 import com.prof18.klead.internal.standardize.HtmlEmbedNormalizer
 import com.prof18.klead.internal.standardize.HtmlPresentationNormalizer
 import com.prof18.klead.internal.standardize.HtmlStandardizer
+import com.prof18.klead.internal.standardize.NewsletterLayoutNormalizer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -229,6 +230,7 @@ internal object KleadParser {
             matchedExtractors.filterIsInstance<DomExtractor>()
                 .forEach { it.postProcess(content, contentExtractorContext, removals) }
         }
+        applyGenericNewsletterLayout(content, url, extractorResult, timings, timingPrefix)
         timings.measure("$timingPrefix.htmlStandardizer") {
             HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title)
         }
@@ -245,6 +247,21 @@ internal object KleadParser {
             timings = timings,
             timingPrefix = timingPrefix,
         )
+    }
+
+    /** Layout-only fallback for unrecognized Kill the Newsletter templates; publisher results bypass it. */
+    private fun applyGenericNewsletterLayout(
+        content: Element,
+        url: String,
+        extractorResult: ExtractorResult?,
+        timings: ParseTimings,
+        timingPrefix: String,
+    ) {
+        if (extractorResult != null || url.hostOrNull() != KILL_THE_NEWSLETTER_HOST) return
+        if (!NewsletterLayoutNormalizer.hasEligiblePresentationTable(content)) return
+        timings.measure("$timingPrefix.newsletterLayoutNormalize") {
+            NewsletterLayoutNormalizer.normalize(content)
+        }
     }
 
     private fun buildParsedResult(
@@ -383,5 +400,6 @@ internal object KleadParser {
         return WORD_REGEX.findAll(clone.text()).count()
     }
 
+    private const val KILL_THE_NEWSLETTER_HOST = "kill-the-newsletter.com"
     private val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
 }

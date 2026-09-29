@@ -1,32 +1,17 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.standardize.NewsletterLayoutNormalizer
 
 /** Applied only after a newsletter profile has selected its editorial content. */
 internal object NewsletterDomNormalizer {
     fun normalize(content: Element) {
-        content.select("table[role=presentation]").toList().asReversed().forEach { table ->
-            table.children().toList().forEach { child ->
-                when (child.normalName()) {
-                    "thead", "tbody", "tfoot" -> {
-                        child.children().filter { it.normalName() == "tr" }.forEach(::flattenRow)
-                        child.unwrap()
-                    }
-
-                    "tr" -> flattenRow(child)
-                }
-            }
-            table.tagName("div")
-            table.removeAttr("role")
-        }
+        NewsletterLayoutNormalizer.flattenPresentationTables(content)
         (listOf(content) + content.select("*")).distinct().forEach { element ->
             if (element.normalName() in VECTOR_ELEMENTS ||
                 element.parents().any { it.normalName() in VECTOR_ELEMENTS }
             ) {
                 return@forEach
-            }
-            if (element.normalName() in TABLE_PARTS && element.parents().none { it.normalName() == "table" }) {
-                element.tagName("div")
             }
             normalizeStyle(element)
             if (element.normalName() == "font") element.removeAttr("size")
@@ -36,15 +21,6 @@ internal object NewsletterDomNormalizer {
                 element.removeAttr("height")
             }
         }
-    }
-
-    private fun flattenRow(row: Element) {
-        row.children().filter { it.normalName() == "td" || it.normalName() == "th" }.forEach { cell ->
-            cell.tagName("div")
-            cell.removeAttr("colspan")
-            cell.removeAttr("rowspan")
-        }
-        row.unwrap()
     }
 
     private fun normalizeStyle(element: Element) {
@@ -62,7 +38,6 @@ internal object NewsletterDomNormalizer {
         if (semanticStyles.isNotEmpty()) element.attr("style", semanticStyles.joinToString(";"))
     }
 
-    private val TABLE_PARTS = setOf("thead", "tbody", "tfoot", "tr", "td", "th")
     private val VECTOR_ELEMENTS = setOf("svg", "math")
     private val MEDIA_ELEMENTS = setOf("img", "video", "svg", "canvas")
     private val LAYOUT_ATTRIBUTES = listOf(

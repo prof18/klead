@@ -23,3 +23,14 @@ conversion. Email mastheads, subscription controls and explicitly sponsored
 modules are omitted; editorial sections, links and images remain in reading order.
 Presentation tables are flattened without repeating nested cell text. Tables that
 carry data retain their rows and cells and follow the normal table output rules.
+
+Unrecognized newsletters get a narrower, layout-only cleanup. It runs only for
+`kill-the-newsletter.com` sources (exact host of the source URL, not canonical
+metadata) when no extractor produced a result and the selected content contains a
+`table[role=presentation]`. It runs after the removal pipeline and extractor
+post-processing, and before final standardization, so hidden elements are already
+gone. Presentation tables become `div`s (rows, groups, captions and cells keep
+their attributes and IDs); code, SVG/MathML, tables without the presentation role
+and `col`/`colgroup` tables are left untouched. Unknown template chrome such as
+mastheads, sponsors and footers can remain, and layout tables without the
+presentation role are not guessed.
