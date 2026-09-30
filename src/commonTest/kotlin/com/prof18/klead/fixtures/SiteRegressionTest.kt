@@ -27,6 +27,57 @@ class SiteRegressionTest {
     }
 
     @Test
+    fun `Brendan Gregg article excludes book promotions recent posts and comments`() {
+        val fixture = "brendangregg--why-i-joined-openai"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(fixture, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+        val cleanedHtml = result.content.requireHtml()
+
+        assertEquals("Why I joined OpenAI", result.metadata.title)
+        assertTrue(markdown.startsWith("The staggering and fast-growing cost of AI datacenters"))
+        assertTrue(markdown.contains("## Building Orac"))
+        assertTrue(markdown.contains("## What's next for me"))
+        assertTrue(markdown.contains("chatgpt_orac_01.png"))
+        assertTrue(markdown.contains("This is also a personal post: no one asked me to write this."))
+        listOf(
+            "bookcover",
+            "BPF Performance Tools book",
+            "Recent posts:",
+            "Leaving Intel",
+            "Site Navigation",
+            "Brendan Gregg's Blog",
+            "Disqus comments",
+            "07 Feb 2026",
+        ).forEach { clutter ->
+            assertFalse(markdown.contains(clutter), "Unexpected chrome in Markdown: $clutter")
+            assertFalse(cleanedHtml.contains(clutter), "Unexpected chrome in HTML: $clutter")
+        }
+    }
+
+    @Test
+    fun `Lucumr article starts with prose instead of the decorative canvas and masthead`() {
+        val fixture = "lucumr--building-pi-with-pi"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(fixture, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+        val cleanedHtml = result.content.requireHtml()
+
+        assertEquals("Building Pi With Pi", result.metadata.title)
+        assertEquals("Armin Ronacher", result.metadata.author)
+        assertTrue(markdown.startsWith("[Pi](https://pi.dev/) is now part of Earendil"))
+        assertTrue(markdown.contains("## Open Source Is About Hard Problems Worth Fixing"))
+        assertTrue(markdown.contains("pi-issue-tracker-volume.png"))
+        assertTrue(markdown.contains("pi-issue-session-widget.png"))
+        assertTrue(markdown.contains("[^1]: To me,"))
+        assertFalse(cleanedHtml.contains("<canvas"))
+        assertFalse(cleanedHtml.contains("Thoughts and Writings"))
+        assertFalse(markdown.contains("© Copyright"))
+        assertFalse(markdown.contains("This entry was tagged"))
+        assertFalse(markdown.contains("copy as"))
+    }
+
+    @Test
     fun `McKenna article omits site and author chrome while keeping cover and complete story`() {
         val html = CommonTestResources.read("fixtures/regressions/input-html/$MCKENNA_FIXTURE.html")
         val result = parseHtmlForTest(html, FixtureLoader.extractUrl(MCKENNA_FIXTURE, html), testOptions())

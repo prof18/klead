@@ -14,6 +14,7 @@ import com.prof18.klead.internal.extractors.site.AxiosProfile
 import com.prof18.klead.internal.extractors.site.BBCProfile
 import com.prof18.klead.internal.extractors.site.BeehiivProfile
 import com.prof18.klead.internal.extractors.site.BloggerProfile
+import com.prof18.klead.internal.extractors.site.BrendanGreggProfile
 import com.prof18.klead.internal.extractors.site.BusinessInsiderProfile
 import com.prof18.klead.internal.extractors.site.BuzzFeedProfile
 import com.prof18.klead.internal.extractors.site.ChatGptExtractor
@@ -47,6 +48,7 @@ import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
 import com.prof18.klead.internal.extractors.site.KarakartalProfile
 import com.prof18.klead.internal.extractors.site.KurucInfoProfile
 import com.prof18.klead.internal.extractors.site.LessWrongProfile
+import com.prof18.klead.internal.extractors.site.LucumrProfile
 import com.prof18.klead.internal.extractors.site.MacRumorsProfile
 import com.prof18.klead.internal.extractors.site.MacStoriesProfile
 import com.prof18.klead.internal.extractors.site.MaggieAppletonProfile
@@ -179,6 +181,8 @@ internal object DefaultExtractors {
         ElementorArchiveProfile,
         ScpWikiProfile,
         SimonWillisonProfile,
+        LucumrProfile,
+        BrendanGreggProfile,
         SkyTg24Profile,
         LessWrongProfile,
         MaggieAppletonProfile,
