@@ -7,6 +7,53 @@ import kotlin.test.assertTrue
 
 class MainContentDetectorTest {
     @Test
+    fun `body fallback selects a single titled blog post outside its sidebar`() {
+        val document = Ksoup.parse(
+            """
+            <div class="sidebar"><h1>Example Blog</h1><p>Site description and copyright.</p></div>
+            <div class="content container">${titledPost("story")}</div>
+            """.trimIndent(),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("story", detected.element.id())
+        assertEquals("div.post", detected.selectedSelector)
+    }
+
+    @Test
+    fun `body fallback keeps multiple titled posts in a blog listing`() {
+        val detected = MainContentDetector.detect(Ksoup.parse(titledPost("first") + titledPost("second")))
+
+        assertEquals("body", detected.selectedSelector)
+        assertTrue(detected.element.text().contains("first"))
+        assertTrue(detected.element.text().contains("second"))
+    }
+
+    @Test
+    fun `body fallback keeps surrounding content when post has no title signal`() {
+        val document = Ksoup.parse(titledPost("story").replace("post-title", "section-title"))
+
+        assertEquals("body", MainContentDetector.detect(document).selectedSelector)
+    }
+
+    @Test
+    fun `short titled post does not replace the body fallback`() {
+        val document = Ksoup.parse("<div class='post'><h1 class='post-title'>Small card</h1><p>Teaser.</p></div>")
+
+        assertEquals("body", MainContentDetector.detect(document).selectedSelector)
+    }
+
+    private fun titledPost(id: String): String =
+        """
+        <div class="post" id="$id">
+          <h1 class="post-title">Blog story $id</h1><span class="post-date">15 Jan 2026</span>
+          <p>This article contains the main story with enough natural language and detail to identify the reading surface. It describes how the author built a useful developer tool, listened to feedback from colleagues, and improved the experience over several years. The sidebar contains a site description, navigation links, and copyright text that readers should not need to see before the story.</p>
+          <p>The second paragraph adds more context about the development process and its lessons. The post is substantial enough to distinguish it from a short teaser or recommendation card, while the title and date provide additional evidence of a conventional blog article layout.</p>
+        </div>
+        """.trimIndent()
+
+    @Test
     fun `extractor content selector wins`() {
         val document = Ksoup.parse(
             """

@@ -33,6 +33,28 @@ class SiteRegressionTest {
     }
 
     @Test
+    fun `Paul Samuels post omits sidebar and repeated title while keeping the complete story`() {
+        val name = "paul-samuels-make-nice-tools"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$name.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(name, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+
+        assertEquals("Make nice tools", result.metadata.title)
+        assertTrue(markdown.startsWith("I spend a lot of time thinking about developer experience"))
+        assertTrue(markdown.contains("## The Problem"))
+        assertTrue(markdown.contains("docker compose up service-a"))
+        assertTrue(markdown.contains("dev-companion-01.png"))
+        assertTrue(markdown.contains("## Wrap up"))
+        assertTrue(markdown.contains("has more than paid off for the personal investment"))
+        listOf("paul-samuels.com</h", "sidebar", "post-title", "post-date", "All rights reserved").forEach { clutter ->
+            assertFalse(result.content.requireHtml().contains(clutter), "Unexpected chrome: $clutter")
+        }
+        assertFalse(markdown.contains("## Make nice tools"))
+        assertFalse(markdown.contains("Thoughts on software development languages"))
+        assertFalse(markdown.contains("15 Jan 2026"))
+    }
+
+    @Test
     fun `Brendan Gregg article excludes book promotions recent posts and comments`() {
         val fixture = "brendangregg--why-i-joined-openai"
         val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
@@ -59,6 +81,44 @@ class SiteRegressionTest {
             assertFalse(markdown.contains(clutter), "Unexpected chrome in Markdown: $clutter")
             assertFalse(cleanedHtml.contains(clutter), "Unexpected chrome in HTML: $clutter")
         }
+    }
+
+    @Test
+    fun `Hashnode article with long related previews omits opening chrome and keeps the complete story`() {
+        val fixture = "pyricau--launch-response-time"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(fixture, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+        val cleanedHtml = result.content.requireHtml()
+
+        assertEquals("Launch Response Time", result.metadata.title)
+        assertEquals("Pierre-Yves Ricau", result.metadata.author)
+        assertTrue(markdown.startsWith("![Launch Response Time](https://cdn.hashnode.com/"))
+        assertTrue(markdown.contains("> Header image: *Caterpillar* [by Romain Guy]"))
+        assertTrue(markdown.contains("## Terminology"))
+        assertTrue(markdown.contains("### Cold Launch"))
+        assertTrue(markdown.contains("### Hot Launch"))
+        assertTrue(markdown.contains("### Warm Launch"))
+        assertTrue(markdown.contains("## Conclusion"))
+        assertTrue(markdown.contains("before I hit publish."))
+        listOf(
+            "Skip to main content",
+            "Command Palette",
+            "Search for a command to run",
+            "September 26, 2021",
+            "View as Markdown",
+            "My pronouns are",
+            "On this page",
+            "More from this blog",
+            "New roots, same Square",
+            "Cutting some Slack",
+            "Comments (2)",
+        ).forEach { clutter ->
+            assertFalse(markdown.contains(clutter), "Unexpected Markdown chrome: $clutter")
+            assertFalse(cleanedHtml.contains(clutter), "Unexpected HTML chrome: $clutter")
+        }
+        assertFalse(markdown.contains("## Launch Response Time"))
+        assertFalse(cleanedHtml.contains(">Launch Response Time</h"))
     }
 
     @Test
