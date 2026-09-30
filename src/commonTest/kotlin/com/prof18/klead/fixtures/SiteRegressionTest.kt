@@ -32,6 +32,35 @@ class SiteRegressionTest {
     }
 
     @Test
+    fun `Brendan Gregg article excludes book promotions recent posts and comments`() {
+        val fixture = "brendangregg--why-i-joined-openai"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(fixture, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+        val cleanedHtml = result.content.requireHtml()
+
+        assertEquals("Why I joined OpenAI", result.metadata.title)
+        assertTrue(markdown.startsWith("The staggering and fast-growing cost of AI datacenters"))
+        assertTrue(markdown.contains("## Building Orac"))
+        assertTrue(markdown.contains("## What's next for me"))
+        assertTrue(markdown.contains("chatgpt_orac_01.png"))
+        assertTrue(markdown.contains("This is also a personal post: no one asked me to write this."))
+        listOf(
+            "bookcover",
+            "BPF Performance Tools book",
+            "Recent posts:",
+            "Leaving Intel",
+            "Site Navigation",
+            "Brendan Gregg's Blog",
+            "Disqus comments",
+            "07 Feb 2026",
+        ).forEach { clutter ->
+            assertFalse(markdown.contains(clutter), "Unexpected chrome in Markdown: $clutter")
+            assertFalse(cleanedHtml.contains(clutter), "Unexpected chrome in HTML: $clutter")
+        }
+    }
+
+    @Test
     fun `Lucumr article starts with prose instead of the decorative canvas and masthead`() {
         val fixture = "lucumr--building-pi-with-pi"
         val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
