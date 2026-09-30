@@ -147,7 +147,8 @@ internal object HtmlCodeNormalizer {
 
     private fun normalizeStandalonePreformattedCode(content: Element) {
         content.select("code[style*=white-space]").forEach { code ->
-            if (code.parents().any { it.normalName() == "pre" }) return@forEach
+            // Whitespace preservation does not make code in prose or captions a block.
+            if (code.parents().any { it.normalName() in INLINE_CODE_CONTEXT_TAGS }) return@forEach
             if (!code.attr("style").contains("pre", ignoreCase = true)) return@forEach
             val pre = Element("pre")
             code.replaceWith(pre)
@@ -335,6 +336,7 @@ internal object HtmlCodeNormalizer {
     private val CODE_LINE_NUMBER_PATTERN = Regex("""\d{1,5}""")
     private val CODE_LINE_CELL_TAGS = setOf("div", "span")
     private val CODE_LINE_CONTAINER_TAGS = setOf("div", "span")
+    private val INLINE_CODE_CONTEXT_TAGS = setOf("pre", "p", "figcaption", "h1", "h2", "h3", "h4", "h5", "h6")
     private const val CODE_CHROME_ANCESTOR_DEPTH = 4
     private const val CODE_CHROME_MAX_LENGTH = 80
     private const val MAX_GENERIC_LANGUAGE_CLASSES = 3
