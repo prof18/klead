@@ -98,6 +98,7 @@ internal object MainContentDetector {
         var selected = refineListingParent(sorted.first(), sorted)
         refineBroadContainerToDirectArticle(selected, sorted, scoreOf)?.let { selected = it }
         refineBroadContainerToFocusedDescendant(selected, sorted, scoreOf)?.let { selected = it }
+        refineBroadContainerToNestedArticle(selected, sorted, scoreOf)?.let { selected = it }
         if (selected.element.tagName() == "body") {
             refineBodyToFocusedCandidate(selected, sorted, scoreOf)?.let { selected = it }
         }
@@ -200,6 +201,38 @@ internal object MainContentDetector {
         if (focusedDescendants.size != 1) return null
 
         return focusedDescendants.single()
+    }
+
+    private fun refineBroadContainerToNestedArticle(
+        selected: Candidate,
+        candidates: List<Candidate>,
+        scoreOf: (Element) -> ContentScore,
+    ): Candidate? {
+        if (selected.selector !in SEMANTIC_MAIN_SELECTORS || !selected.element.hasSiteNavigationHeader()) return null
+        // Direct article children are already handled above, including multi-article listings.
+        if (selected.element.children().any { it.normalName() == "article" || it.attr("role") == "article" }) {
+            return null
+        }
+        val article = candidates.singleOrNull { candidate ->
+            candidate.selector in ARTICLE_SELECTORS &&
+                candidate.element.isDescendantOf(selected.element) &&
+                scoreOf(candidate.element).wordCount >= BROAD_REFINEMENT_MIN_WORDS
+        } ?: return null
+        val selectedScore = scoreOf(selected.element)
+        val articleScore = scoreOf(article.element)
+        if (
+            articleScore.total < selectedScore.total * BROAD_REFINEMENT_MIN_SCORE_RATIO &&
+            articleScore.wordCount < selectedScore.wordCount * BROAD_REFINEMENT_MIN_WORD_RATIO
+        ) {
+            return null
+        }
+        return article
+    }
+
+    private fun Element.hasSiteNavigationHeader(): Boolean = children().any { child ->
+        if (child.normalName() != "header" || child.selectFirst("h1") != null) return@any false
+        val hasSkipLink = id().isNotBlank() && child.select("a[href]").any { it.attr("href") == "#${id()}" }
+        child.selectFirst("nav, [role=navigation]") != null || hasSkipLink
     }
 
     private fun refineBodyToFocusedCandidate(

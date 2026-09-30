@@ -9,6 +9,34 @@ import kotlin.test.assertTrue
 
 class SiteRegressionTest {
     @Test
+    fun `McKenna article omits site and author chrome while keeping cover and complete story`() {
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$MCKENNA_FIXTURE.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(MCKENNA_FIXTURE, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+
+        assertEquals("Demo Why Not What", result.metadata.title)
+        assertTrue(markdown.startsWith("![Demo Why Not What](https://cdn.hashnode.com/uploads/covers/"))
+        assertTrue(markdown.contains("## Intro"))
+        assertTrue(markdown.contains("This year at Square we started shipping aggressively."))
+        assertTrue(markdown.contains("## Demo Recipe"))
+        assertTrue(markdown.contains("## Know Your Audience"))
+        assertTrue(markdown.contains("You'll never lose a sale again!"))
+        listOf(
+            "Matt McKenna's Blog",
+            "Skip to main content",
+            "Command Palette",
+            "Search for a command to run",
+            "## Demo Why Not What",
+            "March 23, 2026",
+            "View as Markdown",
+            "Android GDE",
+            "[M]",
+        ).forEach { clutter ->
+            assertFalse(markdown.contains(clutter), "Unexpected chrome: $clutter")
+        }
+    }
+
+    @Test
     fun `GitHub Blog article omits opening metadata and share list while keeping the story`() {
         val html = CommonTestResources.read("fixtures/regressions/input-html/$GITHUB_BLOG_FIXTURE.html")
         val result = parseHtmlForTest(
@@ -106,6 +134,7 @@ class SiteRegressionTest {
         .trimEnd()
 
     private companion object {
+        const val MCKENNA_FIXTURE = "mmckenna-demo-why-not-what"
         const val GITHUB_BLOG_FIXTURE = "github-blog-copilot-rust-share-chrome"
         const val ANDROID_AUTHORITY_FIXTURE = "androidauthority-custom-rom-development"
         const val KT_ACADEMY_FIXTURE = "kt-academy-run-blocking"
