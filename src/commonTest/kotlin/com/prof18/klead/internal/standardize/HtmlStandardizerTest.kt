@@ -1814,6 +1814,48 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `numbered bold paragraphs stay beside their section content`() {
+        val article = article(
+            """
+            <article>
+              <h2>What did not work</h2>
+              <p><strong>1. Using <code>@import SQLCipher</code> in a bridge</strong></p>
+              <p>The first approach compiled but did not fix symbol resolution.</p>
+              <p><b>2. PRAGMA key instead of the C API</b></p>
+              <p>The second approach still called the system library.</p>
+              <h2>The solution</h2>
+              <p>Load the framework explicitly.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val expectedParagraphs = article.select("p").map { it.html() }
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertTrue(article.select("section[data-footnotes]").isEmpty())
+        assertEquals(expectedParagraphs, article.select("p").map { it.html() })
+    }
+
+    @Test
+    fun `separate bold numeric markers still normalize to loose footnotes`() {
+        val article = article(
+            """
+            <article>
+              <p>Body text.<sup>1</sup> More text.<sup>2</sup></p>
+              <p><strong>1</strong> First definition.</p>
+              <p><b>2</b> Second definition.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val items = article.select("section[data-footnotes] li")
+        assertEquals(listOf("fn1", "fn2"), items.map { it.id() })
+        assertEquals(listOf("First definition.", "Second definition."), items.map { it.text() })
+    }
+
+    @Test
     fun `loose bold sup footnotes preserve label and trailing content`() {
         val article = article(
             """

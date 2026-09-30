@@ -295,8 +295,10 @@ internal object HtmlFootnoteListNormalizer {
             firstElement?.normalName() == "span" -> firstElement.selectFirst("sup")?.text()?.trim()
 
             firstElement != null && firstElement.normalName() in setOf("strong", "b") -> {
+                // Bold numbered section labels are prose; only a standalone number or an
+                // explicit superscript identifies a loose footnote marker.
                 firstElement.selectFirst("sup")?.text()?.trim()
-                    ?: FOOTNOTE_NUMBER_PREFIX_PATTERN.find(firstElement.text().trim())?.groupValues?.get(1)
+                    ?: FOOTNOTE_NUMBER_MARKER_PATTERN.matchEntire(firstElement.text().trim())?.groupValues?.get(1)
             }
 
             else -> null
@@ -406,7 +408,7 @@ internal object HtmlFootnoteListNormalizer {
 
     private fun String.isNamedFootnoteDefinitionId(): Boolean = matches(NAMED_FOOTNOTE_DEFINITION_ID_PATTERN)
 
-    private val FOOTNOTE_NUMBER_PREFIX_PATTERN = Regex("""^(\d{1,4})(?:$|[\].):]|\s)""")
+    private val FOOTNOTE_NUMBER_MARKER_PATTERN = Regex("""^(\d{1,4})[\].):]?$""")
     private val PARAGRAPH_FOOTNOTE_ID_PATTERN = Regex("""(?i)^(?:ftnt|_ftn)\d+$""")
     private val NAMED_FOOTNOTE_DEFINITION_ID_PATTERN = Regex("""(?i)^(?:Footnote|_ftn)\D*\d+$""")
     private val FOOTNOTE_MARKER_TAGS = setOf("sup", "strong", "b")
