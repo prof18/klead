@@ -10,6 +10,28 @@ import kotlin.test.assertTrue
 
 class SiteRegressionTest {
     @Test
+    fun `Paul Samuels post omits sidebar and repeated title while keeping the complete story`() {
+        val name = "paul-samuels-make-nice-tools"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$name.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(name, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+
+        assertEquals("Make nice tools", result.metadata.title)
+        assertTrue(markdown.startsWith("I spend a lot of time thinking about developer experience"))
+        assertTrue(markdown.contains("## The Problem"))
+        assertTrue(markdown.contains("docker compose up service-a"))
+        assertTrue(markdown.contains("dev-companion-01.png"))
+        assertTrue(markdown.contains("## Wrap up"))
+        assertTrue(markdown.contains("has more than paid off for the personal investment"))
+        listOf("paul-samuels.com</h", "sidebar", "post-title", "post-date", "All rights reserved").forEach { clutter ->
+            assertFalse(result.content.requireHtml().contains(clutter), "Unexpected chrome: $clutter")
+        }
+        assertFalse(markdown.contains("## Make nice tools"))
+        assertFalse(markdown.contains("Thoughts on software development languages"))
+        assertFalse(markdown.contains("15 Jan 2026"))
+    }
+
+    @Test
     fun `Brendan Gregg article excludes book promotions recent posts and comments`() {
         val fixture = "brendangregg--why-i-joined-openai"
         val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
