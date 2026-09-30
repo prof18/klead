@@ -16,7 +16,34 @@ internal object XProfile : DomExtractor {
         super.matches(context) || context.document.selectFirst("""[data-testid="twitterArticleRichTextView"]""") != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? =
-        extractLongformArticle(context) ?: extractConversation(context)
+        extractLoggedOutArticle(context) ?: extractLongformArticle(context) ?: extractConversation(context)
+
+    private fun extractLoggedOutArticle(context: DomExtractorContext): ExtractorResult? {
+        val source = context.document.select("""[itemtype="https://schema.org/Article"]""")
+            .firstOrNull { it.selectFirst(".x-article-body")?.text()?.isNotBlank() == true }
+            ?: return null
+        val body = source.selectFirst(".x-article-body") ?: return null
+        val title = source.selectFirst("[itemprop=headline]")
+        val article = Element("article")
+        source.selectFirst("img[itemprop=image][src]")?.let { image ->
+            article.appendChild(image.cleanXClone())
+        }
+        title?.let { article.appendChild(it.cleanXClone()) }
+        article.appendChild(body.cleanXClone())
+
+        // Select the prose, rather than the surrounding timeline entry: the latter also
+        // contains engagement controls and can be duplicated inside the replies list.
+        return ExtractorResult(
+            contentHtml = article.outerHtml(),
+            metadata = ExtractorMetadata(
+                title = title?.text()?.trim()?.ifBlank { null },
+                author = source.longformAuthor()
+                    ?: context.document.authorFromXOgTitle()
+                    ?: context.authorFromStatusUrl(),
+                site = SITE_NAME,
+            ),
+        )
+    }
 
     private fun extractLongformArticle(context: DomExtractorContext): ExtractorResult? {
         val richText = context.document.selectFirst("""[data-testid="twitterArticleRichTextView"]""") ?: return null
@@ -183,11 +210,12 @@ internal object XProfile : DomExtractor {
         .ifBlank { handle ?: displayName ?: "Comment" }
 
     private fun Element.longformAuthor(): String? {
-        val author = selectFirst("[itemprop=author]") ?: return null
+        val author = selectFirst("[itemprop~=author]") ?: return null
         val name = author.selectFirst("""meta[itemprop="name"]""")
             ?.attr("content")
             ?.trim()
             ?.ifBlank { null }
+            ?: author.selectFirst("[itemprop=name]")?.text()?.trim()?.ifBlank { null }
         val handle = author.selectFirst("""meta[itemprop="additionalName"]""")
             ?.attr("content")
             ?.trim()
