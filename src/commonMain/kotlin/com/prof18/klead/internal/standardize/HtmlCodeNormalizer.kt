@@ -6,6 +6,7 @@ import com.fleeksoft.ksoup.nodes.TextNode
 
 internal object HtmlCodeNormalizer {
     fun normalizeCodeBlocks(content: Element) {
+        val styledCodeBlocks = HtmlStyledCodeNormalizer.normalize(content)
         normalizeWritersideCodeBlocks(content)
         normalizeVersoLeanExamples(content)
         normalizeStandalonePreformattedCode(content)
@@ -20,7 +21,8 @@ internal object HtmlCodeNormalizer {
             }
             code.select(CODE_UI_SELECTOR).remove()
             code.text(normalizeCodeText(code.textWithLineBreaks()))
-            val language = languageFrom(code) ?: languageFrom(pre) ?: languageFromCodeAncestor(pre)
+            val language = languageFrom(code) ?: languageFrom(pre)
+                ?: if (pre in styledCodeBlocks) null else languageFromCodeAncestor(pre)
             if (language != null) {
                 code.attr("data-lang", language)
                 code.addClass("language-$language")
