@@ -1,0 +1,473 @@
+<!-- {"url":"https://paul-samuels.com/blog/2026/01/15/make-nice-tools/"} -->
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+    <head>
+    <link href="https://gmpg.org/xfn/11" rel="profile" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+    <!-- Enable responsiveness on mobile devices-->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1"
+    />
+
+    <title>
+         Make nice tools &middot; paul-samuels.com 
+    </title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/poole.css" />
+    <link rel="stylesheet" href="/css/syntax.css" />
+    <link rel="stylesheet" href="/css/hyde.css" />
+    <link rel="stylesheet" href="/assets/css/tabs.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface" />
+
+    <!-- Icons -->
+    <link
+        rel="apple-touch-icon-precomposed"
+        sizes="144x144"
+        href="/public/apple-touch-icon-144-precomposed.png"
+    />
+    <link rel="shortcut icon" href="/public/favicon.ico" />
+
+    <!-- RSS -->
+    <link
+        rel="alternate"
+        type="application/rss+xml"
+        title="RSS"
+        href="/atom.xml"
+    />
+</head>
+
+
+    <body>
+        <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h1>paul-samuels.com</h1>
+      <p class="lead">Thoughts on software development languages, tools and techniques.</p>
+    </div>
+
+    <ul class="sidebar-nav">
+      <li class="sidebar-nav-item">
+        <a href="/">Home</a>
+      </li>
+
+      
+
+      
+      
+        
+          
+        
+      
+        
+      
+        
+          
+        
+      
+        
+          
+            <li class="sidebar-nav-item">
+              <a href="/about/">About</a>
+            </li>
+          
+        
+      
+        
+          
+            <li class="sidebar-nav-item">
+              <a href="/fga/">Frequently Given Advice</a>
+            </li>
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+        
+          
+        
+      
+    </ul>
+
+    <ul style="list-style-type:none;padding:0px">
+        <li><a href="https://hachyderm.io/@paulio87">@<span class="__cf_email__" data-cfemail="adddccd8c1c4c2959aedc5cccec5d4c9c8dfc083c4c2">[email&#160;protected]</span></a></li>
+        <li><a href="https://bsky.app/profile/paulio87.bsky.social">paulio87.bsky.social</a></li>
+        <li><a href="https://www.linkedin.com/in/paul-samuels-75bb5722/">LinkedIn</a></li>
+    </ul>
+    <p>&copy; Paul Samuels 2026. All rights reserved.</p>
+  </div>
+</div>
+
+
+        <div class="content container"><div class="post">
+  <h1 class="post-title">Make nice tools</h1>
+  <span class="post-date">15 Jan 2026</span>
+  <p>I spend a lot of time thinking about developer experience at all levels, from what makes a helpful error message deep in a framework to how we make people’s dev environments easy to spin up.
+In this post I’ll walk through how a local development tool I wrote evolved over 4.5 years and what that taught me about designing developer facing tools.</p>
+
+<p>This isn’t a post about Docker, SwiftUI or Compose.
+It’s about what I learned building a developer tool that people actually used and what I got wrong along the way.</p>
+
+<hr />
+
+<h2 id="the-problem">The Problem</h2>
+
+<p>For my day job I work in the native apps team at Autotrader on the iOS/platform side of things.
+As a team we don’t only own the Android/iOS code bases, we also own a few backend services that power the apps, the number of backend services has grown over time.
+This means that if you want to make changes to a backend service and test it locally in a simulator you need to spin up all the related services locally.</p>
+
+<p>As a simplified example imagine this setup</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>+-----+     +-----------+     +-----------+
+| iOS |-----| Service A |-----| Service B |
++-----+     +-----------+     +-----------+
+</code></pre></div></div>
+
+<p>To run this locally there are many ways I can configure things.
+One scenario might be that I want to make changes to <code class="language-plaintext highlighter-rouge">Service B</code>, which means I still need to spin up <code class="language-plaintext highlighter-rouge">Service A</code> to allow the communication.</p>
+
+<p>In the beginning this was all done manually - you’d load up the projects for <code class="language-plaintext highlighter-rouge">Service A</code> and <code class="language-plaintext highlighter-rouge">Service B</code> in IntelliJ and run them both locally.
+This worked but it pushed both cognitive and operational complexity onto individual developers, which is exactly where DX debt hurts most.</p>
+
+<hr />
+
+<h2 id="first-solution">First Solution</h2>
+
+<p>Some people will have been screaming “use docker compose” and you’d be right that’s what I did.
+All of our services were already containerised so there was nothing to change there.
+I just needed to write the <code class="language-plaintext highlighter-rouge">docker-compose.yml</code> to configure everything, which I did and it worked fine.</p>
+
+<p>There were a few issues that made me feel uncomfortable stopping here</p>
+
+<ul>
+  <li>Not everyone is comfortable on the command line so this can be intimidating</li>
+  <li>Docker is possibly not a tech a lot of Android/iOS devs delve into</li>
+  <li>The UI isn’t great</li>
+</ul>
+
+<p>To elaborate on that last point the UI for interacting with this new setup would be one of the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker compose up
+docker compose up service-a
+docker compose up service-b
+</code></pre></div></div>
+
+<p>Not everyone knows about reverse history search in bash (<code class="language-plaintext highlighter-rouge">ctrl + r</code>) so scraping around for these commands or pressing up a million times at the prompt isn’t the best experience.
+There’s also an issue with discoverability as you’d need to know the correct spelling of each service you want to run.</p>
+
+<p>It seemed pretty clear that some kind of simple UI would really reduce the barrier to entry for using this tool.</p>
+
+<hr />
+
+<h2 id="put-some-ui-on-it">Put Some UI on it</h2>
+
+<p>I’d dabbled in macOS apps before and honestly not enjoyed the experience too much as all my previous experience was in UIKit.
+Luckily SwiftUI exists so I thought I’d use it as a learning experience to make a menu bar app that essentially wraps the docker compose.</p>
+
+<p>This is what that first version looked like</p>
+
+<p><img src="https://paul-samuels.com/images/dev-companion-01.png" alt="simple first version" /></p>
+
+<p>Yup it’s not going to win any design awards but the power of this abstraction can’t be overstated.</p>
+
+<ul>
+  <li>We are completely abstracting away docker from the mobile app devs</li>
+  <li>All available services are visible and just a button tap away from being started/stopped</li>
+  <li>We show useful debug information like what ports things are running on</li>
+  <li>We show the running status of each service and detect if running via docker or as .jar (read: most likely in IntelliJ)</li>
+</ul>
+
+<p>This wasn’t a quick task and I ended up burning a lot of the midnight oil as it was an interesting task.
+There were lots of gotchas with handling subprocesses and their environments and coordinating lots of state events to the UI.</p>
+
+<p>I was pretty happy with this step until I realised my first mistake…</p>
+
+<hr />
+
+<h2 id="how-do-i-install-it">How do I install it?</h2>
+
+<p>The first lesson was that building a tool isn’t good enough; you need to make it accessible.
+I’m not sure if it’s common knowledge but developers tend to be very <del>lazy</del> energy efficient and having a multi step install is just a recipe for support pain.</p>
+
+<p>It wasn’t long before I added an install script so people could simply run a <code class="language-plaintext highlighter-rouge">curl | bash</code> and enjoy a nicely installed app without manually</p>
+
+<ul>
+  <li>Finding the repo</li>
+  <li>Navigating to releases</li>
+  <li>Downloading the binary</li>
+  <li>Doing some gatekeeper to get it out of quarantine</li>
+  <li>Finally be able to launch the app</li>
+</ul>
+
+<p>Obviously whenever I shared installation instructions I did the good citizen thing and issued a disclaimer that people shouldn’t blindly trust me and pipe my remotely hosted bash script into an interpreter without reading it first.</p>
+
+<hr />
+
+<h2 id="success-and-growing-pains">Success and Growing Pains</h2>
+
+<p>The tool in the form of a macOS menu bar app written in SwiftUI had a good 4 year run.
+New services were added and bugs were fixed and it ended up looking more like this</p>
+
+<p><img src="https://paul-samuels.com/images/dev-companion-02.png" alt="second version" /></p>
+
+<p>One fun lesson that you can see played out in the screen shot is that I added <code class="language-plaintext highlighter-rouge">{ {commit-sha} }</code>, which is populated on a release build with the git sha.
+This was because people have a tendency to not update things, especially when it involved manually running a <code class="language-plaintext highlighter-rouge">curl | bash</code>.
+Although adding some version identifier was helpful for support, it was just a plaster and the actual requirement I wish I noticed earlier is that this really needed to automatically update itself.</p>
+
+<p>As you can see from the growth of services the tool is popular enough to have been updated multiple times <strong>but</strong> it wasn’t popular enough to help people overcome the thought of a steep learning curve required to contribute.
+The project was mostly maintained by myself and in all honesty I’d made some questionable architectural decisions early on and Combine heavy state management made the learning curve steeper than it needed to be.</p>
+
+<p>Another detail that I’d started to notice with the way this had grown is that a long list of services is only good if the user knows how they relate.
+In an evolving estate where many teams contribute it may not be very obvious what services you need to run to enable you to work.
+You could spin up all the services but that’s sometimes overkill and hard on our poor little CPUs.</p>
+
+<p>The project needed change but needed some inspiration…</p>
+
+<hr />
+
+<h2 id="a-reimagining">A Reimagining</h2>
+
+<p>So here I was thinking</p>
+
+<ul>
+  <li>This codebase is a pain to maintain</li>
+  <li>I want to better visualise how services hang together</li>
+  <li>I want more people to be able to contribute</li>
+  <li>I want the tool to autoupdate</li>
+</ul>
+
+<p>My colleague (who doesn’t like being named) was working on a Compose Desktop app to help debug our apps.
+As they’d done all the hard work of getting a project scaffolded and off the ground I decided to see how hard it would be to port the SwiftUI tool to Compose, update the UI and incorporate it into this debug app.</p>
+
+<p>This was actually a perfect opportunity to rethink architectural choices as it was an entirely different language and although I’d consider myself proficient in Kotlin I’d never done Compose so it would be a fun experience.
+Doing the work in this codebase also opened up the contributor pool considerably as now any Android dev could contribute and conveniently all of our iOS devs are solid Kotlin devs already.
+At this point, the limiting factor wasn’t UX polish - it was who felt capable of contributing.</p>
+
+<p>After some fun learning and porting all the process management over I ended up with something like this</p>
+
+<p><img src="https://paul-samuels.com/images/dev-companion-03.png" alt="current version" /></p>
+
+<p>Personally I think I nailed the visualisation requirement as you can now at a glance see what services you’d need running to access different parts of the estate.
+The red connecting lines do actually go black to show that the apps can access services but I hastily made changes to get the anonymised screenshot and messed that detection up.</p>
+
+<p>The other main thing with this tool was the autoupdate ability.
+I leant on having more contributors and got a colleague to write the autoupdate process logic and it works great.
+We even held back giving anyone access to the tool until the autoupdate was available as we just didn’t want to deal with the support.</p>
+
+<p>I was feeling pretty good about this developer experience…</p>
+
+<hr />
+
+<h2 id="arrgghh-sso">Arrgghh SSO</h2>
+
+<p>Then a new requirement came in in the form of services needing to get tokens to communicate to our preprod environment.
+Actually this wasn’t a new thing as I’d just been avoiding doing anything about it for a few years but it was being more broadly rolled out so I couldn’t ignore it anymore.</p>
+
+<p>As with most things I put off, the programming part didn’t actually end up being super complicated.
+Essentially when a service requires an auth token we need to invoke an external helper tool that does all the SSO magic and then inject the returned token into the relevant service when it is started.
+The more complicated part was figuring out how the UI would educate users that they might need to get permission to do this for each service and then signpost how/where they do that.</p>
+
+<p>Once a user is setup they just press the play button like normal and everything is automatic.
+If the user isn’t configured then they get an ⚠️ on the service, which tells them how to resolve the misconfiguration.</p>
+
+<hr />
+
+<h2 id="make-sure-you-are-listening">Make sure you are listening</h2>
+
+<p>Another lesson that I completely missed was tuning into the frequency of support requests.
+Behind the scenes to get all of the networking setup correctly to allow docker to communicate with localhost seamlessly people need to add an entry to <code class="language-plaintext highlighter-rouge">/etc/hosts</code>.
+This was constantly missed but quickly resolved with a trip to the docs.
+Unfortunately no one knew where the docs were so I’d just be dishing out the link constantly.</p>
+
+<p>Instead of redirecting people to the docs and then helping them through the steps I decided to add a “Doctor” command that will diagnose common misconfigurations/issues and give remediation steps.</p>
+
+<p><img src="https://paul-samuels.com/images/dev-companion-doctor.png" alt="doctor" /></p>
+
+<hr />
+
+<h2 id="build-it-remove-friction-and-they-will-come"><del>Build it</del> Remove friction and they will come</h2>
+
+<p>I think there’s a few good victory stories on getting more contributors.
+Some that come to mind are:</p>
+
+<p>A massive eye saver from one of the iOS devs was adding dark mode.
+A pretty impressive feat considering he’d never done Compose and actually didn’t just tweak colours he went full hog and made various components much more pleasing on the eyes.</p>
+
+<p><img src="https://paul-samuels.com/images/dev-companion-04.png" alt="dark mode" /></p>
+
+<p>Another capability added by a few iOS devs was the ability to install the latest development build into your simulator and launch it.
+This is a massive productivity boost especially for web developers who now don’t need to learn how to get the project running and interact with Xcode.
+There is still a requirement to have Xcode installed but after that it’s zero knowledge.</p>
+
+<p>One of the QA engineers added hot reloading to make the development experience on the tool that improves developer experience better.</p>
+
+<hr />
+
+<h2 id="building-a-platform">Building a platform</h2>
+
+<p>Another observation that we made was that we now have a platform to build out tools that are automatically updating and installed by many people.
+This has lead to me sitting with another QA engineer to help them port their command line tool for finding all kinds of difficult to find adverts that people need for testing/development.</p>
+
+<p>I think in total we spent about an hour getting something working together and then he’s been a one man feature factory improving things.</p>
+
+<hr />
+
+<h2 id="wrap-up">Wrap up</h2>
+
+<p>I really think developer experience is important.
+Making and evolving tools is a nice way to show your colleagues that you value their time and hear their frustrations.
+It’s also been highly rewarding seeing other people get involved and seeing people interested in building a DX culture.
+I have no metrics on how much time this tool has saved others but I personally use it multiple times a day and the time I’ve saved alone has more than paid off for the personal investment I’ve put into this.</p>
+
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/blog/2026/02/02/hacking-with-ktor/">
+            Hacking with Ktor
+            <small>02 Feb 2026</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/blog/2026/01/30/call-once/">
+            Call Once
+            <small>30 Jan 2026</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/blog/2025/12/21/from-runtime-explosions-to-compiler-checked-simplicity/">
+            From Runtime Explosions to Compiler Checked Simplicity
+            <small>21 Dec 2025</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
+</div>
+</div>
+        <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script
+            data-goatcounter="https://paul-samuels.goatcounter.com/count"
+            async
+            src="//gc.zgo.at/count.js"
+        ></script>
+        <script src="/assets/js/tabs.js"></script>
+    </body>
+</html>
