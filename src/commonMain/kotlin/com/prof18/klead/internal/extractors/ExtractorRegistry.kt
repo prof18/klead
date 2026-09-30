@@ -80,6 +80,7 @@ import com.prof18.klead.internal.extractors.site.StripeDocsProfile
 import com.prof18.klead.internal.extractors.site.SubstackProfile
 import com.prof18.klead.internal.extractors.site.TechCrunchProfile
 import com.prof18.klead.internal.extractors.site.TomshwProfile
+import com.prof18.klead.internal.extractors.site.TunjidProfile
 import com.prof18.klead.internal.extractors.site.ValnetProfile
 import com.prof18.klead.internal.extractors.site.VarietyProfile
 import com.prof18.klead.internal.extractors.site.VoxProfile
@@ -123,6 +124,7 @@ internal class ExtractorRegistry(private val extractors: List<Extractor> = Defau
 internal object DefaultExtractors {
     val all: List<Extractor> = listOf(
         WikipediaExtractor,
+        TunjidProfile,
         ApostoNewsletterProfile,
         Motor1Profile,
         MotorsportProfile,

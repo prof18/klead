@@ -10,6 +10,32 @@ import kotlin.test.assertTrue
 
 class HtmlStandardizerTest {
     @Test
+    fun `lower level opening titles are removed while later matching sections remain`() {
+        for (level in 3..6) {
+            val article = article(
+                "<article><h$level>Article Title</h$level><p>Body.</p>" +
+                    "<h$level>Article Title</h$level><p>More body.</p></article>",
+            )
+
+            HtmlStandardizer.apply(article, title = "Article Title")
+
+            assertEquals(1, article.select("h$level").size)
+            assertEquals("Body.", article.children().first()?.text())
+            assertTrue(article.text().contains("More body."))
+        }
+    }
+
+    @Test
+    fun `opening lower level section prevents removal of a later title match`() {
+        val article = article("<article><h3>Background</h3><p>Body.</p><h3>Article Title</h3></article>")
+
+        HtmlStandardizer.apply(article, title = "Article Title")
+
+        assertEquals("Background", article.selectFirst("h3")?.text())
+        assertEquals(listOf("Background", "Article Title"), article.select("h3").map { it.text() })
+    }
+
+    @Test
     fun `site home header before a duplicate article title is removed`() {
         val content = Ksoup.parse(
             """

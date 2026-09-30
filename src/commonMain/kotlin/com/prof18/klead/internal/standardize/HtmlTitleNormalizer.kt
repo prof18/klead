@@ -12,7 +12,9 @@ internal object HtmlTitleNormalizer {
         removeLeadingSiteHeaderBeforeDuplicateTitle(content, title)
         removeLeadingDuplicateTitleWrapper(content, title)
         removeLeadingDuplicateTitleImage(content, title)
-        val firstHeading = content.selectFirst("h1, h2")
+        val firstHeading = content.selectFirst(HEADING_TAG_SELECTOR)
+            ?.takeIf { title != null && it.text().titleMatch(title) != null }
+            ?: content.selectFirst("h1, h2")
         val titleMatch = if (title != null) firstHeading?.text()?.titleMatch(title) else null
         if (titleMatch != null && firstHeading != null) {
             val parent = firstHeading.parent()
