@@ -19,20 +19,22 @@ internal object XProfile : DomExtractor {
         extractLoggedOutArticle(context) ?: extractLongformArticle(context) ?: extractConversation(context)
 
     private fun extractLoggedOutArticle(context: DomExtractorContext): ExtractorResult? {
-        val source = context.document.select("""[itemtype="https://schema.org/Article"]""")
-            .firstOrNull { it.selectFirst(".x-article-body")?.text()?.isNotBlank() == true }
+        val body = context.document.select(".x-article-body")
+            .firstOrNull { it.text().isNotBlank() }
             ?: return null
-        val body = source.selectFirst(".x-article-body") ?: return null
-        val title = source.selectFirst("[itemprop=headline]")
+        val source = body.parent() ?: body
+        val title = source.selectFirst("[itemprop=headline], h1")
+        val cover = source.selectFirst("img[itemprop=image][src]")
+            ?: title?.previousElementSibling()?.takeIf { it.normalName() == "img" && it.hasAttr("src") }
         val article = Element("article")
-        source.selectFirst("img[itemprop=image][src]")?.let { image ->
+        cover?.let { image ->
             article.appendChild(image.cleanXClone())
         }
         title?.let { article.appendChild(it.cleanXClone()) }
         article.appendChild(body.cleanXClone())
 
-        // Select the prose, rather than the surrounding timeline entry: the latter also
-        // contains engagement controls and can be duplicated inside the replies list.
+        // X can omit schema and itemprop attributes. Anchor on its prose block so the
+        // surrounding engagement controls and duplicate article in the replies stay out.
         return ExtractorResult(
             contentHtml = article.outerHtml(),
             metadata = ExtractorMetadata(
@@ -288,6 +290,6 @@ internal object XProfile : DomExtractor {
 
     private val boldStylePattern = Regex("""font-weight\s*:\s*(?:bold|[6-9]00)\b""")
     private val xImageNameParameter = Regex("""([?&]name=)[^&#]+""")
-    private val X_AUTHOR_TITLE_REGEX = Regex("""^(.+?)\s+on\s+X:""")
+    private val X_AUTHOR_TITLE_REGEX = Regex("""^(.+?)\s+on\s+X(?::|$)""")
     private const val SITE_NAME = "X (Twitter)"
 }
