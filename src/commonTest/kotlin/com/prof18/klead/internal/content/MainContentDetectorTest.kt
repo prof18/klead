@@ -342,6 +342,71 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `nested substantial article beats main with site chrome and teaser articles`() {
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <main id="container">
+                  <header><a href="/">Publisher home</a><a href="#container">Skip to main content</a></header>
+                  <div><h2>Command Palette</h2><p>Search for a command to run...</p></div>
+                  <section><div><article id="story">
+                    <h1>Article headline</h1><img src="/cover.jpg">
+                    <p>This focused article contains the actual story with enough natural language, punctuation, and context to be selected as the reading surface. It should not lose just because the page main includes site navigation and command controls before several layout wrappers around the story.</p>
+                    <p>The second paragraph keeps the story substantial while unrelated cards remain outside the selected content. The cover image and article header belong to this same article.</p>
+                  </article></div></section>
+                  <section><h2>More stories</h2>
+                    <article><a href="/other">Other story</a><p>A short teaser for another post.</p></article>
+                    <article><a href="/another">Another story</a><p>Another short teaser.</p></article>
+                  </section>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+        assertEquals("article", detected.selectedSelector)
+        assertTrue(detected.element.select("img").isNotEmpty())
+    }
+
+    @Test
+    fun `multiple substantial nested articles keep parent listing container`() {
+        val cards = (1..2).joinToString("") { index ->
+            """
+            <section><article>
+              <h2>Story $index</h2>
+              <p>This article preview contains enough meaningful words and detail to be a substantial reading candidate on its own. On a listing page, however, both previews are part of the requested content and neither should be discarded just because the articles sit inside separate layout wrappers.</p>
+              <p>More context makes this preview long enough to pass the minimum article word guard.</p>
+            </article></section>
+            """.trimIndent()
+        }
+        val detected = MainContentDetector.detect(
+            Ksoup.parse("<main id='listing'><header><nav><a href='/'>Home</a></nav></header>$cards</main>"),
+        )
+
+        assertEquals("listing", detected.element.id())
+    }
+
+    @Test
+    fun `main without site navigation retains introduction outside nested article`() {
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <main id="reading-surface">
+                  <h1>Introduction and selected reading</h1>
+                  <p>This introduction supplies context for the selected reading below and belongs to the reading surface. It explains the history behind the passage, why the editor chose it, and what readers should look for in the discussion. The surrounding page is an editorial introduction followed by a selected reading, so its opening paragraph belongs with the passage rather than being treated as site navigation.</p>
+                  <section><article>
+                    <p>The nested article contains a substantial selected reading with enough words and detail to qualify for article refinement. Without a site navigation header, however, the surrounding main can include editorial content that should remain part of the requested page.</p>
+                    <p>This additional paragraph provides more information and ensures the selected reading passes the minimum word count while retaining the introduction supplied by the page's author.</p>
+                  </article></section>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("reading-surface", detected.element.id())
+    }
+
+    @Test
     fun `body fallback works when no entry point has content`() {
         val detected = MainContentDetector.detect(
             Ksoup.parse(

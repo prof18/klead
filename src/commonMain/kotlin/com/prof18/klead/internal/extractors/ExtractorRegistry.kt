@@ -35,6 +35,7 @@ import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.GuardianNewsletterProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
+import com.prof18.klead.internal.extractors.site.HashnodeProfile
 import com.prof18.klead.internal.extractors.site.HdMotoriProfile
 import com.prof18.klead.internal.extractors.site.IPhoneItaliaProfile
 import com.prof18.klead.internal.extractors.site.ISpazioProfile
@@ -159,6 +160,7 @@ internal object DefaultExtractors {
         AthleticNewsletterProfile,
         XProfile,
         HackerNewsProfile,
+        HashnodeProfile,
         MastodonProfile,
         MediumProfile,
         RedditProfile,
