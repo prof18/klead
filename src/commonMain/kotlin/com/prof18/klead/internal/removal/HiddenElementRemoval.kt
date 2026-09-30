@@ -91,11 +91,20 @@ internal object HiddenElementRemoval {
             "mathjax" in className
     }
 
-    private fun Element.isWithinCalloutLike(): Boolean = generateSequence(this) { it.parent() }
-        .any {
-            val hints = partialHaystack(it)
-            "callout" in hints || "admonition" in hints || "alert" in hints
+    private fun Element.isWithinCalloutLike(): Boolean {
+        var hasCalloutHint = false
+        for (ancestor in generateSequence(this) { it.parent() }) {
+            // Floating notifications are UI, even when their names contain "alert".
+            if (ancestor.hasClass("fixed") ||
+                "position:fixed" in ancestor.attr("style").lowercase().replace(" ", "")
+            ) {
+                return false
+            }
+            val hints = partialHaystack(ancestor)
+            hasCalloutHint = hasCalloutHint || "callout" in hints || "admonition" in hints || "alert" in hints
         }
+        return hasCalloutHint
+    }
 
     private fun Element.isWithinFootnoteLike(): Boolean = generateSequence(this) { it.parent() }
         .any {

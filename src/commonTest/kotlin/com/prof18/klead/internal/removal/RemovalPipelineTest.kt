@@ -193,6 +193,36 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `hidden floating alerts are removed while inline alerts and article diagrams survive`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Article body remains.</p>
+              <div id="copy-alert" class="hidden fixed">
+                <div role="alert"><svg><path d="M0 0"></path><polyline points="0 0 1 1"></polyline></svg>
+                  Link copied
+                </div>
+              </div>
+              <div class="alert" style="position: fixed; display: none;">Saved notification</div>
+              <div class="alert"><div hidden>Collapsed article warning stays.</div></div>
+              <svg aria-hidden="true"><circle cx="10" cy="10" r="5"></circle><text>Article diagram</text></svg>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+        val debug = mutableListOf<RemovalRecord>()
+
+        HiddenElementRemoval.apply(article, debug)
+
+        assertFalse(article.text().contains("Link copied"))
+        assertFalse(article.text().contains("Saved notification"))
+        assertTrue(article.text().contains("Collapsed article warning stays."))
+        assertTrue(article.text().contains("Article diagram"))
+        assertEquals(1, article.select("svg").size)
+        assertTrue(debug.any { it.selector == "#copy-alert" && it.reason == "hidden class" })
+    }
+
+    @Test
     fun `responsive desktop svg diagrams are kept while mobile duplicates are removed`() {
         val result = parseHtmlForTest(
             html = """
