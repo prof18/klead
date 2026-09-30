@@ -9,6 +9,7 @@ import com.prof18.klead.internal.dom.replaceWithChildren
 internal object HtmlTitleNormalizer {
     fun normalizeHeadings(content: Element, title: String?) {
         removeHeadingPermalinkAnchors(content)
+        removeLeadingSiteHeaderBeforeDuplicateTitle(content, title)
         removeLeadingDuplicateTitleWrapper(content, title)
         removeLeadingDuplicateTitleImage(content, title)
         val firstHeading = content.selectFirst("h1, h2")
@@ -27,6 +28,32 @@ internal object HtmlTitleNormalizer {
         content.select("h1").forEach { heading ->
             heading.tagName("h2")
         }
+    }
+
+    private fun removeLeadingSiteHeaderBeforeDuplicateTitle(content: Element, title: String?) {
+        if (title == null) return
+        val header = content.children().firstOrNull { it.text().isNotBlank() } ?: return
+        if (header.isCompactSiteHomeHeader() && header.nextElementSibling()?.startsWithDuplicateTitle(title) == true) {
+            header.remove()
+        }
+    }
+
+    private fun Element.isCompactSiteHomeHeader(): Boolean {
+        val brandHeading = select("h1, h2").singleOrNull() ?: return false
+        val homeLink = brandHeading.select("a[href]").singleOrNull() ?: return false
+        return normalName() == "header" &&
+            homeLink.attr("href").trim() == "/" &&
+            text().trim() == brandHeading.text().trim() &&
+            select("p, pre, blockquote, table, figure, img, picture, iframe").isEmpty()
+    }
+
+    private fun Element.startsWithDuplicateTitle(title: String): Boolean {
+        if (normalName() !in setOf("article", "main", "section", "div")) return false
+        val first = children().firstOrNull { it.text().isNotBlank() } ?: return false
+        val articleHeading = (if (first.normalName() in setOf("h1", "h2")) first else first.selectFirst("h1, h2"))
+            ?: return false
+        return articleHeading.text().titleMatch(title) != null &&
+            (first === articleHeading || first.text().trim() == articleHeading.text().trim())
     }
 
     private fun removeLeadingDuplicateTitleImage(content: Element, title: String?) {

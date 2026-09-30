@@ -10,6 +10,46 @@ import kotlin.test.assertTrue
 
 class HtmlStandardizerTest {
     @Test
+    fun `site home header before a duplicate article title is removed`() {
+        val content = Ksoup.parse(
+            """
+            <header><h1><a href="/">Jake Wharton</a></h1></header>
+            <div class="content post">
+              <h2>Kotlin's JDK release compatibility flag</h2>
+              <p class="date">13 March 2024</p>
+              <p>Yesterday, our Android app crashed.</p>
+            </div>
+            """.trimIndent(),
+        ).body()
+
+        HtmlStandardizer.apply(content, title = "Kotlin's JDK release compatibility flag - Jake Wharton")
+
+        assertFalse(content.text().contains("Jake Wharton"))
+        assertFalse(content.text().contains("Kotlin's JDK release compatibility flag"))
+        assertTrue(content.text().contains("Yesterday, our Android app crashed."))
+    }
+
+    @Test
+    fun `site home header is preserved when the following heading is a section`() {
+        val content = Ksoup.parse(
+            """
+            <header><h1><a href="/">Example Site</a></h1></header>
+            <div class="content post">
+              <h2>Background</h2>
+              <p>Article body about a different topic.</p>
+              <h2>Article Title</h2>
+            </div>
+            """.trimIndent(),
+        ).body()
+
+        HtmlStandardizer.apply(content, title = "Article Title - Example Site")
+
+        assertTrue(content.text().contains("Example Site"))
+        assertTrue(content.text().contains("Background"))
+        assertTrue(content.text().contains("Article Title"))
+    }
+
+    @Test
     fun `heading duplicate title is removed`() {
         val article = article("""<article><h1>Article Title</h1><p>Body.</p></article>""")
 
@@ -854,6 +894,39 @@ class HtmlStandardizerTest {
         HtmlStandardizer.apply(article, title = null)
 
         assertEquals("go", article.selectFirst("pre > code")?.attr("data-lang"))
+    }
+
+    @Test
+    fun `devsite code wrapper is removed and article class is not a code language`() {
+        val article = article(
+            """
+            <article class="adb--blog-post">
+              <p>Example:</p>
+              <devsite-code><pre>release {
+                  optimization.keepRules {
+                      it.ignoreFrom("com.somelibrary:somelibrary")
+                  }
+              }</pre></devsite-code>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val code = article.selectFirst("article > pre > code")
+        assertNotNull(code)
+        assertTrue(article.select("devsite-code").isEmpty())
+        assertEquals("", code.attr("data-lang"))
+        assertTrue(code.wholeText().contains("it.ignoreFrom(\"com.somelibrary:somelibrary\")"))
+    }
+
+    @Test
+    fun `explicit language on code wrapper is retained`() {
+        val article = article("""<article><div class="language-kotlin"><pre>val answer = 42</pre></div></article>""")
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("kotlin", article.selectFirst("pre > code")?.attr("data-lang"))
     }
 
     @Test

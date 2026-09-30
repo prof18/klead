@@ -1,0 +1,139 @@
+<!-- {"url":"https://jakewharton.com/kotlins-jdk-release-compatibility-flag/"} -->
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kotlin's JDK release compatibility flag - Jake Wharton</title>
+    <link rel="stylesheet" href="/static/bootstrap-3.1.1.min.css" type="text/css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather+Sans:400,300,700" type="text/css">
+    <link rel="stylesheet" href="/static/app.css" type="text/css">
+    <link rel="stylesheet" href="/static/syntax.css" type="text/css">
+    <link type="application/atom+xml" rel="alternate" href="https://jakewharton.com/atom.xml" />
+    <meta name="theme-color" content="#111111">
+    <meta name="fediverse:creator" content="@jw@jakewharton.com" />
+    
+    <meta name="og:type" content="article">
+    <meta name="og:title" content="Kotlin's JDK release compatibility flag – Jake Wharton">
+    <meta name="og:description" content="">
+    <meta name="og:site_name" content="Jake Wharton">
+    <meta name="og:url" content="https://jakewharton.com/kotlins-jdk-release-compatibility-flag/">
+    
+    <meta name="og:image" content="https://jakewharton.com/static/default_image.png">
+    
+    <meta property="article:published_time" content="2024-03-13">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:site" content="@JakeWharton">
+    <meta name="twitter:domain" content="jakewharton.com">
+    <meta name="twitter:title" content="Kotlin's JDK release compatibility flag – Jake Wharton">
+    <meta name="twitter:description" content="">
+    
+    <meta name="twitter:image" content="https://jakewharton.com/static/default_image.png">
+    
+    <meta name="twitter:url" content="https://jakewharton.com/kotlins-jdk-release-compatibility-flag/">
+  </head>
+  <body>
+    <header>
+      <h1><a href="/">Jake Wharton</a></h1>
+    </header>
+
+    <div class="content post">
+      <h2>Kotlin's JDK release compatibility flag</h2>
+      <p class="date">13 March 2024</p>
+
+      <p>Yesterday, our Android app crashed with a weird <code>NoSuchMethodError</code>.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.NoSuchMethodError: No interface method removeFirst()Ljava/lang/Object; in class Ljava/util/List; or its super classes (declaration of 'java.util.List' appears in /apex/com.android.art/javalib/core-oj.jar)
+    at app.cash.redwood.lazylayout.widget.LazyListUpdateProcessor.onEndChanges(SourceFile:165)
+    at app.cash.redwood.lazylayout.view.ViewLazyList.onEndChanges(SourceFile:210)
+    at app.cash.redwood.protocol.widget.ProtocolBridge.sendChanges(SourceFile:125)
+    at app.cash.redwood.treehouse.ViewContentCodeBinding.receiveChangesOnUiDispatcher(SourceFile:419)
+    at app.cash.redwood.treehouse.ViewContentCodeBinding$sendChanges$1.invokeSuspend(SourceFile:383)
+    at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(SourceFile:33)
+    at kotlinx.coroutines.DispatchedTask.run(SourceFile:104)
+    at android.os.Handler.handleCallback(Handler.java:938)
+    at android.os.Handler.dispatchMessage(Handler.java:99)
+    at android.os.Looper.loop(Looper.java:250)
+    at android.app.ActivityThread.main(ActivityThread.java:7868)
+</code></pre></div></div>
+<p><a href="https://github.com/cashapp/redwood/blob/2db41653e3887387b8c8468cb3f01d0c326eb39d/redwood-lazylayout-widget/src/commonMain/kotlin/app/cash/redwood/lazylayout/widget/LazyListUpdateProcessor.kt#L165">The offending code</a> is written in Kotlin, and looks like this:</p>
+<p><img src="/static/post-image/removeFirst.png" alt="val widget = edit.widgets.removeFirst()" /></p>
+<p>The IDE showing an italicized blue style for <code>removeFirst</code> means <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/remove-first.html">it's a Kotlin extension function</a> which compiles down to a static helper in the bytecode.
+However, the exception clearly indicates we are calling a member function on <code>List</code> directly. What gives?</p>
+<p>In JDK 21, as part of the <a href="https://openjdk.org/jeps/431">sequenced collection</a> effort, the <code>List</code> interface <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html#removeFirst()">added <code>removeFirst()</code> and <code>removeLast()</code></a> methods. According to the <a href="https://kotlinlang.org/docs/extensions.html#extensions-are-resolved-statically">Kotlin docs on extension functions</a>:</p>
+<blockquote>
+<p>If a class has a member function, and an extension function is defined which has the same receiver type, the same name, and is applicable to given arguments, the <strong>member always wins</strong>.</p>
+</blockquote>
+<p>When we bumped our build JDK to 21, the new member became available and accidentally took precedence. Oops!</p>
+<p>But wait, we set our Kotlin <code>jvmTarget</code> to 1.8 in order to be backwards compatible. Is that not enough?</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">val</span> <span class="py">javaVersion</span> <span class="p">=</span> <span class="nc">JavaVersion</span><span class="p">.</span><span class="nc">VERSION_1_8</span>
+<span class="n">tasks</span><span class="p">.</span><span class="nf">withType</span><span class="p">(</span><span class="nc">KotlinJvmCompile</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">).</span><span class="nf">configureEach</span> <span class="p">{</span>
+  <span class="n">it</span><span class="p">.</span><span class="n">kotlinOptions</span><span class="p">.</span><span class="n">jvmTarget</span> <span class="p">=</span> <span class="n">javaVersion</span><span class="p">.</span><span class="nf">toString</span><span class="p">()</span>
+<span class="p">}</span>
+<span class="c1">// Kotlin requires the Java compatibility matches despite have no sources.</span>
+<span class="n">tasks</span><span class="p">.</span><span class="nf">withType</span><span class="p">(</span><span class="nc">JavaCompile</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">).</span><span class="nf">configureEach</span> <span class="p">{</span>
+  <span class="n">it</span><span class="p">.</span><span class="n">sourceCompatibility</span> <span class="p">=</span> <span class="n">javaVersion</span><span class="p">.</span><span class="nf">toString</span><span class="p">()</span>
+  <span class="n">it</span><span class="p">.</span><span class="n">targetCompatibility</span> <span class="p">=</span> <span class="n">javaVersion</span><span class="p">.</span><span class="nf">toString</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>This setting controls the Java bytecode version that the Kotlin compiler emits for JVM and Android targets.
+We can confirm this is being honored by inspecting the offending class with <code>javap</code>.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ javap -v redwood-lazylayout-widget/build/classes/kotlin/jvm/main/app/cash/redwood/lazylayout/widget/LazyListUpdateProcessor.class | head -8
+Classfile redwood-lazylayout-widget/build/classes/kotlin/jvm/main/app/cash/redwood/lazylayout/widget/LazyListUpdateProcessor.class
+  Last modified Mar 13, 2024; size 16001 bytes
+  SHA-256 checksum dbeed7bba16c023a98fa356bab7cada7abe686d5da7d4824781790de577e94a2
+  Compiled from &quot;LazyListUpdateProcessor.kt&quot;
+public abstract class app.cash.redwood.lazylayout.widget.LazyListUpdateProcessor&lt;V extends java.lang.Object, W extends java.lang.Object&gt; extends java.lang.Object
+  minor version: 0
+  major version: 52
+  flags: (0x0421) ACC_PUBLIC, ACC_SUPER, ACC_ABSTRACT
+</code></pre></div></div>
+<p>The classfile's major version is listed at 52, which we can reverse lookup using <a href="https://javaalmanac.io/bytecode/versions/">a version table</a> and see that this corresponds to Java 8. So we know that's working, at least.</p>
+<p>Further down the output, however, the offending reference can also be seen.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>405: checkcast     #101        // class app/cash/redwood/lazylayout/widget/LazyListUpdateProcessor$Edit$Insert
+408: invokevirtual #107        // Method app/cash/redwood/lazylayout/widget/LazyListUpdateProcessor$Edit$Insert.getWidgets:()Ljava/util/List;
+411: invokeinterface #151,  1  // InterfaceMethod java/util/List.removeFirst:()Ljava/lang/Object;
+416: checkcast     #121        // class app/cash/redwood/widget/Widget
+419: astore        6
+</code></pre></div></div>
+<p>The reason this can happen is that the Java bytecode version is independent from the set of JDK APIs that you can reference.
+This is not unique to Kotlin.
+<code>javac</code>'s <code>-target</code> flag behaves the same way, as you can see <a href="https://java.godbolt.org/z/rKWv4K9jG">in this Godbolt sample</a>.</p>
+<p>This can be fixed with <code>javac</code> by specifying the <code>-bootclasspath</code> argument and pointing at the <code>rt.jar</code> from a JDK 8 install.
+The JDK 21 compiler emits a warning telling us to do this when target <em>any</em> bytecode version other than the default:</p>
+<blockquote>
+<p>warning: [options] bootstrap class path not set in conjunction with -source 8</p>
+</blockquote>
+<p>Starting with Java 9, <code>javac</code> has a new flag, <code>--release</code>, which sets the <code>-source</code>, <code>-target</code>, and <code>-bootclasspath</code> flags automatically to the same version (and doesn't require having the old JDK available).
+If we switch the Java sample to use <code>--release</code> <a href="https://java.godbolt.org/z/bP6baz9GT">it now fails to compile</a>!</p>
+<p>Kotlin 1.7 brought a new flag to <code>kotlinc</code> (Kotlin's JVM compiler) which acts just like <code>javac</code>'s <code>--release</code>: <code>-Xjdk-release</code>.
+As far as I can tell, this has flown massively under the radar but is an essential piece to the cross-compilation toolkit.</p>
+<p>Let's configure our JVM target's compilation to use this flag and see what changes.</p>
+<div class="language-kotlin highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">kotlin</span><span class="p">.</span><span class="n">targets</span><span class="p">.</span><span class="nf">withType</span><span class="p">(</span><span class="nc">KotlinJvmTarget</span><span class="o">::</span><span class="k">class</span><span class="p">.</span><span class="n">java</span><span class="p">)</span> <span class="p">{</span> <span class="n">target</span> <span class="p">-&gt;</span>
+  <span class="n">target</span><span class="p">.</span><span class="n">compilations</span><span class="p">.</span><span class="nf">configureEach</span> <span class="p">{</span>
+    <span class="n">it</span><span class="p">.</span><span class="n">kotlinOptions</span><span class="p">.</span><span class="n">freeCompilerArgs</span> <span class="p">+=</span> <span class="nf">listOf</span><span class="p">(</span>
+      <span class="s">"-Xjdk-release=$javaVersion"</span><span class="p">,</span>
+    <span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>After compiling and dumping the Java bytecode there is a welcome change.</p>
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 405: checkcast     #101        // class app/cash/redwood/lazylayout/widget/LazyListUpdateProcessor$Edit$Insert
+ 408: invokevirtual #107        // Method app/cash/redwood/lazylayout/widget/LazyListUpdateProcessor$Edit$Insert.getWidgets:()Ljava/util/List;
+<span class="gd">-411: invokeinterface #151,  1  // InterfaceMethod java/util/List.removeFirst:()Ljava/lang/Object;
+</span><span class="gi">+411: invokestatic  #152        // Method kotlin/collections/CollectionsKt.removeFirst:(Ljava/util/List;)Ljava/lang/Object;
+</span> 414: checkcast     #121        // class app/cash/redwood/widget/Widget
+ 417: astore        6
+</code></pre></div></div>
+<p>With the JDK API unavailable, the <code>removeFirst</code> extension now resolves to the static method in the Kotlin standard library.</p>
+<p>The <code>-Xjdk-release</code> flag is useful for the Kotlin JVM plugin or the JVM targets of the Kotlin multiplatform plugin to ensure compatibility with your target minimum JVM. Users of the Kotlin Android plugin or the Android targets of the Kotlin multiplatform plugin do not need to do this, as the use of the <code>android.jar</code> as the boot classpath limits the <code>java.*</code> APIs to those of your <code>compileSdk</code> (and Android Lint ensures you don't use anything newer than your <code>minSdk</code>).</p>
+<p>Unforunately there's no Gradle DSL for this yet, but <a href="https://youtrack.jetbrains.com/issue/KT-49746/Support-Xjdk-release-in-gradle-toolchain#focus=Comments-27-8935065.0-0">KT-49746</a> tracks that.</p>
+<p>If you use Gradle toolchains you don't have this problem. This is because you actually use the ancient JDK and JVM of your minimum target to run <code>javac</code> and <code>kotlinc</code> and miss out on a decade's worth of compiler improvements. Gradle toolchains are rarely a good idea. But that's a topic for next week…</p>
+
+
+      <p class="signature">&mdash; Jake Wharton</p>
+    </div>
+  </body>
+</html>

@@ -9,6 +9,20 @@ import kotlin.test.assertTrue
 
 class SiteRegressionTest {
     @Test
+    fun `Android Authority article omits byline separators before the story`() {
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$ANDROID_AUTHORITY_FIXTURE.html")
+        val markdown = parseHtmlForTest(
+            html = html,
+            url = FixtureLoader.extractUrl(ANDROID_AUTHORITY_FIXTURE, html),
+            options = testOptions(),
+        ).content.requireMarkdown()
+
+        assertFalse(markdown.lines().any { it.trim() == "By" || it.trim() == "•" })
+        assertFalse(markdown.contains("Jan 18, 2017 — 4:55 PM ET"))
+        assertTrue(markdown.contains("Part of the fun of using Android has always been customization."))
+    }
+
+    @Test
     fun `Lopez Manas article stays within the requested post`() {
         val html = CommonTestResources.read("fixtures/regressions/input-html/$LOPEZ_MANAS_FIXTURE.html")
         val markdown = parseHtmlForTest(
@@ -69,6 +83,7 @@ class SiteRegressionTest {
         .trimEnd()
 
     private companion object {
+        const val ANDROID_AUTHORITY_FIXTURE = "androidauthority-custom-rom-development"
         const val KT_ACADEMY_FIXTURE = "kt-academy-run-blocking"
         const val LOPEZ_MANAS_FIXTURE = "lopez-manas-android-sdk-defense-in-depth"
     }
