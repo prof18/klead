@@ -1,5 +1,6 @@
 package com.prof18.klead.fixtures
 
+import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
 import kotlin.test.Test
@@ -9,6 +10,28 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SiteRegressionTest {
+    @Test
+    fun `ChatGPT Learn code blocks leave foreground and background colors to the reader`() {
+        val fixtureName = "chatgpt-learn-prompting"
+        val inputHtml = CommonTestResources.read("fixtures/regressions/input-html/$fixtureName.html")
+        val result = parseHtmlForTest(
+            html = inputHtml,
+            url = FixtureLoader.extractUrl(fixtureName, inputHtml),
+            options = testOptions(),
+        )
+        val document = Ksoup.parse(result.content.requireHtml())
+        val codeBlocks = document.select("pre")
+
+        assertTrue(inputHtml.contains("background-color:#fff"))
+        assertTrue(codeBlocks.isNotEmpty())
+        codeBlocks.forEach { pre ->
+            val style = pre.attr("style")
+            assertFalse(style.contains("background-color:"), style)
+            assertFalse(style.contains("color:"), style)
+        }
+        assertTrue(codeBlocks.any { it.text().contains("Prepare a one-page project status update") })
+    }
+
     @Test
     fun `Paul Samuels post omits sidebar and repeated title while keeping the complete story`() {
         val name = "paul-samuels-make-nice-tools"
@@ -58,6 +81,44 @@ class SiteRegressionTest {
             assertFalse(markdown.contains(clutter), "Unexpected chrome in Markdown: $clutter")
             assertFalse(cleanedHtml.contains(clutter), "Unexpected chrome in HTML: $clutter")
         }
+    }
+
+    @Test
+    fun `Hashnode article with long related previews omits opening chrome and keeps the complete story`() {
+        val fixture = "pyricau--launch-response-time"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(fixture, html), testOptions())
+        val markdown = result.content.requireMarkdown()
+        val cleanedHtml = result.content.requireHtml()
+
+        assertEquals("Launch Response Time", result.metadata.title)
+        assertEquals("Pierre-Yves Ricau", result.metadata.author)
+        assertTrue(markdown.startsWith("![Launch Response Time](https://cdn.hashnode.com/"))
+        assertTrue(markdown.contains("> Header image: *Caterpillar* [by Romain Guy]"))
+        assertTrue(markdown.contains("## Terminology"))
+        assertTrue(markdown.contains("### Cold Launch"))
+        assertTrue(markdown.contains("### Hot Launch"))
+        assertTrue(markdown.contains("### Warm Launch"))
+        assertTrue(markdown.contains("## Conclusion"))
+        assertTrue(markdown.contains("before I hit publish."))
+        listOf(
+            "Skip to main content",
+            "Command Palette",
+            "Search for a command to run",
+            "September 26, 2021",
+            "View as Markdown",
+            "My pronouns are",
+            "On this page",
+            "More from this blog",
+            "New roots, same Square",
+            "Cutting some Slack",
+            "Comments (2)",
+        ).forEach { clutter ->
+            assertFalse(markdown.contains(clutter), "Unexpected Markdown chrome: $clutter")
+            assertFalse(cleanedHtml.contains(clutter), "Unexpected HTML chrome: $clutter")
+        }
+        assertFalse(markdown.contains("## Launch Response Time"))
+        assertFalse(cleanedHtml.contains(">Launch Response Time</h"))
     }
 
     @Test
