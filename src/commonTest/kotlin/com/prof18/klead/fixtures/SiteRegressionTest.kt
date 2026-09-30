@@ -297,6 +297,23 @@ class SiteRegressionTest {
         const val KT_ACADEMY_FIXTURE = "kt-academy-run-blocking"
         const val LOPEZ_MANAS_FIXTURE = "lopez-manas-android-sdk-defense-in-depth"
     }
+
+    @Test
+    fun `ApX article recovers Flight body instead of sidebar and social icons`() {
+        val name = "apxml--best-local-llms-apple-silicon-mac"
+        val input = CommonTestResources.read("fixtures/regressions/input-html/$name.html")
+        val result = parseHtmlForTest(input, FixtureLoader.extractUrl(name, input), testOptions())
+        val markdown = result.content.requireMarkdown()
+
+        assertEquals("Ryan A.", result.metadata.author)
+        assertTrue(markdown.startsWith("Running large language models (LLMs)"))
+        assertTrue(markdown.contains("## What Determines LLM Performance on Mac?"))
+        assertTrue(markdown.contains("## Conclusion"))
+        assertTrue(markdown.contains("| **Phi-4 Mini** | 3.8B | 128K |"))
+        assertFalse(markdown.contains("Recommended Posts"))
+        assertFalse(markdown.contains("Sponsor Content"))
+        assertFalse(result.content.requireHtml().contains("<svg"))
+    }
 }
 
 internal data class SiteRegressionCase(

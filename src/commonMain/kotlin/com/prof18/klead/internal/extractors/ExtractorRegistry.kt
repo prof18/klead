@@ -5,6 +5,7 @@ import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.extractors.site.AndroidAuthorityProfile
 import com.prof18.klead.internal.extractors.site.AndroidPoliceProfile
 import com.prof18.klead.internal.extractors.site.AnsaProfile
+import com.prof18.klead.internal.extractors.site.ApXmlProfile
 import com.prof18.klead.internal.extractors.site.ApostoNewsletterProfile
 import com.prof18.klead.internal.extractors.site.ArmNewsroomProfile
 import com.prof18.klead.internal.extractors.site.ArsTechnicaProfile
@@ -128,6 +129,7 @@ internal object DefaultExtractors {
         WikipediaExtractor,
         TunjidProfile,
         ApostoNewsletterProfile,
+        ApXmlProfile,
         Motor1Profile,
         MotorsportProfile,
         MinuteMediaSiProfile,
