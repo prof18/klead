@@ -11,8 +11,17 @@ import kotlin.test.assertTrue
 class XProfileTest {
     @Test
     fun `captured software factories article excludes engagement and replies`() {
+        assertCapturedArticle("x-building-software-factories", "David")
+    }
+
+    @Test
+    fun `captured ReaderFlow response without schema excludes engagement and replies`() {
+        assertCapturedArticle("x-building-software-factories-no-schema", "David (@dzhng)")
+    }
+
+    private fun assertCapturedArticle(fixture: String, author: String) {
         val result = parseHtmlForTest(
-            html = CommonTestResources.read("fixtures/regressions/input-html/x-building-software-factories.html"),
+            html = CommonTestResources.read("fixtures/regressions/input-html/$fixture.html"),
             url = "https://x.com/dzhng/status/2090252351533973768",
             options = testOptions(debug = true),
         )
@@ -20,7 +29,7 @@ class XProfileTest {
         val markdown = result.content.requireMarkdown()
         val html = result.content.requireHtml()
         assertEquals("Building software factories (with no slop)", result.metadata.title)
-        assertEquals("David", result.metadata.author)
+        assertEquals(author, result.metadata.author)
         assertEquals(listOf("x"), result.debug["extractorIds"])
         assertTrue(markdown.startsWith("![Article cover image]"), markdown)
         assertTrue(markdown.contains("\nThe amount of code being written today"), markdown)
