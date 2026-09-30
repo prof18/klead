@@ -6,6 +6,26 @@ import kotlin.test.assertTrue
 
 class HashnodeProfileTest {
     @Test
+    fun `Hashnode chooses the prose article even when another article has substantial text`() {
+        val markdown = parseHtmlForTest(pageWithTwoArticles(hashnodeBranding = true), "https://custom.example/story")
+            .content.requireMarkdown()
+
+        assertTrue(markdown.contains("The actual story"))
+        assertTrue(markdown.contains("[contributor](https://hashnode.com/@contributor)"))
+        assertFalse(markdown.contains("Another substantial article"))
+        assertFalse(markdown.contains("Command Palette"))
+    }
+
+    @Test
+    fun `unrelated multi article page retains both articles despite a prose class`() {
+        val markdown = parseHtmlForTest(pageWithTwoArticles(hashnodeBranding = false), "https://other.example/story")
+            .content.requireMarkdown()
+
+        assertTrue(markdown.contains("The actual story"))
+        assertTrue(markdown.contains("Another substantial article"))
+    }
+
+    @Test
     fun `Hashnode custom domain omits author card and preserves profile links in the story`() {
         val result = parseHtmlForTest(articleHtml(hashnodeBranding = true), "https://custom.example/story")
         val markdown = result.content.requireMarkdown()
@@ -34,6 +54,21 @@ class HashnodeProfileTest {
 
         assertTrue(markdown.contains("The actual story"))
         assertTrue(markdown.contains("[contributor](https://hashnode.com/@contributor)"))
+    }
+
+    private fun pageWithTwoArticles(hashnodeBranding: Boolean): String {
+        val story = articleHtml(hashnodeBranding).substringAfter("<body>").substringBeforeLast("</body>")
+        return """
+            <main id="reading">
+              <header><nav><a href="#reading">Skip to main content</a></nav></header>
+              <div><h2>Command Palette</h2><p>Search for a command to run...</p></div>
+              <section>$story</section>
+              <section><article>
+                <h2>Another substantial article</h2>
+                <p>This second article contains more than fifty words and should prevent the generic content detector from narrowing a multi article page to just one article. Its meaningful prose adds enough context and detail to look like readable content instead of an empty recommendation card. On Hashnode only the article with the prose wrapper belongs to the requested story, but on an unrelated site both substantial articles should remain available for reading.</p>
+              </article></section>
+            </main>
+            """.trimIndent()
     }
 
     private fun articleHtml(hashnodeBranding: Boolean): String {
