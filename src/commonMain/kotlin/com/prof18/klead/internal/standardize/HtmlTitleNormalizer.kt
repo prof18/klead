@@ -77,6 +77,11 @@ internal object HtmlTitleNormalizer {
     private fun removeHeadingPermalinkAnchors(content: Element) {
         content.select(HEADING_TAG_SELECTOR).forEach { heading ->
             heading.select(HEADING_PERMALINK_SELECTOR).remove()
+            if (heading.id().isNotBlank()) {
+                heading.select("a[href]").filter { anchor ->
+                    anchor.attr("href").trim() == "#${heading.id()}" && anchor.text().trim() == "#"
+                }.forEach { it.remove() }
+            }
         }
         content.select("a[href^=#]").forEach { anchor ->
             val fragment = anchor.attr("href").removePrefix("#")

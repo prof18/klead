@@ -1,0 +1,155 @@
+<!-- {"url":"https://terrablog.pages.dev/blog/2026-03-10-cors-problem-and-simple-solution/"} -->
+<!doctype html><html lang=en-us><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=theme-color content="#ffffff"><title>Compose Multiplatform vs CORS · terrakok</title><meta name=description content="A practical explanation of CORS, browser security, proxy servers, and Cloudflare Workers for Compose Multiplatform web apps."><meta name=author content="Konstantin Tskhovrebov"><link rel=canonical href=https://terrablog.pages.dev/blog/2026-03-10-cors-problem-and-simple-solution/><link rel=icon href=/favicon.ico sizes=any><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=manifest href=/site.webmanifest><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400..700;1,400..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel=stylesheet><link rel=stylesheet href=/css/site.css><script src=/js/theme.js></script><script data-goatcounter=https://terrablog.goatcounter.com/count async src=https://gc.zgo.at/count.js></script><script src=https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.1/purify.min.js integrity="sha512-uHOKtSfJWScGmyyFr2O2+efpDx2nhwHU2v7MVeptzZoiC7bdF6Ny/CmZhN2AwIK1oCFiVQQ5DA/L9FSzyPNu6Q==" crossorigin=anonymous referrerpolicy=no-referrer></script><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css><script type=module src=https://cdn.jsdelivr.net/gh/dpecos/mastodon-comments@master/mastodon-comments.js></script></head><body><a class=skip-link href=#main-content>Skip to content</a><header class=site-header><div class=header-inner><a class=wordmark href=/ aria-label=Home>terrakok</a><div class=header-actions><nav class=main-nav aria-label="Main navigation"><a href=/about/>About</a>
+<a href=/#posts aria-current=location>Posts</a></nav><button class=theme-toggle id=theme-toggle type=button aria-label="Switch appearance" title="Switch appearance">
+<svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+<svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.2A8.5 8.5.0 018.8 3.8 8.5 8.5.0 1020.2 15.2z"/></svg>
+</button>
+<button class=search-trigger id=search-trigger type=button aria-label="Search (/ or ⌘K)" title="Search (/ or ⌘K)" aria-haspopup=dialog aria-controls=search-overlay>
+<svg viewBox="0 0 512 512" aria-hidden="true"><path d="M505 442.7 405.3 343a24 24 0 00-17-7H372a208 208 0 10-36 36v16.3a24 24 0 007 17l99.7 99.7a24 24 0 0033.9.0l28.3-28.3a24 24 0 00.1-34zM208 336a128 128 0 110-256 128 128 0 010 256z"/></svg>
+<span class=search-trigger-label>Search</span><kbd>⌘K</kbd></button></div></div></header><main id=main-content class=page-shell><article class=single-article><div class=single-cover><img src=/images/CMP-CORS-img.jpeg alt="Compose Multiplatform versus CORS" fetchpriority=high></div><header id=single-header class=single-header><h1>Compose Multiplatform vs CORS</h1><div class=article-meta><time datetime=2026-09-24>September 24, 2026</time>
+<span class=meta-separator aria-hidden=true>·</span>
+<span>Konstantin Tskhovrebov</span>
+<span class=meta-separator aria-hidden=true>·</span>
+<span>8 mins</span></div></header><div class=article-layout><aside class=article-toc><details open><summary>Table of Contents</summary><div class=article-toc-content><nav id=TableOfContents><ul><li><a href=#the-problem>The problem</a></li><li><a href=#what-is-cors>What is CORS?</a><ul><li><a href=#the-security-problem>The security problem</a></li></ul></li><li><a href=#the-full-solution>The full solution</a></li><li><a href=#cloudflare-workers>Cloudflare Workers</a></li><li><a href=#conclusion>Conclusion</a></li></ul></nav></div></details></aside><div class="prose article-content"><h2 id=the-problem class=heading-with-anchor>The problem
+<a class=heading-anchor href=#the-problem data-copy-heading-link data-heading-title="The problem" title="Copy a link to this heading" aria-label="Copy a link to heading: The problem">#</a></h2><p>I’m a Kotlin developer, and I really love building my own side projects in Kotlin.
+For the UI, I use Compose Multiplatform, of course.</p><p>On the one hand, my apps work natively on all platforms, including Android and iOS.
+On the other hand, publishing them in the official app stores is a huge problem. It’s expensive and requires filling out a lot of forms. And every six months to a year, both Google and Apple require you to update your apps to use new SDKs.</p><p>That’s why <strong>I prefer to publish them as static websites</strong>, for example, on Cloudflare Pages.
+It’s much faster, and thanks to PWA technologies, people can use my apps almost like native apps.</p><p>And, of course, I should mention that I work in the Compose Multiplatform team and am currently optimizing the web target.</p><p>One source of inspiration for new apps is the apps I already use.
+For example, apps for small services that I don’t use very often.
+But even that is enough to make me annoyed by how badly the UI is made and how poorly it fits my use cases.
+So I can easily check exactly what requests the app sends to its servers and build a small wrapper for myself.
+After all, an app always uses some API, right?</p><p>Usually, the easiest way to do this is to find the web version of the service and use the browser to see <strong>how it communicates with its backend</strong>.
+After that, the rest is easy. You create a new Compose Multiplatform app (e.g. with my <a href=https://terrakok.github.io/Compose-Multiplatform-Wizard/>wizard</a>), run Hot Reload on desktop, and build what you need pretty quickly.
+And it works! 🚀</p><p>Then I build the web distribution and deploy it, for example, to Cloudflare Pages.
+<strong>I strongly recommend that you don’t use GitHub Pages for your Compose apps.</strong>
+It has almost no settings, and, for example, the cache lifetime is only a few minutes. That means your web app will be downloaded again every time you open it, even if nothing has changed and the browser could use what’s already saved in the cache on your device.
+There’s been an <a href=https://github.com/orgs/community/discussions/11884>issue about this</a> for a long time, but Microsoft doesn’t seem to care about it at all.</p><p><a href=https://androiddev.social/@terrakok/116754688039827503><img src=/images/cors-error-mastodon.png alt="Mastodon screenshot"></a></p><p>So use <a href=https://developers.cloudflare.com/workers/>Cloudflare</a>. It’s much better, and it’s even easier to use.
+It’s also free for the kinds of projects people usually build as pet projects.</p><p>So, we’ve deployed our static web app to some service. We try to run it and see this:</p><p><img src=/images/cors-error-browser.png alt="CORS error in browser"></p><h2 id=what-is-cors class=heading-with-anchor>What is CORS?
+<a class=heading-anchor href=#what-is-cors data-copy-heading-link data-heading-title="What is CORS?" title="Copy a link to this heading" aria-label="Copy a link to heading: What is CORS?">#</a></h2><p>This is a very common error that every web developer knows.
+Let’s figure out what it means.</p><p>Our web app in the browser sent a request to some third-party service.
+The service’s backend sent us a response, but included certain security policies in the response headers.
+The browser on our side checked those policies and didn’t let our app read the response.
+So the browser is the thing causing the problem. That’s why we don’t see this kind of error in a desktop or mobile app, for example.</p><p><img src=/images/CORS-sd.png alt="CORS sequence diagram"></p><p>I understood how this error works a long time ago, but I couldn’t understand why it existed.
+My thinking was simple: if other types of apps can make these requests, why does the browser get in our way?
+Then, finally, it <strong>all clicked for me</strong>. 😂</p><p>The thing is, unlike other platforms, browsers do some things <strong>implicitly</strong> when making requests to external services.
+For example, with every <strong>GET</strong> request (and other requests too), the browser attaches extra data stored in cookies.
+This means developers don’t have to do <strong>anything special</strong> to provide information that the server expects to receive in a request.</p><p>Cookies work like this: the server can ask the user’s browser to store some data in cookies and send it along with later requests.
+That’s why many systems have traditionally used cookies for authentication, and maybe still do.
+A typical example is an access token stored in a cookie. Whenever the browser sends a request to that server, it automatically gets the token from the cookie and includes it in the request.</p><h3 id=the-security-problem class=heading-with-anchor>The security problem
+<a class=heading-anchor href=#the-security-problem data-copy-heading-link data-heading-title="The security problem" title="Copy a link to this heading" aria-label="Copy a link to heading: The security problem">#</a></h3><p>And, as you can probably see, this creates security problems.
+Imagine I made a simple website with my own JavaScript code running on it.
+When users visit my site, the JavaScript starts sending requests to the API of some popular bank, asking it to transfer money to my account.
+If the user is already logged in to that bank in their browser and their credentials are stored in cookies, then without special protection, the browser will simply send the saved token from the cookie along with my plugin’s request.
+I don’t think you’d want to end up in that situation. 💸</p><p>That’s why most backend frameworks set policies by default so that the service’s API can only be accessed from the same host where the backend is running.
+Usually, that’s how things are set up: the app’s frontend runs in the same place as its backend.
+Or, at least, on the same hostname.</p><p><strong>There’s one important detail:</strong> if your backend uses an Authorization header instead of cookies for authentication, then this situation isn’t a problem. Everything I described above applies specifically to data stored in cookies.</p><p>Still, the defaults are generally right. These policies aren’t needed for clients other than web clients, and the web frontend usually runs in the same place as the backend.</p><p><em>But how can we get around this restriction if I want to build a web app that uses an external service’s API, and that API has these policies?</em></p><h2 id=the-full-solution class=heading-with-anchor>The full solution
+<a class=heading-anchor href=#the-full-solution data-copy-heading-link data-heading-title="The full solution" title="Copy a link to this heading" aria-label="Copy a link to heading: The full solution">#</a></h2><p>Basically, the only way to solve this problem is to create your own proxy server. It sends requests to the original server and returns the data to you.
+Since you control your proxy server, you can either disable these policies, so your app’s frontend can still be hosted anywhere as a static app, or build a full-stack app where the backend and frontend run on the same host.</p><p><img src=/images/ktor.png alt=Ktor></p><p>That’s exactly what I had to do before I found the simple solution, which I’ll talk about later.
+I didn’t want to deal with setting up a full-stack app, so I decided to host my own server on my cloud machine.
+I quickly built a simple proxy server with <a href=https://ktor.io>Ktor</a> and deployed it to my cloud server.
+Since this was the first time I’d ever done anything like this, <strong>I had to learn quite a few new technologies</strong>. It’s not that easy when you’re a beginner.
+But in the end, building a local fat JAR for my server and using a simple Docker container helped a lot.
+Now, at least, I’m not afraid of this approach.</p><p>Next, I checked that my API worked when accessed directly through <code>IP:PORT</code>.
+But when I moved my web app to the new address, I was very disappointed.</p><p><img src=/images/SOWCO.png alt=SOWCO></p><p>This error means that the browser blocks requests to <strong>HTTP</strong> services when your app is running over <strong>HTTPS</strong>.
+To fix it, I’d obviously have to get a TLS certificate and attach it to my server’s IP address.
+The task isn’t exactly difficult, but I wanted to build a simple web app.
+The effort needed to get it running was already more than I was willing to put in. 🤯</p><p>At this point, I was discussing these problems with an AI agent. It casually mentioned that there was a much simpler way to do all this.</p><h2 id=cloudflare-workers class=heading-with-anchor>Cloudflare Workers
+<a class=heading-anchor href=#cloudflare-workers data-copy-heading-link data-heading-title="Cloudflare Workers" title="Copy a link to this heading" aria-label="Copy a link to heading: Cloudflare Workers">#</a></h2><p>As I said, I prefer using Cloudflare Pages.
+I started using it because Cloudflare has reasonable caching policies.</p><p>But the service is actually called <strong>Cloudflare Workers</strong>.
+It brings together not only Pages, but Functions too.
+These Functions let you upload simple JavaScript code along with your static website. The code runs inside a Node.js server.
+<a href=https://developers.cloudflare.com/pages/functions/pricing/#free-plan>And all of this is free</a>. You just need to put the JavaScript files (or TypeScript files) in a specific folder in your project.</p><p><img src=/images/cf-price.png alt=Prices></p><p>As I said, our whole server is just a proxy for requests to an external server.
+So it’s not difficult to build it in JavaScript.
+<strong>Of course</strong>, you can use Kotlin and compile it to JavaScript, then upload it all to the server.
+But I don’t think that makes sense for such a simple task.</p><p>In the end, I created a simple TypeScript file that describes how to proxy my requests to the external server.
+I intentionally added some filters so nobody else could use my proxy for their own purposes, since the free plan limits the number of requests per day.</p><p><code>./functions/_middleware.ts</code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-typescript data-lang=typescript><span style=display:flex><span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>ALLOWED_METHODS</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;GET, POST, OPTIONS&#34;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>export</span> <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>onRequest</span>: <span style=color:#66d9ef>PagesFunction</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>async</span> (<span style=color:#a6e22e>context</span>) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>request</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>context</span>.<span style=color:#a6e22e>request</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>origin</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>headers</span>.<span style=color:#66d9ef>get</span>(<span style=color:#e6db74>&#34;Origin&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>method</span> <span style=color:#f92672>!==</span> <span style=color:#e6db74>&#34;GET&#34;</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>method</span> <span style=color:#f92672>!==</span> <span style=color:#e6db74>&#34;POST&#34;</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>method</span> <span style=color:#f92672>!==</span> <span style=color:#e6db74>&#34;OPTIONS&#34;</span>) {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Response</span>(<span style=color:#e6db74>&#34;Method Not Allowed&#34;</span>, {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>status</span>: <span style=color:#66d9ef>405</span>,
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>headers</span>: <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Headers</span>({
+</span></span><span style=display:flex><span>                <span style=color:#a6e22e>Allow</span>: <span style=color:#66d9ef>ALLOWED_METHODS</span>,
+</span></span><span style=display:flex><span>                ...Object.<span style=color:#a6e22e>fromEntries</span>(<span style=color:#a6e22e>corsHeaders</span>(<span style=color:#a6e22e>request</span>, <span style=color:#a6e22e>origin</span>)),
+</span></span><span style=display:flex><span>            }),
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>method</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#34;OPTIONS&#34;</span>) {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Response</span>(<span style=color:#66d9ef>null</span>, {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>status</span>: <span style=color:#66d9ef>204</span>,
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>headers</span>: <span style=color:#66d9ef>corsHeaders</span>(<span style=color:#a6e22e>request</span>, <span style=color:#a6e22e>origin</span>),
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>url</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>URL</span>(<span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>url</span>);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>url</span>.<span style=color:#a6e22e>hostname</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;service_api.com&#34;</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>headers</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Headers</span>(<span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>headers</span>);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>headers</span>.<span style=color:#66d9ef>delete</span>(<span style=color:#e6db74>&#34;User-Agent&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>headers</span>.<span style=color:#66d9ef>delete</span>(<span style=color:#e6db74>&#34;Origin&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>headers</span>.<span style=color:#66d9ef>delete</span>(<span style=color:#e6db74>&#34;Host&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#a6e22e>headers</span>.<span style=color:#66d9ef>delete</span>(<span style=color:#e6db74>&#34;Content-Length&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>init</span>: <span style=color:#66d9ef>RequestInit</span> <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>method</span>: <span style=color:#66d9ef>request.method</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>headers</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>redirect</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;follow&#34;</span>,
+</span></span><span style=display:flex><span>    };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>method</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#34;POST&#34;</span>) {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>init</span>.<span style=color:#a6e22e>body</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>body</span>;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>try</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>upstream</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>await</span> <span style=color:#a6e22e>fetch</span>(<span style=color:#a6e22e>url</span>, <span style=color:#a6e22e>init</span>);
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>responseHeaders</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Headers</span>(<span style=color:#a6e22e>upstream</span>.<span style=color:#a6e22e>headers</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>const</span> [<span style=color:#a6e22e>name</span>, <span style=color:#a6e22e>value</span>] <span style=color:#66d9ef>of</span> <span style=color:#a6e22e>corsHeaders</span>(<span style=color:#a6e22e>request</span>, <span style=color:#a6e22e>origin</span>)) {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>responseHeaders</span>.<span style=color:#66d9ef>set</span>(<span style=color:#a6e22e>name</span>, <span style=color:#a6e22e>value</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Response</span>(<span style=color:#a6e22e>upstream</span>.<span style=color:#a6e22e>body</span>, {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>status</span>: <span style=color:#66d9ef>upstream.status</span>,
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>statusText</span>: <span style=color:#66d9ef>upstream.statusText</span>,
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>headers</span>: <span style=color:#66d9ef>responseHeaders</span>,
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>    } <span style=color:#66d9ef>catch</span> {
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Response</span>(<span style=color:#e6db74>&#34;Proxy request failed&#34;</span>, {
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>status</span>: <span style=color:#66d9ef>502</span>,
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>headers</span>: <span style=color:#66d9ef>corsHeaders</span>(<span style=color:#a6e22e>request</span>, <span style=color:#a6e22e>origin</span>),
+</span></span><span style=display:flex><span>        });
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>};
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>corsHeaders</span>(<span style=color:#a6e22e>request</span>: <span style=color:#66d9ef>Request</span>, <span style=color:#a6e22e>origin</span>: <span style=color:#66d9ef>string</span> <span style=color:#f92672>|</span> <span style=color:#66d9ef>null</span>)<span style=color:#f92672>:</span> <span style=color:#a6e22e>Headers</span> {
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>headers</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Headers</span>({
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;Access-Control-Allow-Origin&#34;</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>origin</span> <span style=color:#f92672>??</span> <span style=color:#e6db74>&#34;*&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;Access-Control-Allow-Methods&#34;</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>ALLOWED_METHODS</span>,
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;Access-Control-Allow-Headers&#34;</span><span style=color:#f92672>:</span>
+</span></span><span style=display:flex><span>            <span style=color:#a6e22e>request</span>.<span style=color:#a6e22e>headers</span>.<span style=color:#66d9ef>get</span>(<span style=color:#e6db74>&#34;Access-Control-Request-Headers&#34;</span>) <span style=color:#f92672>??</span> <span style=color:#e6db74>&#34;*&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;Access-Control-Expose-Headers&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;*&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#e6db74>&#34;Access-Control-Max-Age&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;86400&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>Vary</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;Origin&#34;</span>,
+</span></span><span style=display:flex><span>    });
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>origin</span> <span style=color:#f92672>!==</span> <span style=color:#66d9ef>null</span>) {
+</span></span><span style=display:flex><span>        <span style=color:#a6e22e>headers</span>.<span style=color:#66d9ef>set</span>(<span style=color:#e6db74>&#34;Access-Control-Allow-Credentials&#34;</span>, <span style=color:#e6db74>&#34;true&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>headers</span>;
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h2 id=conclusion class=heading-with-anchor>Conclusion
+<a class=heading-anchor href=#conclusion data-copy-heading-link data-heading-title=Conclusion title="Copy a link to this heading" aria-label="Copy a link to heading: Conclusion">#</a></h2><p>Now I have a ready-to-use solution for deploying my simple web apps without CORS problems.
+It all takes just one file and about ten lines of TypeScript code.
+I hope this helps you too.</p><p>I don’t want to tie myself to Cloudflare Workers specifically, but they’ve made this really convenient and simple.
+Check whether your favorite service has something similar.</p></div></div><section class=article-comments aria-labelledby=article-comments-title><h2 id=article-comments-title>Comments</h2><mastodon-comments host=androiddev.social user=terrakok tootid=117326753705887997></mastodon-comments></section><footer class=article-footer></footer></article></main><footer class=site-footer><div class=footer-inner><span>© <time id=footer-year aria-label="Current year"></time> Konstantin Tskhovrebov</span>
+<a class=rss-link href=/index.xml aria-label="RSS feed" title="RSS feed"><span class="font-awesome-icon icon-rss" aria-hidden=true></span></a></div></footer><div class=search-overlay id=search-overlay hidden data-index-url=/index.json><div class=search-backdrop data-search-close></div><section class=search-modal role=dialog aria-modal=true aria-labelledby=search-title><h2 class=visually-hidden id=search-title>Search the blog</h2><form class=search-form id=search-form role=search><svg viewBox="0 0 512 512" aria-hidden="true"><path d="M505 442.7 405.3 343a24 24 0 00-17-7H372a208 208 0 10-36 36v16.3a24 24 0 007 17l99.7 99.7a24 24 0 0033.9.0l28.3-28.3a24 24 0 00.1-34zM208 336a128 128 0 110-256 128 128 0 010 256z"/></svg>
+<input id=search-query type=search placeholder=Search aria-label="Search posts" autocomplete=off spellcheck=false>
+<button id=search-close type=button aria-label="Close search" title="Close (Esc)">Esc</button></form><p class=search-hint id=search-hint>Type to search posts. Press <kbd>↑</kbd> or <kbd>↓</kbd> to select a result and <kbd>Enter</kbd> to open it.</p><div class=search-results id=search-results aria-live=polite></div></section></div><dialog class=image-lightbox id=image-lightbox aria-label="Image preview"><div class=image-lightbox-frame><button class=image-lightbox-close id=image-lightbox-close type=button aria-label="Close image preview" title="Close (Esc)">
+<span aria-hidden=true>×</span>
+</button>
+<img id=image-lightbox-image alt><p class=image-lightbox-caption id=image-lightbox-caption hidden></p></div></dialog><script src=/js/search.js defer></script><script src=/js/heading-links.js defer></script><script src=/js/image-lightbox.js defer></script><script src=/js/footer-year.js defer></script></body></html>

@@ -310,6 +310,61 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `hash permalinks are removed at either end of headings`() {
+        val article = article(
+            """
+            <article>
+              <h2 id="leading"><a href="#leading">#</a> Leading heading</h2>
+              <h3 id="trailing">Trailing heading <a href="#trailing"><span>#</span></a></h3>
+              <p>Body.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(listOf("Leading heading", "Trailing heading"), article.select("h2, h3").map { it.text() })
+        assertTrue(article.select("h2 a, h3 a").isEmpty())
+    }
+
+    @Test
+    fun `hash permalinks are removed before duplicate title comparison`() {
+        for (heading in listOf(
+            "<h1 id=title><a href=#title>#</a> Article Title</h1>",
+            "<h1 id=title>Article Title <a href=#title>#</a></h1>",
+        )) {
+            val article = article("<article>$heading<p>Body.</p></article>")
+
+            HtmlStandardizer.apply(article, title = "Article Title")
+
+            assertTrue(article.select("h1, h2").isEmpty())
+            assertEquals("Body.", article.text())
+        }
+    }
+
+    @Test
+    fun `hash permalink cleanup preserves meaningful heading and body links`() {
+        val article = article(
+            """
+            <article>
+              <h2 id="section">C# <a href="#section">Section</a> <a href="#other">#</a></h2>
+              <h3>Without an ID <a href="#">#</a></h3>
+              <h4 id="external">External <a href="https://example.com/other#external">#</a></h4>
+              <p>Body <a href="#section">#</a>.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(5, article.select("a").size)
+        assertEquals("C# Section #", article.selectFirst("h2")?.text())
+        assertEquals("Without an ID #", article.selectFirst("h3")?.text())
+        assertEquals("External #", article.selectFirst("h4")?.text())
+        assertEquals("Body #.", article.selectFirst("p")?.text())
+    }
+
+    @Test
     fun `icon only permalink beside heading is removed while another icon link remains`() {
         val article = article(
             """
