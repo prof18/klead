@@ -9,6 +9,29 @@ import kotlin.test.assertTrue
 
 class SiteRegressionTest {
     @Test
+    fun `GitHub Blog article omits opening metadata and share list while keeping the story`() {
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$GITHUB_BLOG_FIXTURE.html")
+        val result = parseHtmlForTest(
+            html = html,
+            url = FixtureLoader.extractUrl(GITHUB_BLOG_FIXTURE, html),
+            options = testOptions(),
+        )
+        val cleanedHtml = result.content.requireHtml()
+        val markdown = result.content.requireMarkdown()
+
+        assertEquals("Stephen Toub", result.metadata.author)
+        assertFalse(cleanedHtml.contains("Share:"))
+        assertFalse(cleanedHtml.contains("65 minutes"))
+        assertFalse(cleanedHtml.contains("September 16, 2026"))
+        assertFalse(cleanedHtml.contains("Updated September 23, 2026"))
+        assertTrue(markdown.contains("A rewrite this size wasn’t affordable before agents."))
+        assertTrue(markdown.contains("generic-github-copilot-logo-stripe.png"))
+        assertTrue(markdown.contains("The [GitHub Copilot CLI]"))
+        assertTrue(markdown.contains("## Why we needed to port"))
+        assertTrue(markdown.contains("Happy coding!"))
+    }
+
+    @Test
     fun `Android Authority article omits byline separators before the story`() {
         val html = CommonTestResources.read("fixtures/regressions/input-html/$ANDROID_AUTHORITY_FIXTURE.html")
         val markdown = parseHtmlForTest(
@@ -83,6 +106,7 @@ class SiteRegressionTest {
         .trimEnd()
 
     private companion object {
+        const val GITHUB_BLOG_FIXTURE = "github-blog-copilot-rust-share-chrome"
         const val ANDROID_AUTHORITY_FIXTURE = "androidauthority-custom-rom-development"
         const val KT_ACADEMY_FIXTURE = "kt-academy-run-blocking"
         const val LOPEZ_MANAS_FIXTURE = "lopez-manas-android-sdk-defense-in-depth"
