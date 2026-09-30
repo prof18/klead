@@ -178,6 +178,36 @@ class PageMetadataExtractorTest {
     }
 
     @Test
+    fun `tag links after date are not an author or site name`() {
+        val metadata = extract(
+            """
+            <link rel="canonical" href="https://example.com/post">
+            <article><h1>Title</h1>
+              <div><time>Jun 26, 2026</time><span>6 min read</span></div>
+              <div><a href="/tags/AI">AI</a><a href="/tags/Open Source">Open Source</a></div>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertNull(metadata.author)
+        assertEquals("example.com", metadata.site)
+    }
+
+    @Test
+    fun `linked author after date remains a positional byline`() {
+        val metadata = extract(
+            """
+            <article><h1>Title</h1>
+              <div><time>Jun 26, 2026</time><span>6 min read</span></div>
+              <div><a href="/writers/ada">Ada Lovelace</a></div>
+            </article>
+            """.trimIndent(),
+        )
+
+        assertEquals("Ada Lovelace", metadata.author)
+    }
+
+    @Test
     fun `canonical url resolves relative favicon`() {
         val metadata = extract(
             """
