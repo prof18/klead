@@ -1,0 +1,377 @@
+<article id="mainContent" class="prose prose-content dark:prose-invert max-w-none pt-4 pb-0"><a id="prompts"></a><h2 id="prompting-overview" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Prompting overview</span></h2><p>Prompting is how you tell ChatGPT what you want to know, make, or change. A prompt
+can be a question, an instruction, or a goal. You don’t need technical syntax or
+a rigid formula. Start in your own words, review the response, and use follow-up
+messages to shape the result.</p><p>A short prompt is often enough. For larger or more important tasks, include the
+parts that matter:</p><ul>
+<li><strong>Goal:</strong> What should ChatGPT do?</li>
+<li><strong>Context:</strong> What information or sources will help?</li>
+<li><strong>Output:</strong> What format, length, or level of detail do you need?</li>
+<li><strong>Boundaries:</strong> What must stay unchanged? What should ChatGPT avoid or check
+with you before it acts?</li>
+</ul><p>Use only the parts that help. You don’t need to fill in every item or follow a
+required format.</p><h2 id="describe-the-result-you-need" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Describe the result you need</span></h2><p>Start with the result, not a detailed list of steps. Include the audience or
+format when those details change what ChatGPT should produce.</p><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Turn these meeting notes into a short update for the project team.
+Put the decisions and next steps first.</code></pre><p>This prompt explains what to create and who will read it. Describe a process when
+the process itself matters. Otherwise, leave ChatGPT room to search, compare
+information, and adjust its approach.</p><a id="context"></a><h2 id="add-useful-context" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Add useful context</span></h2><p>Share the information that could change the result. Add only the sources that
+matter, and explain what ChatGPT should take from each one.</p><ul>
+<li>Attach documents, spreadsheets, presentations, or PDF files when you want
+ChatGPT to summarize, compare, transform, or <a href="/codex/artifacts-viewer">create files for review</a>.</li>
+<li>Add a screenshot, diagram, or other <a href="/codex/image-inputs">image input</a> when the
+task depends on visual context. Point out the area that matters instead of
+relying on the image alone.</li>
+<li>Ask ChatGPT to use <a href="/codex/web-search">web search</a> when the answer depends on
+current information, and ask for sources when you need to check the result.</li>
+<li>Use a <a href="/codex/projects">project</a> when related chats should share files,
+sources, or a local folder.</li>
+</ul><h3 id="use-connected-sources" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Use connected sources</span></h3><p>When ChatGPT has access to connected sources, name where it should look and what
+it should find. You don’t need to describe every search it should run.</p><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Use the latest project plan in Drive and relevant decisions and updates from
+the project's Slack channel to prepare a status update.</code></pre><p>Connected sources require the matching plugin, and availability can depend on
+your plan and workspace settings.</p><h3 id="use-plugins" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Use plugins</span></h3><p>Plugins give ChatGPT and Codex reusable instructions and connections to tools
+such as Google Drive, Gmail, Slack, and GitHub. Both products draw public
+plugins from the same universal directory. Ask for the result you need and let
+the active surface choose from the tools available to it. In ChatGPT, type <code>@</code>
+in the composer to choose a specific plugin.</p><a href="/codex/plugins" to="/codex/plugins" class="_TextLink_ssta1_1" data-underline="always"><div class="icon-item mt-4"> <div class="icon-item-icon"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M15.465 19a3.501 3.501 0 0 1-6.93 0H6a3 3 0 0 1-3-3v-2.5a1 1 0 0 1 1-1h.5a1.5 1.5 0 0 0 0-3H4a1 1 0 0 1-1-1V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2.535ZM12 20a1.5 1.5 0 0 0 1.5-1.5V18a1 1 0 0 1 1-1H18a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v1.535a3.5 3.5 0 0 1 0 6.93V16a1 1 0 0 0 1 1h3.5a1 1 0 0 1 1 1v.5A1.5 1.5 0 0 0 12 20Z" clip-rule="evenodd"></path></svg> </div> <div class="icon-item-right"> <div class="icon-item-title not-prose"> <div class="icon-item-title body-large not-prose">Learn about plugins</div> <div class="pointer"> <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9.293 7.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L12.586 12 9.293 8.707a1 1 0 0 1 0-1.414Z" clip-rule="evenodd"></path></svg> </div> </div>  <div class="icon-item-desc body-small not-prose"> <p>Find, install, and use plugins in ChatGPT and Codex.</p> </div> </div> </div></a><h3 id="personalize-chatgpt" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Personalize ChatGPT</span></h3><p>Put preferences that should apply across chats in <strong>Settings &gt; Personalization</strong>
+as custom instructions. Keep details that matter only to the current chat in the
+prompt.</p><a href="/codex/app/settings#personalization" to="/codex/app/settings#personalization" class="_TextLink_ssta1_1" data-underline="always"><div class="icon-item mt-4"> <div class="icon-item-icon"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M11.568 3.5a1 1 0 0 0-.863.494l-.811 1.381A3.001 3.001 0 0 1 7.33 6.856l-1.596.013a1 1 0 0 0-.858.501l-.439.761a1 1 0 0 0-.004.992l.792 1.4a3 3 0 0 1 0 2.954l-.792 1.4a1 1 0 0 0 .004.992l.439.76a1 1 0 0 0 .858.502l1.596.013a3 3 0 0 1 2.564 1.48l.811 1.382a1 1 0 0 0 .863.494h.87a1 1 0 0 0 .862-.494l.812-1.381a3.001 3.001 0 0 1 2.563-1.481l1.596-.013a1 1 0 0 0 .86-.501l.438-.761a1 1 0 0 0 .004-.992l-.793-1.4a3 3 0 0 1 0-2.954l.793-1.4a1 1 0 0 0-.004-.992l-.439-.76a1 1 0 0 0-.858-.502l-1.597-.013a3 3 0 0 1-2.563-1.48L13.3 3.993a1 1 0 0 0-.862-.494h-.87ZM8.98 2.981A3.001 3.001 0 0 1 11.568 1.5h.87c1.064 0 2.049.564 2.588 1.481l.811 1.382a1 1 0 0 0 .855.494l1.596.013a3 3 0 0 1 2.575 1.502l.44.76a3 3 0 0 1 .011 2.975l-.792 1.4a1 1 0 0 0 0 .985l.792 1.401a3 3 0 0 1-.012 2.974l-.439.761a3.001 3.001 0 0 1-2.575 1.503l-1.597.012a1 1 0 0 0-.854.494l-.811 1.382a3.001 3.001 0 0 1-2.588 1.481h-.87a3.001 3.001 0 0 1-2.588-1.481l-.811-1.382a1 1 0 0 0-.855-.494l-1.596-.012a3.001 3.001 0 0 1-2.576-1.503l-.438-.76a3 3 0 0 1-.013-2.975l.793-1.4a1 1 0 0 0 0-.985l-.793-1.4a3 3 0 0 1 .013-2.975l.438-.761A3.001 3.001 0 0 1 5.718 4.87l1.596-.013a1 1 0 0 0 .855-.494l.81-1.382Z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M12.003 10.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM8.502 12a3.5 3.5 0 1 1 7 .001 3.5 3.5 0 0 1-7-.001Z" clip-rule="evenodd"></path></svg> </div> <div class="icon-item-right"> <div class="icon-item-title not-prose"> <div class="icon-item-title body-large not-prose">Review personalization settings</div> <div class="pointer"> <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M9.293 7.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L12.586 12 9.293 8.707a1 1 0 0 1 0-1.414Z" clip-rule="evenodd"></path></svg> </div> </div>  <div class="icon-item-desc body-small not-prose"> <p>Set a default personality, custom instructions, and other app preferences.</p> </div> </div> </div></a><h2 id="set-boundaries-that-prevent-real-problems" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Set boundaries that prevent real problems</span></h2><p>Boundaries are the few instructions ChatGPT needs to avoid creating extra work
+or taking an action you didn’t intend. Add one when changing the wrong detail
+would make the result unusable, or when you want to review something before it
+affects other people.</p><ul>
+<li>Keep the approved dates and budget figures unchanged.</li>
+<li>Use only the supplied sources. Flag missing information instead of guessing.</li>
+<li>Keep recommendations within the stated budget.</li>
+<li>Prepare the message as a draft. Don’t send it.</li>
+</ul><p>Focus on the one or two boundaries that matter most. You don’t need to control
+every step ChatGPT takes.</p><h2 id="make-the-result-ready-to-use" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Make the result ready to use</span></h2><p>Tell ChatGPT how you plan to use the result. This helps it choose the right
+length, level of detail, and organization.</p><ul>
+<li>Make this a one-page summary a director can scan before the meeting. Put the
+decision and next steps first.</li>
+<li>Turn these notes into a follow-up email with the decisions, owners, and due
+dates.</li>
+<li>Create a clear table of planned versus actual spending and highlight any
+difference over 10%.</li>
+</ul><p>For important work, ask ChatGPT for a final check, such as confirming every
+action item has an owner and due date or flagging information it couldn’t
+verify. Then review the result yourself before you use or share it.</p><h2 id="improve-the-result-with-follow-up-messages" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Improve the result with follow-up messages</span></h2><p>Your first prompt doesn’t need to be perfect. Review the result, then ask for
+the specific change you want.</p><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Make the opening more direct, keep the evidence, and move the recommendation
+above the background section.</code></pre><p>You can add a missing source, correct the direction, ask for another option, or
+change the level of detail without starting over.</p><h3 id="steering-and-queuing" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Steering and queuing</span></h3><p>When Codex is already working, you can send another message without waiting for
+the current run to finish:</p><ul>
+<li><strong>Steer</strong> adds the message to the current run. Use it to change direction, add
+a missing detail, or share new information.</li>
+<li><strong>Queue</strong> saves the message for the next run. Use it for a follow-up that should
+wait until the current work finishes.</li>
+</ul><p>In the ChatGPT desktop app, choose the default under
+<a href="/codex/app/settings#general"><strong>Settings &gt; General &gt; Follow-up behavior</strong></a>.
+Queued messages appear above the composer, where you can edit, reorder, send, or
+delete them. The setting also shows the shortcut for using the other behavior
+for one message without changing your default.</p><p>In Codex CLI, press <kbd>Enter</kbd> while Codex is working to steer the current
+turn, or press <kbd>Tab</kbd> to queue the message for the next turn. See the
+<a href="/codex/developer-commands?surface=cli#cli-interactive-shortcuts">interactive shortcuts</a>
+for details.</p><h2 id="put-the-pieces-together" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Put the pieces together</span></h2><p>For a project update that uses connected sources, a complete prompt might look
+like this:</p><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Prepare a one-page project status update for Monday's leadership meeting. Use
+the latest project plan in Drive and relevant decisions and updates from the
+project's Slack channel.
+
+Lead with the decisions leadership needs to make and the next steps. Summarize
+progress, risks, owners, and due dates. Keep approved dates and budget figures
+unchanged. Flag any conflicting or missing information, and don't send or
+publish anything.
+
+Before you finish, check that every next step has an owner and due date.</code></pre><p>This prompt covers the <strong>Goal</strong>, <strong>Context</strong>, <strong>Output</strong>, and <strong>Boundaries</strong>, then
+asks for a final check without spelling out every step.</p><h2 id="use-voice-dictation" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Use voice dictation</span></h2><p>In the ChatGPT desktop app, press <kbd>Ctrl+Shift+D</kbd> while the composer is
+visible, then start talking. ChatGPT transcribes your speech into the composer
+so you can review and edit it before sending the prompt.</p><div class="min-w-0" data-documentation-screenshot-presentation="screenshot" data-documentation-screenshot-variant="wallpaper" data-documentation-screenshot-canvas-key="CodexComposerDetailIllustration:voice" style="--documentation-screenshot-light-source-width: 1298px; --documentation-screenshot-dark-source-width: 1297px; --documentation-screenshot-light-aspect-ratio: 1298 / 731; --documentation-screenshot-dark-aspect-ratio: 1297 / 731; --documentation-screenshot-light-height-width-limit: calc(400px * 1298 / 731); --documentation-screenshot-dark-height-width-limit: calc(400px * 1297 / 731); --documentation-screenshot-max-height: 400px; --documentation-screenshot-max-width: 100%;"> <div class="not-prose flex w-full items-center justify-center rounded-xl bg-[url('/images/codex/codex-wallpaper-1.webp')] bg-cover bg-center p-2 my-8"> <div class="mx-auto flex min-w-0 max-w-full items-center justify-center overflow-hidden object-contain w-full" data-documentation-screenshot-viewport style="max-height: var(--documentation-screenshot-max-height); max-width: min(100%, var(--documentation-screenshot-max-width));"> <div class="mx-auto min-w-0 w-full" data-documentation-screenshot-artwork> <div class="contents" data-markdown-export="illustration" data-markdown-description="Voice dictation indicator in the composer with a transcribed prompt"> <figure aria-label="Voice dictation indicator in the composer with a transcribed prompt" data-markdown-description="Voice dictation indicator in the composer with a transcribed prompt" data-markdown-export="illustration" data-documentation-canonical-frame="true" role="img" class="not-prose relative isolate m-0 w-full"></figure> </div> </div> </div> </div> </div><a id="threads"></a><a id="chats"></a><h2 id="prompting-examples-for-chat" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Prompting examples for Chat</span></h2><p>Use Chat for questions, ideas, drafts, and everyday decisions. Start with the
+outcome you want, then add detail only when it changes the answer.</p><h3 id="understand-a-topic" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Understand a topic</span></h3><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Explain how compound interest works for someone who has never invested.
+Use one concrete example and define any financial terms you introduce.</code></pre><h3 id="draft-and-refine-writing" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Draft and refine writing</span></h3><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Draft a friendly email declining this invitation because I will be traveling.
+Keep it under 120 words and leave the door open for a future event.</code></pre><h3 id="compare-options" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Compare options</span></h3><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Compare these two phone plans for one person who travels internationally twice
+a year. Show the important differences in a table, then recommend one and explain
+the tradeoff.</code></pre><h3 id="make-a-practical-plan" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Make a practical plan</span></h3><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Plan five weekday dinners that take less than 30 minutes. Avoid peanuts, reuse
+ingredients across meals, and finish with one consolidated shopping list.</code></pre><a id="prompting-for-work"></a><a id="prompting-in-work-mode"></a><h2 id="prompting-for-chatgpt-work" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Prompting for ChatGPT Work</span></h2><p>Use Chat for quick questions, short rewrites, brainstorming, and lightweight
+drafts. Use ChatGPT Work for tasks that draw on different sources or tools, involve a
+sequence of steps, make changes, or produce a larger deliverable.</p><p>In ChatGPT Work, describe the result you need, provide the source material, name
+the audience, and explain how you’ll review the work. Ask ChatGPT to plan,
+gather the needed information, create files, and check them before it finishes.</p><a id="use-work-efficiently"></a><a id="use-work-mode-efficiently"></a><h3 id="use-chatgpt-work-efficiently" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Use ChatGPT Work efficiently</span></h3><p>ChatGPT Work is useful for time-consuming or recurring tasks, or for finished files you
+can reuse. A task that uses more credits can still be worthwhile if it saves
+time, improves quality, or helps you make an important decision.</p><p>Start with one result you can review:</p><ul>
+<li>Include only relevant sources and limit the date range when appropriate.</li>
+<li>Define the audience, output format, and desired length.</li>
+<li>Separate required work from optional improvements or polish.</li>
+<li>Ask for a plan when the approach matters. Require your approval before ChatGPT
+sends, publishes, or changes information other people rely on.</li>
+<li>Narrow or stop the task if it starts doing work you no longer need.</li>
+</ul><p>Review the first result, refine the instructions, and reuse the workflow when
+it works.</p><h3 id="turn-source-material-into-finished-files" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Turn source material into finished files</span></h3><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Use the attached quarterly reports to create a leadership brief and a six-slide
+presentation.
+
+The audience is the executive team. Lead with the three decisions they need to
+make, distinguish reported facts from your analysis, cite each number to its
+source file, and check that the brief and slides agree before you finish.</code></pre><h3 id="research-a-decision" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Research a decision</span></h3><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Research three customer-support platforms for a 50-person company. Compare
+pricing, security, integrations, and migration effort using current sources.
+Deliver a recommendation memo with links, assumptions, and the questions we
+should answer before signing a contract.</code></pre><h3 id="coordinate-a-launch" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Coordinate a launch</span></h3><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Create a launch plan for the attached product brief. Include the timeline,
+owners, dependencies, risks, announcement draft, customer FAQ, and a checklist
+for launch day. Flag any missing decisions before producing the final files.</code></pre><p>For recurring work, first refine the prompt in a normal chat. After the output is
+reliable, <a href="/codex/automations#schedule-a-task-inside-a-chat">schedule a task inside that chat</a>.
+Create a standalone scheduled task instead when each scheduled run should start
+a new chat.</p><a id="use-editor-context"></a><h2 id="prompting-codex" class="group flex items-center gap-2 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Prompting Codex</span></h2><p>Use Codex when you want ChatGPT to work with code, a codebase, or developer tools.
+A useful Codex prompt names the behavior you want, points to the relevant code or
+reproduction steps, preserves important constraints, and says how to verify the
+change.</p><a id="goal-mode"></a><p>For a multi-step task, enter <code>/plan</code> in the app composer when you want Codex to
+investigate and propose an approach before editing. When <a href="/codex/long-running-work">Goal mode</a>
+is available, use <code>/goal</code> after the plan to set a persistent goal. See the <a href="/codex/reference/slash-commands">app slash
+commands</a>
+for the current command list.</p><h3 id="how-to-read-these-examples" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">How to read these examples</span></h3><p>Each workflow includes:</p><ul>
+<li><strong>When to use it</strong> and which Codex surface fits best (IDE, CLI, or cloud).</li>
+<li><strong>Steps</strong> with example user prompts.</li>
+<li><strong>Context notes</strong>: what Codex automatically sees vs what you should attach.</li>
+<li><strong>Verification</strong>: how to check the output.</li>
+</ul><blockquote>
+<p><strong>Note:</strong> The IDE extension automatically includes your open files as context. In the CLI, mention paths explicitly, or attach files with <code>/mention</code> and <code>@</code> path autocomplete.</p>
+</blockquote><p>Codex runs local commands inside a <a href="/codex/sandboxing">sandbox</a>
+that limits file and network access. If a task needs to cross that boundary,
+Codex follows your approval policy before continuing.</p><h3 id="explain-a-codebase" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Explain a codebase</span></h3><p>Use this when you are onboarding, inheriting a service, or trying to reason about a protocol, data model, or request flow.</p><h4 id="ide-extension-workflow-fastest-for-local-exploration" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">IDE extension workflow (fastest for local exploration)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Open the most relevant files.</p>
+</li>
+<li>
+<p>Select the code you care about (optional but recommended).</p>
+</li>
+<li>
+<p>Prompt Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Explain how the request flows through the selected code.
+
+Include:
+- a short summary of the responsibilities of each module involved
+- what data is validated and where
+- one or two "gotchas" to watch for when changing this</code></pre>
+</li>
+</ol> </div><p>Verification:</p><ul>
+<li>Ask for a diagram or checklist you can verify:</li>
+</ul><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Summarize the request flow as a numbered list of steps. Then list the files involved.</code></pre><h4 id="cli-workflow-good-when-you-want-a-transcript--shell-commands" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">CLI workflow (good when you want a transcript + shell commands)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Start an interactive session:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="bash"><code data-lang="bash" class="language-bash">codex</code></pre>
+</li>
+<li>
+<p>Attach the files (optional) and prompt:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">I need to understand the protocol used by this service. Read @foo.ts @schema.ts and explain the schema and request/response flow. Focus on required vs optional fields and backward compatibility rules.</code></pre>
+</li>
+</ol> </div><p>Context notes:</p><ul>
+<li>You can use <code>@</code> in the composer to insert file paths from the workspace, or <code>/mention</code> to attach a specific file.</li>
+</ul><h3 id="fix-a-bug" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Fix a bug</span></h3><p>Use this when you have a failing behavior you can reproduce locally.</p><h4 id="cli-workflow-tight-loop-with-reproduction-and-verification" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">CLI workflow (tight loop with reproduction and verification)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Start Codex at the repo root:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="bash"><code data-lang="bash" class="language-bash">codex</code></pre>
+</li>
+<li>
+<p>Give Codex a reproduction recipe, plus the file(s) you suspect:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Bug: Clicking "Save" on the settings screen sometimes shows "Saved" but doesn't persist the change.
+
+Repro:
+1) Start the app: npm run dev
+2) Go to /settings
+3) Toggle "Enable alerts"
+4) Click Save
+5) Refresh the page: the toggle resets
+
+Constraints:
+- Do not change the API shape.
+- Keep the fix minimal and add a regression test if feasible.
+
+Start by reproducing the bug locally, then propose a patch and run checks.</code></pre>
+</li>
+</ol> </div><p>Context notes:</p><ul>
+<li>Supplied by you: the repro steps and constraints (these matter more than a high-level description).</li>
+<li>Supplied by Codex: command output, discovered call sites, and any stack traces it triggers.</li>
+</ul><p>Verification:</p><ul>
+<li>Codex should re-run the repro steps after the fix.</li>
+<li>If you have a standard check pipeline, ask it to run it:</li>
+</ul><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">After the fix, run lint + the smallest relevant test suite. Report the commands and results.</code></pre><h4 id="ide-extension-workflow" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">IDE extension workflow</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Open the file where you think the bug lives, plus its nearest caller.</p>
+</li>
+<li>
+<p>Prompt Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Find the bug causing "Saved" to show without persisting changes. After proposing the fix, tell me how to verify it in the UI.</code></pre>
+</li>
+</ol> </div><h3 id="write-a-test" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Write a test</span></h3><p>Use this when you want to define the exact scope to test.</p><h4 id="ide-extension-workflow-selection-based" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">IDE extension workflow (selection-based)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Open the file with the function.</p>
+</li>
+<li>
+<p>Select the lines that define the function. Choose “Add to Codex Thread” from command palette to add these lines to the context.</p>
+</li>
+<li>
+<p>Prompt Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Write a unit test for this function. Follow conventions used in other tests.</code></pre>
+</li>
+</ol> </div><p>Context notes:</p><ul>
+<li>Supplied by “Add to Codex Thread” command: the selected lines (this is the “line number” scope), plus open files.</li>
+</ul><h4 id="cli-workflow-path--line-range-described-in-prompt" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">CLI workflow (path + line range described in prompt)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Start Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="bash"><code data-lang="bash" class="language-bash">codex</code></pre>
+</li>
+<li>
+<p>Prompt with a function name:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Add a test for the invert_list function in @transform.ts. Cover the happy path plus edge cases.</code></pre>
+</li>
+</ol> </div><h3 id="prototype-from-a-screenshot" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Prototype from a screenshot</span></h3><p>Use this when you want to turn a design mock, screenshot, or UI reference into a working prototype.</p><h4 id="cli-workflow-image--prompt" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">CLI workflow (image + prompt)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Save your screenshot locally (for example <code>./specs/ui.png</code>).</p>
+</li>
+<li>
+<p>Run Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="bash"><code data-lang="bash" class="language-bash">codex</code></pre>
+</li>
+<li>
+<p>Drag the image file into the terminal to attach it to the prompt.</p>
+</li>
+<li>
+<p>Follow up with constraints and structure:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Create a new dashboard based on this image.
+
+Constraints:
+- Use react, vite, and tailwind. Write the code in typescript.
+- Match spacing, typography, and layout as closely as possible.
+
+Outputs:
+- A new route/page that renders the UI
+- Any small components needed
+- README.md with instructions to run it locally</code></pre>
+</li>
+</ol> </div><p>Context notes:</p><ul>
+<li>The image provides visual requirements, but you still need to specify the implementation constraints (framework, routing, component style).</li>
+<li>Include behavior the image doesn’t show in text, such as hover states, validation rules, or keyboard interactions.</li>
+</ul><p>Verification:</p><ul>
+<li>Ask Codex to run the dev server (if allowed) and tell you exactly where to look:</li>
+</ul><pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Start the dev server and tell me the local URL/route to view the prototype.</code></pre><h4 id="ide-extension-workflow-image--existing-files" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">IDE extension workflow (image + existing files)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Attach the image in the Codex chat (drag-and-drop or paste).</p>
+</li>
+<li>
+<p>Prompt Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Create a new settings page. Use the attached screenshot as the target UI.
+Follow design and visual patterns from other files in this project.</code></pre>
+</li>
+</ol> </div><h3 id="iterate-on-ui-with-live-updates" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Iterate on UI with live updates</span></h3><p>Use this when you want a tight “design → tweak → refresh → tweak” loop while Codex edits code.</p><h4 id="cli-workflow-run-vite-then-iterate-with-small-prompts" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">CLI workflow (run Vite, then iterate with small prompts)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Start Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="bash"><code data-lang="bash" class="language-bash">codex</code></pre>
+</li>
+<li>
+<p>Start the dev server in a separate terminal window:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="bash"><code data-lang="bash" class="language-bash">npm run dev</code></pre>
+</li>
+<li>
+<p>Prompt Codex to make changes:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Propose 2-3 styling improvements for the landing page.</code></pre>
+</li>
+<li>
+<p>Pick a direction and iterate with small, specific prompts:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Go with option 2.
+
+Change only the header:
+- make the typography more editorial
+- increase whitespace
+- ensure it still looks good on mobile</code></pre>
+</li>
+<li>
+<p>Repeat with focused requests:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Next iteration: reduce visual noise.
+Keep the layout, but simplify colors and remove any redundant borders.</code></pre>
+</li>
+</ol> </div><p>Verification:</p><ul>
+<li>Review changes in the browser as Codex updates the code.</li>
+<li>Commit changes that you like and revert those that you don’t.</li>
+<li>If you revert or change an edit, tell Codex so it doesn’t overwrite your edit when it works on the next prompt.</li>
+</ul><h3 id="delegate-refactor-to-the-cloud" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Delegate refactor to the cloud</span></h3><p>Use this when you want to design an approach with local context, then delegate the long implementation to a cloud chat that can run in parallel.</p><h4 id="local-planning-ide" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Local planning (IDE)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Make sure your current work is committed or at least stashed so you can compare changes cleanly.</p>
+</li>
+<li>
+<p>Ask Codex to produce a refactor plan. If you have the <code>$plan</code> skill available, invoke it explicitly:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">$plan
+
+We need to refactor the auth subsystem to:
+- split responsibilities (token parsing vs session loading vs permissions)
+- reduce circular imports
+- improve testability
+
+Constraints:
+- No user-visible behavior changes
+- Keep public APIs stable
+- Include a step-by-step migration plan</code></pre>
+</li>
+<li>
+<p>Review the plan and negotiate changes:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Revise the plan to:
+- specify exactly which files move in each milestone
+- include a rollback strategy</code></pre>
+</li>
+</ol> </div><p>Context notes:</p><ul>
+<li>Planning works best when Codex can scan the current code locally (entrypoints, module boundaries, dependency graph hints).</li>
+</ul><h4 id="cloud-delegation-ide--cloud" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Cloud delegation (IDE → Cloud)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>If you haven’t already done so, set up a <a href="/codex/environments/cloud-environment">Codex cloud environment</a>.</p>
+</li>
+<li>
+<p>Click on the cloud icon beneath the prompt composer and select your cloud environment.</p>
+</li>
+<li>
+<p>When you enter the next prompt, Codex creates a new chat in the cloud that carries over the existing chat context (including the plan and any local source changes).</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Implement Milestone 1 from the plan.</code></pre>
+</li>
+<li>
+<p>Review the cloud diff, iterate if needed.</p>
+</li>
+<li>
+<p>Create a PR directly from the cloud or pull changes locally to test and finish up.</p>
+</li>
+<li>
+<p>Iterate on additional milestones of the plan.</p>
+</li>
+</ol> </div><p>Tasks delegated to the cloud run in isolated environments. Internet access is
+off during the agent phase unless you enable it for the environment. Learn more
+about <a href="/codex/cloud/internet-access">cloud internet access</a>.</p><h3 id="do-a-local-code-review" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Do a local code review</span></h3><p>Use this when you want a second set of eyes before committing or creating a PR.</p><h4 id="cli-workflow-review-your-working-tree" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">CLI workflow (review your working tree)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Start Codex:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="bash"><code data-lang="bash" class="language-bash">codex</code></pre>
+</li>
+<li>
+<p>Run the review command:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">/review</code></pre>
+</li>
+<li>
+<p>Optional: provide custom focus instructions:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">/review Focus on edge cases and security issues</code></pre>
+</li>
+</ol> </div><p>Verification:</p><ul>
+<li>Apply fixes based on review feedback, then rerun <code>/review</code> to confirm you resolved the issues.</li>
+</ul><h3 id="review-a-github-pull-request" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Review a GitHub pull request</span></h3><p>Use this when you want review feedback without pulling the branch locally.</p><p>Before you can use this, enable Codex <strong>Code review</strong> on your repository. See <a href="/codex/third-party/github">Code review</a>.</p><h4 id="github-workflow-comment-driven" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">GitHub workflow (comment-driven)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Open the pull request on GitHub.</p>
+</li>
+<li>
+<p>Leave a comment that tags Codex with explicit focus areas:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">@codex review</code></pre>
+</li>
+<li>
+<p>Optional: Provide more explicit instructions.</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">@codex review for security vulnerabilities and security concerns</code></pre>
+</li>
+</ol> </div><h3 id="update-documentation" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">Update documentation</span></h3><p>Use this when you need an accurate, clear documentation change.</p><h4 id="ide-or-cli-workflow-local-edits--local-validation" class="group flex items-center gap-1 mt-7 mb-2 scroll-mt-[110px] "><span class="min-w-0">IDE or CLI workflow (local edits + local validation)</span></h4><div class="workflow-steps astro-fi6266m3"> <ol>
+<li>
+<p>Identify the doc file(s) to change and open them (IDE) or <code>@</code> mention them (IDE or CLI).</p>
+</li>
+<li>
+<p>Prompt Codex with scope and validation requirements:</p>
+<pre class="astro-code astro-code-themes github-light github-dark" style="--shiki-dark-bg:#24292e; --shiki-dark:#e1e4e8; overflow-x:auto" tabindex="0" data-language="text"><code data-lang="text" class="language-text">Update the "advanced features" documentation to provide authentication troubleshooting guidance. Verify that all links are valid.</code></pre>
+</li>
+<li>
+<p>After Codex drafts the changes, review the documentation and iterate as needed.</p>
+</li>
+</ol> </div><p>Verification:</p><ul>
+<li>Read the rendered page.</li>
+</ul></article>
