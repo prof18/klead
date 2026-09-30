@@ -324,6 +324,16 @@ internal fun isAboutAuthorFooterBlock(scan: BlockScan): Boolean {
     if (text.isBlank() || text.length > ABOUT_AUTHOR_FOOTER_MAX_LENGTH) return false
     if (!ABOUT_AUTHOR_FOOTER_PATTERN.containsMatchIn(text)) return false
 
+    val heading = element.children().firstOrNull { it.text().isNotBlank() }
+    if (
+        "footer" in scan.haystack &&
+        heading != null &&
+        HEADING_TAG_PATTERN.matches(heading.normalName()) &&
+        ABOUT_AUTHOR_FOOTER_PATTERN.containsMatchIn(heading.text())
+    ) {
+        return true
+    }
+
     val proseParagraphs = element.select("p").count { paragraph ->
         paragraph.text().trim().collapseWhitespace().wordCount() >= ABOUT_AUTHOR_PROSE_WORD_GUARD
     }

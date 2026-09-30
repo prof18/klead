@@ -270,6 +270,38 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `social comment widgets and explicit author footer are removed while body bios remain`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <div class="author-bio">
+                <h3>About The Author</h3>
+                <p>This discussion of the author belongs to the story and has enough ordinary prose to remain in the article.</p>
+              </div>
+              <section class="social-comments"><h3>Loading Bluesky comments…</h3></section>
+              <div class="post-footer">
+                <h3>About The Author</h3>
+                <p>This promotional biography contains enough words to look like prose but belongs to the explicitly marked author footer.</p>
+                <h3>Free Playbook</h3><p>Drop your email to receive a book.</p>
+              </div>
+              <section class="footnotes"><p>A useful note.</p></section>
+              <blockquote><div class="social-comments">Quoted widget example stays.</div></blockquote>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("This discussion of the author belongs to the story"))
+        assertTrue(article.text().contains("A useful note."))
+        assertTrue(article.text().contains("Quoted widget example stays."))
+        assertFalse(article.text().contains("Loading Bluesky"))
+        assertFalse(article.text().contains("This promotional biography"))
+        assertFalse(article.text().contains("Free Playbook"))
+    }
+
+    @Test
     fun `plain author bio blocks are not removed by global exact selectors`() {
         val document = Ksoup.parse(
             """
