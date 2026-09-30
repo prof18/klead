@@ -81,7 +81,8 @@ internal object HtmlTitleNormalizer {
             heading.select(HEADING_PERMALINK_SELECTOR).remove()
             if (heading.id().isNotBlank()) {
                 heading.select("a[href]").filter { anchor ->
-                    anchor.attr("href").trim() == "#${heading.id()}" && anchor.text().trim() == "#"
+                    anchor.attr("href").trim() == "#${heading.id()}" &&
+                        anchor.text().trim() in HEADING_HASH_MARKERS
                 }.forEach { it.remove() }
             }
         }
@@ -311,6 +312,7 @@ internal object HtmlTitleNormalizer {
     private val NUMBERED_SECTION_HEADING = Regex("""^\d{1,3}[.)]?\s+\S+.*""")
     private val SENTENCE_PUNCTUATION = Regex("""[.!?]""")
     private val HEADING_TAG_NAMES = setOf("h1", "h2", "h3", "h4", "h5", "h6")
+    private val HEADING_HASH_MARKERS = setOf("#", "⌗")
     private val ARTICLE_BODY_HINTS = setOf(
         "article-body",
         "article-content",

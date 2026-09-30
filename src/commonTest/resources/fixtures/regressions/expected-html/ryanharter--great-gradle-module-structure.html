@@ -1,0 +1,40 @@
+<div class="post-content"><div>
+        <div class="link card">
+  <h2>Flattening my Dependency Graph</h2>
+
+<p>Jesse explores a Gradle module structure that he likes.</p>
+  <p><a class="button" target="_blank" href="https://publicobject.com/2026/02/03/flattening-my-dependency-graph/">Read now ➡</a></p>
+</div>
+<p>I liked this not-so-recent post from Jesse Wilson, which outlines a Gradle module convention that prioritizes clear public/private boundaries to support encapsulation and build speed. The approach, adapted from one <a href="https://ralf-wondratschek.com/presentation/android-at-scale-at-square.html">presented by Ralf Wondratschek</a>, also happens to closely resemble one that I helped institute at Dropbox shortly after I joined four and a half years ago.</p>
+<h2 id="modules-built-for-speed">Modules built for speed </h2>
+<p>In my proposal, called “Modules Built for Speed”, I defined a structure in which each feature contains two modules:</p>
+<ul>
+<li><code>api</code>: The feature’s public API interfaces and value objects.</li>
+<li><code>impl</code>: The feature’s implementation classes; service objects that implement the feature’s public API interfaces.</li>
+</ul>
+<p>With these two modules and a few rules we were able to significantly reduce build times, reduce confusing coupling between features, and better enforce test coverage.</p>
+<h2 id="the-api-module">The <code>api</code> module </h2>
+<p>The <code>api</code> module is usually quite simple since it only contains interfaces and value objects like <code>data</code> classes. This module is the public API of the feature, and is the <strong>only</strong> module that other features depend on.</p>
+<div class="notices note">
+<p>The original implementation of this proposal included a third module, <code>test-utils</code>, that was for providing test doubles of the interfaces defined in the <code>api</code> module. The Android Gradle Plugin’s support for <code>testFixtures</code> in version 8.5.1 has since made this obsolete, and these fixtures now live in the <code>testFixtures</code> configuration of the <code>api</code> module.</p>
+</div>
+<h3 id="test-coverage">Test Coverage </h3>
+<p>Within our codebase we have a rule that enforces 80% test coverage by lines of code per module. While I don’t <em>prefer</em> these kinds of strict coverage requirements and we <em>do</em> support approved coverage overrides in our Gradle build files, they <em>have</em> helped nudge a large group of engineers towards ensuring reasonable test coverage.</p>
+<p>For API modules this should be trivial, but can be a little annoying. Initially, it was common for engineers to slap a <code>coverageOverride = 0.0</code> into their <code>api</code> module’s <code>build.gradle.kts</code> file, since these modules are for “interfaces and value objects”. I pushed hard against this, as JaCoCo is smart enough to know that interfaces don’t generally contain coverable lines, but Kotlin also makes it easy to “accidentally” include logic in your interfaces via <code>default</code> implementations and extension functions. Additionally, <code>data</code> classes <em>can</em> contain logic, which should be covered.</p>
+<p>In order to ensure we maintain coverage of logic while not being too burdensome, we simply add a <a href="https://publicobject.com/2019/02/17/toehold-test/">toehold test</a> for data classes that instantiate them and validate equality. This ensures that we aren’t adding blanket coverage overrides that make it easy to add uncovered code.</p>
+<h2 id="the-impl-module">The <code>impl</code> module </h2>
+<p>The <code>impl</code> module is where the classes that implement the interfaces in the <code>api</code> module live, along with any internal support classes. Because they contain the business logic, they are the modules that are heavily tested.</p>
+<p>Since we used Anvil, and now use <a href="https://zacsweers.github.io/metro/latest/">Metro</a>, which support aggregation of bindings at build time, we don’t need an <code>impl-wiring</code> module like Ralf outlines. Our <code>app</code> modules simply depend on the feature <code>impl</code> modules, and the wiring happens automatically, allowing the Gradle dependencies to define what contributes implementations.</p>
+<h2 id="the-rules">The rules </h2>
+<p>In order for this to truly speed up build times there are a few rules that must be followed:</p>
+<ul>
+<li>Feature modules <strong>only</strong> depend on <code>api</code> modules.</li>
+<li><code>impl</code> modules depend on their <code>api</code> modules in the <code>api</code> configuration.</li>
+</ul>
+<p>With these simple rules, <code>app</code> modules only list the <code>impl</code> modules of features they depend on, <code>impl</code> modules can build in parallel because they only depend on <code>api</code> modules, and changes in an <code>impl</code> module don’t cause recompilation of any other <code>impl</code> modules.</p>
+<p>Additionally “wiring” code, which defines which implementations satisfy which interfaces, was previously defined in both kotlin code <strong>and</strong> gradle build files (i.e. depending on a different <code>impl-wiring</code> module changes the implementation), but it now lives <strong>only</strong> in the <code>dependencies</code> block of your app’s gradle build file.</p>
+<p>Lastly, while Java’s <code>package-private</code> scope was never really private, this approach allows us to get back some of that clear scoping that we used to use an <code>internal</code> package declaration for. Since features only depend on other feature’s <code>api</code> modules, any classes or helpers defined in the <code>impl</code> module will truly be internal to that feature.</p>
+<h2 id="conclusion">Conclusion </h2>
+<p>This module structure was primarily aimed at helping us improve our build speeds, and it succeeded at that. Additionally, we found all of these extra benefits, including many we didn’t aniticipate, and this is now a well understood standard at Dropbox. I’d recommend giving it a try.</p>
+
+      </div></div>

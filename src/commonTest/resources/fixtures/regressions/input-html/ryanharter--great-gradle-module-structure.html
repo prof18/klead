@@ -1,0 +1,231 @@
+<!-- {"url":"https://ryanharter.com/blog/2026/07/a-great-gradle-module-structure/"} -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+    <title>A Great Gradle Module Structure :: Ryan Harter</title>
+  
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="description" content=" Flattening my Dependency Graph Jesse Wilson
+Jesse explores a Gradle module structure that he likes.
+Read now ➡
+I liked this not-so-recent post from Jesse Wilson, which outlines a Gradle module convention that prioritizes clear public/private boundaries to support encapsulation and build speed. The approach, adapted from one presented by Ralf Wondratschek, also happens to closely resemble one that I helped institute at Dropbox shortly after I joined four and a half years ago.
+" />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<link rel="canonical" href="https://ryanharter.com/blog/2026/07/a-great-gradle-module-structure/" />
+
+
+
+
+<link rel="stylesheet" href="https://ryanharter.com/assets/style.css">
+
+
+
+<link rel="stylesheet" href="https://ryanharter.com/style.css">
+
+
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="https://ryanharter.com/img/apple-touch-icon-144-precomposed.png">
+
+  <link rel="shortcut icon" href="https://ryanharter.com/img/favicon/orange.png">
+
+
+
+<meta name="twitter:card" content="summary" />
+
+<meta name="twitter:creator" content="" />
+
+
+<meta property="og:locale" content="en" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="A Great Gradle Module Structure :: Ryan Harter">
+<meta property="og:description" content=" Flattening my Dependency Graph Jesse Wilson
+Jesse explores a Gradle module structure that he likes.
+Read now ➡
+I liked this not-so-recent post from Jesse Wilson, which outlines a Gradle module convention that prioritizes clear public/private boundaries to support encapsulation and build speed. The approach, adapted from one presented by Ralf Wondratschek, also happens to closely resemble one that I helped institute at Dropbox shortly after I joined four and a half years ago.
+" />
+<meta property="og:url" content="https://ryanharter.com/blog/2026/07/a-great-gradle-module-structure/" />
+<meta property="og:site_name" content="A Great Gradle Module Structure" />
+
+  
+    <meta property="og:image" content="https://ryanharter.com/img/favicon/orange.png">
+  
+
+<meta property="og:image:width" content="2048">
+<meta property="og:image:height" content="1024">
+
+
+  <meta property="article:published_time" content="2026-07-15 08:38:11 -0500 CDT" />
+
+
+
+
+
+
+
+
+
+<link href="https://ryanharter.com/css/custom.css" rel="stylesheet">
+<link href="https://ryanharter.com/css/syntax.css" rel="stylesheet">
+<link href="https://ryanharter.com/css/syntax-light.css" rel="stylesheet" media="(prefers-color-scheme: light)">
+<link rel="me" href="https://social.harter.us/@ryan">
+
+</head>
+<body class="">
+
+
+<div class="container center headings--one-size">
+
+  <header class="header">
+  <div class="header__inner">
+    <div class="header__logo">
+      <a href="https://ryanharter.com/">
+  <div class="logo">
+    Ryan Harter
+  </div>
+</a>
+
+    </div>
+  </div>
+  
+    <nav class="menu">
+  <ul class="menu__inner">
+    
+      
+        
+          <li><a href="/">Blog</a></li>
+        
+      
+        
+          <li><a href="/current/">Current</a></li>
+        
+      
+        
+          <li><a href="/about/">About</a></li>
+        
+      
+      
+    
+
+    
+  </ul>
+</nav>
+
+  
+</header>
+
+
+  <div class="content">
+    
+<div class="post">
+  <h1 class="post-title">
+    <a href="https://ryanharter.com/blog/2026/07/a-great-gradle-module-structure/">A Great Gradle Module Structure</a></h1>
+  <div class="post-meta">
+      
+    <span class="post-date">
+      2026-07-15
+    </span>
+    
+    
+  </div>
+
+  
+
+  
+
+  <div class="post-content"><div>
+        <div class="link card" >
+  <h2>Flattening my Dependency Graph</h2>
+<p class="post-author">Jesse Wilson</p>
+<p>Jesse explores a Gradle module structure that he likes.</p>
+  <p><a class="button" target="_blank" href="https://publicobject.com/2026/02/03/flattening-my-dependency-graph/">Read now ➡</a></p>
+</div>
+<p>I liked this not-so-recent post from Jesse Wilson, which outlines a Gradle module convention that prioritizes clear public/private boundaries to support encapsulation and build speed. The approach, adapted from one <a href="https://ralf-wondratschek.com/presentation/android-at-scale-at-square.html">presented by Ralf Wondratschek</a>, also happens to closely resemble one that I helped institute at Dropbox shortly after I joined four and a half years ago.</p>
+<h2 id="modules-built-for-speed">Modules built for speed<a href="#modules-built-for-speed" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>In my proposal, called &ldquo;Modules Built for Speed&rdquo;, I defined a structure in which each feature contains two modules:</p>
+<ul>
+<li><code>api</code>: The feature&rsquo;s public API interfaces and value objects.</li>
+<li><code>impl</code>: The feature&rsquo;s implementation classes; service objects that implement the feature&rsquo;s public API interfaces.</li>
+</ul>
+<p>With these two modules and a few rules we were able to significantly reduce build times, reduce confusing coupling between features, and better enforce test coverage.</p>
+<h2 id="the-api-module">The <code>api</code> module<a href="#the-api-module" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>The <code>api</code> module is usually quite simple since it only contains interfaces and value objects like <code>data</code> classes. This module is the public API of the feature, and is the <strong>only</strong> module that other features depend on.</p>
+<div class="notices note" >
+<p>The original implementation of this proposal included a third module, <code>test-utils</code>, that was for providing test doubles of the interfaces defined in the <code>api</code> module. The Android Gradle Plugin&rsquo;s support for <code>testFixtures</code> in version 8.5.1 has since made this obsolete, and these fixtures now live in the <code>testFixtures</code> configuration of the <code>api</code> module.</p>
+</div>
+<h3 id="test-coverage">Test Coverage<a href="#test-coverage" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h3>
+<p>Within our codebase we have a rule that enforces 80% test coverage by lines of code per module. While I don&rsquo;t <em>prefer</em> these kinds of strict coverage requirements and we <em>do</em> support approved coverage overrides in our Gradle build files, they <em>have</em> helped nudge a large group of engineers towards ensuring reasonable test coverage.</p>
+<p>For API modules this should be trivial, but can be a little annoying. Initially, it was common for engineers to slap a <code>coverageOverride = 0.0</code> into their <code>api</code> module&rsquo;s <code>build.gradle.kts</code> file, since these modules are for &ldquo;interfaces and value objects&rdquo;. I pushed hard against this, as JaCoCo is smart enough to know that interfaces don&rsquo;t generally contain coverable lines, but Kotlin also makes it easy to &ldquo;accidentally&rdquo; include logic in your interfaces via <code>default</code> implementations and extension functions. Additionally, <code>data</code> classes <em>can</em> contain logic, which should be covered.</p>
+<p>In order to ensure we maintain coverage of logic while not being too burdensome, we simply add a <a href="https://publicobject.com/2019/02/17/toehold-test/">toehold test</a> for data classes that instantiate them and validate equality. This ensures that we aren&rsquo;t adding blanket coverage overrides that make it easy to add uncovered code.</p>
+<h2 id="the-impl-module">The <code>impl</code> module<a href="#the-impl-module" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>The <code>impl</code> module is where the classes that implement the interfaces in the <code>api</code> module live, along with any internal support classes. Because they contain the business logic, they are the modules that are heavily tested.</p>
+<p>Since we used Anvil, and now use <a href="https://zacsweers.github.io/metro/latest/">Metro</a>, which support aggregation of bindings at build time, we don&rsquo;t need an <code>impl-wiring</code> module like Ralf outlines. Our <code>app</code> modules simply depend on the feature <code>impl</code> modules, and the wiring happens automatically, allowing the Gradle dependencies to define what contributes implementations.</p>
+<h2 id="the-rules">The rules<a href="#the-rules" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>In order for this to truly speed up build times there are a few rules that must be followed:</p>
+<ul>
+<li>Feature modules <strong>only</strong> depend on <code>api</code> modules.</li>
+<li><code>impl</code> modules depend on their <code>api</code> modules in the <code>api</code> configuration.</li>
+</ul>
+<p>With these simple rules, <code>app</code> modules only list the <code>impl</code> modules of features they depend on, <code>impl</code> modules can build in parallel because they only depend on <code>api</code> modules, and changes in an <code>impl</code> module don&rsquo;t cause recompilation of any other <code>impl</code> modules.</p>
+<p>Additionally &ldquo;wiring&rdquo; code, which defines which implementations satisfy which interfaces, was previously defined in both kotlin code <strong>and</strong> gradle build files (i.e. depending on a different <code>impl-wiring</code> module changes the implementation), but it now lives <strong>only</strong> in the <code>dependencies</code> block of your app&rsquo;s gradle build file.</p>
+<p>Lastly, while Java&rsquo;s <code>package-private</code> scope was never really private, this approach allows us to get back some of that clear scoping that we used to use an <code>internal</code> package declaration for. Since features only depend on other feature&rsquo;s <code>api</code> modules, any classes or helpers defined in the <code>impl</code> module will truly be internal to that feature.</p>
+<h2 id="conclusion">Conclusion<a href="#conclusion" class="hanchor" ariaLabel="Anchor">&#8983;</a> </h2>
+<p>This module structure was primarily aimed at helping us improve our build speeds, and it succeeded at that. Additionally, we found all of these extra benefits, including many we didn&rsquo;t aniticipate, and this is now a well understood standard at Dropbox. I&rsquo;d recommend giving it a try.</p>
+
+      </div></div>
+
+  
+  
+<div class="pagination">
+    <div class="pagination__title">
+        <span class="pagination__title-h"></span>
+        <hr />
+    </div>
+    <div class="pagination__buttons">
+        
+        
+        <span class="button next">
+            <a href="https://ryanharter.com/blog/2026/06/graceful-exit/">
+                <span class="button__text">Graceful Exit</span>
+                <span class="button__icon">→</span>
+            </a>
+        </span>
+        
+    </div>
+</div>
+
+  
+
+  
+
+</div>
+
+  </div>
+
+  
+    <footer class="footer">
+  <div class="footer__inner">
+    
+      <div class="copyright copyright--user">
+        <span>© 2010-<script>document.write(new Date().getFullYear())</script> <a rel="me" href="https://androiddev.social/@rharter">Ryan Harter</a></span>
+    
+        <span>
+          :: Proudly JavaScript free&nbsp;
+        </span>
+        <span>
+          :: Based on a theme made by <a href="https://twitter.com/panr">panr</a>
+        </span>
+      </div>
+  </div>
+</footer>
+
+
+
+
+
+  
+</div>
+
+</body>
+</html>
