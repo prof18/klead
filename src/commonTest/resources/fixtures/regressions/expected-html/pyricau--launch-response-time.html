@@ -1,0 +1,71 @@
+<article class="w-full max-w-full rounded-xl border bg-card text-card-foreground"><div class="w-full"><img alt="Launch Response Time" width="1200" height="750" decoding="async" data-nimg="1" class="w-full h-auto" src="https://cdn.hashnode.com/res/hashnode/image/upload/v1632516499583/v_3HLtM0x.jpeg"></div><div class="px-5 py-12 sm:px-8 space-y-8"><div class="relative"><div class="max-w-2xl mx-auto min-w-0 contain-[inline-size]"><div class="prose dark:prose-invert prose-pre:bg-foreground prose-pre:text-background prose-pre:border prose-pre:border-border prose-pre:rounded prose-pre:px-5 prose-pre:py-4 dark:prose-pre:bg-muted dark:prose-pre:text-foreground dark:prose-pre:border-border prose-pre:overflow-x-auto max-w-none text-base sm:text-lg [&amp;&gt;div&gt;p:first-child]:mt-0 [&amp;&gt;div&gt;p:first-child]:pt-0 min-w-0 wrap-break-word [&amp;_a]:break-all **:max-w-full"><div><blockquote>
+<p>Header image: <em>Caterpillar</em> <a target="_blank" href="https://www.flickr.com/photos/romainguy/4874188049/" rel="noopener ugc">by Romain Guy</a>.</p>
+</blockquote>
+<p>In 2020 I started a series of Android performance deep dive blogs: <a target="_blank" href="https://dev.to/pyricau/series/7827" rel="noopener ugc">Android Vitals</a>. I'm currently working on releasing an Open Source library that helps with performance monitoring in production, and today I want to write a high level summary of what I've learnt and look at how we can properly measure <strong>Launch Response Time</strong> in production.</p>
+<blockquote>
+<p>Note: until now I've been writing at <a target="_blank" href="https://dev.to/pyricau" rel="noopener ugc">dev.to/pyricau</a>, this time I'm trying out Hashnode to see how it feels. Feedback welcome on whether I should continue here or back there.</p>
+</blockquote>
+<h2 id="terminology">Terminology</h2>
+<ul>
+<li><strong>Launch Response Time</strong> is the time from when the system triggers <em>App Launch</em> to when the display has rendered the first frame of the window of the activity brought to the foreground.</li>
+<li><strong>App Launch</strong> is what happens when an Android application that wasn't visible is brought to the foreground. This can happen when an intent is fired to launch one of your app activities (e.g. when a user taps on your app icon in the launcher) or when an activity task is brought back from Recents. You can have an <em>App Launch</em> without a corresponding <em>Process Start</em>.</li>
+<li><strong>Process Start</strong> is what happens when the <code>system_server</code> process tells your app process to start loading your APK code and resources and calls <code>Application.onCreate()</code> (<a target="_blank" href="https://dev.to/pyricau/android-vitals-diving-into-cold-start-waters-5hi6" rel="noopener ugc">learn more</a>). This happens only once per process, and usually starts with a fork of the Zygote process, <a target="_blank" href="https://dev.to/pyricau/android-vitals-when-did-my-app-start-24p4#pre-forking" rel="noopener ugc">but not always</a>.  You can have a <em>Process Start</em> not triggered by an <em>App Launch</em>.</li>
+</ul>
+<h2 id="app-launch-or-app-startup">App Launch or App Startup?</h2>
+<p> <em>App Launch</em> is often called <em>App Startup</em>, but I like to avoid the verb <em>Start</em>, as bringing back an app from recent isn't really starting anything from a user standpoint.</p>
+<h2 id="process-start">Process Start</h2>
+<h2 id="start-time">Start time</h2>
+<p>In <a target="_blank" href="https://dev.to/pyricau/android-vitals-when-did-my-app-start-24p4" rel="noopener ugc">When did my app start? ⏱</a>, I concluded that process start time should ideally be measured when your app code and resources load. You need to use a different approach depending on the API level:</p>
+<ul>
+<li>Up to API 24: Use the class load time of a content provider (<code>Process.getStartUptimeMillis()</code> not available yet).</li>
+<li>API 24 - API 27: Use <a target="_blank" href="https://developer.android.com/reference/android/os/Process.html#getStartUptimeMillis(" rel="noopener ugc">Process.getStartUptimeMillis()</a>.</li>
+<li>API 28 and beyond: <code>Process.getStartUptimeMillis()</code> is sometimes way off. Use <a target="_blank" href="https://developer.android.com/reference/android/os/Process.html#getStartUptimeMillis(" rel="noopener ugc">Process.getStartUptimeMillis()</a> but filter out weird values (e.g. more than 1 min to get to <code>Application.onCreate()</code>) and fallback to the time <code>ContentProvider.onCreate()</code> is called.</li>
+</ul>
+<h2 id="process-start-for-app-launch">Process start for app launch</h2>
+<p>In <a target="_blank" href="https://dev.to/pyricau/android-vitals-is-this-a-cold-start-3m44" rel="noopener ugc">Is this a cold start? 🦋</a> and <a target="_blank" href="https://dev.to/pyricau/android-vitals-why-did-my-process-start-4d0e" rel="noopener ugc">Why did my process start? 🌄</a>, I established how to detect that a process start is for an app launch:</p>
+<ul>
+<li>Process importance on process start (measured as early as possible) is <a target="_blank" href="https://developer.android.com/reference/android/app/ActivityManager.RunningAppProcessInfo#IMPORTANCE_FOREGROUND" rel="noopener ugc">IMPORTANCE_FOREGROUND</a>.</li>
+<li>The first activity is created before a Handler post sent from <code>Application.onCreate()</code> or earlier is dequeued (<a target="_blank" href="https://dev.to/pyricau/android-vitals-is-this-a-cold-start-3m44#traditional-approach" rel="noopener ugc">learn more</a>).</li>
+</ul>
+<p>In my experience it's also helpful to track different kinds of process starts / cold app launches to split the data:</p>
+<ul>
+<li>Detect whether this is the first process start after first install. This matters because first start might involve more work (e.g. copying APK assets to disk), and it's also the first time a user interacts with your app, so first impression matters!</li>
+<li>Similarly, detecting whether this is a first process start after the user clearing data. This is a strong signal that something went wrong.</li>
+<li>Detect whether this is the first process start after app version upgrade, which might trigger additional db migration work.</li>
+<li>Detect app specific states such as whether the app starts in a logged in or logged out state. Logged in often involves a lot more startup work.</li>
+<li>Detect whether the first launched activity has a bundle or not, i.e. whether the process was killed and the activity task is being restored.</li>
+</ul>
+<h2 id="app-launch">App Launch</h2>
+<p>At the beginning of this article, I defined <em>App Launch</em> as what happens when an Android application that wasn't visible is brought to the foreground. In practice, this means that:</p>
+<ol>
+<li>There was 0 visible activity, i.e. either:<ul>
+<li>The process wasn't alive.</li>
+<li>The process was alive but had never started any activity.</li>
+<li>The process was alive and any started activity had been previously stopped or destroyed.</li>
+</ul>
+</li>
+<li>There is now at least one activity in foreground, i.e. resumed.</li>
+</ol>
+
+<h2 id="app-launch-start-time">App Launch start time</h2>
+<p><strong>Launch Response Time</strong> starts the time when the system triggers <em>App Launch</em>. I'm intentionally ignoring what happens right after a user taps a launcher icon because this is beyond our control. There are different types of <em>App Launch</em>, so their start time must be measured differently.</p>
+<h3 id="cold-launch">Cold Launch</h3>
+<p>A <strong>Cold Launch</strong> is what happens when the <em>App Launch</em> requires a <em>Process Start</em>. In the <strong>Process Start</strong> section above, I already outlined how to detect a <em>Cold Launch</em> and measure its start time.</p>
+<h3 id="hot-launch">Hot Launch</h3>
+<p>A <strong>Hot Launch</strong> is what happens when the process was alive and the activity that is being resumed needs to first be started, i.e. was previously stopped but not destroyed. As far as I know, the best way we have to measure its start time is by recording the time of the call to <a target="_blank" href="https://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks#onActivityPreStarted(android.app.Activity" rel="noopener ugc">ActivityLifecycleCallbacks.onActivityPreStarted()</a>).</p>
+<h3 id="warm-launch">Warm Launch</h3>
+<p>A <strong>Warm Launch</strong> is what happens when the process was alive and the activity that is being resumed needs to first be created, i.e. it was previously destroyed or never created. As far as I know, the best way we have to measure its start time is by recording the time of the call to <a target="_blank" href="https://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks#onActivityPreCreated(android.app.Activity" rel="noopener ugc">ActivityLifecycleCallbacks.onActivityPreCreated()</a>).</p>
+<h2 id="app-launch-end-time">App Launch end time</h2>
+<p><strong>Launch Response Time</strong> ends when the display has rendered the first frame of the window of the activity brought to the foreground. I'm ignoring the preview window rendering (can't use the app yet) and considering only the first drawn frame, but some apps might prefer waiting for extra async loading to finish.</p>
+<p>We want to know when the display has rendered the first frame of the window of the resumed activity. Here's how we can do it:</p>
+<ul>
+<li>From <code>onResume()</code> we can register a <a target="_blank" href="https://developer.android.com/reference/android/view/ViewTreeObserver.OnPreDrawListener] on the window [ViewTreeObserver](https://developer.android.com/reference/android/view/ViewTreeObserver" rel="noopener ugc">OnPreDrawListener</a>.</li>
+<li>Once we know the first draw for that window is happening, we have two options:<ul>
+<li>I explained in <a target="_blank" href="https://dev.to/pyricau/tap-response-time-jetpack-navigation-4738" rel="noopener ugc">Tap Response Time: Jetpack Navigation 🗺</a> that starting with API 24 we can rely on <a target="_blank" href="https://developer.android.com/reference/android/view/FrameMetrics#TOTAL_DURATION" rel="noopener ugc">FrameMetrics.TOTAL_DURATION</a> to know how long the frame takes to render and be issued to the display subsystem (i.e. when the render thread is done swapping the frame buffer). In practice we need API 26 because that's when <a target="_blank" href="https://developer.android.com/reference/android/view/FrameMetrics#INTENDED_VSYNC_TIMESTAMP" rel="noopener ugc">FrameMetrics.INTENDED_VSYNC_TIMESTAMP</a> was added. <code>TOTAL_DURATION</code> measures time from the intended vsync start, not the actual vsync start, so without this we'd end up measuring a longer launch time.</li>
+<li>Before API 24 (or 26) we can leverage <a target="_blank" href="https://developer.android.com/reference/android/os/Handler#sendMessageAtFrontOfQueue(android.os.Message" rel="noopener ugc">Handler.sendMessageAtFrontOfQueue()</a> from within the <code>onPreDraw()</code> callback to measure the end time, with the assumption that the front of queue message will be processed right after the current frame is done rendering. Starting with API 22, we should also call  <a target="_blank" href="https://developer.android.com/reference/android/os/Message#setAsynchronous(boolean" rel="noopener ugc">Message.setAsynchronous()</a> to avoid that message being delayed by a Looper synchronization barrier.</li>
+</ul>
+</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>I hope you enjoyed this summary of a year of deep dives! A huge thank you to <strong>Romain Guy</strong> for helping me make sense of all the display stuff, <strong>Chet Haase</strong> and <strong>John Reck</strong> for answering my questions about <a target="_blank" href="https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:metrics/metrics-performance/src/main/java/androidx/metrics/performance/;drc=523d7a11e46390281ed3f77893671730cd6edb98" rel="noopener ugc">JankStats</a> implementation details, and <strong>Jun</strong> for helping me realize my deep dives were in dire need of a high level summary and for his great feedback on this blog before I hit publish.</p>
+</div></div></div></div></div></article>
