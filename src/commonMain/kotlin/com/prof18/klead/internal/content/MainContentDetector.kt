@@ -103,6 +103,9 @@ internal object MainContentDetector {
             refineBodyToFocusedCandidate(selected, sorted, scoreOf)?.let { selected = it }
         }
         if (selected.element.tagName() == "body") {
+            refineBodyToTitledPost(selected, scoreOf)?.let { selected = it }
+        }
+        if (selected.element.tagName() == "body") {
             detectTableLayout(selected.element, scoreOf)?.let { selected = it }
         }
         if (selected.element.tagName() == "body") {
@@ -266,6 +269,17 @@ internal object MainContentDetector {
     }
 
     private fun Candidate.isFocusedContentCandidate(): Boolean = selector in FOCUSED_CONTENT_SELECTORS
+
+    private fun refineBodyToTitledPost(selected: Candidate, scoreOf: (Element) -> ContentScore): Candidate? {
+        // Poole/Hyde blogs use a div.post instead of article. Only refine a body fallback
+        // when a single substantial post has its own title; keep multi-post listings intact.
+        val post = selected.element.select("div.post").singleOrNull() ?: return null
+        if (post.children().none { it.normalName() == "h1" && it.hasClass("post-title") }) return null
+        val postScore = scoreOf(post)
+        if (postScore.wordCount < BODY_REFINEMENT_MIN_WORDS) return null
+        if (postScore.total < selected.score * BODY_REFINEMENT_MIN_SCORE_RATIO) return null
+        return Candidate(post, "div.post", postScore.total)
+    }
 
     private fun Element.isDescendantOf(ancestor: Element): Boolean = parents().any { it === ancestor }
 
