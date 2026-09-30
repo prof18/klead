@@ -5,9 +5,31 @@ import com.prof18.klead.testOptions
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SiteRegressionTest {
+    @Test
+    fun `Build ms article omits social comments and promotional footer and uses its domain`() {
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$BUILD_MS_FIXTURE.html")
+        val result = parseHtmlForTest(
+            html = html,
+            url = FixtureLoader.extractUrl(BUILD_MS_FIXTURE, html),
+            options = testOptions(),
+        )
+        val markdown = result.content.requireMarkdown()
+
+        assertEquals("build.ms", result.metadata.site)
+        assertNull(result.metadata.author)
+        assertTrue(markdown.contains("I’ve had a bug in Plinky since launch"))
+        assertTrue(markdown.contains("the power to see what I couldn’t make out with my own eyes."))
+        assertTrue(markdown.contains("[^1]: I’ll be porting this to TypeScript"))
+        assertFalse(markdown.contains("Loading"))
+        assertFalse(markdown.contains("About The Author"))
+        assertFalse(markdown.contains("Follow My Writing"))
+        assertFalse(markdown.contains("Playbook"))
+    }
+
     @Test
     fun `GitHub Blog article omits opening metadata and share list while keeping the story`() {
         val html = CommonTestResources.read("fixtures/regressions/input-html/$GITHUB_BLOG_FIXTURE.html")
@@ -106,6 +128,7 @@ class SiteRegressionTest {
         .trimEnd()
 
     private companion object {
+        const val BUILD_MS_FIXTURE = "build-ms--your-agent-deserves-logs"
         const val GITHUB_BLOG_FIXTURE = "github-blog-copilot-rust-share-chrome"
         const val ANDROID_AUTHORITY_FIXTURE = "androidauthority-custom-rom-development"
         const val KT_ACADEMY_FIXTURE = "kt-academy-run-blocking"
