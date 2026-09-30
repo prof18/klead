@@ -61,6 +61,7 @@ internal val EXACT_SELECTORS = listOf(
     ".ads",
     ".advertisement",
     ".comments",
+    ".social-comments",
     ".comment",
     ".top-comment",
     ".share",

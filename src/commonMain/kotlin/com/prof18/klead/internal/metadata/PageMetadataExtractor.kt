@@ -232,14 +232,24 @@ internal object PageMetadataExtractor {
     private fun h1AdjacentTexts(h1: Element, limit: Int): List<String> = h1.nextElementSiblings()
         .take(limit)
         .filter { it.isMetadataSiblingCandidate() }
+        .filterNot { it.isTaxonomyLinkGroup() }
         .flatMap { sibling ->
             val childTexts = sibling.children()
                 .filter { it.isMetadataSiblingCandidate() }
+                .filterNot { it.isTaxonomyLinkGroup() }
                 .map { it.text().trim() }
                 .filter { it.isNotBlank() }
             childTexts.ifEmpty { listOf(sibling.text().trim()) }
         }
         .filter { it.isNotBlank() }
+
+    private fun Element.isTaxonomyLinkGroup(): Boolean {
+        val links = select("a[href]")
+        return links.isNotEmpty() && links.all { link ->
+            link.attr("rel").split(WHITESPACE_PATTERN).any { it.equals("tag", ignoreCase = true) } ||
+                TAXONOMY_LINK_PATTERN.containsMatchIn(link.attr("href"))
+        }
+    }
 
     private fun Element.isMetadataSiblingCandidate(): Boolean =
         normalName() in METADATA_SIBLING_TAGS && text().length <= METADATA_SIBLING_MAX_TEXT_LENGTH
@@ -420,6 +430,7 @@ internal object PageMetadataExtractor {
         RegexOption.IGNORE_CASE,
     )
     private val READING_TIME_REGEX = Regex("""\b\d+\s+min(?:ute)?s?\s+read\b""", RegexOption.IGNORE_CASE)
+    private val TAXONOMY_LINK_PATTERN = Regex("""/(?:tags?|categor(?:y|ies))/""", RegexOption.IGNORE_CASE)
     private const val METADATA_SIBLING_MAX_TEXT_LENGTH = 300
     private val METADATA_SIBLING_TAGS = setOf("p", "time", "span", "div", "address")
     private val WHITESPACE_PATTERN = Regex("""\s+""")
