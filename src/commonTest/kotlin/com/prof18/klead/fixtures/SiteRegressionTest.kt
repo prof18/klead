@@ -1,5 +1,6 @@
 package com.prof18.klead.fixtures
 
+import com.fleeksoft.ksoup.Ksoup
 import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
 import kotlin.test.Test
@@ -9,6 +10,28 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SiteRegressionTest {
+    @Test
+    fun `ChatGPT Learn code blocks leave foreground and background colors to the reader`() {
+        val fixtureName = "chatgpt-learn-prompting"
+        val inputHtml = CommonTestResources.read("fixtures/regressions/input-html/$fixtureName.html")
+        val result = parseHtmlForTest(
+            html = inputHtml,
+            url = FixtureLoader.extractUrl(fixtureName, inputHtml),
+            options = testOptions(),
+        )
+        val document = Ksoup.parse(result.content.requireHtml())
+        val codeBlocks = document.select("pre")
+
+        assertTrue(inputHtml.contains("background-color:#fff"))
+        assertTrue(codeBlocks.isNotEmpty())
+        codeBlocks.forEach { pre ->
+            val style = pre.attr("style")
+            assertFalse(style.contains("background-color:"), style)
+            assertFalse(style.contains("color:"), style)
+        }
+        assertTrue(codeBlocks.any { it.text().contains("Prepare a one-page project status update") })
+    }
+
     @Test
     fun `McKenna article omits site and author chrome while keeping cover and complete story`() {
         val html = CommonTestResources.read("fixtures/regressions/input-html/$MCKENNA_FIXTURE.html")
