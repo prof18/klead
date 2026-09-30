@@ -10,6 +10,11 @@ internal object HtmlImageNormalizer {
 
         content.select("img").forEach { image ->
             if (image.parent() == null) return@forEach
+            // Ghost sizes bookmark favicons with publisher CSS, which reader output lacks.
+            if (image.hasClass("kg-bookmark-icon") && image.parents().any { it.hasClass("kg-bookmark-card") }) {
+                image.remove()
+                return@forEach
+            }
             image.removeBrowserManagedImageLayoutStyle()
             val picture = image.parents().firstOrNull { it.normalName() == "picture" }
             val preserveFallbackSrcset = picture?.hasAttr("data-klead-preserve-fallback-srcset") == true

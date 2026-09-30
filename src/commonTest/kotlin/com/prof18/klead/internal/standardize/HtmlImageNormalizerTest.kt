@@ -3,6 +3,8 @@ package com.prof18.klead.internal.standardize
 import com.fleeksoft.ksoup.Ksoup
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class HtmlImageNormalizerTest {
     @Test
@@ -77,5 +79,52 @@ class HtmlImageNormalizerTest {
         assertEquals(false, images[0].hasAttr("height"))
         assertEquals("16", images[1].attr("width"))
         assertEquals("16", images[1].attr("height"))
+    }
+
+    @Test
+    fun `ghost bookmark favicon is removed while link text and thumbnail remain`() {
+        val content = Ksoup.parse(
+            """
+            <figure class="kg-card kg-bookmark-card">
+              <a class="kg-bookmark-container" href="https://github.com/example/project">
+                <div class="kg-bookmark-content">
+                  <div class="kg-bookmark-title">Project</div>
+                  <div class="kg-bookmark-description">A useful project.</div>
+                  <div class="kg-bookmark-metadata">
+                    <img class="kg-bookmark-icon" src="https://example.com/logo.svg" alt="">
+                    <span class="kg-bookmark-author">GitHub</span>
+                  </div>
+                </div>
+                <div class="kg-bookmark-thumbnail"><img src="https://example.com/preview.png" alt="Preview"></div>
+              </a>
+            </figure>
+            """.trimIndent(),
+        ).body()
+
+        HtmlImageNormalizer.normalizeImages(content)
+
+        assertNull(content.selectFirst(".kg-bookmark-icon"))
+        assertEquals("https://github.com/example/project", content.selectFirst("a")?.attr("href"))
+        assertEquals("https://example.com/preview.png", content.selectFirst("img")?.attr("src"))
+        assertTrue(content.text().contains("Project"))
+        assertTrue(content.text().contains("A useful project."))
+        assertTrue(content.text().contains("GitHub"))
+    }
+
+    @Test
+    fun `ordinary linked svg and bookmark icon class outside a card are preserved`() {
+        val content = Ksoup.parse(
+            """
+            <p><a href="https://example.com/project"><img src="https://example.com/diagram.svg" alt="Diagram"></a></p>
+            <img class="kg-bookmark-icon" src="https://example.com/standalone.svg" alt="Standalone image">
+            """.trimIndent(),
+        ).body()
+
+        HtmlImageNormalizer.normalizeImages(content)
+
+        assertEquals(
+            listOf("https://example.com/diagram.svg", "https://example.com/standalone.svg"),
+            content.select("img").map { it.attr("src") },
+        )
     }
 }
