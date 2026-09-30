@@ -1257,18 +1257,41 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `whitespace preserving code stays inline in captions paragraphs and headings`() {
+        for (tag in listOf("figcaption", "p", "h2")) {
+            for (whiteSpace in listOf("pre", "pre-wrap", "pre-line")) {
+                val article = article(
+                    """
+                    <article>
+                      <$tag>Use <span><code style="white-space: $whiteSpace"><span>@Assisted</span></code></span> here.</$tag>
+                    </article>
+                    """.trimIndent(),
+                )
+
+                HtmlStandardizer.apply(article, title = null)
+
+                assertTrue(article.select("pre").isEmpty(), "$tag with $whiteSpace must stay inline")
+                assertEquals("Use @Assisted here.", article.selectFirst(tag)?.text())
+                assertEquals("@Assisted", article.selectFirst("$tag code")?.text())
+            }
+        }
+    }
+
+    @Test
     fun `standalone preformatted code is wrapped in pre`() {
-        val article = article(
-            """
-            <article>
-              <div><code style="white-space: pre">first${"\n"}second</code></div>
-            </article>
-            """.trimIndent(),
-        )
+        for (whiteSpace in listOf("pre", "pre-wrap", "pre-line")) {
+            val article = article(
+                """
+                <article>
+                  <div><code style="white-space: $whiteSpace">first${"\n"}second</code></div>
+                </article>
+                """.trimIndent(),
+            )
 
-        HtmlStandardizer.apply(article, title = null)
+            HtmlStandardizer.apply(article, title = null)
 
-        assertEquals("first\nsecond", article.selectFirst("pre > code")?.wholeText())
+            assertEquals("first\nsecond", article.selectFirst("pre > code")?.wholeText())
+        }
     }
 
     @Test
