@@ -316,6 +316,8 @@ class HtmlStandardizerTest {
             <article>
               <h2 id="leading"><a href="#leading">#</a> Leading heading</h2>
               <h3 id="trailing">Trailing heading <a href="#trailing"><span>#</span></a></h3>
+              <h2 id="unicode-leading"><a href="#unicode-leading">&#8983;</a> Unicode leading heading</h2>
+              <h3 id="unicode-trailing">The <code>api</code> module<a href="#unicode-trailing"><span>⌗</span></a></h3>
               <p>Body.</p>
             </article>
             """.trimIndent(),
@@ -323,8 +325,12 @@ class HtmlStandardizerTest {
 
         HtmlStandardizer.apply(article, title = null)
 
-        assertEquals(listOf("Leading heading", "Trailing heading"), article.select("h2, h3").map { it.text() })
+        assertEquals(
+            listOf("Leading heading", "Trailing heading", "Unicode leading heading", "The api module"),
+            article.select("h2, h3").map { it.text() },
+        )
         assertTrue(article.select("h2 a, h3 a").isEmpty())
+        assertEquals("api", article.selectFirst("h3 code")?.text())
     }
 
     @Test
@@ -332,6 +338,8 @@ class HtmlStandardizerTest {
         for (heading in listOf(
             "<h1 id=title><a href=#title>#</a> Article Title</h1>",
             "<h1 id=title>Article Title <a href=#title>#</a></h1>",
+            "<h1 id=title><a href=#title>⌗</a> Article Title</h1>",
+            "<h1 id=title>Article Title <a href=#title>&#8983;</a></h1>",
         )) {
             val article = article("<article>$heading<p>Body.</p></article>")
 
@@ -351,17 +359,25 @@ class HtmlStandardizerTest {
               <h3>Without an ID <a href="#">#</a></h3>
               <h4 id="external">External <a href="https://example.com/other#external">#</a></h4>
               <p>Body <a href="#section">#</a>.</p>
+              <h2 id="unicode">⌗ <a href="#unicode">Section ⌗</a> <a href="#other">⌗</a></h2>
+              <h3>Without an ID <a href="#">⌗</a></h3>
+              <h4 id="unicode-external">External <a href="https://example.com/other#unicode-external">⌗</a></h4>
+              <p>Body <a href="#unicode">⌗</a>.</p>
             </article>
             """.trimIndent(),
         )
 
         HtmlStandardizer.apply(article, title = null)
 
-        assertEquals(5, article.select("a").size)
+        assertEquals(10, article.select("a").size)
         assertEquals("C# Section #", article.selectFirst("h2")?.text())
         assertEquals("Without an ID #", article.selectFirst("h3")?.text())
         assertEquals("External #", article.selectFirst("h4")?.text())
         assertEquals("Body #.", article.selectFirst("p")?.text())
+        assertEquals("⌗ Section ⌗ ⌗", article.selectFirst("h2#unicode")?.text())
+        assertEquals("Without an ID ⌗", article.select("h3").last()?.text())
+        assertEquals("External ⌗", article.selectFirst("h4#unicode-external")?.text())
+        assertEquals("Body ⌗.", article.select("p").last()?.text())
     }
 
     @Test
