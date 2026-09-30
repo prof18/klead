@@ -30,6 +30,7 @@ import com.prof18.klead.internal.extractors.site.FutureProfile
 import com.prof18.klead.internal.extractors.site.GameSpotProfile
 import com.prof18.klead.internal.extractors.site.GamingOnLinuxProfile
 import com.prof18.klead.internal.extractors.site.GeopopProfile
+import com.prof18.klead.internal.extractors.site.GitHubBlogProfile
 import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.GuardianNewsletterProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
@@ -151,6 +152,7 @@ internal object DefaultExtractors {
         RollingStoneLayoutProfile,
         ChatGptExtractor,
         ChipProfile,
+        GitHubBlogProfile,
         GitHubProfile,
         GuardianProfile,
         GuardianNewsletterProfile,
