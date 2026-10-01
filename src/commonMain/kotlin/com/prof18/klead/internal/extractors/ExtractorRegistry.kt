@@ -44,6 +44,7 @@ import com.prof18.klead.internal.extractors.site.ISpazioProfile
 import com.prof18.klead.internal.extractors.site.IlFattoQuotidianoProfile
 import com.prof18.klead.internal.extractors.site.IlPostProfile
 import com.prof18.klead.internal.extractors.site.IlSole24OreProfile
+import com.prof18.klead.internal.extractors.site.IurySouzaProfile
 import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
 import com.prof18.klead.internal.extractors.site.KarakartalProfile
 import com.prof18.klead.internal.extractors.site.KurucInfoProfile
@@ -192,6 +193,7 @@ internal object DefaultExtractors {
         KurucInfoProfile,
         IlPostProfile,
         IlSole24OreProfile,
+        IurySouzaProfile,
         DaringFireballProfile,
         DwProfile,
         SubstackProfile,
