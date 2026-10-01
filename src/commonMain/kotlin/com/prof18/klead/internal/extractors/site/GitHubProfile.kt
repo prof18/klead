@@ -16,7 +16,20 @@ internal object GitHubProfile : DomExtractor {
     override val domains: Set<String> = setOf("github.com")
 
     override fun extract(context: DomExtractorContext): ExtractorResult? =
-        extractPullRequest(context) ?: extractIssue(context)
+        extractPullRequest(context) ?: extractIssue(context) ?: extractRepositoryReadme(context)
+
+    private fun extractRepositoryReadme(context: DomExtractorContext): ExtractorResult? {
+        val path = parseKleadUri(context.url.orEmpty())?.path.orEmpty().trim('/').split('/')
+        val isRepositoryPage = path.size == 2 || (path.size >= 4 && path[2] == "tree")
+        if (!isRepositoryPage) return null
+
+        // Legacy pages wrap the README in #readme; current repository overviews
+        // render its article directly inside the repository content container.
+        val selector = listOf("#readme .markdown-body", "#repo-content-pjax-container article.markdown-body")
+            .firstOrNull { context.document.selectFirst(it) != null }
+            ?: return null
+        return ExtractorResult(contentSelector = selector)
+    }
 
     private fun extractPullRequest(context: DomExtractorContext): ExtractorResult? {
         if (!context.isPullRequestPage()) return null
