@@ -27,6 +27,7 @@ import com.prof18.klead.internal.extractors.site.DaringFireballProfile
 import com.prof18.klead.internal.extractors.site.DwProfile
 import com.prof18.klead.internal.extractors.site.ElementorArchiveProfile
 import com.prof18.klead.internal.extractors.site.EntrepreneurProfile
+import com.prof18.klead.internal.extractors.site.FinanzenProfile
 import com.prof18.klead.internal.extractors.site.FortuneProfile
 import com.prof18.klead.internal.extractors.site.FutureProfile
 import com.prof18.klead.internal.extractors.site.GameSpotProfile
@@ -155,6 +156,7 @@ internal object DefaultExtractors {
         BuzzFeedProfile,
         FortuneProfile,
         EntrepreneurProfile,
+        FinanzenProfile,
         FutureProfile,
         ArsTechnicaProfile,
         RollingStoneLayoutProfile,
