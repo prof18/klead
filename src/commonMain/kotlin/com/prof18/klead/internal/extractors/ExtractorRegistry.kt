@@ -72,7 +72,6 @@ import com.prof18.klead.internal.extractors.site.PianetaBasketProfile
 import com.prof18.klead.internal.extractors.site.PopCultureProfile
 import com.prof18.klead.internal.extractors.site.RedditProfile
 import com.prof18.klead.internal.extractors.site.ReutersProfile
-import com.prof18.klead.internal.extractors.site.RollingStoneLayoutProfile
 import com.prof18.klead.internal.extractors.site.RollingStoneProfile
 import com.prof18.klead.internal.extractors.site.ScpWikiProfile
 import com.prof18.klead.internal.extractors.site.SimonWillisonProfile
@@ -159,7 +158,6 @@ internal object DefaultExtractors {
         FinanzenProfile,
         FutureProfile,
         ArsTechnicaProfile,
-        RollingStoneLayoutProfile,
         ChatGptExtractor,
         ChipProfile,
         GitHubBlogProfile,

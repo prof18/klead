@@ -1651,7 +1651,7 @@ class RemovalPipelineTest {
     }
 
     @Test
-    fun `exact selectors remove social source and read-next chrome while preserving story body`() {
+    fun `axios selectors remove social source and read-next chrome while preserving story body`() {
         val result = parseHtmlForTest(
             html = """
                 <main>
@@ -1676,7 +1676,7 @@ class RemovalPipelineTest {
                   </article>
                 </main>
             """.trimIndent(),
-            url = "https://www.entrepreneur.com/social-source-chrome",
+            url = "https://www.axios.com/social-source-chrome",
         )
 
         assertTrue(result.content.requireMarkdown().contains("The article introduction should stay"))

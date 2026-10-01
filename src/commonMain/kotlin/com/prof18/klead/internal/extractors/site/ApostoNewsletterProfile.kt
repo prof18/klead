@@ -97,10 +97,5 @@ internal object ApostoNewsletterProfile : DomExtractor {
         }
     }
 
-    private fun Document.metaContent(name: String): String? = selectFirstSafe("meta[property=$name], meta[name=$name]")
-        ?.attr("content")
-        ?.trim()
-        ?.ifBlank { null }
-
     private val SPONSOR_HEADINGS = setOf("SPONSORLU", "SPONSORLU:", "Bugünkü Destekçimiz")
 }

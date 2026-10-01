@@ -5,5 +5,8 @@ internal object RollingStoneProfile : com.prof18.klead.extractors.Extractor {
     override val domains: Set<String> = setOf("rollingstone.com")
     override val postContentRemoveSelectors: List<String> = listOf(
         ".trending-in-article",
+        ".a-article-grid__header",
+        ".a-article-grid__author",
+        ".recirculation-modules",
     )
 }

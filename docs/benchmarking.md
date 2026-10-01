@@ -57,21 +57,51 @@ build/reports/benchmarks/regression-corpus/run-<UTC timestamp>.json
 
 The top-level fields in each platform result retain the schema-v1 full-corpus total for compatibility. Distribution and throughput fields describe the growing full corpus; the nested `core` object contains the stable performance gate.
 
-## Core Reference Results (2026-08-24)
+## Current Benchmark Results
 
-The frozen core is the original 56-site corpus used to establish these cross-platform totals:
+The latest recorded JVM, iOS Simulator Release, and macOS Release measurements are from
+2026-10-01, using a Mac Studio (Apple M1 Max, 32 GB RAM), Zulu OpenJDK 21.0.11,
+Xcode 26.6, and macOS 26.7.1. Targets ran sequentially with one warm-up and five measured
+samples. Physical-device results are from 2026-08-26, on a Pixel 4 XL running Android 13
+and an iPhone 16e running iOS 26.5; those targets have not been remeasured with the current corpus.
 
-| Platform | Benchmark target | Reference median | Total failure budget |
-|---|---|---:|---:|
-| JVM | Azul Zulu OpenJDK 21, Apple M1 Max | 848 ms | 1,100 ms |
-| Android | Pixel 4 XL, Android 13 | 12,930 ms | 17,000 ms |
-| iOS Simulator | iPhone 17 Pro, iOS 26.5, Release | 3,347 ms | 4,000 ms |
-| iOS device | iPhone 16e, iOS 26.5, Release | 2,798 ms | 4,000 ms |
-| macOS | Mac Studio, Apple M1 Max, macOS 26.5.2, Release | 3,341 ms | 4,000 ms |
+The frozen core contains 56 fixtures (18,120,117 input bytes). All latest recorded core
+total, p95, and worst-article metrics are within their budgets:
 
-The Apple toolchain was Xcode 26.6. These figures are regression baselines, not a ranking of platforms: runtimes and hardware differ, so compare a target only with later runs of the same target under similar device and thermal conditions.
+| Platform | Measured | Core median / budget | Core p95 / budget | Core worst / budget |
+|---|---|---:|---:|---:|
+| JVM | 2026-10-01 | 990 / 1,100 ms | 49.2 / 65 ms | 61.7 / 75 ms |
+| Android | 2026-08-26 | 12,849 / 17,000 ms | 668.3 / 850 ms | 954.2 / 1,200 ms |
+| iOS Simulator Release | 2026-10-01 | 2,758 / 4,000 ms | 158.3 / 220 ms | 194.2 / 310 ms |
+| iOS device Release | 2026-08-26 | 2,745 / 4,000 ms | 144.2 / 180 ms | 206.8 / 260 ms |
+| macOS Release | 2026-10-01 | 2,986 / 4,000 ms | 160.8 / 220 ms | 212.2 / 310 ms |
 
-Tracked reference values and maximum accepted core total, p95-article, and worst-article metrics live in [`regression-corpus-baselines.properties`](../benchmarks/regression-corpus-baselines.properties). The JVM, Android, Simulator, and macOS tail references were calibrated with the schema-v2 five-sample runner on 2026-08-25; the physical-iOS tail references use the latest three-sample device run. Update a reference or budget only after confirming a deliberate engine, core-cohort, toolchain, or permanent benchmark-device change. Do not raise a budget merely to make an unexplained slowdown pass.
+The current full corpus contains 158 fixtures (41,898,610 input bytes). Its latest local
+results are observational; the slowest fixture on each target is
+`hittt-blogspot-2026-08-blog-post-419`.
+
+| Runtime | Full median | Typical page (p50) | p95 article | Slowest article |
+|---|---:|---:|---:|---:|
+| JVM | 3,238 ms | 13.6 ms | 58.8 ms | 175.5 ms |
+| iOS Simulator Release | 9,793 ms | 41.9 ms | 164.3 ms | 499.1 ms |
+| macOS Release | 10,958 ms | 44.5 ms | 175.2 ms | 557.5 ms |
+
+The five measured samples for the latest local run are:
+
+| Runtime | Core samples (ms) | Full-corpus samples (ms) |
+|---|---|---|
+| JVM | 923, 953, 990, 994, 1125 | 3086, 3208, 3238, 3305, 3568 |
+| iOS Simulator Release | 2730, 2757, 2758, 2891, 3412 | 9729, 9755, 9793, 11109, 11153 |
+| macOS Release | 2847, 2932, 2986, 3050, 3459 | 10383, 10501, 10958, 11066, 11929 |
+
+Compare a target with later runs of the same target under similar device and thermal
+conditions; different runtimes and hardware make cross-platform rankings misleading.
+Tracked reference values and core budgets live in
+[`regression-corpus-baselines.properties`](../benchmarks/regression-corpus-baselines.properties).
+New measurements update these result tables without automatically recalibrating the stored
+references or budgets. Recalibrate only after confirming a deliberate engine, core-cohort,
+toolchain, or permanent benchmark-device change. Do not raise a budget merely to make an
+unexplained slowdown pass.
 
 ## Repeated Runs
 

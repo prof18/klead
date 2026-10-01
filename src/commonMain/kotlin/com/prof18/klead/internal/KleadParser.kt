@@ -15,6 +15,7 @@ import com.prof18.klead.internal.content.ContentDetectionDebug
 import com.prof18.klead.internal.content.DetectedContent
 import com.prof18.klead.internal.content.MainContentDetector
 import com.prof18.klead.internal.dom.cloneDocument
+import com.prof18.klead.internal.dom.cloneElement
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -279,7 +280,7 @@ internal object KleadParser {
     ): ParsedResult {
         val html = if (KleadOutput.HTML in options.outputs) {
             timings.measure("$timingPrefix.htmlOutput") {
-                content.clone().also(HtmlPresentationNormalizer::normalize).cleanOuterHtml()
+                content.cloneElement().also(HtmlPresentationNormalizer::normalize).cleanOuterHtml()
             }
         } else {
             null
@@ -395,7 +396,7 @@ internal object KleadParser {
         }
 
     private fun countBodyWords(content: Element): Int {
-        val clone = content.clone()
+        val clone = content.cloneElement()
         clone.select("h1, h2, h3, h4, h5, h6").remove()
         return WORD_REGEX.findAll(clone.text()).count()
     }

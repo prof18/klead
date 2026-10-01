@@ -4,8 +4,10 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.cloneElement
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.selectFirstSafe
+import com.prof18.klead.internal.dom.transferChildrenTo
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -17,15 +19,13 @@ internal object ObsidianPublishProfile : DomExtractor {
         context.hostMatches(domains) || context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR) != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
-        val content = context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR)?.clone() ?: return null
+        val content = context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR)?.cloneElement() ?: return null
         content.select(".mod-ui, .mod-footer, .backlinks").remove()
         content.normalizeObsidianLinks()
         if (content.text().isBlank()) return null
 
         val article = Element("article")
-        content.childNodes().forEach { node ->
-            article.appendChild(node.clone())
-        }
+        content.transferChildrenTo(article)
         return ExtractorResult(
             contentHtml = article.outerHtml(),
             metadata = ExtractorMetadata(

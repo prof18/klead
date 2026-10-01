@@ -3,8 +3,10 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.cloneElement
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
+import com.prof18.klead.internal.dom.transferChildrenTo
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -56,12 +58,10 @@ internal object XProfile : DomExtractor {
             article.appendChild(image.cleanXClone())
         }
 
-        val body = richText.clone()
+        val body = richText.cloneElement()
         body.cleanXContent()
         body.insertLongformTitleSpacer()
-        body.childNodes().forEach { node ->
-            article.appendChild(node.clone())
-        }
+        body.transferChildrenTo(article)
 
         if (article.text().isBlank() && article.select("img[src]").isEmpty()) return null
         return ExtractorResult(
@@ -118,7 +118,7 @@ internal object XProfile : DomExtractor {
     }
 
     private fun Element.toTweet(): XTweet? {
-        val body = selectFirst("""[data-testid="tweetText"]""")?.clone() ?: return null
+        val body = selectFirst("""[data-testid="tweetText"]""")?.cloneElement() ?: return null
         body.cleanXContent()
         if (body.text().isBlank()) return null
 
@@ -152,9 +152,7 @@ internal object XProfile : DomExtractor {
 
     private fun Element.appendTweetBody(tweet: XTweet) {
         val paragraph = appendElement("p")
-        tweet.body.childNodes().forEach { node ->
-            paragraph.appendChild(node.clone())
-        }
+        tweet.body.transferChildrenTo(paragraph)
     }
 
     private fun Element.appendComment(comment: XTweet) {
@@ -170,7 +168,7 @@ internal object XProfile : DomExtractor {
         quote.appendTweetBody(comment)
     }
 
-    private fun Element.cleanXClone(): Element = clone().also { it.cleanXContent() }
+    private fun Element.cleanXClone(): Element = cloneElement().also { it.cleanXContent() }
 
     private fun Element.insertLongformTitleSpacer() {
         if (selectFirst("[itemprop=author]") == null) return

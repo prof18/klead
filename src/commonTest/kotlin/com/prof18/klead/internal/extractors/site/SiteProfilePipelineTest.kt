@@ -2773,9 +2773,14 @@ It sounds far-fetched but Google is already rolling out the technology to make i
             ),
             ProfileIsolationCase(
                 url = "https://www.rollingstone.com/example",
-                selectorHtml = """<div class="a-article-grid__header">Rolling Stone header chrome</div>""",
-                removedText = "Rolling Stone header chrome",
-                profileId = "rolling-stone-layout",
+                selectorHtml = """
+                    <div class="trending-in-article">Rolling Stone chrome</div>
+                    <div class="a-article-grid__header">Rolling Stone chrome</div>
+                    <div class="a-article-grid__author">Rolling Stone chrome</div>
+                    <div class="recirculation-modules">Rolling Stone chrome</div>
+                """.trimIndent(),
+                removedText = "Rolling Stone chrome",
+                profileId = "rolling-stone",
             ),
             ProfileIsolationCase(
                 url = "https://blog.jetbrains.com/kotlin/example",
