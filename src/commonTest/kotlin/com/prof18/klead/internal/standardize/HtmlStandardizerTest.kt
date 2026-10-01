@@ -2239,6 +2239,50 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `source only picture and empty image wrappers are removed without leaving reserved space`() {
+        val article = article(
+            """<article>
+                <figure><div style="height:100%"><picture><source data-srcset="/cover.webp 1280w"></picture></div></figure>
+                <figure style="height:520px"></figure>
+                <p>Article starts here.</p>
+            </article>""",
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("p", article.children().first()?.normalName())
+        assertTrue(article.select("picture, figure, div").isEmpty())
+        assertEquals("Article starts here.", article.text())
+    }
+
+    @Test
+    fun `empty picture cleanup preserves real media captions and preformatted markup`() {
+        val article = article(
+            """<article>
+                <figure id="photo"><picture><source srcset="/photo.webp"><img src="/photo.jpg" alt="Photo"></picture></figure>
+                <figure id="caption"><picture><source srcset="/missing.webp"></picture><figcaption>Useful caption.</figcaption></figure>
+                <figure id="diagram"><svg viewBox="0 0 20 20"><path d="M0 0L20 20"></path></svg></figure>
+                <figure id="video"><video controls src="/movie.mp4"><source src="/movie.webm"></video></figure>
+                <figure id="accessible" role="img" aria-label="Diagram description"></figure>
+                <pre><code>&lt;picture&gt;&lt;source srcset="/example.webp"&gt;&lt;/picture&gt;</code></pre>
+                <p>Article prose remains here.</p>
+            </article>""",
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertNotNull(article.selectFirst("#photo picture img"))
+        assertEquals("/photo.webp", article.selectFirst("#photo source")!!.attr("srcset"))
+        assertEquals("Useful caption.", article.selectFirst("#caption figcaption")!!.text())
+        assertTrue(article.select("#caption picture").isEmpty())
+        assertNotNull(article.selectFirst("#diagram svg path"))
+        assertNotNull(article.selectFirst("#video video source"))
+        assertEquals("Diagram description", article.selectFirst("#accessible")!!.attr("aria-label"))
+        assertEquals("<picture><source srcset=\"/example.webp\"></picture>", article.selectFirst("pre code")!!.text())
+        assertEquals("Article prose remains here.", article.selectFirst("p")!!.text())
+    }
+
+    @Test
     fun `empty wrappers removed without losing text`() {
         val article = article("""<article><div><span>Kept text</span></div><span></span></article>""")
 

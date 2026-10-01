@@ -20,6 +20,10 @@ class IurySouzaProfileTest {
         assertEquals(5, Ksoup.parse(input).select("[data-show]:has(> .wiki-markdown)").size)
         assertTrue(Ksoup.parse(html).select("[data-show], .wiki-markdown").isEmpty())
         assertFalse(html.contains("position:absolute"))
+        val article = Ksoup.parse(html).selectFirst("article")!!
+        assertEquals("section", article.children().first()?.normalName())
+        assertFalse(html.contains("data-gatsby-image-wrapper"))
+        assertTrue(article.selectFirst("p")!!.text().startsWith("On October first, Google opened up"))
         assertContains(markdown, "moving the model inference from the TPUs in Google servers to your device.")
         assertContains(markdown, "Optionally, provide a LoRA fine-tuning adapter.")
         assertContains(markdown, "limits of its Context Window.")

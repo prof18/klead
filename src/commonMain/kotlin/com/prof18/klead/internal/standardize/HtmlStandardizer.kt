@@ -65,10 +65,15 @@ internal object HtmlStandardizer {
     }
 
     private fun removeEmptyWrappers(content: Element) {
-        content.select("span, div").toList().asReversed().forEach { element ->
+        content.select("span, div, picture, figure").toList().asReversed().forEach { element ->
             if (element.isInsidePreformattedCode()) return@forEach
             if (element.hasInternalKleadAttribute()) return@forEach
-            if (element.children().isEmpty() && element.isNonBreakingSpaceWrapper()) {
+            if (element.normalName() == "figure" && element.hasAccessibleFigureContent()) return@forEach
+            if (element.isSourceOnlyPicture()) {
+                // A source cannot render without an img fallback. Removing the picture lets
+                // this same reverse traversal discard any empty parent layout wrappers.
+                element.remove()
+            } else if (element.children().isEmpty() && element.isNonBreakingSpaceWrapper()) {
                 element.replaceWith(TextNode(" "))
             } else if (element.children().isEmpty() && element.isWhitespaceSeparatorWrapper()) {
                 element.replaceWith(TextNode(element.wholeText()))
@@ -82,6 +87,12 @@ internal object HtmlStandardizer {
             if (text.text().isBlank()) text.remove()
         }
     }
+
+    private fun Element.isSourceOnlyPicture(): Boolean = normalName() == "picture" &&
+        text().isBlank() && children().all { it.normalName() == "source" }
+
+    private fun Element.hasAccessibleFigureContent(): Boolean = attr("aria-label").isNotBlank() ||
+        attr("aria-labelledby").isNotBlank() || attr("role").equals("img", ignoreCase = true)
 
     private fun Element.hasInternalKleadAttribute(): Boolean =
         attributes().asList().any { attribute -> attribute.key.startsWith("data-klead-") }
