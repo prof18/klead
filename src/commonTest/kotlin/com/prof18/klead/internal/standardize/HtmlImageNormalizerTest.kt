@@ -8,6 +8,34 @@ import kotlin.test.assertTrue
 
 class HtmlImageNormalizerTest {
     @Test
+    fun `fixed clipped image spans lose their viewport constraining box`() {
+        val document = Ksoup.parse(
+            """<span style="border: none; display: inline-block; height: 165px; overflow: hidden; width: 610px"><img src="diagram.png" width="610" height="165" alt="Diagram"></span>""",
+        )
+
+        HtmlImageNormalizer.normalizeImages(document.body())
+
+        assertEquals("border: none", document.selectFirst("span")!!.attr("style"))
+        assertEquals("610", document.selectFirst("img")!!.attr("width"))
+        assertEquals("165", document.selectFirst("img")!!.attr("height"))
+        assertEquals("Diagram", document.selectFirst("img")!!.attr("alt"))
+    }
+
+    @Test
+    fun `text boxes and responsive image wrappers keep their layout`() {
+        val fixed = "display: inline-block; height: 165px; overflow: hidden; width: 610px"
+        val responsive = "display: inline-block; height: auto; overflow: hidden; width: 100%"
+        val document = Ksoup.parse(
+            """<span style="$fixed"><img src="diagram.png">Article text</span><span style="$responsive"><img src="photo.png"></span>""",
+        )
+
+        HtmlImageNormalizer.normalizeImages(document.body())
+
+        assertEquals(fixed, document.select("span")[0].attr("style"))
+        assertEquals(responsive, document.select("span")[1].attr("style"))
+    }
+
+    @Test
     fun `external placeholder filename is replaced from data-src`() {
         val document = Ksoup.parse(
             """<img src="https://cdn.example/placeholder.PNG?width=80" data-src="https://cdn.example/real.jpg">""",

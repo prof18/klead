@@ -650,6 +650,20 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `ordinary whitespace spans preserve word boundaries without splitting adjacent fragments`() {
+        val article = article(
+            """<article><p><span>Even though</span><span style="white-space: pre"> </span><span>B</span><span> and </span><span>C</span><span><span> </span></span><span>are removed.</span></p><p><span>Message</span><span>s</span><span></span></p><pre><code>a  b
+  c</code></pre></article>""",
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("Even though B and C are removed.", article.selectFirst("p")?.text())
+        assertEquals("Messages", article.select("p")[1].text())
+        assertEquals("a  b\n  c", article.selectFirst("code")?.wholeText())
+    }
+
+    @Test
     fun `leading standalone time chrome is removed without losing inline times`() {
         val article = article(
             """

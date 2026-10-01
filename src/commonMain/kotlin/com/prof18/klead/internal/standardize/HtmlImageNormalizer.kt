@@ -7,6 +7,7 @@ import com.prof18.klead.internal.dom.hasLargeResponsiveSource
 internal object HtmlImageNormalizer {
     fun normalizeImages(content: Element) {
         normalizeWordPressCaptionFigures(content)
+        normalizeFixedImageWrappers(content)
 
         content.select("img").forEach { image ->
             if (image.parent() == null) return@forEach
@@ -106,6 +107,32 @@ internal object HtmlImageNormalizer {
             caption.tagName("figcaption")
         }
     }
+
+    private fun normalizeFixedImageWrappers(content: Element) {
+        content.select("span[style]").forEach { wrapper ->
+            val declarations = CssDeclarations.split(wrapper.attr("style"))
+            val properties = declarations.associate { declaration ->
+                val clean = CssDeclarations.withoutComments(declaration)
+                clean.substringBefore(':').trim().lowercase() to clean.substringAfter(':', "").trim().lowercase()
+            }
+            if (properties["display"] != "inline-block" || properties["overflow"] != "hidden") return@forEach
+            if (!FIXED_PIXEL_SIZE.matches(properties["width"].orEmpty()) ||
+                !FIXED_PIXEL_SIZE.matches(properties["height"].orEmpty())
+            ) {
+                return@forEach
+            }
+            if (!wrapper.hasImageContent() || !wrapper.isImageOnlyWrapper()) return@forEach
+
+            val retained = declarations.filterNot { declaration ->
+                CssDeclarations.withoutComments(declaration).substringBefore(':').trim().lowercase() in
+                    FIXED_IMAGE_WRAPPER_PROPERTIES
+            }
+            if (retained.isEmpty()) wrapper.removeAttr("style") else wrapper.attr("style", retained.joinToString("; "))
+        }
+    }
+
+    private val FIXED_PIXEL_SIZE = Regex("""\d+(?:\.\d+)?px""")
+    private val FIXED_IMAGE_WRAPPER_PROPERTIES = setOf("width", "height", "overflow", "display")
 
     private fun Element.removeBrowserManagedImageLayoutStyle() {
         val style = attr("style")

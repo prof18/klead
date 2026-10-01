@@ -74,7 +74,7 @@ Poi a un certo punto penso:
 
 ## Ciao mamma sono su YouTube 👋
 
-[Le](https://www.youtube.com/watch?v=6ExpFHwDkd4)[prime](https://www.youtube.com/watch?v=ZZUrS4it2s8)[interviste](https://www.youtube.com/watch?v=Dl_aKIixc00) fanno poche migliaia di visualizzazioni a episodio [^3]. Numeri modesti, ma abbastanza da tenermi motivato. Gli imprenditori si fanno intervistare volentieri — complice un network costruito con Belka in dieci anni — e rispondono volentieri anche alle mie domande più difficili.
+[Le](https://www.youtube.com/watch?v=6ExpFHwDkd4) [prime](https://www.youtube.com/watch?v=ZZUrS4it2s8) [interviste](https://www.youtube.com/watch?v=Dl_aKIixc00) fanno poche migliaia di visualizzazioni a episodio [^3]. Numeri modesti, ma abbastanza da tenermi motivato. Gli imprenditori si fanno intervistare volentieri — complice un network costruito con Belka in dieci anni — e rispondono volentieri anche alle mie domande più difficili.
 
 Chi l’avrebbe detto?
 

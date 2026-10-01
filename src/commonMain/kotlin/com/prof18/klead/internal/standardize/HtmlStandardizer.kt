@@ -70,6 +70,8 @@ internal object HtmlStandardizer {
             if (element.hasInternalKleadAttribute()) return@forEach
             if (element.children().isEmpty() && element.isNonBreakingSpaceWrapper()) {
                 element.replaceWith(TextNode(" "))
+            } else if (element.children().isEmpty() && element.isWhitespaceSeparatorWrapper()) {
+                element.replaceWith(TextNode(element.wholeText()))
             } else if (element.children().isEmpty() && element.text().isBlank()) {
                 element.remove()
             } else if (element.tagName() == "span" && element.attributes().isEmpty()) {
@@ -90,4 +92,16 @@ internal object HtmlStandardizer {
 
     private fun Element.isNonBreakingSpaceWrapper(): Boolean =
         wholeText().isNotEmpty() && wholeText().all { it == '\u00A0' || it == '\u202F' }
+
+    private fun Element.isWhitespaceSeparatorWrapper(): Boolean = normalName() == "span" &&
+        wholeText().isNotEmpty() && wholeText().all { it == ' ' || it == '\t' } &&
+        hasInlineNeighbor(before = true) && hasInlineNeighbor(before = false)
+
+    private fun Element.hasInlineNeighbor(before: Boolean): Boolean {
+        var current = this
+        while (true) {
+            if ((if (before) current.previousSibling() else current.nextSibling()) != null) return true
+            current = current.parent()?.takeIf { it.normalName() == "span" } ?: return false
+        }
+    }
 }

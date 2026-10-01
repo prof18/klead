@@ -12,6 +12,35 @@ import kotlin.test.assertTrue
 
 class HtmlPresentationNormalizerTest {
     @Test
+    fun `lists lose preformatted whitespace while nested code keeps it`() {
+        val document = Ksoup.parse(
+            """<ol start="2" style="white-space-collapse: preserve; padding-left: 24px"><li value="4" style="white-space: pre; list-style-type: decimal"><p>Step</p><pre style="white-space: pre-wrap"><code style="white-space: pre">a  b</code></pre></li></ol>""",
+        )
+
+        HtmlPresentationNormalizer.normalize(document.body())
+
+        assertEquals("white-space: normal; padding-left: 24px", document.selectFirst("ol")!!.attr("style"))
+        assertEquals("white-space: normal; list-style-type: decimal", document.selectFirst("li")!!.attr("style"))
+        assertEquals("2", document.selectFirst("ol")!!.attr("start"))
+        assertEquals("4", document.selectFirst("li")!!.attr("value"))
+        assertEquals("white-space: pre-wrap", document.selectFirst("pre")!!.attr("style"))
+        assertEquals("white-space: pre", document.selectFirst("code")!!.attr("style"))
+    }
+
+    @Test
+    fun `list container resets inherited preservation between preformatted items`() {
+        val document = Ksoup.parse(
+            """<span style="white-space-collapse: preserve"><ol style="padding-left: 24px"><li style="white-space: pre"><p>First</p></li>
+                <li style="white-space: pre"><p>Second</p></li></ol></span>""",
+        )
+
+        HtmlPresentationNormalizer.normalize(document.body())
+
+        assertEquals("padding-left: 24px; white-space: normal", document.selectFirst("ol")!!.attr("style"))
+        assertEquals(2, document.select("li").size)
+    }
+
+    @Test
     fun `removes publisher typography and colors throughout nested table HTML`() {
         val document = Ksoup.parse(
             """<body bgcolor="white" color="black" style="COLOR: white !important; margin: 0; background: #fff">

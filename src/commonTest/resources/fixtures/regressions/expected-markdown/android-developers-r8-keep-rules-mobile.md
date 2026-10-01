@@ -41,7 +41,7 @@ release {
 
 ### Use the correct default file
 
-The getDefaultProguardFile method imports a default set of rules provided by the Android SDK. When using the wrong file your app might not be optimized. Make sure to use proguard-android-optimize.txt. This file provides the default Keep Rules for standard Android components andenables R8's code optimizations. The outdated proguard-android.txt only provides the Keep Rules but does not enable R8's optimizations.
+The getDefaultProguardFile method imports a default set of rules provided by the Android SDK. When using the wrong file your app might not be optimized. Make sure to use proguard-android-optimize.txt. This file provides the default Keep Rules for standard Android components and enables R8's code optimizations. The outdated proguard-android.txt only provides the Keep Rules but does not enable R8's optimizations.
 
 ![](https://blogger.googleusercontent.com/img/a/AVvXsEiiukX26-UQMKnjkz1jgYseUm3HkYhJxeIclKTT8sUB1MUL2XWLFwCxOddYcWCUsCd-tmq7nbppdX1pacpX46j0VBRub11_emjc0j4q2KbXfH3fvBGsfkkROSZ0OBk9UCQqOuAwj8X0uG_FuVem5hI_lVTFSc8gP4Q9lBYVf3pQLtTBKuudhVK9RqavRvc)
 
@@ -87,7 +87,7 @@ The inversion operator (!) seems like a powerful way to exclude a package from a
 -keep class !com.example.my_package.** { *; } // USE WITH CAUTION
 ```
 
-You might think that this rule means "do not keep classes incom.example.package." But it actually means "keep every class, method and propertyin the entire application that is not in com.example.package." If that came as a surprise to you, best check for any negations in your R8 configuration.
+You might think that this rule means "do not keep classes in com.example.package." But it actually means "keep every class, method and property in the entire application that is not in com.example.package." If that came as a surprise to you, best check for any negations in your R8 configuration.
 
 ## Redundant rules for Android components
 

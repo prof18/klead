@@ -61,7 +61,7 @@ Earlier this month, BVG passengers understandably began complaining that **Germa
 
 ### Parks trashed by May Day raves
 
-**Large parties in Hasenheide, Görlitzer Park and Treptower Park on May 1**[inflicted serious damage upon the green spaces](https://www.rbb24.de/panorama/beitrag/2026/06/berlin-parks-erster-mai-techno-schaden-hasenheide-goerli.html), according to a statement by the city government in reponse to a question submitted by the Greens. In Hasenheide, a lawn that was redone in 2025 was thoroughly trampled and trashed by a rave that was registered as a political event. **Berzirksamt Neukölln estimates it would cost €35,000 to repair the damage** but that money isn’t in the budget right now. Then there’s next year.
+**Large parties in Hasenheide, Görlitzer Park and Treptower Park on May 1** [inflicted serious damage upon the green spaces](https://www.rbb24.de/panorama/beitrag/2026/06/berlin-parks-erster-mai-techno-schaden-hasenheide-goerli.html), according to a statement by the city government in reponse to a question submitted by the Greens. In Hasenheide, a lawn that was redone in 2025 was thoroughly trampled and trashed by a rave that was registered as a political event. **Berzirksamt Neukölln estimates it would cost €35,000 to repair the damage** but that money isn’t in the budget right now. Then there’s next year.
 
 ---
 

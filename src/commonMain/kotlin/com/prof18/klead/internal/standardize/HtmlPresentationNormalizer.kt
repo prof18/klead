@@ -13,22 +13,35 @@ internal object HtmlPresentationNormalizer {
             element.removeAttr("face")
             if (element.tagName().equals("font", ignoreCase = true)) element.removeAttr("size")
 
-            if (!element.hasAttr("style")) continue
+            val resetListWhitespace = element.normalName() in LIST_CONTAINERS && element.children().any { child ->
+                child.normalName() == "li" && child.attr("style").contains("white-space", ignoreCase = true)
+            }
+            if (!element.hasAttr("style") && !resetListWhitespace) continue
             val original = element.attr("style")
             val declarations = CssDeclarations.split(original)
             val retained = declarations.flatMap { declaration ->
                 val property = CssDeclarations.withoutComments(declaration).substringBefore(':').trim().lowercase()
                 when {
                     property == "font" -> semanticFontProperties(declaration)
+
                     property in READER_OWNED_PROPERTIES -> emptyList()
+
+                    property in LIST_WHITESPACE_PROPERTIES && element.normalName() in LIST_TAGS ->
+                        listOf("white-space: normal")
+
                     else -> listOf(declaration)
                 }
+            }.toMutableList()
+            // Reset the container too: inherited preservation can turn serialized
+            // newlines between list items into visible blank lines.
+            if (resetListWhitespace) {
+                retained += "white-space: normal"
             }
             if (retained != declarations) {
                 if (retained.isEmpty()) {
                     element.removeAttr("style")
                 } else {
-                    element.attr("style", retained.joinToString("; "))
+                    element.attr("style", retained.distinct().joinToString("; "))
                 }
             }
         }
@@ -66,6 +79,10 @@ internal object HtmlPresentationNormalizer {
     )
 
     private val WHITESPACE = Regex("\\s+")
+
+    private val LIST_TAGS = setOf("ul", "ol", "li")
+    private val LIST_CONTAINERS = setOf("ul", "ol")
+    private val LIST_WHITESPACE_PROPERTIES = setOf("white-space", "white-space-collapse")
 
     private val READER_OWNED_PROPERTIES = setOf(
         "color",
