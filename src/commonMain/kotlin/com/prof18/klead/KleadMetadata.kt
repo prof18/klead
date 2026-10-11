@@ -7,4 +7,5 @@ data class KleadMetadata(
     val image: String?,
     val author: String?,
     val site: String?,
+    val language: String? = null,
 )

@@ -23,6 +23,7 @@ import com.prof18.klead.internal.extractors.ExtractorRegistry
 import com.prof18.klead.internal.extractors.createExtractorContext
 import com.prof18.klead.internal.extractors.site.ExtractorRemovalPipeline
 import com.prof18.klead.internal.markdown.KleadMarkdownWriter
+import com.prof18.klead.internal.metadata.LanguageMetadataExtractor
 import com.prof18.klead.internal.metadata.MetadataExtractor
 import com.prof18.klead.internal.metadata.PageMetadata
 import com.prof18.klead.internal.metadata.PageMetadataExtractor
@@ -73,6 +74,7 @@ internal object KleadParser {
                     it.outputSettings().prettyPrint(false)
                 }
             }
+            val sourceLanguage = LanguageMetadataExtractor.extract(document)
             timings.measure("prepareDocument") {
                 DocumentPreparation.prepare(document)
             }
@@ -134,7 +136,9 @@ internal object KleadParser {
                     )
                 }
             }
-            retryCandidate.value
+            retryCandidate.value.copy(
+                metadata = retryCandidate.value.metadata.copy(language = sourceLanguage),
+            )
         }
 
         val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)

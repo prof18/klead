@@ -51,6 +51,10 @@ suspend fun renderArticle(html: String, url: String): String {
 }
 ```
 
+The result also exposes page metadata through `result.metadata`. Its nullable
+`language` field contains a normalized declared page language (for example, `it`
+or `it-IT`) when the source provides an unambiguous, valid declaration.
+
 Choose the output that fits your use case. To request both Markdown and cleaned HTML:
 
 ```kotlin
