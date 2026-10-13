@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.1-alpha11 — 2026-10-13
+
+- Pages whose main landmark holds almost no text, such as video pages, now return no content instead of the whole page body with skip links, header logo markup, menus, and footer. Apps can fall back to the feed text instead. Pages with no main landmark still fall back to the body.
+
 ## 0.0.1-alpha09 — 2026-10-01
 
 - Improved extraction performance on large documents with iterative DOM copying, fewer temporary document allocations, and bulk child transfers.
