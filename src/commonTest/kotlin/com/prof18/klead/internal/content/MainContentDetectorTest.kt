@@ -22,6 +22,38 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `nearly empty main landmark yields no content instead of the body`() {
+        val chrome = (1..40).joinToString("") { "<li><a href=\"/s$it\">Section link $it</a></li>" }
+        val document = Ksoup.parse(
+            """
+            <header><nav><ul>$chrome</ul></nav></header>
+            <main><div class="player">Video: Short caption</div></main>
+            <footer><p>${"Footer legal text with many words. ".repeat(20)}</p></footer>
+            """.trimIndent(),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("main:empty", detected.selectedSelector)
+        assertEquals("", detected.element.text())
+    }
+
+    @Test
+    fun `body fallback without a main landmark still returns the body`() {
+        val document = Ksoup.parse(
+            """
+            <div><p>${"A plain page whose text lives directly in the body. ".repeat(4)}</p></div>
+            <div><p>${"It has no landmarks but is still the whole article. ".repeat(4)}</p></div>
+            """.trimIndent(),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("body", detected.selectedSelector)
+        assertTrue(detected.element.text().contains("plain page"))
+    }
+
+    @Test
     fun `body fallback keeps multiple titled posts in a blog listing`() {
         val detected = MainContentDetector.detect(Ksoup.parse(titledPost("first") + titledPost("second")))
 

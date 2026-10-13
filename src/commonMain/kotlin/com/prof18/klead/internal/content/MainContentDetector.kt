@@ -111,11 +111,25 @@ internal object MainContentDetector {
         if (selected.element.tagName() == "body") {
             refineWithSchemaText(document, schemaText, scoreOf)?.let { selected = it }
         }
+        if (selected.element.tagName() == "body" && hasOnlyNearlyEmptyMainLandmarks(sorted, scoreOf)) {
+            // The page declares where its main content lives and that landmark holds almost no text (a video or
+            // gallery page). Falling back to the body would return navigation, header and footer as the article.
+            return detected(document.createElement("div"), NO_CONTENT_SELECTOR, sorted)
+        }
         return detected(
             element = selected.element,
             selector = selected.selector,
             candidates = sorted,
         )
+    }
+
+    private fun hasOnlyNearlyEmptyMainLandmarks(
+        candidates: List<Candidate>,
+        scoreOf: (Element) -> ContentScore,
+    ): Boolean {
+        val landmarks = candidates.filter { it.selector in mainLandmarkSelectors }
+        return landmarks.isNotEmpty() &&
+            landmarks.all { scoreOf(it.element).wordCount < BROAD_REFINEMENT_MIN_WORDS }
     }
 
     private fun score(element: Element, selectorIndex: Int, scoreOf: (Element) -> ContentScore): Double {
@@ -449,6 +463,8 @@ internal object MainContentDetector {
     private const val BROAD_REFINEMENT_MIN_SCORE_RATIO = 0.45
     private const val BROAD_REFINEMENT_MIN_WORD_RATIO = 0.35
     private const val BROAD_REFINEMENT_MIN_WORDS = 50
+    private const val NO_CONTENT_SELECTOR = "main:empty"
+    private val mainLandmarkSelectors = setOf("main", """[role="main"]""")
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
     private const val BODY_REFINEMENT_MIN_WORDS = 80
     private const val PREFERRED_SELECTOR_MIN_WORDS = 80
