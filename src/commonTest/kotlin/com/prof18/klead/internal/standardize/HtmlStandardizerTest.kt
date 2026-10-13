@@ -1081,6 +1081,53 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `rouge tables nested in pre code remove gutters and preserve source whitespace`() {
+        val article = article(
+            """
+            <article>
+              <figure class="highlight"><pre><code class="language-kotlin" data-lang="kotlin"><table class="rouge-table"><tbody><tr>
+                <td class="gutter gl"><pre class="lineno">1
+            2
+            3
+            4
+            </pre></td><td class="code"><pre><span class="kd">fun</span> example() {
+                <span class="n">println</span>(42)
+
+            }</pre></td>
+              </tr></tbody></table></code></pre></figure>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val code = article.selectFirst("pre > code")
+        assertNotNull(code)
+        assertEquals("kotlin", code.attr("data-lang"))
+        assertEquals("fun example() {\n    println(42)\n\n}", code.wholeText())
+        assertEquals(1, article.select("pre").size)
+        assertTrue(article.select("table, .gutter, .lineno").isEmpty())
+    }
+
+    @Test
+    fun `ordinary data tables with preformatted numeric content retain their cells`() {
+        val article = article(
+            """
+            <article><table><tr><td>Sequence</td><td><pre><code>1
+            2
+            3</code></pre></td></tr></table></article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(1, article.select("table").size)
+        assertEquals(2, article.select("td").size)
+        assertEquals("Sequence", article.selectFirst("td")?.text())
+        assertEquals("1\n2\n3", article.selectFirst("pre > code")?.wholeText())
+    }
+
+    @Test
     fun `highlight code line spans preserve spaces without double line breaks`() {
         val article = article(
             """

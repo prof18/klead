@@ -259,6 +259,23 @@ class SiteRegressionTest {
     }
 
     @Test
+    fun `John OReilly A2UI article keeps complete code blocks without line number columns`() {
+        val name = "johnoreilly-a2ui-compose-koog"
+        val html = CommonTestResources.read("fixtures/regressions/input-html/$name.html")
+        val sourceBlocks = Ksoup.parse(html).select("table.rouge-table td.code pre")
+        val result = parseHtmlForTest(html, FixtureLoader.extractUrl(name, html), testOptions())
+        val document = Ksoup.parse(result.content.requireHtml())
+        val codeBlocks = document.select("pre > code")
+
+        assertTrue(sourceBlocks.isNotEmpty())
+        assertEquals(sourceBlocks.map { it.wholeText().trimEnd() }, codeBlocks.map { it.wholeText() })
+        assertEquals(codeBlocks.size, document.select("pre").size)
+        assertTrue(codeBlocks.all { it.attr("data-lang") == "kotlin" })
+        assertTrue(document.select("table, .gutter, .lineno").isEmpty())
+        assertTrue(result.content.requireMarkdown().contains("```kotlin\na2ui ="))
+    }
+
+    @Test
     fun `captured site regressions match HTML and Markdown on every target`() {
         val cases = SiteRegressionLoader.loadAll()
         assertTrue(cases.isNotEmpty(), "Expected at least one portable site regression fixture")
