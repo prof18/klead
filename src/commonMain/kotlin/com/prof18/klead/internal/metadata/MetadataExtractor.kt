@@ -2,6 +2,8 @@ package com.prof18.klead.internal.metadata
 
 import com.fleeksoft.ksoup.nodes.Document
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
+import com.prof18.klead.internal.json.MAX_JSON_NESTING_DEPTH
+import com.prof18.klead.internal.json.exceedsJsonNestingDepth
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -41,6 +43,10 @@ internal object MetadataExtractor {
 
         document.select("""script[type="application/ld+json"]""").forEachIndexed { index, script ->
             val jsonText = script.data().ifBlank { script.html() }
+            if (jsonText.exceedsJsonNestingDepth(MAX_JSON_NESTING_DEPTH)) {
+                if (debug) diagnostics += "Skipped JSON-LD script #$index: nesting deeper than $MAX_JSON_NESTING_DEPTH"
+                return@forEachIndexed
+            }
             val parsed = runCatching {
                 JSON.parseToJsonElement(jsonText)
             }.getOrElse { error ->

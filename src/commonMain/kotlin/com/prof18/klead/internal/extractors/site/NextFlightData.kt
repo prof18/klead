@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Document
+import com.prof18.klead.internal.json.parseToJsonElementOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -17,7 +18,7 @@ internal fun Document.nextFlightData(): NextFlightData {
     val stream = buildString {
         for (script in select("script")) {
             for (encodedChunk in flightChunks(script.data())) {
-                val chunk = runCatching { Json.parseToJsonElement(encodedChunk) as? JsonArray }.getOrNull()
+                val chunk = Json.parseToJsonElementOrNull(encodedChunk) as? JsonArray
                 if ((chunk?.getOrNull(0) as? JsonPrimitive)?.contentOrNull == "1") {
                     (chunk.getOrNull(1) as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull?.let(::append)
                 }
@@ -54,7 +55,7 @@ private fun readFlightRecords(stream: ByteArray): NextFlightData {
             val end = stream.indexOfByte('\n', payload).takeIf { it >= 0 } ?: stream.size
             val row = stream.decodeToString(payload, end)
             if (row.startsWith("[") || row.startsWith("{")) {
-                runCatching { Json.parseToJsonElement(row) }.getOrNull()?.let(models::add)
+                Json.parseToJsonElementOrNull(row)?.let(models::add)
             }
             offset = end + 1
         }

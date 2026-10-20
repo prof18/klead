@@ -10,6 +10,7 @@ internal object LanguageMetadataExtractor {
             "(?:-[A-WY-Za-wy-z0-9](?:-[A-Za-z0-9]{2,8})+)*" +
             "(?:-[xX](?:-[A-Za-z0-9]{1,8})+)?$",
     )
+    private const val MAX_LANGUAGE_TAG_LENGTH = 64
     private val ignoredArticleAncestors = setOf("nav", "aside", "blockquote", "q", "pre", "code", "kbd", "samp")
 
     fun extract(document: Document): String? = articleOrMainLanguage(document)
@@ -60,7 +61,10 @@ internal object LanguageMetadataExtractor {
     }
 
     private fun normalize(value: String?): String? {
-        val candidate = value?.trim()?.takeIf { languageTag.matches(it) } ?: return null
+        // The tag regex recurses per subtag on Kotlin/Native, so an oversized attribute must not reach it.
+        val candidate = value?.trim()
+            ?.takeIf { it.length <= MAX_LANGUAGE_TAG_LENGTH && languageTag.matches(it) }
+            ?: return null
         val parts = candidate.split('-')
         val primary = parts.first().lowercase()
         if (primary in setOf("und", "mul", "zxx")) return null

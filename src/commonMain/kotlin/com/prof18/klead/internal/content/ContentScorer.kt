@@ -17,7 +17,7 @@ internal data class ContentScore(
 internal object ContentScorer {
     fun scoreElement(element: Element): ContentScore {
         val text = element.text()
-        val wordCount = WORD_REGEX.findAll(text).count()
+        val wordCount = text.joinedWordCount()
         val commaCount = text.count { it == ',' }
         val stats = collectSubtreeStats(element)
         val linkDensity = if (text.isEmpty()) 0.0 else stats.linkTextLength.toDouble() / text.length
@@ -122,8 +122,6 @@ internal object ContentScorer {
         val contentUnits = max(1.0, paragraphCount + wordCount / 120.0)
         return imageCount / contentUnits
     }
-
-    private val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
 
     private val CONTENT_HINTS = listOf(
         "article",

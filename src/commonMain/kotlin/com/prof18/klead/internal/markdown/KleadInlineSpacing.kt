@@ -180,12 +180,16 @@ private fun String.hasLeadingFootnoteWhitespaceAfterPunctuation(previous: Char?)
         trimStart().startsWith("[^") &&
         previous in footnoteAttachingPunctuation
 
-private fun StringBuilder.lastNonWhitespaceOrNull(): Char? = asSequence().lastOrNull { !it.isWhitespace() }
+// Scan backwards: this runs for every inline node, so a forward scan made long paragraphs quadratic.
+private fun StringBuilder.lastNonWhitespaceOrNull(): Char? = indexOfLast { !it.isWhitespace() }
+    .takeIf { it >= 0 }
+    ?.let(::get)
 
 private fun StringBuilder.endsWithSentenceClosingQuote(): Boolean {
     val last = indexOfLast { !it.isWhitespace() }
     if (last <= 0 || get(last) !in footnoteSeparatingClosingQuotes) return false
-    val previous = substring(0, last).indexOfLast { !it.isWhitespace() }
+    var previous = last - 1
+    while (previous >= 0 && get(previous).isWhitespace()) previous--
     return previous >= 0 && get(previous) in footnoteSeparatingSentencePunctuation
 }
 

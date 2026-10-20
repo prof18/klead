@@ -129,7 +129,8 @@ internal object HackerNewsProfile : DomExtractor {
         val roots = mutableListOf<HackerNewsComment>()
         val stack = mutableListOf<HackerNewsComment>()
         for (comment in this) {
-            while (stack.size > comment.depth) {
+            // Rendering recurses per reply level, so very deep chains continue as siblings.
+            while (stack.size > minOf(comment.depth, MAX_THREAD_DEPTH)) {
                 stack.removeAt(stack.lastIndex)
             }
             val parent = stack.lastOrNull()
@@ -239,6 +240,7 @@ internal object HackerNewsProfile : DomExtractor {
     )
 
     private const val HN_INDENT_WIDTH = 40
+    private const val MAX_THREAD_DEPTH = 32
     private const val SITE_NAME = "Hacker News"
     private val WHITESPACE_PATTERN = Regex("""\s+""")
 }

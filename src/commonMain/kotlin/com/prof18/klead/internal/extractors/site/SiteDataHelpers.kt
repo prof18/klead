@@ -1,12 +1,12 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Document
+import com.prof18.klead.internal.json.parseToJsonElementOrNull
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonObject
 
 internal fun Document.metaContent(name: String): String? = selectFirst("""meta[property="$name"], meta[name="$name"]""")
     ?.attr("content")
@@ -16,7 +16,7 @@ internal fun Document.metaContent(name: String): String? = selectFirst("""meta[p
 internal fun Document.nextDataJsonObject(): JsonObject? {
     val script = selectFirst("script#__NEXT_DATA__") ?: return null
     val jsonText = script.data().ifBlank { script.html() }.ifBlank { return null }
-    return runCatching { NEXT_DATA_JSON.parseToJsonElement(jsonText).jsonObject }.getOrNull()
+    return NEXT_DATA_JSON.parseToJsonElementOrNull(jsonText) as? JsonObject
 }
 
 internal fun JsonObject.objectAt(vararg keys: String): JsonObject? {

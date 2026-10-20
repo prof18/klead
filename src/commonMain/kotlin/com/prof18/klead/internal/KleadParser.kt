@@ -14,8 +14,10 @@ import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.content.ContentDetectionDebug
 import com.prof18.klead.internal.content.DetectedContent
 import com.prof18.klead.internal.content.MainContentDetector
+import com.prof18.klead.internal.content.joinedWordCount
 import com.prof18.klead.internal.dom.cloneDocument
 import com.prof18.klead.internal.dom.cloneElement
+import com.prof18.klead.internal.dom.limitDepth
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -72,6 +74,7 @@ internal object KleadParser {
             val document = timings.measure("documentParse") {
                 Ksoup.parse(html, url).also {
                     it.outputSettings().prettyPrint(false)
+                    it.limitDepth()
                 }
             }
             val sourceLanguage = LanguageMetadataExtractor.extract(document)
@@ -99,6 +102,7 @@ internal object KleadParser {
                 timings.measure("extractorContentParse") {
                     Ksoup.parseBodyFragment(contentHtml, url).also { parsed ->
                         parsed.outputSettings().prettyPrint(false)
+                        parsed.limitDepth()
                     }
                 }
             } ?: document
@@ -236,6 +240,8 @@ internal object KleadParser {
                 .forEach { it.postProcess(content, contentExtractorContext, removals) }
         }
         applyGenericNewsletterLayout(content, url, extractorResult, timings, timingPrefix)
+        // Footnote merges and extractor fragments can nest content again after the document cap.
+        content.limitDepth()
         timings.measure("$timingPrefix.htmlStandardizer") {
             HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title)
         }
@@ -402,9 +408,8 @@ internal object KleadParser {
     private fun countBodyWords(content: Element): Int {
         val clone = content.cloneElement()
         clone.select("h1, h2, h3, h4, h5, h6").remove()
-        return WORD_REGEX.findAll(clone.text()).count()
+        return clone.text().joinedWordCount()
     }
 
     private const val KILL_THE_NEWSLETTER_HOST = "kill-the-newsletter.com"
-    private val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
 }

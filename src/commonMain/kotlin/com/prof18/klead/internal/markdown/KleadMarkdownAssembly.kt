@@ -66,9 +66,18 @@ private fun Element.isBlockLikeSpan(): Boolean {
     return blockLikeSpanHint.containsMatchIn(hints)
 }
 
+// A loop rather than the regex ^(?:  \n)+, which recurses per repetition on Kotlin/Native.
+private fun String.leadingHardBreaks(): String {
+    var end = 0
+    while (startsWith(HARD_BREAK, startIndex = end)) end += HARD_BREAK.length
+    return substring(0, end)
+}
+
+private const val HARD_BREAK = "  \n"
+
 internal fun String.trimInlineBlock(preserveLeadingHardBreaks: Boolean = true): String {
     val leadingHardBreaks = if (preserveLeadingHardBreaks) {
-        leadingHardBreakRun.find(this)?.value.orEmpty()
+        leadingHardBreaks()
     } else {
         ""
     }

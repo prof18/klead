@@ -3,6 +3,7 @@ package com.prof18.klead.fixtures
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.content.ContentScorer
+import com.prof18.klead.internal.content.joinedWordCount
 import kotlin.math.max
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -66,7 +67,7 @@ class ContentScorerParityTest {
     // Reference: the original selector-per-signal implementation, kept verbatim.
     private fun referenceScore(element: Element): com.prof18.klead.internal.content.ContentScore {
         val text = element.text()
-        val wordCount = WORD_REGEX.findAll(text).count()
+        val wordCount = text.joinedWordCount()
         val paragraphCount = element.select("p").count { it.text().isNotBlank() }
         val commaCount = text.count { it == ',' }
         val textLength = text.length
@@ -106,7 +107,6 @@ class ContentScorerParityTest {
 
     private companion object {
         const val SAMPLES_PER_DOCUMENT = 150
-        val WORD_REGEX = Regex("""[\p{L}\p{N}]+(?:['-][\p{L}\p{N}]+)*""")
         val CONTENT_HINTS = listOf("article", "content", "entry", "post", "story", "markdown-body")
         val NEGATIVE_HINTS = listOf("comment", "footer", "header", "nav", "related", "share", "sidebar")
     }

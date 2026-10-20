@@ -6,6 +6,7 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
+import com.prof18.klead.internal.json.parseToJsonElementOrNull
 import com.prof18.klead.internal.media.TrustedEmbeds
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -124,9 +125,7 @@ internal object SteamPartnerEventExtractor : DomExtractor {
         ?.parseJsonArray()
         ?.firstNotNullOfOrNull { it as? JsonObject }
 
-    private fun String.parseJsonArray(): JsonArray? = runCatching {
-        JSON.parseToJsonElement(this) as? JsonArray
-    }.getOrNull()
+    private fun String.parseJsonArray(): JsonArray? = JSON.parseToJsonElementOrNull(this) as? JsonArray
 
     private fun JsonObject.string(key: String): String? =
         (this[key] as? JsonPrimitive)?.contentOrNull?.trim()?.takeIf { it.isNotBlank() }

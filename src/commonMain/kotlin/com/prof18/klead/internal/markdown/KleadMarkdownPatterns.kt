@@ -35,7 +35,6 @@ internal val srcsetWhitespacePattern = Regex("""\s+""")
 internal val imageDimensionSuffixPattern =
     Regex("""(?:-\d+x\d+|-\d+w|-(?:small|medium|large|thumb|thumbnail))(?=\.[A-Za-z0-9]+$)""")
 internal val imageFileExtensionPattern = Regex("""\.[A-Za-z0-9]+$""")
-internal val leadingHardBreakRun = Regex("""^(?:  \n)+""")
 internal val headingTagPattern = Regex("""h[1-6]""")
 internal val blockLikeSpanHint = Regex("""(?:^|[\s_-])(?:caption|credit|credits)(?:$|[\s_-])""")
 internal val svgSelfClosingTagPattern = Regex("""<([A-Za-z][A-Za-z0-9:_-]*)([^>]*)\s/>""")

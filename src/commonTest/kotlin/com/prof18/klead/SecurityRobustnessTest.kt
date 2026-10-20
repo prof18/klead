@@ -9,7 +9,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.measureTime
 
@@ -76,6 +78,63 @@ class SecurityRobustnessTest {
     }
 
     @Test
+    fun `deeply nested json ld arrays do not overflow the parser stack`() {
+        // 300 levels reproduced the iOS crash in imageValue; 20k also overflowed kotlinx's array reader.
+        listOf(300, 20_000).forEach { depth ->
+            val result = parseOnBackgroundThread(articleWithNestedImage(depth))
+
+            assertTrue(result.content.requireMarkdown().contains("Still readable"))
+            assertNull(result.metadata.image)
+        }
+    }
+
+    @Test
+    fun `shallow nested json ld image is still extracted`() {
+        val result = parseOnBackgroundThread(articleWithNestedImage(depth = 3))
+
+        assertEquals("https://example.com/deep.jpg", result.metadata.image)
+    }
+
+    @Test
+    fun `long hyphen and apostrophe joined runs do not overflow word counting`() {
+        // 2,000 joined parts already overflowed the old word regex on Kotlin/Native.
+        listOf("a-", "a'").forEach { joiner ->
+            val html = "<article><h1>Joined</h1><p>Readable lead paragraph text.</p><p>" +
+                joiner.repeat(5_000) + "a</p></article>"
+
+            val result = parseOnBackgroundThread(html)
+
+            assertTrue(result.content.requireMarkdown().contains("Readable lead"))
+        }
+    }
+
+    @Test
+    fun `oversized lang attribute is ignored instead of overflowing the tag regex`() {
+        val html = "<html lang=\"en" + "-abcd".repeat(5_000) + "\"><body><article><h1>Lang</h1>" +
+            "<p>Readable paragraph.</p></article></body></html>"
+
+        val result = parseOnBackgroundThread(html)
+
+        assertNull(result.metadata.language)
+    }
+
+    private fun articleWithNestedImage(depth: Int): String {
+        val nestedImage = buildString {
+            repeat(depth) { append('[') }
+            append("""{"url":"https://example.com/deep.jpg"}""")
+            repeat(depth) { append(']') }
+        }
+        return "<html><head>" +
+            """<script type="application/ld+json">{"@type":"Article","image":$nestedImage}</script>""" +
+            "</head><body><article><h1>Deep</h1><p>Still readable after deep JSON-LD.</p></article></body></html>"
+    }
+
+    // Klead parses on Dispatchers.Default, whose Darwin threads have much smaller stacks than the test thread.
+    private fun parseOnBackgroundThread(html: String) = runBlocking(Dispatchers.Default) {
+        Klead.parseHtml(html, "https://example.com/deep-json-ld", testOptions())
+    }
+
+    @Test
     fun `unsupported selector logs debug and continues`() {
         SelectorDiagnostics.clear()
         val document = Ksoup.parse("<article><p>Text</p></article>")
@@ -99,13 +158,13 @@ class SecurityRobustnessTest {
     }
 
     @Test
-    fun `parse of pathologically nested html is cancellable`() {
-        val depth = 6_000
+    fun `parse of a very large document is cancellable`() {
         val html = buildString {
-            append("<article>")
-            repeat(depth) { append("<div>") }
-            append("<p>Deep text</p>")
-            repeat(depth) { append("</div>") }
+            append("<article><h1>Large</h1>")
+            repeat(20_000) { index ->
+                append("<div class=\"block\"><p>Paragraph $index with <a href=\"/l$index\">a link</a>, ")
+                append("some text, and more words to score.</p></div>")
+            }
             append("</article>")
         }
 
@@ -118,7 +177,7 @@ class SecurityRobustnessTest {
             delay(250)
             val cancelMillis = measureTime { parseJob.cancelAndJoin() }.inWholeMilliseconds
 
-            assertFalse(completed, "parse finished before cancellation; deepen the fixture")
+            assertFalse(completed, "parse finished before cancellation; enlarge the fixture")
             assertTrue(cancelMillis < 5_000, "cancellation took ${cancelMillis}ms")
         }
     }

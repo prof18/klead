@@ -1,8 +1,11 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.prof18.klead.Klead
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -1812,6 +1815,33 @@ class SiteProfilePipelineTest {
             """.trimIndent() + "\n",
             result.content.requireMarkdown(),
         )
+    }
+
+    @Test
+    fun `hacker news extractor caps reply chains that nest deeper than the thread limit`() {
+        val replies = 400
+        val rows = (0 until replies).joinToString("") { level ->
+            """<tr class="comtr" id="${20_000_000 + level}">""" +
+                """<td class="ind"><img src="s.gif" width="${level * 40}" height="1"></td><td>""" +
+                """<div class="comhead"><a class="hnuser" href="user?id=user$level">user$level</a>""" +
+                """<span class="age" title="2025-01-15T10:00:00"><a href="item?id=1">now</a></span></div>""" +
+                """<div class="comment"><span class="commtext"><p>Reply number $level.</p></span></div>""" +
+                "</td></tr>"
+        }
+        val html = """<table class="fatitem"><tr class="athing" id="12345678"><td class="title">""" +
+            """<span class="titleline"><a href="https://example.com/article">A Sample Article</a></span>""" +
+            """</td></tr></table><table class="comment-tree">$rows</table>"""
+
+        val markdown = runBlocking(Dispatchers.Default) {
+            Klead.parseHtml(html, "https://news.ycombinator.com/item?id=12345678", testOptions())
+        }.content.requireMarkdown()
+
+        assertTrue(markdown.contains("Reply number 0."))
+        assertTrue(markdown.contains("Reply number ${replies - 1}."))
+        val deepestQuote = markdown.lines().maxOf { line ->
+            line.takeWhile { it == '>' || it == ' ' }.count { it == '>' }
+        }
+        assertTrue(deepestQuote <= 33, "quote depth $deepestQuote")
     }
 
     @Test
