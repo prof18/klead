@@ -202,11 +202,16 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeLooseFootnoteSections(content: Element) {
+        // Blank siblings already walked by a scan that found no definitions: a later marker among them
+        // would walk a suffix of the same run and fail too. Skipping it keeps runs of <hr> linear.
+        val scannedWithoutDefinitions = HashSet<Element>()
         for (marker in content.select("hr, h1, h2, h3, h4, h5, h6").toList()) {
+            if (marker in scannedWithoutDefinitions) continue
             if (!marker.isAttachedTo(content)) continue
             if (!marker.isLooseFootnoteDelimiter()) continue
 
             val definitions = mutableListOf<Element>()
+            val skippedBlankSiblings = mutableListOf<Element>()
             var sibling = marker.nextElementSibling()
             while (sibling != null) {
                 if (sibling.isLooseFootnoteStart()) {
@@ -217,11 +222,13 @@ internal object HtmlFootnoteListNormalizer {
                         sibling = sibling.nextElementSibling()
                     }
                 } else if (sibling.text().trim().isBlank()) {
+                    skippedBlankSiblings.add(sibling)
                     sibling = sibling.nextElementSibling()
                 } else {
                     break
                 }
             }
+            if (definitions.isEmpty()) scannedWithoutDefinitions.addAll(skippedBlankSiblings)
             if (definitions.none { it.isLooseFootnoteStart() }) continue
 
             val section = Element("section").attr("data-footnotes", "true").addClass("footnotes")

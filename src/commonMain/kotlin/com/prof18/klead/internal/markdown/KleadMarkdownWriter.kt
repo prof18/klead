@@ -7,16 +7,20 @@ import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.resolveUrl
 
 internal object KleadMarkdownWriter {
-    fun write(root: Element, baseUrl: String): String {
-        val renderer = Renderer(baseUrl)
+    fun write(root: Element, baseUrl: String, checkCancelled: () -> Unit = {}): String {
+        val renderer = Renderer(baseUrl, checkCancelled)
         return renderer.write(root)
     }
 }
 
-private class Renderer(private val baseUrl: String) {
+private class Renderer(private val baseUrl: String, private val checkCancelled: () -> Unit) {
     private val footnotes = linkedMapOf<String, String>()
     private val footnoteTargets = mutableMapOf<String, String>()
     private var footnoteHeading: String? = null
+
+    // Blank wrappers fall back to inline rendering, which renders block-flow children again. Without
+    // remembering blank subtrees, chains of empty wrappers (<aside>, <p>&nbsp;</p>) cost exponential time.
+    private val blankChildBlocks = HashSet<Pair<Element, Int>>()
 
     fun write(root: Element): String {
         collectFootnotes(root)
@@ -31,6 +35,7 @@ private class Renderer(private val baseUrl: String) {
     }
 
     private fun renderBlocks(nodes: List<Node>, listDepth: Int): String {
+        checkCancelled()
         val blocks = mutableListOf<RenderedBlock>()
         val inlineNodes = mutableListOf<Node>()
         var nextNonBlankIndex = 0
@@ -121,7 +126,7 @@ private class Renderer(private val baseUrl: String) {
                 if (element.attr("data-as") == "p") {
                     renderInline(element).trim()
                 } else {
-                    renderBlocks(element.childNodes(), listDepth).ifBlank { renderInline(element).trim() }
+                    renderChildBlocks(element, listDepth).ifBlank { renderInline(element).trim() }
                 }
             }
 
@@ -137,7 +142,7 @@ private class Renderer(private val baseUrl: String) {
                 ?: renderLinkedHeadingBlock(element, listDepth)
                 ?: renderInline(element).trimInlineBlock()
 
-            "blockquote" -> blockquote(renderBlocks(element.childNodes(), listDepth))
+            "blockquote" -> blockquote(renderChildBlocks(element, listDepth))
 
             "ul" -> renderList(element, ordered = false, listDepth = listDepth)
 
@@ -161,7 +166,7 @@ private class Renderer(private val baseUrl: String) {
 
             "section", "div", "article", "main" -> renderContainerBlock(element, listDepth)
 
-            else -> renderBlocks(element.childNodes(), listDepth).ifBlank { renderInline(element).trimInlineBlock() }
+            else -> renderChildBlocks(element, listDepth).ifBlank { renderInline(element).trimInlineBlock() }
         }
     }
 
@@ -178,8 +183,14 @@ private class Renderer(private val baseUrl: String) {
         } else if (element.normalName() == "section" && element.hasAttr("data-footnotes")) {
             ""
         } else {
-            renderBlocks(element.childNodes(), listDepth)
+            renderChildBlocks(element, listDepth)
         }
+
+    private fun renderChildBlocks(element: Element, listDepth: Int): String {
+        val key = element to listDepth
+        if (key in blankChildBlocks) return ""
+        return renderBlocks(element.childNodes(), listDepth).also { if (it.isBlank()) blankChildBlocks += key }
+    }
 
     private fun renderInline(element: Element): String = renderInlineNodes(element.childNodes(), inLink = false)
 
@@ -244,7 +255,7 @@ private class Renderer(private val baseUrl: String) {
 
         else -> {
             if (element.normalName() in blockFlowTags) {
-                renderBlocks(element.childNodes(), listDepth = 0)
+                renderChildBlocks(element, listDepth = 0)
                     .trim()
                     .takeIf { it.isNotBlank() }
                     ?.let { "\n$it\n" }
@@ -387,7 +398,7 @@ private class Renderer(private val baseUrl: String) {
 
     private fun renderFigure(element: Element, listDepth: Int): String {
         if (element.hasArticleBodyWrapper()) {
-            return renderBlocks(element.childNodes(), listDepth)
+            return renderChildBlocks(element, listDepth)
         }
         val imageMarkdown = element.select("img")
             .distinctBy(::imageDedupKey)
@@ -397,7 +408,7 @@ private class Renderer(private val baseUrl: String) {
         return listOfNotNull(
             imageMarkdown.takeIf { it.isNotBlank() },
             caption?.takeIf { it.isNotBlank() }?.let { "*$it*" },
-        ).joinToString("\n\n").ifBlank { renderBlocks(element.childNodes(), listDepth) }
+        ).joinToString("\n\n").ifBlank { renderChildBlocks(element, listDepth) }
     }
 
     private fun Element.hasArticleBodyWrapper(): Boolean = children().any { child ->

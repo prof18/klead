@@ -11,9 +11,11 @@ internal object HtmlFootnoteFormats {
         val references = content.select("[data-definition]").toList()
         if (references.isEmpty()) return
         val section = lazyFootnoteSection(content)
+        // One id lookup per pass: selecting every [id] again for each reference was quadratic.
+        val elementsById = content.select("[id]").groupBy { it.id() }
         references.forEachIndexed { index, reference ->
             val targetId = reference.attr("data-definition").trim()
-            val target = content.select("[id]").firstOrNull { it.id() == targetId } ?: return@forEachIndexed
+            val target = elementsById[targetId]?.firstOrNull { it.parent() != null } ?: return@forEachIndexed
             val number = (index + 1).toString()
             val item = Element("li").attr("id", "fn$number")
             target.childNodes().toList().forEach { item.appendChild(it) }
@@ -34,6 +36,7 @@ internal object HtmlFootnoteFormats {
         val segments = content.select("div.footnotes-segment").toList()
         if (segments.isEmpty()) return
         val section = lazyFootnoteSection(content)
+        val markersByTarget = content.linksByFragmentTarget("a.footnote[href^=#]")
         segments.forEach { segment ->
             segment.select("h5.footnote-body-heading").forEach { heading ->
                 val id = heading.selectFirst("a[id]")?.id()?.trim().orEmpty()
@@ -50,9 +53,7 @@ internal object HtmlFootnoteFormats {
                     sibling = next
                 }
                 section.appendChild(item)
-                content.select("a.footnote[href^=#]").forEach { marker ->
-                    if (marker.hrefFragmentTarget() == id) marker.normalizeFootnoteReferenceLink(id)
-                }
+                markersByTarget[id]?.forEach { marker -> marker.normalizeFootnoteReferenceLink(id) }
             }
             segment.remove()
         }
@@ -193,16 +194,13 @@ internal object HtmlFootnoteFormats {
         if (definitions.isEmpty()) return
 
         val section = lazyFootnoteSection(content)
+        val linksByTarget = content.linksByFragmentTarget("a[href]")
         definitions.forEachIndexed { index, definition ->
             val marker = definition.selectFirst(".footnote-number[id]")
             val body = definition.selectFirst(".footnote-content") ?: return@forEachIndexed
             val id = marker?.id()?.ifBlank { "footnote-${index + 1}" } ?: "footnote-${index + 1}"
 
-            content.select("a[href]").forEach { link ->
-                if (link.hrefFragmentTarget() == id) {
-                    link.normalizeFootnoteReferenceLink(id)
-                }
-            }
+            linksByTarget[id]?.forEach { link -> link.normalizeFootnoteReferenceLink(id) }
 
             val item = Element("li").attr("id", id)
             body.childNodes().toList().forEach { item.appendChild(it) }
@@ -329,7 +327,13 @@ internal object HtmlFootnoteFormats {
         }
     }
 
+    // Built once per pass: re-selecting every link for each footnote was quadratic.
+    private fun Element.linksByFragmentTarget(selector: String): Map<String, List<Element>> =
+        select(selector).filter { it.hrefFragmentTarget() != null }.groupBy { it.hrefFragmentTarget().orEmpty() }
+
     private fun Element.normalizeFootnoteReferenceLink(targetId: String) {
+        // A link already wrapped in a <sup> by an earlier footnote with the same id was replaced by its clone.
+        if (parent() == null) return
         attr("href", "#$targetId")
         if (parent()?.normalName() == "sup") return
 

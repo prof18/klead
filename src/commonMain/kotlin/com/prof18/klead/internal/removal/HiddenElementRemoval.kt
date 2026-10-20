@@ -1,16 +1,20 @@
 package com.prof18.klead.internal.removal
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.internal.dom.isAttachedTo
 
 internal object HiddenElementRemoval {
     fun apply(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit = {}) {
+        // Removing a hidden block re-exposes the same heading to the next one; its answer cannot change
+        // within this pass, so each heading is scanned once instead of once per hidden sibling.
+        val checkedHeadings = HashSet<Element>()
         for (element in content.descendantsSnapshot()) {
             checkCancelled()
             if (!element.isAttachedTo(content)) continue
             val reason = removableHiddenReason(element) ?: continue
-            element.orphanedHeadingBeforeHiddenBlock()?.let { heading ->
+            element.orphanedHeadingBeforeHiddenBlock(checkedHeadings)?.let { heading ->
                 recordAndRemove(heading, debug, "removeHiddenElements", null, "orphan heading before hidden block")
             }
             recordAndRemove(element, debug, "removeHiddenElements", hiddenSelector(element), reason)
@@ -27,13 +31,15 @@ internal object HiddenElementRemoval {
         return reason.takeUnless { isProtectedHidden }
     }
 
-    private fun Element.orphanedHeadingBeforeHiddenBlock(): Element? {
+    private fun Element.orphanedHeadingBeforeHiddenBlock(checkedHeadings: MutableSet<Element>): Element? {
         val heading = previousElementSibling()
-            ?.takeIf { it.normalName().matches(HEADING_TAG_PATTERN) }
+            ?.takeIf { it.normalName().matches(HEADING_TAG_PATTERN) && checkedHeadings.add(it) }
             ?: return null
 
         var sibling = nextElementSibling()
+        var scanned = 0
         while (sibling != null) {
+            if (++scanned > MAX_FOLLOWING_SIBLING_SCAN) return null
             if (sibling.normalName().matches(HEADING_TAG_PATTERN)) {
                 return if (sibling.headingLevel() <= heading.headingLevel()) heading else null
             }
@@ -85,7 +91,7 @@ internal object HiddenElementRemoval {
     private fun Element.isMathWrapper(): Boolean {
         val className = className().lowercase()
         return tagName().equals("math", ignoreCase = true) ||
-            selectFirst("math, annotation[encoding*=tex]") != null ||
+            selectFirst(MATH_CONTENT_EVALUATOR) != null ||
             "math" in className ||
             "katex" in className ||
             "mathjax" in className
@@ -123,14 +129,15 @@ internal object HiddenElementRemoval {
         else -> element.tagName()
     }
 
-    private fun Element.hasSubstantiveContent(): Boolean = text().trim().isNotBlank() ||
-        select("img, picture, figure, table, pre, code, math, p, h1, h2, h3, h4, h5, h6").isNotEmpty()
-
     private fun Element.headingLevel(): Int = normalName().removePrefix("h").toIntOrNull() ?: Int.MAX_VALUE
 
     private fun partialHaystack(element: Element): String = elementHintHaystack(element)
 
     private val OPACITY_ZERO_STYLE_PATTERN = Regex("""(?:^|;)opacity:0(?:\.0+)?(?:;|$)""")
+
+    // Checked for every hidden element and its following siblings; parse the selector once.
+    private val MATH_CONTENT_EVALUATOR = QueryParser.parse("math, annotation[encoding*=tex]")
+
     private val HEADING_TAG_PATTERN = Regex("""h[1-6]""")
     private val RESPONSIVE_DISPLAY_CLASS_PATTERN = Regex(
         """(?:sm|md|lg|xl|2xl):(?:block|inline|inline-block|flex|inline-flex|grid|table|contents)""",

@@ -13,10 +13,17 @@ internal object ExternalFootnoteMerger {
             .toSet()
         if (referencedNumbers.isEmpty()) return
 
+        // Only the outermost matching block is cloned: nested matches would duplicate their definitions
+        // once per level, and a block wrapping the content would copy the whole article into itself.
+        val merged = HashSet<Element>()
         document.select("section, aside, div")
-            .filterNot { it.isInside(content) }
+            .filterNot { it.isInside(content) || content.isInside(it) }
             .filter { it.isExternalFootnoteBlock(referencedNumbers) }
-            .forEach { content.appendChild(it.clone()) }
+            .forEach { block ->
+                if (block.parents().any { it in merged }) return@forEach
+                merged.add(block)
+                content.appendChild(block.clone())
+            }
     }
 
     private fun Element.isExternalFootnoteBlock(referencedNumbers: Set<String>): Boolean {

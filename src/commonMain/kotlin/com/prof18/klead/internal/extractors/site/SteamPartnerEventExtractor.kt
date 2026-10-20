@@ -69,7 +69,8 @@ internal object SteamPartnerEventExtractor : DomExtractor {
 
     private fun appendParagraphs(article: Element, raw: String): Boolean {
         val normalized = raw.normalizeLineEndings()
-        val hasTrailingBlankLine = trailingBlankLinePattern.containsMatchIn(normalized)
+        // Same as matching \n\s*\n\s*$, without the regex's heavy backtracking on long newline runs.
+        val hasTrailingBlankLine = normalized.takeLastWhile { it in REGEX_WHITESPACE }.count { it == '\n' } >= 2
         val paragraphs = normalized
             .trim()
             .split(blankLinePattern)
@@ -146,5 +147,5 @@ internal object SteamPartnerEventExtractor : DomExtractor {
     private val urlPattern = Regex("""(?is)\[url=(?:"([^"]+)"|([^\]]+))](.*?)\[/url]""")
     private val simpleTagPattern = Regex("""(?i)\[/?(?:b|i|u|p)]""")
     private val blankLinePattern = Regex("""\n\s*\n""")
-    private val trailingBlankLinePattern = Regex("""\n\s*\n\s*$""")
+    private const val REGEX_WHITESPACE = " \t\n\u000B\u000C\r"
 }

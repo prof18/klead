@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 
 // Removes standalone metadata chrome — bare dates, read times, "By" labels, timezone widgets,
 // live-update labels, edge dividers — and trailing boilerplate sections like "See also".
@@ -67,12 +68,15 @@ internal object HtmlChromeNormalizer {
         content.select("article, main, section, header, div").forEach(::trimLeadingMetadataChrome)
     }
 
+    // Leading chrome is removed only while substantive content follows it. Locating the last substantive
+    // child once is equivalent to re-checking the remaining children after every removal, without the O(n²).
     private fun trimLeadingMetadataChrome(container: Element) {
-        while (true) {
-            val first = container.children().firstOrNull() ?: return
-            if (!first.isLeadingMetadataChromeBlock()) return
-            if (!container.children().drop(1).any { it.hasSubstantiveContentBlock() }) return
-            first.remove()
+        val children = container.children().toList()
+        if (children.firstOrNull()?.isLeadingMetadataChromeBlock() != true) return
+        val lastSubstantive = children.indexOfLast { it.hasSubstantiveContentBlock() }
+        for ((index, child) in children.withIndex()) {
+            if (index >= lastSubstantive || !child.isLeadingMetadataChromeBlock()) return
+            child.remove()
         }
     }
 
@@ -88,21 +92,21 @@ internal object HtmlChromeNormalizer {
         val text = text().trim()
         if (text.isBlank() || text.length > HEADING_CHROME_MAX_LENGTH) return false
         if (select("time, relative-time, [datetime]").isEmpty()) return false
-        if (select("a[href], img, picture, figure, pre, code, table, blockquote, iframe").isNotEmpty()) return false
+        if (selectFirst(NON_CHROME_CONTENT_EVALUATOR) != null) return false
         return text.isMetadataChromeText() || DAY_MONTH_ENGLISH_DATE_PATTERN.matches(text)
     }
 
     private fun Element.isStandaloneDateReadTimeTextChrome(): Boolean {
         val text = text().trim()
         if (text.isBlank() || text.length > HEADING_CHROME_MAX_LENGTH) return false
-        if (select("a[href], img, picture, figure, pre, code, table, blockquote, iframe").isNotEmpty()) return false
+        if (selectFirst(NON_CHROME_CONTENT_EVALUATOR) != null) return false
         if (children().any { it.text().trim() != text }) return false
         return DATE_TEXT_PATTERN.containsMatchIn(text) && READ_TIME_PATTERN.containsMatchIn(text)
     }
 
     private fun Element.isStandaloneDateHeading(): Boolean {
         if (!normalName().matches(HEADING_TAG_PATTERN)) return false
-        if (select("a[href], img, picture, figure, pre, code, table, blockquote, iframe").isNotEmpty()) return false
+        if (selectFirst(NON_CHROME_CONTENT_EVALUATOR) != null) return false
         return FULL_DATE_HEADING_PATTERN.matches(text().trim())
     }
 
@@ -128,7 +132,7 @@ internal object HtmlChromeNormalizer {
 
     private fun Element.isLeadingByLabelBeforeDate(): Boolean {
         if (!text().trim().equals("By", ignoreCase = true)) return false
-        if (select("a[href], img, picture, figure, pre, code, table, blockquote, iframe").isNotEmpty()) return false
+        if (selectFirst(NON_CHROME_CONTENT_EVALUATOR) != null) return false
         val nextText = nextElementSibling()?.text()?.trim().orEmpty()
         return nextText.length <= HEADING_CHROME_MAX_LENGTH && DATE_TEXT_PATTERN.containsMatchIn(nextText)
     }
@@ -224,4 +228,9 @@ internal object HtmlChromeNormalizer {
     )
     private val TRAILING_REMOVABLE_SECTION_HEADING = Regex("""(?i)^(further reading|next steps|see also|references)$""")
     private const val FURTHER_READING_HEADING = "Further Reading"
+
+    // Checked for every short span, p, div and heading; parse once and stop at the first match.
+    // Tag and attribute evaluators keep no per-match state, so sharing one instance is safe.
+    private val NON_CHROME_CONTENT_EVALUATOR =
+        QueryParser.parse("a[href], img, picture, figure, pre, code, table, blockquote, iframe")
 }

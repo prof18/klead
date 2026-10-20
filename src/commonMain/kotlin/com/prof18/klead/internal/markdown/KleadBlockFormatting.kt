@@ -11,11 +11,12 @@ import com.fleeksoft.ksoup.nodes.TextNode
 
 internal fun blockquote(markdown: String): String {
     val lines = markdown.lines()
+    val separators = lines.horizontalRuleSeparators()
     return lines.mapIndexed { index, line ->
         if (line.isBlank()) {
             when {
                 line.endsWith("  ") -> "> $line"
-                lines.isHorizontalRuleSeparator(index) -> "> "
+                separators[index] -> "> "
                 else -> ">"
             }
         } else {
@@ -24,14 +25,22 @@ internal fun blockquote(markdown: String): String {
     }.joinToString("\n")
 }
 
-private fun List<String>.isHorizontalRuleSeparator(index: Int): Boolean =
-    previousNonBlankLine(index)?.trim() == "---" || nextNonBlankLine(index)?.trim() == "---"
-
-private fun List<String>.previousNonBlankLine(index: Int): String? =
-    asSequence().take(index).lastOrNull { it.isNotBlank() }
-
-private fun List<String>.nextNonBlankLine(index: Int): String? =
-    asSequence().drop(index + 1).firstOrNull { it.isNotBlank() }
+// Whether the nearest non-blank line before or after each line is a "---" rule, in two linear passes:
+// searching outwards from every blank line made long quotes quadratic.
+private fun List<String>.horizontalRuleSeparators(): BooleanArray {
+    val separators = BooleanArray(size)
+    var previousIsRule = false
+    for (index in indices) {
+        separators[index] = previousIsRule
+        if (this[index].isNotBlank()) previousIsRule = this[index].trim() == "---"
+    }
+    var nextIsRule = false
+    for (index in indices.reversed()) {
+        if (nextIsRule) separators[index] = true
+        if (this[index].isNotBlank()) nextIsRule = this[index].trim() == "---"
+    }
+    return separators
+}
 
 internal fun listItemIndent(listDepth: Int, itemIndex: Int): String {
     val effectiveDepth = if (itemIndex == 0) listDepth else listDepth * 2

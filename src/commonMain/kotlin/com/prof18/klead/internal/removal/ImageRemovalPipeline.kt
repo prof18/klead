@@ -33,13 +33,15 @@ internal object ImageRemovalPipeline {
     private fun deduplicateImages(content: Element, debug: MutableList<RemovalRecord>) {
         val seen = mutableMapOf<String, Element>()
         val seenVariants = mutableMapOf<String, Element>()
+        // Per figure: re-searching every ancestor figure for a caption per duplicate image was quadratic.
+        val figureHasCaption = HashMap<Element, Boolean>()
         for (image in content.select("img[src]").toList()) {
             if (!image.isDeduplicableImage()) continue
             val key = image.imageKey() ?: continue
             val firstImage = seen[key]
             if (firstImage == null) {
                 seen[key] = image
-            } else if (!image.isRepeatedCaptionedFigureImage(firstImage)) {
+            } else if (!image.isRepeatedCaptionedFigureImage(firstImage, figureHasCaption)) {
                 recordAndRemove(image, debug, "deduplicateImages", "img[src]", "duplicate image")
                 continue
             }
@@ -50,7 +52,7 @@ internal object ImageRemovalPipeline {
                 seenVariants[variantKey] = image
             } else if (
                 image.isSameVisualImageVariant(firstVariant) &&
-                !image.isRepeatedCaptionedFigureImage(firstVariant)
+                !image.isRepeatedCaptionedFigureImage(firstVariant, figureHasCaption)
             ) {
                 recordAndRemove(image, debug, "deduplicateImages", "img[src]", "duplicate image variant")
             }
@@ -106,9 +108,12 @@ internal object ImageRemovalPipeline {
         return true
     }
 
-    private fun Element.isRepeatedCaptionedFigureImage(firstImage: Element): Boolean {
-        val figure = captionedFigureAncestor() ?: return false
-        val firstFigure = firstImage.captionedFigureAncestor() ?: return false
+    private fun Element.isRepeatedCaptionedFigureImage(
+        firstImage: Element,
+        figureHasCaption: MutableMap<Element, Boolean>,
+    ): Boolean {
+        val figure = captionedFigureAncestor(figureHasCaption) ?: return false
+        val firstFigure = firstImage.captionedFigureAncestor(figureHasCaption) ?: return false
         return figure !== firstFigure
     }
 
@@ -122,8 +127,11 @@ internal object ImageRemovalPipeline {
         return false
     }
 
-    private fun Element.captionedFigureAncestor(): Element? =
-        parents().firstOrNull { it.normalName() == "figure" && it.selectFirst("figcaption") != null }
+    private fun Element.captionedFigureAncestor(figureHasCaption: MutableMap<Element, Boolean>): Element? =
+        parents().firstOrNull { ancestor ->
+            ancestor.normalName() == "figure" &&
+                figureHasCaption.getOrPut(ancestor) { ancestor.selectFirst("figcaption") != null }
+        }
 
     private fun Element.hasVisibleImageCaption(): Boolean = parents().any { figure ->
         figure.normalName() == "figure" &&

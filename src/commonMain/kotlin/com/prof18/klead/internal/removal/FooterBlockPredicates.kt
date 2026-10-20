@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.removal
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.RemovalRecord
 
 internal fun isTrailingRecommendationHeading(scan: BlockScan): Boolean {
@@ -77,12 +78,17 @@ internal fun isTrailingDividerBlock(element: Element, content: Element): Boolean
 
     val siblingContext = element.dividerSiblingContext(content)
     var sibling = siblingContext.nextElementSibling()
+    var scanned = 0
     while (sibling != null) {
-        if (sibling.hasSubstantiveContent()) return false
+        if (sibling.hasSubstantiveContent() || ++scanned > MAX_FOLLOWING_SIBLING_SCAN) return false
         sibling = sibling.nextElementSibling()
     }
     return true
 }
+
+// Trailing-chrome checks look at every following sibling, once per candidate. Past this many siblings
+// the answer is "not trailing" (keep the element), which keeps pathological sibling runs linear.
+internal const val MAX_FOLLOWING_SIBLING_SCAN = 64
 
 internal fun Element.dividerSiblingContext(content: Element): Element {
     val parent = parent()
@@ -93,8 +99,18 @@ internal fun Element.dividerSiblingContext(content: Element): Element {
     }
 }
 
-internal fun Element.hasSubstantiveContent(): Boolean = text().trim().isNotBlank() ||
-    select("img, picture, figure, table, pre, code, math, p, h1, h2, h3, h4, h5, h6").isNotEmpty()
+// Runs once per following sibling in the trailing-chrome scans, so it avoids parsing the selector and
+// collecting every match each time. A childless element (an <hr>, an empty wrapper) can only match itself.
+internal fun Element.hasSubstantiveContent(): Boolean {
+    if (childNodeSize() == 0) return normalName() in SUBSTANTIVE_CONTENT_TAGS
+    return text().isNotBlank() || selectFirst(SUBSTANTIVE_CONTENT_EVALUATOR) != null
+}
+
+private val SUBSTANTIVE_CONTENT_TAGS =
+    setOf("img", "picture", "figure", "table", "pre", "code", "math", "p", "h1", "h2", "h3", "h4", "h5", "h6")
+
+// Tag-only evaluators keep no per-match state, so one instance is safe to share across parses.
+private val SUBSTANTIVE_CONTENT_EVALUATOR = QueryParser.parse(SUBSTANTIVE_CONTENT_TAGS.joinToString(", "))
 
 internal fun isSkeletonRecirculationBlock(scan: BlockScan): Boolean {
     val element = scan.element
@@ -308,7 +324,9 @@ internal fun Element.isRecirculationClusterCandidate(): Boolean = normalName() i
 
 internal fun Element.hasOnlyNonSubstantiveFollowingSiblings(): Boolean {
     var sibling = nextElementSibling()
+    var scanned = 0
     while (sibling != null) {
+        if (++scanned > MAX_FOLLOWING_SIBLING_SCAN) return false
         if (sibling.normalName() == "hr" || !sibling.hasSubstantiveContent()) {
             sibling = sibling.nextElementSibling()
             continue

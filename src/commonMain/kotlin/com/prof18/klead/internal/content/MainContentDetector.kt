@@ -363,9 +363,10 @@ internal object MainContentDetector {
         scoreOf: (Element) -> ContentScore,
     ): Candidate? {
         val needle = schemaText?.normalizeSchemaText()?.takeIf { it.length >= SCHEMA_TEXT_MIN_LENGTH } ?: return null
+        val anchors = needle.schemaTextAnchors()
         return document.body()
             .select("article, main, section, div")
-            .filter { it.matchesSchemaText(needle) }
+            .filter { it.matchesSchemaText(anchors) }
             .minByOrNull { scoreOf(it).wordCount }
             ?.let { element ->
                 Candidate(
@@ -376,11 +377,11 @@ internal object MainContentDetector {
             }
     }
 
-    private fun Element.matchesSchemaText(needle: String): Boolean {
+    // Matching the full articleBody is implied by matching both anchors, and searching for an
+    // arbitrarily long page-supplied needle in every block's text made this phase O(page²).
+    private fun Element.matchesSchemaText(anchors: List<String>): Boolean {
         val haystack = text().normalizeSchemaText()
-        if (haystack.contains(needle, ignoreCase = false)) return true
-        val anchors = needle.schemaTextAnchors()
-        return anchors.size > 1 && anchors.all { haystack.contains(it, ignoreCase = false) }
+        return anchors.all { haystack.contains(it, ignoreCase = false) }
     }
 
     private fun String.schemaTextAnchors(): List<String> = when {

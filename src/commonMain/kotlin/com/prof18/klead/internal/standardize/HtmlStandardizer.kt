@@ -2,27 +2,37 @@ package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.prof18.klead.internal.dom.limitDepth
 import com.prof18.klead.internal.dom.replaceWithChildren
 
 // Orchestrates the standardization passes that run after content detection and clutter removal.
 // The pass order matters: callouts and embeds are rewritten before headings so title matching
 // sees final markup, and empty-wrapper cleanup runs last to sweep what the other passes left.
 internal object HtmlStandardizer {
-    fun apply(content: Element, title: String?) {
-        HtmlEmbedNormalizer.normalizeEmbeds(content)
-        HtmlCalloutNormalizer.normalizeCallouts(content)
-        HtmlTitleNormalizer.normalizeHeadings(content, title)
-        HtmlArxivNormalizer.normalize(content)
-        HtmlChromeNormalizer.removeMetadataChrome(content)
-        HtmlCodeNormalizer.normalizeCodeBlocks(content)
-        HtmlImageNormalizer.normalizeImages(content)
-        HtmlImageNormalizer.normalizeGalleryImageLists(content)
-        HtmlImageNormalizer.normalizeImageAspectPlaceholders(content)
-        HtmlFootnoteNormalizer.normalizeFootnotes(content)
-        HtmlChromeNormalizer.removeTrailingSectionHeadings(content)
-        normalizeTables(content)
-        removeEmptySvgElements(content)
-        removeEmptyWrappers(content)
+    fun apply(content: Element, title: String?, checkCancelled: () -> Unit = {}) {
+        val steps: List<() -> Unit> = listOf(
+            // The normalizers and renderers recurse per level, and footnote merges or extractor
+            // fragments can nest content again after the document-level cap.
+            { content.limitDepth() },
+            { HtmlEmbedNormalizer.normalizeEmbeds(content) },
+            { HtmlCalloutNormalizer.normalizeCallouts(content) },
+            { HtmlTitleNormalizer.normalizeHeadings(content, title) },
+            { HtmlArxivNormalizer.normalize(content) },
+            { HtmlChromeNormalizer.removeMetadataChrome(content) },
+            { HtmlCodeNormalizer.normalizeCodeBlocks(content) },
+            { HtmlImageNormalizer.normalizeImages(content) },
+            { HtmlImageNormalizer.normalizeGalleryImageLists(content) },
+            { HtmlImageNormalizer.normalizeImageAspectPlaceholders(content) },
+            { HtmlFootnoteNormalizer.normalizeFootnotes(content) },
+            { HtmlChromeNormalizer.removeTrailingSectionHeadings(content) },
+            { normalizeTables(content) },
+            { removeEmptySvgElements(content) },
+            { removeEmptyWrappers(content) },
+        )
+        for (step in steps) {
+            checkCancelled()
+            step()
+        }
     }
 
     private fun normalizeTables(content: Element) {

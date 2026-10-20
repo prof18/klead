@@ -240,10 +240,8 @@ internal object KleadParser {
                 .forEach { it.postProcess(content, contentExtractorContext, removals) }
         }
         applyGenericNewsletterLayout(content, url, extractorResult, timings, timingPrefix)
-        // Footnote merges and extractor fragments can nest content again after the document cap.
-        content.limitDepth()
         timings.measure("$timingPrefix.htmlStandardizer") {
-            HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title)
+            HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title, checkCancelled)
         }
         return buildParsedResult(
             content = content,
@@ -257,6 +255,7 @@ internal object KleadParser {
             extractorResult = extractorResult,
             timings = timings,
             timingPrefix = timingPrefix,
+            checkCancelled = checkCancelled,
         )
     }
 
@@ -287,6 +286,7 @@ internal object KleadParser {
         extractorResult: ExtractorResult?,
         timings: ParseTimings,
         timingPrefix: String,
+        checkCancelled: () -> Unit,
     ): ParsedResult {
         val html = if (KleadOutput.HTML in options.outputs) {
             timings.measure("$timingPrefix.htmlOutput") {
@@ -297,7 +297,7 @@ internal object KleadParser {
         }
         val markdown = if (KleadOutput.MARKDOWN in options.outputs) {
             timings.measure("$timingPrefix.markdownOutput") {
-                KleadMarkdownWriter.write(content, url)
+                KleadMarkdownWriter.write(content, url, checkCancelled)
             }
         } else {
             null

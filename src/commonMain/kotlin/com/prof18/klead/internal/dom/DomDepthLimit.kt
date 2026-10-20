@@ -6,7 +6,7 @@ import com.fleeksoft.ksoup.nodes.Node
 // Normalizers and renderers walk the DOM recursively. On Kotlin/Native a pathologically nested page
 // overflows the small stack of a background thread, which kills the host app instead of throwing.
 // Real articles stay far below this depth, so anything deeper is flattened to its leaf nodes.
-internal const val MAX_DOM_DEPTH = 96
+internal const val MAX_DOM_DEPTH = 64
 
 internal fun Element.limitDepth(maxDepth: Int = MAX_DOM_DEPTH) {
     val pending = ArrayDeque<Pair<Element, Int>>()
