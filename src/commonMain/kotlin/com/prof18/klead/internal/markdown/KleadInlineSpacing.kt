@@ -47,12 +47,16 @@ internal fun normalizeLeadingInlineSpacing(
     return adjusted
 }
 
-internal fun normalizeTrailingInlineSpacing(nodes: List<Node>, index: Int, node: Node, value: String): String {
+internal fun normalizeTrailingInlineSpacing(
+    nextInlineTexts: NextInlineTexts,
+    index: Int,
+    node: Node,
+    value: String,
+): String {
     if (node !is Element) return value
 
     var adjusted = value
-    // Lazy: scanning ahead for every element made runs of blank inline nodes (e.g. thousands of <br>) quadratic.
-    val nextText by lazy(LazyThreadSafetyMode.NONE) { nodes.nextInlineTextAfter(index) }
+    val nextText by lazy(LazyThreadSafetyMode.NONE) { nextInlineTexts.after(index) }
     if (node.isDelimitedInlineElement() && adjusted.needsTrailingSpaceAfterDelimitedInline(nextText)) {
         adjusted += " "
     }
@@ -155,17 +159,25 @@ private fun String?.needsTrailingSpaceBeforeClosingQuoteAfterLink(): Boolean {
     return afterQuote == null || !afterQuote.isLetterOrDigit()
 }
 
-private fun List<Node>.nextInlineTextAfter(index: Int): String? {
-    for (nextIndex in index + 1 until size) {
-        val text = when (val node = get(nextIndex)) {
-            is TextNode -> node.getWholeText()
-            is Element -> node.text()
-            else -> ""
+// The first non-blank text after each inline node, from one backward pass built on first use. Scanning
+// ahead per node was quadratic for long runs of blank inline nodes (<br>, icon-only links).
+internal class NextInlineTexts(private val nodes: List<Node>) {
+    private val nextTexts: Array<String?> by lazy(LazyThreadSafetyMode.NONE) {
+        val next = arrayOfNulls<String>(nodes.size)
+        var upcoming: String? = null
+        for (index in nodes.indices.reversed()) {
+            next[index] = upcoming
+            val text = when (val node = nodes[index]) {
+                is TextNode -> node.getWholeText()
+                is Element -> node.text()
+                else -> ""
+            }
+            if (text.isNotBlank()) upcoming = text
         }
-        if (text.isBlank()) continue
-        return text
+        next
     }
-    return null
+
+    fun after(index: Int): String? = nextTexts[index]
 }
 
 private fun List<Node>.previousInlineElementBefore(index: Int): Element? {

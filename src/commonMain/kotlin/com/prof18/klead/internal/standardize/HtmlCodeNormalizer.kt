@@ -3,6 +3,7 @@ package com.prof18.klead.internal.standardize
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.prof18.klead.internal.dom.deepCopy
 
 internal object HtmlCodeNormalizer {
     fun normalizeCodeBlocks(content: Element) {
@@ -94,7 +95,7 @@ internal object HtmlCodeNormalizer {
 
     private fun Element.versoLeanText(): String {
         val source = if (normalName() == "code") {
-            clone().also { clone ->
+            deepCopy().also { clone ->
                 clone.select(".hover-container, .hover-info").remove()
             }
         } else {

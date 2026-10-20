@@ -32,6 +32,18 @@ class DomDepthLimitTest {
     }
 
     @Test
+    fun `flattens a table whose rows cross the limit as one block`() {
+        val document = Ksoup.parse("<div><table><tbody><tr><td>one</td><td>two</td></tr></tbody></table></div>")
+        document.outputSettings().prettyPrint(false)
+        val body = document.body()
+
+        // The limit falls on the cells; flattening only them would leave text the table renderer ignores.
+        body.limitDepth(maxDepth = 5)
+
+        assertEquals("<div><div>onetwo</div></div>", body.html())
+    }
+
+    @Test
     fun `leaves trees within the limit untouched`() {
         val html = "<article><h1>Title</h1><ul><li><a href=\"/x\"><em>link</em></a></li></ul></article>"
         val body = Ksoup.parse(html).body()

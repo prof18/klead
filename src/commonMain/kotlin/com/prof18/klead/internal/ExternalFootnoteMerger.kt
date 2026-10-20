@@ -2,6 +2,7 @@ package com.prof18.klead.internal
 
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.dom.deepCopy
 
 // When the detected content references footnotes (<sup>N</sup>) whose definitions live outside
 // the content element — a sibling "Footnotes" section, say — clones the matching definition
@@ -22,7 +23,7 @@ internal object ExternalFootnoteMerger {
             .forEach { block ->
                 if (block.parents().any { it in merged }) return@forEach
                 merged.add(block)
-                content.appendChild(block.clone())
+                content.appendChild(block.deepCopy())
             }
     }
 

@@ -5,6 +5,10 @@ import com.fleeksoft.ksoup.nodes.Element
 // Plumbing shared by the footnote normalizers: the canonical target section that collected
 // definitions are appended to, and the patterns that recognize footnote headings and numbers.
 
+// Footnote normalizers move, replace and remove what they select. The content root itself can match
+// (e.g. <article id="n1"> targeted by a footnote), and moving it would empty the whole article.
+internal fun Element.selectDescendants(query: String): List<Element> = select(query).filter { it !== this }
+
 internal fun lazyFootnoteSection(content: Element): Element {
     content.selectFirst("section[data-footnotes]")?.let { return it }
     return Element("section")

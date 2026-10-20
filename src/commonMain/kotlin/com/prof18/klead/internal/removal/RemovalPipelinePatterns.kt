@@ -272,10 +272,56 @@ internal val ABOUT_AUTHOR_FOOTER_PATTERN = Regex(
     RegexOption.IGNORE_CASE,
 )
 
-internal val ARTICLE_FOOTER_DETAILS_PATTERN = Regex(
-    """\b(?:share\b.*\bdetails\b.*\b(?:last\s+updated|editor|contact|location)\b|details\b.*\b(?:last\s+updated|editor|contact|location)\b.*\b(?:editor|contact|location)\b)""",
-    RegexOption.IGNORE_CASE,
-)
+// Same as the regex \b(?:share\b.*\bdetails\b.*\b(?:last\s+updated|editor|contact|location)\b|
+// details\b.*\b(?:last\s+updated|editor|contact|location)\b.*\b(?:editor|contact|location)\b), ignoring case.
+// Its .* gaps backtracked polynomially on long footer candidates; taking the earliest match of each
+// word in order is linear and finds an ordered sequence whenever one exists.
+internal fun String.hasArticleFooterDetails(): Boolean {
+    val share = wordEnd(from = 0, ARTICLE_FOOTER_SHARE)
+    if (share >= 0) {
+        val details = wordEnd(share, ARTICLE_FOOTER_DETAILS)
+        if (details >= 0 && wordEnd(details, ARTICLE_FOOTER_ROLES) >= 0) return true
+    }
+    val details = wordEnd(from = 0, ARTICLE_FOOTER_DETAILS)
+    val role = if (details >= 0) wordEnd(details, ARTICLE_FOOTER_ROLES) else -1
+    return role >= 0 && wordEnd(role, ARTICLE_FOOTER_TRAILING_ROLES) >= 0
+}
+
+/** End index of the earliest whole-word match of any [words] at or after [from], or -1. */
+private fun String.wordEnd(from: Int, words: List<List<String>>): Int {
+    for (start in from until length) {
+        if (start > 0 && this[start - 1].isRegexWordChar()) continue
+        for (parts in words) {
+            val end = matchWordParts(start, parts)
+            if (end >= 0) return end
+        }
+    }
+    return -1
+}
+
+// A word is one or more parts separated by whitespace runs, as in last\s+updated.
+private fun String.matchWordParts(start: Int, parts: List<String>): Int {
+    var index = start
+    parts.forEachIndexed { partIndex, part ->
+        if (partIndex > 0) {
+            val whitespaceStart = index
+            while (index < length && this[index].isRegexWhitespace()) index++
+            if (index == whitespaceStart) return -1
+        }
+        if (!regionMatches(index, part, 0, part.length, ignoreCase = true)) return -1
+        index += part.length
+    }
+    return if (index < length && this[index].isRegexWordChar()) -1 else index
+}
+
+private fun Char.isRegexWordChar(): Boolean = isLetterOrDigit() || this == '_'
+
+private fun Char.isRegexWhitespace(): Boolean = this in " \t\n\u000B\u000C\r"
+
+private val ARTICLE_FOOTER_SHARE = listOf(listOf("share"))
+private val ARTICLE_FOOTER_DETAILS = listOf(listOf("details"))
+private val ARTICLE_FOOTER_TRAILING_ROLES = listOf(listOf("editor"), listOf("contact"), listOf("location"))
+private val ARTICLE_FOOTER_ROLES = listOf(listOf("last", "updated")) + ARTICLE_FOOTER_TRAILING_ROLES
 
 internal val ARTICLE_FOOTER_DETAILS_HEADING_PATTERN = Regex(
     """^(share|details|related\s+terms)$""",

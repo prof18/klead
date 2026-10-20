@@ -3,6 +3,7 @@ package com.prof18.klead.internal.markdown
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.resolveUrl
 
@@ -36,7 +37,7 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
 
     private fun renderBlocks(nodes: List<Node>, listDepth: Int): String {
         checkCancelled()
-        val blocks = mutableListOf<RenderedBlock>()
+        val blocks = mutableListOf<PendingBlock>()
         val inlineNodes = mutableListOf<Node>()
         var nextNonBlankIndex = 0
 
@@ -52,16 +53,11 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
 
         fun addBlock(markdown: String, standaloneImage: Boolean, codeBlock: Boolean, listBlock: Boolean) {
             if (markdown.isBlank()) return
-            if (standaloneImage && blocks.lastOrNull()?.standaloneImage == true) {
-                val previous = blocks.removeAt(blocks.lastIndex)
-                blocks += previous.copy(markdown = "${previous.markdown} $markdown")
+            val previous = blocks.lastOrNull()
+            if (standaloneImage && previous?.standaloneImage == true) {
+                previous.parts.add(markdown)
             } else {
-                blocks += RenderedBlock(
-                    markdown = markdown,
-                    standaloneImage = standaloneImage,
-                    codeBlock = codeBlock,
-                    listBlock = listBlock,
-                )
+                blocks += PendingBlock(mutableListOf(markdown), standaloneImage, codeBlock, listBlock)
             }
         }
 
@@ -101,7 +97,18 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
             )
         }
         flushInlineNodes()
-        return blocks.joinToStringWithSeparators()
+        return blocks.map { it.toRenderedBlock() }.joinToStringWithSeparators()
+    }
+
+    // Runs of standalone images merge into one block; joining the parts once avoids rebuilding the
+    // block's string for every image, which was quadratic for pages with thousands of images.
+    private class PendingBlock(
+        val parts: MutableList<String>,
+        val standaloneImage: Boolean,
+        val codeBlock: Boolean,
+        val listBlock: Boolean,
+    ) {
+        fun toRenderedBlock() = RenderedBlock(parts.joinToString(" "), standaloneImage, codeBlock, listBlock)
     }
 
     private fun renderBlock(node: Node, listDepth: Int): String = when (node) {
@@ -198,6 +205,7 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
         val rendered = StringBuilder()
         var previousInlineWasLinkedImage = false
         var lastNonWhitespace: Char? = null
+        val nextInlineTexts = NextInlineTexts(nodes)
         nodes.forEachIndexed { index, node ->
             var value = renderInlineNode(node, inLink)
             value = normalizeLeadingInlineSpacing(
@@ -209,7 +217,7 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
                 value = value,
                 previousInlineWasLinkedImage = previousInlineWasLinkedImage,
             )
-            value = normalizeTrailingInlineSpacing(nodes, index, node, value)
+            value = normalizeTrailingInlineSpacing(nextInlineTexts, index, node, value)
             appendSpecialInlineSpacing(rendered, nodes, index, node, value)
             rendered.append(value)
             value.lastOrNull { !it.isWhitespace() }?.let { lastNonWhitespace = it }
@@ -511,7 +519,7 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
     }
 
     private fun renderFootnoteDefinition(item: Element): String {
-        val clone = item.clone()
+        val clone = item.deepCopy()
         clone.cleanupFootnoteDefinition()
         val hasBlockContent = clone.children().any { it.normalName() in footnoteBlockTags }
         val rendered = if (hasBlockContent) {

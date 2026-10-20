@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -30,13 +31,13 @@ internal object GuardianNewsletterProfile : DomExtractor {
                     source.parents().none { it.isEditorialTextCell() } -> {
                     val imageOrLink = source.parent()?.takeIf { it.normalName() == "a" } ?: source
                     source.authorNameFromImageRow()?.let { name -> output.appendElement("p").text(name) }
-                    output.appendChild(imageOrLink.clone())
+                    output.appendChild(imageOrLink.deepCopy())
                 }
 
                 source.normalName() == "img" -> Unit
 
                 source.normalName() == "td" && source.isEditorialTextCell() && source.isNewsletterEditorialText() ->
-                    output.appendChild(source.clone())
+                    output.appendChild(source.deepCopy())
             }
         }
 

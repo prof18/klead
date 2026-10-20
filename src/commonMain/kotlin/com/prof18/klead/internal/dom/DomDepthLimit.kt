@@ -10,14 +10,27 @@ internal const val MAX_DOM_DEPTH = 64
 
 internal fun Element.limitDepth(maxDepth: Int = MAX_DOM_DEPTH) {
     val pending = ArrayDeque<Pair<Element, Int>>()
+    val flattened = HashSet<Element>()
     pending.addLast(this to 0)
     while (pending.isNotEmpty()) {
         val (element, depth) = pending.removeLast()
         if (depth >= maxDepth) {
-            element.flattenToLeaves()
+            val target = element.outermostTableOrListPart(root = this)
+            if (flattened.add(target)) target.flattenToLeaves()
         } else {
             element.children().forEach { child -> pending.addLast(child to depth + 1) }
         }
+    }
+}
+
+// Table and list renderers only read rows, cells and items, so flattening a row or item under a surviving
+// table or list would drop its text. The whole table or list structure becomes one plain block instead.
+private fun Element.outermostTableOrListPart(root: Element): Element {
+    var target = this
+    while (true) {
+        val parent = target.parent() ?: return target
+        if (parent === root || parent.normalName() !in TABLE_AND_LIST_PARTS) return target
+        target = parent
     }
 }
 
@@ -41,6 +54,11 @@ private fun Element.flattenToLeaves() {
     // List and table renderers only read their item and cell children, so bare leaves would be dropped.
     if (normalName() in STRUCTURAL_CONTAINERS) tagName("div")
 }
+
+private val TABLE_AND_LIST_PARTS = setOf(
+    "ul", "ol", "dl", "menu", "li", "dt", "dd",
+    "table", "caption", "thead", "tbody", "tfoot", "tr", "td", "th", "colgroup",
+)
 
 private val STRUCTURAL_CONTAINERS =
     setOf("ul", "ol", "dl", "menu", "table", "thead", "tbody", "tfoot", "tr", "colgroup")

@@ -70,10 +70,15 @@ private fun ByteArray.indexOfByte(character: Char, start: Int): Int {
     return -1
 }
 
+// Each scan covers the rest of the script, so an unbalanced push ends the script (it is malformed from
+// there on) and pushes inside an already-read chunk are skipped: rescanning per match was quadratic.
 private fun flightChunks(script: String): Sequence<String> = sequence {
+    var consumedUntil = 0
     for (match in FLIGHT_PUSH.findAll(script)) {
         val start = match.range.last
-        val end = jsonArrayEnd(script, start) ?: continue
+        if (start < consumedUntil) continue
+        val end = jsonArrayEnd(script, start) ?: break
+        consumedUntil = end
         yield(script.substring(start, end))
     }
 }

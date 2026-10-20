@@ -4,20 +4,46 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.internal.dom.isAttachedTo
+import com.prof18.klead.internal.dom.removeAllBatched
 
 internal object HiddenElementRemoval {
     fun apply(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit = {}) {
         // Removing a hidden block re-exposes the same heading to the next one; its answer cannot change
         // within this pass, so each heading is scanned once instead of once per hidden sibling.
         val checkedHeadings = HashSet<Element>()
+        // Removed in one batch at the end; until then, scheduled elements count as already gone.
+        val scheduled = ScheduledRemovals()
         for (element in content.descendantsSnapshot()) {
             checkCancelled()
-            if (!element.isAttachedTo(content)) continue
+            if (!element.isAttachedTo(content) || scheduled.containsSelfOrAncestor(element)) continue
             val reason = removableHiddenReason(element) ?: continue
-            element.orphanedHeadingBeforeHiddenBlock(checkedHeadings)?.let { heading ->
-                recordAndRemove(heading, debug, "removeHiddenElements", null, "orphan heading before hidden block")
+            element.orphanedHeadingBeforeHiddenBlock(checkedHeadings, scheduled)?.let { heading ->
+                recordRemoval(heading, debug, "removeHiddenElements", null, "orphan heading before hidden block")
+                scheduled.add(heading)
             }
-            recordAndRemove(element, debug, "removeHiddenElements", hiddenSelector(element), reason)
+            recordRemoval(element, debug, "removeHiddenElements", hiddenSelector(element), reason)
+            scheduled.add(element)
+        }
+        removeAllBatched(scheduled.elements)
+    }
+
+    // Elements waiting for the batched removal. Each remembers the nearest earlier sibling that is not
+    // scheduled, so "previous sibling as if removed" jumps over whole runs instead of walking them.
+    private class ScheduledRemovals {
+        private val previousKept = HashMap<Element, Element?>()
+        val elements: Set<Element> get() = previousKept.keys
+
+        fun add(element: Element) {
+            previousKept[element] = previousKeptSibling(element)
+        }
+
+        fun containsSelfOrAncestor(element: Element): Boolean =
+            element in previousKept || element.parents().any { it in previousKept }
+
+        fun previousKeptSibling(element: Element): Element? {
+            var previous = element.previousElementSibling()
+            while (previous != null && previous in previousKept) previous = previousKept[previous]
+            return previous
         }
     }
 
@@ -31,8 +57,11 @@ internal object HiddenElementRemoval {
         return reason.takeUnless { isProtectedHidden }
     }
 
-    private fun Element.orphanedHeadingBeforeHiddenBlock(checkedHeadings: MutableSet<Element>): Element? {
-        val heading = previousElementSibling()
+    private fun Element.orphanedHeadingBeforeHiddenBlock(
+        checkedHeadings: MutableSet<Element>,
+        scheduled: ScheduledRemovals,
+    ): Element? {
+        val heading = scheduled.previousKeptSibling(this)
             ?.takeIf { it.normalName().matches(HEADING_TAG_PATTERN) && checkedHeadings.add(it) }
             ?: return null
 

@@ -35,8 +35,9 @@ internal object ImageRemovalPipeline {
         val seenVariants = mutableMapOf<String, Element>()
         // Per figure: re-searching every ancestor figure for a caption per duplicate image was quadratic.
         val figureHasCaption = HashMap<Element, Boolean>()
+        val paragraphHasText = HashMap<Element, Boolean>()
         for (image in content.select("img[src]").toList()) {
-            if (!image.isDeduplicableImage()) continue
+            if (!image.isDeduplicableImage(paragraphHasText)) continue
             val key = image.imageKey() ?: continue
             val firstImage = seen[key]
             if (firstImage == null) {
@@ -102,10 +103,12 @@ internal object ImageRemovalPipeline {
         }
     }
 
-    private fun Element.isDeduplicableImage(): Boolean {
+    // An <img> has no text, so "text outside this image" is the paragraph's own text: computed once per
+    // paragraph instead of once per image, which was quadratic for paragraphs holding many images.
+    private fun Element.isDeduplicableImage(paragraphHasText: MutableMap<Element, Boolean>): Boolean {
         val parent = parent() ?: return true
-        if (parent.normalName() == "p" && parent.textOutside(this).isNotBlank()) return false
-        return true
+        if (parent.normalName() != "p") return true
+        return !paragraphHasText.getOrPut(parent) { parent.textOutside(this).isNotBlank() }
     }
 
     private fun Element.isRepeatedCaptionedFigureImage(

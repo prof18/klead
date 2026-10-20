@@ -33,7 +33,7 @@ internal object HtmlFootnoteNormalizer {
     }
 
     private fun wrapLooseFootnoteItems(content: Element) {
-        content.select("section[data-footnotes]").forEach { section ->
+        content.selectDescendants("section[data-footnotes]").forEach { section ->
             val items = section.select("> li").toList()
             if (items.isEmpty()) return@forEach
 
@@ -55,7 +55,7 @@ internal object HtmlFootnoteNormalizer {
     private val SIMPLE_FOOTNOTE_ID_NUMBER = Regex("""(?i)^(?:fn|footnote[-_]?)?(\d+)$""")
 
     private fun removeFootnoteDividers(content: Element) {
-        content.select("hr").forEach { divider ->
+        content.selectDescendants("hr").forEach { divider ->
             val parent = divider.parent()
             val isInsideFootnotes = parent?.hasClass("footnotes") == true ||
                 parent?.hasAttr("data-footnotes") == true

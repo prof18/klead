@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -14,7 +15,7 @@ internal object WikipediaExtractor : DomExtractor {
         context.document.selectFirst(WIKIPEDIA_CONTENT_SELECTOR) != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
-        val content = context.document.selectFirst(WIKIPEDIA_CONTENT_SELECTOR)?.clone() ?: return null
+        val content = context.document.selectFirst(WIKIPEDIA_CONTENT_SELECTOR)?.deepCopy() ?: return null
         content.cleanWikipediaChrome()
         if (content.text().isBlank()) return null
 

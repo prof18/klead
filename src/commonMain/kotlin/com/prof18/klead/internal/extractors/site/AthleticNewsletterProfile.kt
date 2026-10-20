@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -30,7 +31,7 @@ internal object AthleticNewsletterProfile : DomExtractor {
 
             row.select(".column")
                 .filter { column -> column.parents().none { it !== row && it.hasClass("column") } }
-                .forEach { column -> content.appendChild(column.clone()) }
+                .forEach { column -> content.appendChild(column.deepCopy()) }
         }
 
         if (content.text().isBlank()) return null

@@ -5,6 +5,7 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.appendChildNodesFrom
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
@@ -17,7 +18,7 @@ internal object RedditProfile : DomExtractor {
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val post = context.document.selectFirst(".thing.link") ?: return null
-        val body = post.selectFirst(".entry .usertext-body .md")?.clone()
+        val body = post.selectFirst(".entry .usertext-body .md")?.deepCopy()
             ?: return null
         val commentRoots = context.document.selectFirst(".commentarea > .sitetable")
             ?.children()
@@ -48,7 +49,7 @@ internal object RedditProfile : DomExtractor {
         )
     }
 
-    private fun Element.toRedditComment(): RedditComment? {
+    private fun Element.toRedditComment(depth: Int = 0): RedditComment? {
         val entry = children().firstOrNull { it.hasClass("entry") } ?: return null
         val author = entry.selectFirst(".tagline .author")?.text()?.trim().orEmpty()
         val score = entry.selectFirst(".tagline .score")?.text()?.trim()
@@ -56,17 +57,15 @@ internal object RedditProfile : DomExtractor {
             ?.attr("datetime")
             ?.isoDatePart()
             .orEmpty()
-        val body = entry.selectFirst(".usertext-body .md")?.clone() ?: return null
+        val body = entry.selectFirst(".usertext-body .md")?.deepCopy() ?: return null
         if (author.isBlank() || date.isBlank() || body.text().isBlank()) return null
 
-        val children = children()
-            .firstOrNull { it.hasClass("child") }
-            ?.children()
-            ?.firstOrNull { it.hasClass("sitetable") }
-            ?.children()
-            ?.filter { it.isRedditCommentElement() }
-            ?.mapNotNull { it.toRedditComment() }
-            .orEmpty()
+        // Parsing and rendering recurse per reply level, so very deep chains continue as a flat list.
+        val children = when {
+            depth < MAX_THREAD_DEPTH -> replyElements().mapNotNull { it.toRedditComment(depth + 1) }
+            depth == MAX_THREAD_DEPTH -> nestedReplyElements().mapNotNull { it.toRedditComment(depth + 1) }
+            else -> emptyList()
+        }
 
         return RedditComment(
             author = author,
@@ -98,6 +97,25 @@ internal object RedditProfile : DomExtractor {
 
     private fun Element.isRedditCommentElement(): Boolean = hasClass("thing") && hasClass("comment")
 
+    private fun Element.replyElements(): List<Element> = children()
+        .firstOrNull { it.hasClass("child") }
+        ?.children()
+        ?.firstOrNull { it.hasClass("sitetable") }
+        ?.children()
+        ?.filter { it.isRedditCommentElement() }
+        .orEmpty()
+
+    private fun Element.nestedReplyElements(): List<Element> {
+        val replies = mutableListOf<Element>()
+        val pending = ArrayDeque(replyElements().asReversed())
+        while (pending.isNotEmpty()) {
+            val reply = pending.removeLast()
+            replies.add(reply)
+            reply.replyElements().asReversed().forEach(pending::addLast)
+        }
+        return replies
+    }
+
     private data class RedditComment(
         val author: String,
         val date: String,
@@ -107,5 +125,6 @@ internal object RedditProfile : DomExtractor {
         val children: List<RedditComment>,
     )
 
+    private const val MAX_THREAD_DEPTH = 32
     private const val SITE_NAME = "Reddit"
 }

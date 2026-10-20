@@ -367,7 +367,7 @@ internal fun isArticleFooterDetailsBlock(scan: BlockScan): Boolean {
     val element = scan.element
     val text = scan.collapsedText
     if (text.isBlank() || text.length > ARTICLE_FOOTER_DETAILS_MAX_LENGTH) return false
-    if (!ARTICLE_FOOTER_DETAILS_PATTERN.containsMatchIn(text)) return false
+    if (!text.hasArticleFooterDetails()) return false
 
     val proseParagraphs = element.select("p").count { paragraph ->
         paragraph.text().trim().collapseWhitespace().wordCount() >= ARTICLE_FOOTER_DETAILS_PROSE_WORD_GUARD

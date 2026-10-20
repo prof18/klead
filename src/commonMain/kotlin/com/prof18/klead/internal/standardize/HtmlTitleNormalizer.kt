@@ -2,6 +2,8 @@ package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.QueryParser
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.replaceWithChildren
 
 // Removes headings that duplicate the page title (and the byline/date chrome hugging them) and
@@ -86,17 +88,24 @@ internal object HtmlTitleNormalizer {
                 }.forEach { it.remove() }
             }
         }
+        // Sibling heading ids per parent, computed once: rescanning every parent's children for each
+        // anchor was O(anchors × siblings). Removing anchors never changes which headings exist.
+        val headingIdsByParent = HashMap<Element, Set<String>>()
         content.select("a[href^=#]").forEach { anchor ->
             val fragment = anchor.attr("href").removePrefix("#")
+            val parent = anchor.parent()
             val isHeadingPermalink = fragment.isNotBlank() &&
+                parent != null &&
                 anchor.text().isBlank() &&
-                anchor.selectFirst("svg, img") != null &&
-                anchor.parent()?.children()?.any { sibling ->
-                    sibling.normalName() in HEADING_TAG_NAMES && sibling.id() == fragment
-                } == true
+                anchor.selectFirst(PERMALINK_ICON_EVALUATOR) != null &&
+                fragment in headingIdsByParent.getOrPut(parent) { parent.siblingHeadingIds() }
             if (isHeadingPermalink) anchor.remove()
         }
     }
+
+    private fun Element.siblingHeadingIds(): Set<String> = children()
+        .filter { it.normalName() in HEADING_TAG_NAMES }
+        .mapTo(HashSet()) { it.id() }
 
     private fun unwrapHeadingFormatting(content: Element) {
         content.select(HEADING_TAG_SELECTOR).forEach { heading ->
@@ -126,7 +135,7 @@ internal object HtmlTitleNormalizer {
             if (heading.shouldRemoveMatchedTitleHeading(titleMatch, title)) {
                 child.remove()
             } else {
-                child.replaceWith(heading.clone())
+                child.replaceWith(heading.deepCopy())
             }
             return
         }
@@ -135,7 +144,7 @@ internal object HtmlTitleNormalizer {
     private fun Element.isCompactTitleMetadataWrapper(heading: Element, title: String): Boolean {
         if (this === heading) return false
         if (hasNonMetadataSiblingHeading(heading, title)) return false
-        val clone = clone()
+        val clone = deepCopy()
         clone.select("h1, h2").remove()
         if (clone.select("p, pre, blockquote, table, figure, img, picture, iframe").isNotEmpty()) return false
         val remaining = clone.text().trim()
@@ -327,4 +336,7 @@ internal object HtmlTitleNormalizer {
     private const val TABLE_OF_CONTENTS_MIN_LINKS = 3
     private const val TABLE_OF_CONTENTS_SCAN_LIMIT = 4
     private const val NUMBERED_SECTION_SCAN_LIMIT = 4
+
+    // Tag-only evaluator: no per-match state, safe to share across parses.
+    private val PERMALINK_ICON_EVALUATOR = QueryParser.parse("svg, img")
 }

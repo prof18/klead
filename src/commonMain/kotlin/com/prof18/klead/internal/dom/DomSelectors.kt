@@ -6,9 +6,11 @@ import kotlinx.atomicfu.locks.synchronized
 
 internal fun Element.selectSafe(selector: String): List<Element> {
     val results = mutableListOf<Element>()
+    // Ksoup elements hash by identity, so the set dedups in O(1) instead of rescanning the results.
+    val seen = HashSet<Element>()
     for (part in selector.splitSelectorList()) {
         for (element in selectSingleSafe(part)) {
-            if (results.none { it === element }) {
+            if (seen.add(element)) {
                 results.add(element)
             }
         }

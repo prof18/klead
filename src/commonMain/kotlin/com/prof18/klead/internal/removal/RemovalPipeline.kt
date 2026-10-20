@@ -12,6 +12,17 @@ internal fun recordAndRemove(
     selector: String?,
     reason: String,
 ) {
+    recordRemoval(element, debug, step, selector, reason)
+    element.removeSafely()
+}
+
+internal fun recordRemoval(
+    element: Element,
+    debug: MutableList<RemovalRecord>,
+    step: String,
+    selector: String?,
+    reason: String,
+) {
     if (debug !== DiscardedRemovals) {
         debug += RemovalRecord(
             step = step,
@@ -20,7 +31,6 @@ internal fun recordAndRemove(
             preview = element.text().take(100),
         )
     }
-    element.removeSafely()
 }
 
 // Sink used when debug output is disabled: recordAndRemove checks for it by identity and skips
@@ -587,8 +597,6 @@ private fun Element.liftButtonMedia() {
     val media = select("img, picture, video")
     if (media.isEmpty()) return
     val mediaSet = media.toSet()
-    for (item in media) {
-        if (item.parents().any { it in mediaSet }) continue
-        before(item)
-    }
+    val lifted = media.filter { item -> item.parents().none { it in mediaSet } }
+    parent()?.insertChildren(siblingIndex(), lifted)
 }

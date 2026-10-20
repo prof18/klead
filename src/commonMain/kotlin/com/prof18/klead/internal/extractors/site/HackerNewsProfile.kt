@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -107,7 +108,7 @@ internal object HackerNewsProfile : DomExtractor {
         val header = selectFirst(".comhead") ?: return null
         val author = header.selectFirst(".hnuser")?.text()?.trim().orEmpty()
         val date = header.selectFirst(".age[title]")?.attr("title")?.datePart().orEmpty()
-        val body = selectFirst(".commtext")?.clone() ?: return null
+        val body = selectFirst(".commtext")?.deepCopy() ?: return null
         if (id.isBlank() || author.isBlank() || date.isBlank() || body.text().isBlank()) return null
 
         val depth = selectFirst("td.ind img[width]")
@@ -172,7 +173,7 @@ internal object HackerNewsProfile : DomExtractor {
             return
         }
         body.childNodes().forEach { node ->
-            appendChild(node.clone())
+            appendChild(node.deepCopy())
         }
     }
 

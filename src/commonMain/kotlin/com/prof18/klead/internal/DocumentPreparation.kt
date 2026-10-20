@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Comment
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.parseFragment
 
@@ -28,9 +29,10 @@ internal object DocumentPreparation {
             val template = document.getElementById(templateId) ?: continue
             val segment = document.getElementById(segmentId) ?: continue
             removeReactFallbackAfter(template)
-            segment.childNodes().toList().forEach { node ->
-                template.before(node.clone())
-            }
+            // Copies are inserted in one go: before() per node reindexed the siblings every time, and
+            // Ksoup's clone() is quadratic on big subtrees, unlike the iterative cloneElement().
+            val copies = segment.childNodes().map { node -> node.deepCopy() }
+            template.parent()?.insertChildren(template.siblingIndex(), copies)
             template.remove()
             segment.remove()
         }
@@ -64,21 +66,29 @@ internal object DocumentPreparation {
             val promotedImages = fragmentRoot.select("img[src]").filterNot { image ->
                 isDangerousUrl(image.attr("src"))
             }
+            // Inserted in one go, tracking what would be the noscript's previous sibling after each insert.
+            val promoted = mutableListOf<Node>()
+            var previous = noscript.previousElementSibling()
             for (image in promotedImages) {
-                val altCaption = noscript.nextJsAltCaptionForPromotedImage(image)
-                noscript.before(image.clone())
+                val altCaption = noscript.nextJsAltCaptionForPromotedImage(image, previous)
+                val copy = image.deepCopy()
+                promoted.add(copy)
+                previous = copy
                 if (altCaption != null) {
-                    noscript.before(Element("span").text(altCaption))
+                    val caption = Element("span").text(altCaption)
+                    promoted.add(caption)
+                    previous = caption
                 }
             }
+            if (promoted.isNotEmpty()) noscript.parent()?.insertChildren(noscript.siblingIndex(), promoted)
         }
     }
 
-    private fun Element.nextJsAltCaptionForPromotedImage(image: Element): String? {
+    private fun Element.nextJsAltCaptionForPromotedImage(image: Element, previous: Element?): String? {
         if (!image.hasAttr("data-nimg")) return null
         if (parents().any { it.normalName() == "figure" && it.selectFirst("figcaption") != null }) return null
 
-        val placeholder = previousElementSibling()
+        val placeholder = previous
             ?.takeIf { it.normalName() == "img" && it.hasAttr("data-nimg") }
             ?: return null
 

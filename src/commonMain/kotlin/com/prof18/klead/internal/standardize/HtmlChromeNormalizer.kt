@@ -15,18 +15,52 @@ internal object HtmlChromeNormalizer {
     }
 
     fun removeTrailingSectionHeadings(content: Element) {
+        val tails = TrailingSiblingSummaries()
         content.select(HEADING_TAG_SELECTOR).forEach { heading ->
             val text = heading.text().trim()
             if (!TRAILING_REMOVABLE_SECTION_HEADING.matches(text)) return@forEach
+            val tail = tails.after(heading)
             if (text.equals(FURTHER_READING_HEADING, ignoreCase = true)) {
-                if (heading.isTrailingRemovableSection()) {
+                if (tail?.let { !it.hasKeptHeading } ?: heading.isTrailingRemovableSection()) {
                     heading.removeTrailingRemovableSection()
                 }
-            } else if (!heading.hasSubstantiveTail()) {
+            } else if (!(tail?.hasSubstantiveContent ?: heading.hasSubstantiveTail())) {
                 heading.remove()
             }
         }
     }
+
+    // What follows each child of a parent, from one backward pass per parent: scanning the following
+    // siblings once per heading was quadratic for pages with many trailing-section headings.
+    // Summaries are taken before any removal. Removing a trailing-section heading cannot change another
+    // heading's answer (both checks skip such headings), and removing a whole section only happens when
+    // no kept heading follows, so later headings in that run are never asked.
+    private class TrailingSiblingSummaries {
+        private val byParent = HashMap<Element, Map<Element, TrailingSummary>>()
+
+        fun after(element: Element): TrailingSummary? {
+            val parent = element.parent() ?: return null
+            return byParent.getOrPut(parent) { summarize(parent) }[element]
+        }
+
+        private fun summarize(parent: Element): Map<Element, TrailingSummary> {
+            val summaries = HashMap<Element, TrailingSummary>()
+            var hasSubstantiveContent = false
+            var hasKeptHeading = false
+            for (child in parent.children().asReversed()) {
+                summaries[child] = TrailingSummary(hasSubstantiveContent, hasKeptHeading)
+                val text = child.text().trim()
+                val isRemovableHeading = child.isHeading() && TRAILING_REMOVABLE_SECTION_HEADING.matches(text)
+                if (text.isNotBlank() && !child.hasAttr("data-footnotes") && !isRemovableHeading) {
+                    hasSubstantiveContent = true
+                }
+                if (text.isNotBlank() && child.isHeading() && !isRemovableHeading) hasKeptHeading = true
+            }
+            return summaries
+        }
+    }
+
+    private data class TrailingSummary(val hasSubstantiveContent: Boolean, val hasKeptHeading: Boolean)
 
     private fun removeStandaloneTimeChrome(content: Element) {
         removeEdgeChrome(content, fromStart = true)

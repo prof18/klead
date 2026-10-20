@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -30,11 +31,11 @@ internal object ApostoNewsletterProfile : DomExtractor {
             val section = Element("section")
             card.selectFirst(".card-image")?.select("img")
                 ?.filterNot { image -> isNewsletterChromeImage(image, isFirstCard = index == 0) }
-                ?.forEach { image -> section.appendChild(editorialImageNode(image).clone()) }
+                ?.forEach { image -> section.appendChild(editorialImageNode(image).deepCopy()) }
             if (heading.isNotBlank()) section.appendElement("h2").text(heading)
 
             content.childNodes().forEach { child ->
-                section.appendChild(child.clone())
+                section.appendChild(child.deepCopy())
             }
             section.select("img").filter(::isTrackingImage).forEach(Element::remove)
             removeEmptyParagraphs(section)

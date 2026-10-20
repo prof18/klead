@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.resolveKleadUri
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -18,7 +19,7 @@ internal object MastodonProfile : DomExtractor {
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val baseUrl = context.baseUrl()
         val mainStatus = context.document.selectFirst(".detailed-status") ?: return null
-        val mainContent = mainStatus.selectFirst(".status__content__text")?.clone() ?: return null
+        val mainContent = mainStatus.selectFirst(".status__content__text")?.deepCopy() ?: return null
         val mainDisplayName = mainStatus.selectFirst(".display-name__html")?.text()?.trim().orEmpty()
         val mainAccount = mainStatus.selectFirst(".display-name__account")?.text()?.trim().orEmpty()
         val instanceName = mainAccount.substringAfterLast("@", missingDelimiterValue = "")
@@ -86,7 +87,7 @@ internal object MastodonProfile : DomExtractor {
     }
 
     private fun Element.toMastodonStatus(baseUrl: String): MastodonStatus? {
-        val body = selectFirst(".status__content__text")?.clone() ?: return null
+        val body = selectFirst(".status__content__text")?.deepCopy() ?: return null
         val displayName = selectFirst(".display-name__html")?.text()?.trim().orEmpty()
         val account = selectFirst(".display-name__account")?.text()?.trim().orEmpty()
         val date = selectFirst(".status__relative-time time[datetime]")
@@ -143,7 +144,7 @@ internal object MastodonProfile : DomExtractor {
     private fun Element.appendStatusBody(body: Element, baseUrl: String) {
         body.prepareMastodonBody(baseUrl)
         body.childNodes().forEach { node ->
-            appendChild(node.clone())
+            appendChild(node.deepCopy())
         }
     }
 

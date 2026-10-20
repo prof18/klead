@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -23,8 +24,9 @@ internal object ChatGptExtractor : DomExtractor {
             // A turn can split one assistant message into several message elements, and each
             // may carry content both before and after a Thought section. Take every content
             // fragment from every message element that belongs to this turn (not a nested one).
-            val messageBlocks = turn.select("[data-message-author-role=$role]")
-                .filter { it.closestConversationTurn() === turn }
+            // Compare the attribute directly: the role is page text and would break a built selector.
+            val messageBlocks = turn.select("[data-message-author-role]")
+                .filter { it.attr("data-message-author-role").trim() == role && it.closestConversationTurn() === turn }
                 .flatMap { it.messageContentElements() }
             if (messageBlocks.isEmpty()) return@forEachIndexed
 
@@ -56,10 +58,10 @@ internal object ChatGptExtractor : DomExtractor {
             addAll(select(".markdown, .whitespace-pre-wrap"))
         }
         if (candidates.isEmpty()) return this.takeIf { text().isNotBlank() }?.let(::listOf).orEmpty()
-        // Drop any candidate nested inside another candidate so content isn't duplicated.
-        return candidates.filter { candidate ->
-            candidates.none { other -> other !== candidate && candidate.parents().any { it === other } }
-        }
+        // Drop any candidate nested inside another candidate so content isn't duplicated; a set keeps
+        // this linear in the number of candidates.
+        val candidateSet = candidates.toHashSet()
+        return candidates.filter { candidate -> candidate.parents().none { it in candidateSet } }
     }
 
     private fun Element.appendLabel(label: String) {
@@ -75,7 +77,7 @@ internal object ChatGptExtractor : DomExtractor {
         }
 
         block.childNodes().forEach { node ->
-            appendChild(node.clone())
+            appendChild(node.deepCopy())
         }
     }
 }

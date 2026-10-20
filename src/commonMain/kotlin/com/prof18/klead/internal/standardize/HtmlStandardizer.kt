@@ -39,16 +39,12 @@ internal object HtmlStandardizer {
         content.select("table").forEach { table ->
             val cells = table.directTableCells()
             if (!table.hasClass("layout") && cells.size != 1) return@forEach
-            for (cell in cells) {
+            // Collected and inserted once: before() per node reindexed the table's siblings every time.
+            val replacement = cells.flatMap { cell ->
                 val nodes = cell.childNodes().toList()
-                if (cells.size == 1) {
-                    nodes.forEach { table.before(it) }
-                } else {
-                    val block = Element("div")
-                    nodes.forEach { block.appendChild(it) }
-                    table.before(block)
-                }
+                if (cells.size == 1) nodes else listOf(Element("div").appendChildren(nodes))
             }
+            table.parent()?.insertChildren(table.siblingIndex(), replacement)
             table.remove()
         }
     }

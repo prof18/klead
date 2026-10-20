@@ -92,6 +92,7 @@ import com.prof18.klead.internal.extractors.site.WallStreetJournalExtractor
 import com.prof18.klead.internal.extractors.site.WikipediaExtractor
 import com.prof18.klead.internal.extractors.site.WordPressFamilyProfile
 import com.prof18.klead.internal.extractors.site.XProfile
+import kotlinx.coroutines.CancellationException
 
 internal class ExtractorRegistry(private val extractors: List<Extractor> = DefaultExtractors.all) {
     fun resolve(context: DomExtractorContext): List<Extractor> = matchingExtractors(context)
@@ -102,10 +103,12 @@ internal class ExtractorRegistry(private val extractors: List<Extractor> = Defau
 
     fun extract(context: DomExtractorContext, extractors: List<Extractor>): ExtractorResult? {
         for (extractor in extractors) {
-            val result = if (extractor is DomExtractor) {
-                extractor.extract(context)
-            } else {
-                extractor.extract(context.publicContext)
+            val result = failingAsNull {
+                if (extractor is DomExtractor) {
+                    extractor.extract(context)
+                } else {
+                    extractor.extract(context.publicContext)
+                }
             }
             if (result != null) {
                 return result
@@ -117,12 +120,21 @@ internal class ExtractorRegistry(private val extractors: List<Extractor> = Defau
     private fun matchingExtractors(context: DomExtractorContext): Sequence<Extractor> = extractors
         .asSequence()
         .filter { extractor ->
-            if (extractor is DomExtractor) {
-                extractor.matches(context)
-            } else {
-                extractor.matches(context.publicContext)
-            }
+            failingAsNull {
+                if (extractor is DomExtractor) {
+                    extractor.matches(context)
+                } else {
+                    extractor.matches(context.publicContext)
+                }
+            } == true
         }
+
+    // Extractors read hostile page markup (and any page can claim a site via its canonical URL), so an
+    // extractor that throws counts as not matching and generic extraction takes over.
+    private inline fun <T> failingAsNull(block: () -> T): T? = runCatching(block).getOrElse { error ->
+        if (error is CancellationException) throw error
+        null
+    }
 }
 
 internal object DefaultExtractors {

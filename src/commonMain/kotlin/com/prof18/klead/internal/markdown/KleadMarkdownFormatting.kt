@@ -2,10 +2,11 @@ package com.prof18.klead.internal.markdown
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.prof18.klead.internal.dom.deepCopy
 
 internal fun renderSvg(element: Element): String {
     if (!element.hasRenderableSvgContent()) return ""
-    val clone = element.clone()
+    val clone = element.deepCopy()
     clone.applySvgStyleFallbacks()
     clone.select("[class]").removeAttr("class")
     return clone.outerHtml()

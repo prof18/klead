@@ -1,13 +1,14 @@
 package com.prof18.klead.internal.removal
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 
 internal fun isProtected(element: Element, hints: String = partialHaystack(element)): Boolean =
-    element.`is`("pre, code, figure, picture, table, math, blockquote") ||
-        element.parents().any { it.`is`("pre, code, figure, picture, table, math, blockquote") } ||
+    element.normalName() in PROTECTED_TAGS ||
+        element.parents().any { it.normalName() in PROTECTED_TAGS } ||
         element.parents().any { it.hasCalloutProtectionHint() } ||
         element.parents().any { it.hasFootnoteProtectionHint() } ||
-        element.select(".footdef, .footref, [role=doc-footnote]").isNotEmpty() ||
+        element.selectFirst(FOOTNOTE_PART_EVALUATOR) != null ||
         "footnote" in hints ||
         "footnotes" in hints ||
         "footdef" in hints ||
@@ -54,3 +55,9 @@ internal fun String.collapseWhitespace(): String = replace(WHITESPACE_PATTERN, "
 internal fun String.wordCount(): Int = split(WHITESPACE_PATTERN).count { it.isNotBlank() }
 
 internal fun partialHaystack(element: Element): String = elementHintHaystack(element)
+
+// isProtected runs for every removal candidate and checks each ancestor, so it avoids re-parsing selectors.
+private val PROTECTED_TAGS = setOf("pre", "code", "figure", "picture", "table", "math", "blockquote")
+
+// Class and attribute evaluators keep no per-match state, so one instance is safe to share across parses.
+private val FOOTNOTE_PART_EVALUATOR = QueryParser.parse(".footdef, .footref, [role=doc-footnote]")

@@ -3,6 +3,7 @@ package com.prof18.klead.internal.standardize
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isAttachedTo
 
 // Collects generically structured footnote definitions — footnote-classed lists, paragraph and
@@ -10,7 +11,7 @@ import com.prof18.klead.internal.dom.isAttachedTo
 // the shared footnote section, assigning ids and stripping backref chrome.
 internal object HtmlFootnoteListNormalizer {
     fun normalizeParagraphFootnoteDefinitions(content: Element) {
-        val definitions = content.select("p[id]").filter { it.id().isParagraphFootnoteId() }
+        val definitions = content.selectDescendants("p[id]").filter { it.id().isParagraphFootnoteId() }
         if (definitions.isEmpty()) return
         val blocks = definitions.map { it.parent()?.takeIf { parent -> parent !== content } ?: it }
         val leadingHeading = blocks.firstOrNull()
@@ -37,7 +38,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeNamedAnchorFootnotes(content: Element) {
-        val definitions = content.select("p").filter { paragraph ->
+        val definitions = content.selectDescendants("p").filter { paragraph ->
             paragraph.selectFirst("a[name]")?.attr("name")?.isNamedFootnoteDefinitionId() == true
         }
         if (definitions.isEmpty()) return
@@ -62,14 +63,14 @@ internal object HtmlFootnoteListNormalizer {
     // Anchor names must be targeted by inline numeric links, so ordinary <br>-separated prose is
     // not mistaken for footnotes.
     fun normalizeBrSeparatedNamedAnchorFootnotes(content: Element) {
-        val linkedFragments = content.select("a[href^=#]")
+        val linkedFragments = content.selectDescendants("a[href^=#]")
             .filter { it.text().trim().normalizeFootnoteNumberText().matches(FOOTNOTE_NUMBER_PATTERN) }
             .map { it.attr("href").removePrefix("#").lowercase() }
             .filter { it.isNotBlank() }
             .toSet()
         if (linkedFragments.size < 2) return
 
-        for (block in content.select("p, div").toList()) {
+        for (block in content.selectDescendants("p, div").toList()) {
             if (!block.isAttachedTo(content)) continue
             if (block.selectFirst("br") == null) continue
 
@@ -83,7 +84,7 @@ internal object HtmlFootnoteListNormalizer {
             val section = lazyFootnoteSection(content)
             definitions.forEach { definition ->
                 val item = Element("li").attr("id", definition.id)
-                definition.nodes.forEach { item.appendChild(it.clone()) }
+                definition.nodes.forEach { item.appendChild(it.deepCopy()) }
                 item.removeFootnoteBackrefs()
                 item.trimSurroundingWhitespace()
                 section.appendChild(item)
@@ -97,7 +98,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeFootnoteDefinitionBlocks(content: Element) {
-        val definitions = content.select(".footnote-definition").toList()
+        val definitions = content.selectDescendants(".footnote-definition").toList()
         if (definitions.isEmpty()) return
         val section = lazyFootnoteSection(content)
         definitions.forEach { definition ->
@@ -116,7 +117,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeAsideFootnoteLists(content: Element) {
-        content.select("aside ol").forEach { list ->
+        content.selectDescendants("aside ol").forEach { list ->
             if (list.parent()?.hasAttr("data-footnotes") == true) return@forEach
             if (list.select("> li").isEmpty()) return@forEach
             val start = list.attr("start").toIntOrNull() ?: 1
@@ -133,7 +134,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeReferenceDivFootnotes(content: Element) {
-        val references = content.select(".references .reference").filter {
+        val references = content.selectDescendants(".references .reference").filter {
             it.selectFirst(".reference-number[id], [id].reference-number") != null &&
                 it.selectFirst(".reference-content") != null
         }
@@ -158,7 +159,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeReferenceFootnoteLists(content: Element) {
-        content.select("ol").forEach { list ->
+        content.selectDescendants("ol").forEach { list ->
             if (list.parent()?.hasAttr("data-footnotes") == true) return@forEach
             if (!list.isReferenceFootnoteList()) return@forEach
             list.select("> li").forEachIndexed { index, item ->
@@ -183,7 +184,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeFootnoteLists(content: Element) {
-        content.select(
+        content.selectDescendants(
             "ol.footnotes, ol.references, ol[class*=footnote], ol[id*=footnote], ol[id*=fn], " +
                 "section[data-footnotes] ol, .footnotes ol",
         ).forEach { list ->
@@ -205,7 +206,7 @@ internal object HtmlFootnoteListNormalizer {
         // Blank siblings already walked by a scan that found no definitions: a later marker among them
         // would walk a suffix of the same run and fail too. Skipping it keeps runs of <hr> linear.
         val scannedWithoutDefinitions = HashSet<Element>()
-        for (marker in content.select("hr, h1, h2, h3, h4, h5, h6").toList()) {
+        for (marker in content.selectDescendants("hr, h1, h2, h3, h4, h5, h6").toList()) {
             if (marker in scannedWithoutDefinitions) continue
             if (!marker.isAttachedTo(content)) continue
             if (!marker.isLooseFootnoteDelimiter()) continue
@@ -250,7 +251,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeTrailingLooseFootnoteDefinitions(content: Element) {
-        val definitions = content.select("p").filter { it.isLooseFootnoteStart() }
+        val definitions = content.selectDescendants("p").filter { it.isLooseFootnoteStart() }
         if (definitions.size < 2) return
         val section = lazyFootnoteSection(content)
         definitions.forEach { definition ->

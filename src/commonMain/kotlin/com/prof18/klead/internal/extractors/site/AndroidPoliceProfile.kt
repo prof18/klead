@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -23,7 +24,7 @@ internal object AndroidPoliceProfile : DomExtractor {
         val imageKey = image.androidPoliceImageKey() ?: return
         if (content.select("img[src], img[data-img-url]").any { it.androidPoliceImageKey() == imageKey }) return
 
-        val clone = figure.clone()
+        val clone = figure.deepCopy()
         clone.select("source").remove()
         content.prependChild(clone)
     }

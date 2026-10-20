@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.absUrlOrEmpty
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -29,7 +30,7 @@ internal object StatistaProfile : DomExtractor {
                 ?.let { image.attr("height", it) }
         }
         context.document.selectFirst("#readingAidText > p")?.let { description ->
-            article.appendChild(description.clone())
+            article.appendChild(description.deepCopy())
         }
 
         return ExtractorResult(

@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.appendChildNodesFrom
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isoDatePart
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.dom.textTrimmedOrNull
@@ -86,7 +87,7 @@ internal object GitHubProfile : DomExtractor {
                 article.appendElement("p").text(association)
             }
 
-        val content = body.clone()
+        val content = body.deepCopy()
         content.cleanGitHubIssueBody()
         article.appendChildNodesFrom(content)
 

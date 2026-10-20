@@ -15,16 +15,26 @@ internal fun Element.removeSafely() {
     }
 }
 
+// Removes many elements with one rebuild per parent. Element.remove() shifts and reindexes the parent's
+// children each time, so removing thousands of siblings one by one is quadratic.
+internal fun removeAllBatched(elements: Collection<Element>) {
+    for ((parent, removed) in elements.groupBy { it.parent() }) {
+        if (parent == null) continue
+        val removedSet = removed.toHashSet()
+        val kept = parent.childNodes().filterNot { it in removedSet }
+        parent.empty()
+        parent.appendChildren(kept)
+    }
+}
+
 internal fun Element.unwrapSafely() {
     replaceWithChildren()
 }
 
 internal fun Element.replaceWithChildren() {
-    if (parent() == null) return
-    val nodes = childNodes().toList()
-    for (node in nodes) {
-        before(node)
-    }
+    val parent = parent() ?: return
+    // One bulk insert: before() per child shifts and reindexes the parent's children each time.
+    parent.insertChildren(siblingIndex(), childNodes().toList())
     remove()
 }
 
@@ -34,7 +44,7 @@ internal fun Element.transferChildrenTo(target: Element) {
 }
 
 internal fun Element.appendChildNodesFrom(source: Element) {
-    source.childNodes().forEach { appendChild(it.clone()) }
+    source.childNodes().forEach { appendChild(it.deepCopy()) }
 }
 
 internal fun Element.replaceChildrenWith(source: Element) {
@@ -51,6 +61,11 @@ internal fun Document.cloneDocument(): Document {
     copyChildrenTo(copy)
     return copy
 }
+
+// Ksoup's Node.clone() is quadratic in subtree size; these copy iteratively with the same result.
+internal fun Element.deepCopy(): Element = cloneElement()
+
+internal fun Node.deepCopy(): Node = (this as? Element)?.cloneElement() ?: clone()
 
 internal fun Element.cloneElement(): Element {
     if (this is Document) return cloneDocument()

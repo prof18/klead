@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.SMALL_IMAGE_MAX_DIMENSION
 import com.prof18.klead.internal.dom.hasLargeResponsiveSource
 
@@ -189,10 +190,17 @@ internal object HtmlImageNormalizer {
         return IMAGE_ASPECT_PLACEHOLDER_HINTS.any { it in haystack }
     }
 
+    // Visible text outside media and captions, found without copying: this runs for every nested
+    // placeholder wrapper, and cloning each one made deep wrapper chains quadratic.
     private fun Element.isImageOnlyWrapper(): Boolean {
-        val clone = clone()
-        clone.select("img, picture, source, noscript, figcaption, small").remove()
-        return clone.text().trim().isBlank()
+        val pending = ArrayDeque(childNodes())
+        while (pending.isNotEmpty()) {
+            when (val node = pending.removeLast()) {
+                is TextNode -> if (node.getWholeText().isNotBlank()) return false
+                is Element -> if (node.normalName() !in IMAGE_WRAPPER_IGNORED_TAGS) pending.addAll(node.childNodes())
+            }
+        }
+        return true
     }
 
     private fun String.hasAspectPlaceholderPadding(): Boolean =
@@ -334,4 +342,6 @@ internal object HtmlImageNormalizer {
         "slideshow",
         "splide",
     )
+
+    private val IMAGE_WRAPPER_IGNORED_TAGS = setOf("img", "picture", "source", "noscript", "figcaption", "small")
 }

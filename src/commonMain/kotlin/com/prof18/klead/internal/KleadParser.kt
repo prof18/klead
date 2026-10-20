@@ -80,6 +80,8 @@ internal object KleadParser {
             val sourceLanguage = LanguageMetadataExtractor.extract(document)
             timings.measure("prepareDocument") {
                 DocumentPreparation.prepare(document)
+                // React streaming replay moves segments into deeper templates, re-nesting past the cap.
+                document.limitDepth()
             }
             val extractorContext = createExtractorContext(
                 url = url,

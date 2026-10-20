@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isAttachedTo
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -53,7 +54,7 @@ internal object ElementorArchiveProfile : DomExtractor {
         val heading = select("h1, h2, h3, h4, h5, h6").singleOrNull() ?: return false
         if (heading.normalName() == "h1") return false
 
-        val clone = clone()
+        val clone = deepCopy()
         clone.select("h1, h2, h3, h4, h5, h6").remove()
         clone.select("br").remove()
         return clone.text().isBlank() &&
