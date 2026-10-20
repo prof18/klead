@@ -186,10 +186,12 @@ private class Renderer(private val baseUrl: String) {
     private fun renderInlineNodes(nodes: List<Node>, inLink: Boolean): String {
         val rendered = StringBuilder()
         var previousInlineWasLinkedImage = false
+        var lastNonWhitespace: Char? = null
         nodes.forEachIndexed { index, node ->
             var value = renderInlineNode(node, inLink)
             value = normalizeLeadingInlineSpacing(
                 rendered = rendered,
+                lastNonWhitespace = lastNonWhitespace,
                 nodes = nodes,
                 index = index,
                 node = node,
@@ -199,6 +201,7 @@ private class Renderer(private val baseUrl: String) {
             value = normalizeTrailingInlineSpacing(nodes, index, node, value)
             appendSpecialInlineSpacing(rendered, nodes, index, node, value)
             rendered.append(value)
+            value.lastOrNull { !it.isWhitespace() }?.let { lastNonWhitespace = it }
             previousInlineWasLinkedImage = node is Element && node.linkedImageOnlyChild() != null
         }
         return rendered.toString()

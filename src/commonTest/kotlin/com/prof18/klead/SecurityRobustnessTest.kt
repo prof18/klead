@@ -109,6 +109,29 @@ class SecurityRobustnessTest {
     }
 
     @Test
+    fun `long runs of line breaks render in linear time`() {
+        // 5,000 breaks took minutes on Kotlin/Native while Markdown spacing rescanned the output per node.
+        val html = "<article><h1>Breaks</h1><p>Readable lead paragraph text.</p><p>" +
+            "<br>".repeat(5_000) + "text after breaks</p></article>"
+
+        for (output in KleadOutput.entries) {
+            lateinit var result: KleadResult
+            val elapsed = measureTime {
+                result = runBlocking(Dispatchers.Default) {
+                    Klead.parseHtml(html, "https://example.com/breaks", testOptions(outputs = setOf(output)))
+                }
+            }
+
+            val rendered = when (output) {
+                KleadOutput.HTML -> result.content.requireHtml()
+                KleadOutput.MARKDOWN -> result.content.requireMarkdown()
+            }
+            assertTrue(rendered.contains("text after breaks"), "$output output lost the trailing text")
+            assertTrue(elapsed.inWholeSeconds < 30, "$output parse took $elapsed")
+        }
+    }
+
+    @Test
     fun `oversized lang attribute is ignored instead of overflowing the tag regex`() {
         val html = "<html lang=\"en" + "-abcd".repeat(5_000) + "\"><body><article><h1>Lang</h1>" +
             "<p>Readable paragraph.</p></article></body></html>"

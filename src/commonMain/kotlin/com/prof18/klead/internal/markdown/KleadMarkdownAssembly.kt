@@ -115,6 +115,7 @@ internal fun postProcessMarkdown(markdown: String): String {
     var blankCount = 0
     var fenceLength = 0
     val lines = normalized.lines()
+    val nextNonBlankLines = lines.nextNonBlankLines()
     for ((index, line) in lines.withIndex()) {
         val backtickCount = line.takeWhile { it == '`' }.length
         val wasInFence = fenceLength > 0
@@ -139,7 +140,7 @@ internal fun postProcessMarkdown(markdown: String): String {
         }
         if (!inFence && processed.isBlank()) {
             blankCount++
-            val maxBlankLines = if (lines.nextNonBlankLineAfter(index)?.isMarkdownMediaLine() == true) {
+            val maxBlankLines = if (nextNonBlankLines[index]?.isMarkdownMediaLine() == true) {
                 MAX_CONSECUTIVE_BLANK_LINES_BEFORE_MEDIA
             } else {
                 MAX_CONSECUTIVE_BLANK_LINES
@@ -158,8 +159,17 @@ internal fun postProcessMarkdown(markdown: String): String {
         .trimEnd() + "\n"
 }
 
-private fun List<String>.nextNonBlankLineAfter(index: Int): String? =
-    drop(index + 1).firstOrNull { it.trimEnd().isNotBlank() }?.trimStart()
+// One backward pass: looking ahead from every blank line made long runs of blank lines quadratic.
+private fun List<String>.nextNonBlankLines(): List<String?> {
+    val next = arrayOfNulls<String>(size)
+    var upcoming: String? = null
+    for (index in lastIndex downTo 0) {
+        next[index] = upcoming
+        val line = this[index]
+        if (line.isNotBlank()) upcoming = line.trimStart()
+    }
+    return next.asList()
+}
 
 private fun String.isMarkdownMediaLine(): Boolean = startsWith("![](")
 

@@ -11,8 +11,11 @@ import com.fleeksoft.ksoup.nodes.TextNode
  * node lists; they hold no renderer state, so they live here rather than inside the renderer.
  */
 
+// lastNonWhitespace is tracked by the caller: rescanning a whitespace-only tail (e.g. thousands of
+// <br> hard breaks) for every node was quadratic. Appending or trimming spaces here never changes it.
 internal fun normalizeLeadingInlineSpacing(
     rendered: StringBuilder,
+    lastNonWhitespace: Char?,
     nodes: List<Node>,
     index: Int,
     node: Node,
@@ -23,7 +26,7 @@ internal fun normalizeLeadingInlineSpacing(
     if (previousInlineWasLinkedImage && adjusted.needsLeadingSpaceAfterLinkedImage()) {
         rendered.append(' ')
     }
-    if (adjusted.hasLeadingFootnoteWhitespaceAfterPunctuation(rendered.lastNonWhitespaceOrNull())) {
+    if (adjusted.hasLeadingFootnoteWhitespaceAfterPunctuation(lastNonWhitespace)) {
         adjusted = adjusted.trimStart()
     }
     if (adjusted.hasLeadingTightPunctuation() && rendered.lastOrNull()?.isWhitespace() == true) {
@@ -32,13 +35,13 @@ internal fun normalizeLeadingInlineSpacing(
         }
         adjusted = adjusted.trimStart()
     }
-    if (node is Element && node.needsLeadingSpaceBeforeDelimitedInline(adjusted, rendered)) {
+    if (node is Element && node.needsLeadingSpaceBeforeDelimitedInline(adjusted, lastNonWhitespace)) {
         rendered.append(' ')
     }
-    if (node is Element && node.needsLeadingSpaceBeforeQuotedLink(adjusted, rendered)) {
+    if (node is Element && node.needsLeadingSpaceBeforeQuotedLink(adjusted, lastNonWhitespace)) {
         rendered.append(' ')
     }
-    if (shouldAppendFootnoteSpace(rendered, nodes, index, node, adjusted)) {
+    if (shouldAppendFootnoteSpace(rendered, lastNonWhitespace, nodes, index, node, adjusted)) {
         rendered.append(' ')
     }
     return adjusted
@@ -48,7 +51,8 @@ internal fun normalizeTrailingInlineSpacing(nodes: List<Node>, index: Int, node:
     if (node !is Element) return value
 
     var adjusted = value
-    val nextText = nodes.nextInlineTextAfter(index)
+    // Lazy: scanning ahead for every element made runs of blank inline nodes (e.g. thousands of <br>) quadratic.
+    val nextText by lazy(LazyThreadSafetyMode.NONE) { nodes.nextInlineTextAfter(index) }
     if (node.isDelimitedInlineElement() && adjusted.needsTrailingSpaceAfterDelimitedInline(nextText)) {
         adjusted += " "
     }
@@ -76,11 +80,11 @@ internal fun appendSpecialInlineSpacing(
     }
 }
 
-private fun Element.needsLeadingSpaceBeforeDelimitedInline(value: String, rendered: StringBuilder): Boolean =
-    isDelimitedInlineElement() && value.needsLeadingSpaceBeforeDelimitedInline(rendered.lastNonWhitespaceOrNull())
+private fun Element.needsLeadingSpaceBeforeDelimitedInline(value: String, lastNonWhitespace: Char?): Boolean =
+    isDelimitedInlineElement() && value.needsLeadingSpaceBeforeDelimitedInline(lastNonWhitespace)
 
-private fun Element.needsLeadingSpaceBeforeQuotedLink(value: String, rendered: StringBuilder): Boolean =
-    isMarkdownLinkElement(value) && rendered.lastNonWhitespaceOrNull() in linkOpeningQuoteSpacingChars
+private fun Element.needsLeadingSpaceBeforeQuotedLink(value: String, lastNonWhitespace: Char?): Boolean =
+    isMarkdownLinkElement(value) && lastNonWhitespace in linkOpeningQuoteSpacingChars
 
 private fun Element.needsLeadingSpaceBeforeNumericVariableSubscript(
     value: String,
@@ -92,6 +96,7 @@ private fun Element.needsLeadingSpaceBeforeNumericVariableSubscript(
 
 private fun shouldAppendFootnoteSpace(
     rendered: StringBuilder,
+    lastNonWhitespace: Char?,
     nodes: List<Node>,
     index: Int,
     node: Node,
@@ -101,7 +106,7 @@ private fun shouldAppendFootnoteSpace(
     if (rendered.endsWithSentenceClosingQuote()) return true
     if (node !is Element) return nodes.shouldSeparateFootnote(index, rendered.lastOrNull())
     return node.needsLeadingSpaceBeforeFootnote(
-        previous = rendered.lastNonWhitespaceOrNull(),
+        previous = lastNonWhitespace,
         previousElement = nodes.previousInlineElementBefore(index),
     ) || nodes.shouldSeparateFootnote(index, rendered.lastOrNull())
 }
@@ -179,11 +184,6 @@ private fun String.hasLeadingFootnoteWhitespaceAfterPunctuation(previous: Char?)
     firstOrNull()?.isWhitespace() == true &&
         trimStart().startsWith("[^") &&
         previous in footnoteAttachingPunctuation
-
-// Scan backwards: this runs for every inline node, so a forward scan made long paragraphs quadratic.
-private fun StringBuilder.lastNonWhitespaceOrNull(): Char? = indexOfLast { !it.isWhitespace() }
-    .takeIf { it >= 0 }
-    ?.let(::get)
 
 private fun StringBuilder.endsWithSentenceClosingQuote(): Boolean {
     val last = indexOfLast { !it.isWhitespace() }
