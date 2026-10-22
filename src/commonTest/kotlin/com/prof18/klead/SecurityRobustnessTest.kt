@@ -40,6 +40,88 @@ class SecurityRobustnessTest {
     }
 
     @Test
+    fun `security sanitizer strips stylesheet links and refresh meta but keeps microdata`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>Readable paragraph with enough words to be the article content here.</p>
+                  <link rel="stylesheet" href="https://evil.example/x.css">
+                  <meta http-equiv="refresh" content="0;url=https://evil.example">
+                  <meta itemprop="author" content="Jane Writer">
+                  <p>Second paragraph that keeps the article long enough to be selected.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/security",
+        )
+
+        val html = result.content.requireHtml()
+        assertFalse(html.contains("evil.example"), html)
+        assertFalse(html.contains("http-equiv"), html)
+        assertTrue(html.contains("itemprop=\"author\""), html)
+    }
+
+    @Test
+    fun `security sanitizer allows inline images only where an image is loaded`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>Readable paragraph with enough words to be the article content here.</p>
+                  <a href="data:image/svg+xml,<svg onload=alert(1)>">image link</a>
+                  <img src="data:image/png;base64,AAAA" alt="inline">
+                  <svg><image href="data:image/png;base64,BBBB"></image></svg>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/security",
+        )
+
+        val html = result.content.requireHtml()
+        assertFalse(html.contains("data:image/svg+xml"), html)
+        assertTrue(html.contains("data:image/png;base64,AAAA"), html)
+    }
+
+    @Test
+    fun `markdown keeps links and images whose urls contain characters browsers tolerate`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>Readable paragraph with enough words to be the article content here.</p>
+                  <p><img src="/uploads/my photo.jpg" alt="Photo"></p>
+                  <p>See <a href="/search?fields=a|b&q=100%">the results</a> for more.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/post",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("https://example.com/uploads/my%20photo.jpg"), markdown)
+        assertTrue(markdown.contains("[the results](https://example.com/search?fields=a%7Cb&q=100%25)"), markdown)
+    }
+
+    @Test
+    fun `chinese article is counted like a spaced language and needs no retries`() {
+        // ~500 Han characters ≈ 250 words, above the 200-word retry threshold. Counted as a handful of
+        // unspaced "words" before, this ran every retry policy.
+        val sentence = "我们今天在公园里散步，天气非常好，大家都很开心。"
+        val html = "<html><body><article><h1>标题</h1>" +
+            (1..12).joinToString("") { "<p>$sentence$sentence</p>" } + "</article></body></html>"
+
+        val result = parseHtmlForTest(html, url = "https://example.com/zh", options = testOptions(debug = true))
+
+        assertTrue(result.content.requireMarkdown().contains("我们今天在公园里散步"))
+        assertEquals(1, (result.debug["retryAttempts"] as List<*>).size)
+    }
+
+    @Test
+    fun `debug output reports content flattened by the depth limit`() {
+        val deep = "<div>".repeat(200) + "<p>Deep paragraph text.</p>" + "</div>".repeat(200)
+        val html = "<article><p>Readable paragraph with enough words to be the article content.</p>$deep</article>"
+
+        val result = parseHtmlForTest(html, url = "https://example.com/deep", options = testOptions(debug = true))
+
+        assertTrue((result.debug["depthLimitedSubtrees"] as Int) > 0)
+    }
+
+    @Test
     fun `security sanitizer strips blob non-image data and whitespace-padded schemes`() {
         val result = parseHtmlForTest(
             html = """

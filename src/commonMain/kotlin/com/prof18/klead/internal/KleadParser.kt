@@ -70,18 +70,19 @@ internal object KleadParser {
         val checkCancelled: () -> Unit = { parseContext.ensureActive() }
         val timings = ParseTimings(options.debug)
         val retryAttempts = mutableListOf<Map<String, Any?>>()
+        var depthLimitedSubtrees = 0
         val timed = measureTimedValue {
             val document = timings.measure("documentParse") {
                 Ksoup.parse(html, url).also {
                     it.outputSettings().prettyPrint(false)
-                    it.limitDepth()
+                    depthLimitedSubtrees += it.limitDepth()
                 }
             }
             val sourceLanguage = LanguageMetadataExtractor.extract(document)
             timings.measure("prepareDocument") {
                 DocumentPreparation.prepare(document)
                 // React streaming replay moves segments into deeper templates, re-nesting past the cap.
-                document.limitDepth()
+                depthLimitedSubtrees += document.limitDepth()
             }
             val extractorContext = createExtractorContext(
                 url = url,
@@ -104,7 +105,7 @@ internal object KleadParser {
                 timings.measure("extractorContentParse") {
                     Ksoup.parseBodyFragment(contentHtml, url).also { parsed ->
                         parsed.outputSettings().prettyPrint(false)
-                        parsed.limitDepth()
+                        depthLimitedSubtrees += parsed.limitDepth()
                     }
                 }
             } ?: document
@@ -148,15 +149,26 @@ internal object KleadParser {
         }
 
         val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
-        val debug = timed.value.debug.toMutableMap()
-        if (options.debug) {
-            debug["parseTimeMillis"] = parseTimeMillis
-            debug["timingsMillis"] = timings.toDebugMap()
-            debug["retryAttempts"] = retryAttempts
-        }
         timed.value.copy(
-            debug = debug,
+            debug = if (options.debug) {
+                timed.value.debug + parseDebug(parseTimeMillis, timings, retryAttempts, depthLimitedSubtrees)
+            } else {
+                timed.value.debug
+            },
         )
+    }
+
+    private fun parseDebug(
+        parseTimeMillis: Long,
+        timings: ParseTimings,
+        retryAttempts: List<Map<String, Any?>>,
+        depthLimitedSubtrees: Int,
+    ): Map<String, Any?> = buildMap {
+        put("parseTimeMillis", parseTimeMillis)
+        put("timingsMillis", timings.toDebugMap())
+        put("retryAttempts", retryAttempts)
+        // Content nested past MAX_DOM_DEPTH was flattened, losing its links and formatting.
+        if (depthLimitedSubtrees > 0) put("depthLimitedSubtrees", depthLimitedSubtrees)
     }
 
     private fun parseInternal(

@@ -8,7 +8,8 @@ import com.fleeksoft.ksoup.nodes.Node
 // Real articles stay far below this depth, so anything deeper is flattened to its leaf nodes.
 internal const val MAX_DOM_DEPTH = 64
 
-internal fun Element.limitDepth(maxDepth: Int = MAX_DOM_DEPTH) {
+/** Flattens subtrees nested deeper than [maxDepth] and returns how many were flattened. */
+internal fun Element.limitDepth(maxDepth: Int = MAX_DOM_DEPTH): Int {
     val pending = ArrayDeque<Pair<Element, Int>>()
     val flattened = HashSet<Element>()
     pending.addLast(this to 0)
@@ -21,6 +22,7 @@ internal fun Element.limitDepth(maxDepth: Int = MAX_DOM_DEPTH) {
             element.children().forEach { child -> pending.addLast(child to depth + 1) }
         }
     }
+    return flattened.size
 }
 
 // Table and list renderers only read rows, cells and items, so flattening a row or item under a surviving

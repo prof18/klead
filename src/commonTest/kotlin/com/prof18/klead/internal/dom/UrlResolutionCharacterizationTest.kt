@@ -33,11 +33,30 @@ class UrlResolutionCharacterizationTest {
     }
 
     @Test
-    fun `rejects blank spaces and malformed references like current resolver`() {
+    fun `rejects blank and malformed references`() {
         assertEquals("", resolveUrl(base, ""))
         assertEquals("", resolveUrl(base, "   "))
-        assertEquals("", resolveUrl(base, "has space"))
         assertEquals("", resolveUrl(base, "ht!tp://"))
+    }
+
+    @Test
+    fun `encodes characters browsers tolerate instead of dropping the reference`() {
+        val cases = mapOf(
+            "has space" to "https://example.com/a/has%20space",
+            "/images/my photo.jpg" to "https://example.com/images/my%20photo.jpg",
+            "/a/b.html?fields=a|b" to "https://example.com/a/b.html?fields=a%7Cb",
+            "/search?q=100%" to "https://example.com/search?q=100%25",
+            "/search?q=50%25" to "https://example.com/search?q=50%25",
+            "/x{1}.png" to "https://example.com/x%7B1%7D.png",
+            "/path^caret" to "https://example.com/path%5Ecaret",
+            "/split\nline" to "https://example.com/splitline",
+            "https://other.test/my file.pdf" to "https://other.test/my%20file.pdf",
+            "/no\u00A0break" to "https://example.com/no%C2%A0break",
+        )
+
+        cases.forEach { (value, expected) ->
+            assertEquals(expected, resolveUrl(base, value), value)
+        }
     }
 
     @Test

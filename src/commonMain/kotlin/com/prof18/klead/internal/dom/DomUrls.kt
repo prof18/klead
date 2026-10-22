@@ -42,11 +42,12 @@ internal fun parseKleadUri(value: String): KleadUri? {
 }
 
 internal fun resolveKleadUri(baseUrl: String, value: String): String? {
-    val base = parseUriReference(baseUrl)?.takeUnless { it.opaque } ?: return null
-    val reference = parseUriReference(value) ?: return null
+    val base = parseUriReference(baseUrl.toLenientUriReference())?.takeUnless { it.opaque } ?: return null
+    val normalizedValue = value.toLenientUriReference()
+    val reference = parseUriReference(normalizedValue) ?: return null
 
     return when {
-        reference.scheme != null -> value
+        reference.scheme != null -> normalizedValue
 
         reference.authority != null -> buildUri(
             scheme = base.scheme,
@@ -218,6 +219,35 @@ private fun buildUri(scheme: String?, authority: String?, path: String, query: S
         fragment?.let { append('#').append(it) }
     }
 
+// Pages use URLs browsers tolerate but RFC 3986 forbids: spaces in upload names, `|` in queries, a bare
+// `%`. Encode them the way a browser would (and drop tabs and newlines) so resolution keeps the link
+// instead of rejecting it.
+private fun String.toLenientUriReference(): String {
+    if (none { it.isForbiddenUriCharacter() } && !hasMalformedPercentEscape()) return this
+    return buildString(length) {
+        this@toLenientUriReference.forEachIndexed { index, char ->
+            when {
+                char == '\t' || char == '\n' || char == '\r' -> Unit
+                char == '%' && !this@toLenientUriReference.hasPercentEscapeAt(index) -> append("%25")
+                char.isForbiddenUriCharacter() -> appendPercentEncoded(char)
+                else -> append(char)
+            }
+        }
+    }
+}
+
+private fun String.hasPercentEscapeAt(index: Int): Boolean = index + 2 < length &&
+    this[index + 1].digitToIntOrNull(16) != null &&
+    this[index + 2].digitToIntOrNull(16) != null
+
+private fun StringBuilder.appendPercentEncoded(char: Char) {
+    char.toString().encodeToByteArray().forEach { byte ->
+        append('%')
+        append(HEX_DIGITS[(byte.toInt() ushr 4) and 0xF])
+        append(HEX_DIGITS[byte.toInt() and 0xF])
+    }
+}
+
 private fun Char.isForbiddenUriCharacter(): Boolean =
     isWhitespace() || code <= 0x1F || code == 0x7F || this in URI_FORBIDDEN_CHARACTERS
 
@@ -244,12 +274,14 @@ private const val HEX_DIGITS = "0123456789ABCDEF"
 // event-handler stripping done elsewhere. Inline images are the one benign use of `data:`, so
 // those are allowed and every other media type is rejected. Relative URLs (no scheme) are always
 // allowed.
-internal fun isDangerousUrl(value: String): Boolean {
+// data:image/ is only safe where the URL loads an image (src, SVG <image>); on links and form actions
+// it is a navigation target, so callers pass allowDataImage = false there.
+internal fun isDangerousUrl(value: String, allowDataImage: Boolean = true): Boolean {
     val prefix = value.urlSchemePrefix()
     return prefix.startsWith("javascript:") ||
         prefix.startsWith("vbscript:") ||
         prefix.startsWith("blob:") ||
-        (prefix.startsWith("data:") && !prefix.startsWith("data:image/"))
+        (prefix.startsWith("data:") && !(allowDataImage && prefix.startsWith("data:image/")))
 }
 
 // Browsers strip whitespace and control characters before resolving a scheme, so `java\tscript:`

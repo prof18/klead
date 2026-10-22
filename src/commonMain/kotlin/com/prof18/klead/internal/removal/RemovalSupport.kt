@@ -2,6 +2,7 @@ package com.prof18.klead.internal.removal
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.select.QueryParser
+import com.prof18.klead.internal.content.tokenWordCount
 
 internal fun isProtected(element: Element, hints: String = partialHaystack(element)): Boolean =
     element.normalName() in PROTECTED_TAGS ||
@@ -43,16 +44,16 @@ internal fun Element.hasFootnoteProtectionHint(): Boolean {
 }
 
 internal fun isLikelyProse(scan: BlockScan): Boolean {
-    val paragraphs = scan.element.select("p").count { it.text().split(WHITESPACE_PATTERN).size >= 8 }
+    val paragraphs = scan.element.select("p").count { it.text().wordCount() >= 8 }
     if (paragraphs >= 1) return true
     val text = scan.text
-    val words = text.split(WHITESPACE_PATTERN).count { it.isNotBlank() }
+    val words = text.wordCount()
     return words >= 35 && text.count { it == '.' || it == ',' } >= 2
 }
 
 internal fun String.collapseWhitespace(): String = replace(WHITESPACE_PATTERN, " ")
 
-internal fun String.wordCount(): Int = split(WHITESPACE_PATTERN).count { it.isNotBlank() }
+internal fun String.wordCount(): Int = split(WHITESPACE_PATTERN).sumOf { it.tokenWordCount() }
 
 internal fun partialHaystack(element: Element): String = elementHintHaystack(element)
 
