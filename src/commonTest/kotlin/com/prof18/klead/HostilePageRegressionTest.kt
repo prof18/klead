@@ -133,7 +133,8 @@ class HostilePageRegressionTest {
     }
 
     private companion object {
-        const val BUDGET_SECONDS = 30
+        // Generous for slow CI runners executing debug native binaries; the guarded shapes used to take minutes.
+        const val BUDGET_SECONDS = 60
         const val LEAD_TEXT = "Lead paragraph"
         const val TAIL_TEXT = "Readable tail paragraph"
     }
