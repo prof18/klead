@@ -39,7 +39,7 @@ class GolemProfileTest {
           zustimmen. Details zum Tracking finden Sie im Privacy Center. Die Möglichkeit zum Widerruf finden
           Sie in unserer Datenschutzerklärung oder über den Link am Ende jeder Seite.</p>
         </div></div></body></html>
-    """.trimIndent()
+        """.trimIndent()
 
     private fun articleWithConsentHtml(): String = """
         <html><body>
@@ -51,7 +51,7 @@ class GolemProfileTest {
             neue Standorte genehmigt werden. Kommunen erhalten mehr Mitsprache bei der Planung.</p>
           </article>
         </body></html>
-    """.trimIndent()
+        """.trimIndent()
 
     private companion object {
         const val GOLEM_URL = "https://www.golem.de/news/rechenzentren-2610-214528.html"
