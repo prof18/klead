@@ -46,10 +46,15 @@ import kotlin.time.measureTimedValue
 internal object KleadParser {
     private data class ParsedResult(val result: KleadResult, val wordCount: Int)
 
-    private class ParseTimings(private val enabled: Boolean) {
+    // Every measured stage boundary is also a cancellation point: several stages (document
+    // parse, clone, metadata, main-content detection) have no checks of their own, and on slow
+    // native targets the stretch between two of them could keep a cancelled parse running for
+    // seconds.
+    private class ParseTimings(private val enabled: Boolean, private val checkCancelled: () -> Unit) {
         private val entries = linkedMapOf<String, Long>()
 
         fun <T> measure(name: String, block: () -> T): T {
+            checkCancelled()
             if (!enabled) return block()
 
             val timed = measureTimedValue(block)
@@ -68,7 +73,7 @@ internal object KleadParser {
     ): KleadResult = withContext(parserDispatcher) {
         val parseContext = coroutineContext
         val checkCancelled: () -> Unit = { parseContext.ensureActive() }
-        val timings = ParseTimings(options.debug)
+        val timings = ParseTimings(options.debug, checkCancelled)
         val retryAttempts = mutableListOf<Map<String, Any?>>()
         var depthLimitedSubtrees = 0
         val timed = measureTimedValue {
