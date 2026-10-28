@@ -140,6 +140,8 @@ tasks.register<Test>("jvmRegressionBenchmark") {
 tasks.withType<KotlinNativeTest>().configureEach {
     environment("TEST_RESOURCES_ROOT", commonTestResources.asFile.absolutePath)
     environment("SIMCTL_CHILD_TEST_RESOURCES_ROOT", commonTestResources.asFile.absolutePath)
+    // Tests read fixtures through TEST_RESOURCES_ROOT, so track them for up-to-date and build cache checks.
+    inputs.dir(commonTestResources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testResources")
     if (name == "iosSimulatorArm64ReleaseBenchmarkTest" || name == "macosArm64ReleaseBenchmarkTest") {
         filter.includeTestsMatching("com.prof18.klead.CommonPerformanceSmokeTest")
         outputs.upToDateWhen { false }
@@ -163,19 +165,19 @@ tasks.register("collectRegressionBenchmarkResults") {
     val reportDirectory = layout.buildDirectory.dir("reports/benchmarks/regression-corpus")
     outputs.dir(reportDirectory)
     outputs.upToDateWhen { false }
+    val inputRoots = listOf(
+        layout.buildDirectory.dir("test-results/jvmRegressionBenchmark").get().asFile,
+        layout.buildDirectory.dir("test-results/iosSimulatorArm64ReleaseRegressionBenchmarkTest").get().asFile,
+        layout.buildDirectory.dir("test-results/macosArm64ReleaseRegressionBenchmarkTest").get().asFile,
+        layout.buildDirectory.dir("outputs/androidTest-results/connected").get().asFile,
+        layout.buildDirectory.dir("test-results/iosArm64PhysicalRegressionBenchmark").get().asFile,
+    )
     doLast {
         val resultPattern = Regex(
             """TIMING_REGRESSION_(CORPUS|CORE) platform=(\S+) target=(\S+) fixtures=(\d+) """ +
                 """median=(\d+)ms samples=\[([^]]+)] inputBytes=(\d+) meanArticle=(\d+)us """ +
                 """p50Article=(\d+)us p95Article=(\d+)us maxArticle=(\d+)us slowest=(\S+) """ +
                 """throughput=(\d+)Bps""",
-        )
-        val inputRoots = listOf(
-            layout.buildDirectory.dir("test-results/jvmRegressionBenchmark").get().asFile,
-            layout.buildDirectory.dir("test-results/iosSimulatorArm64ReleaseRegressionBenchmarkTest").get().asFile,
-            layout.buildDirectory.dir("test-results/macosArm64ReleaseRegressionBenchmarkTest").get().asFile,
-            layout.buildDirectory.dir("outputs/androidTest-results/connected").get().asFile,
-            layout.buildDirectory.dir("test-results/iosArm64PhysicalRegressionBenchmark").get().asFile,
         )
         val metrics = inputRoots.flatMap { root ->
             if (!root.exists()) emptyList() else root.walkTopDown()

@@ -35,14 +35,16 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Cache Kotlin/Native tooling
-        uses: actions/cache@v6
+      # Tag runs can't reuse caches they save, so restore the toolchain that CI saved on main.
+      - name: Restore Kotlin/Native tooling
+        uses: actions/cache/restore@v6
         with:
           path: ~/.konan
-          key: ${{ runner.os }}-v1-${{ hashFiles('*.gradle.kts') }}
+          key: ${{ runner.os }}-konan-ios-v2-${{ hashFiles('*.gradle.kts', 'gradle/libs.versions.toml', 'build-logic/src/**/*.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-konan-
 
       - name: Publish to Maven Central
-        run: ./gradlew -q --console=plain publishAndReleaseToMavenCentral --no-parallel
+        run: ./gradlew -q --console=plain publishAndReleaseToMavenCentral --no-parallel --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}

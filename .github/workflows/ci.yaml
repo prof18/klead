@@ -14,8 +14,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    runs-on: macos-latest
+  # Apple targets are disabled on Linux, so `check` here runs the JVM tests, detekt and the repository checks.
+  jvm:
+    name: JVM tests and lint
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -29,11 +31,49 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Cache Kotlin/Native tooling
-        uses: actions/cache@v6
+      - name: Check
+        run: ./gradlew check -Pkotlin.native.ignoreDisabledTargets=true
+
+  apple:
+    name: ${{ matrix.name }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: ios
+            name: iOS simulator tests
+            tasks: iosSimulatorArm64Test compileKotlinIosX64
+          - id: macos
+            name: macOS tests
+            tasks: macosArm64Test compileKotlinMacosX64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Restore Kotlin/Native tooling
+        id: konan-cache
+        uses: actions/cache/restore@v6
         with:
           path: ~/.konan
-          key: ${{ runner.os }}-v1-${{ hashFiles('*.gradle.kts') }}
+          key: ${{ runner.os }}-konan-${{ matrix.id }}-v2-${{ hashFiles('*.gradle.kts', 'gradle/libs.versions.toml', 'build-logic/src/**/*.gradle.kts') }}
 
-      - name: Check
-        run: ./gradlew check -Pkotlin.native.parallelThreads=3
+      - name: Test
+        run: ./gradlew ${{ matrix.tasks }} -Pkotlin.native.parallelThreads=3
+
+      # Only main saves the toolchain, so pull requests don't each store their own copy.
+      - name: Save Kotlin/Native tooling
+        if: github.ref == 'refs/heads/main' && steps.konan-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.konan
+          key: ${{ steps.konan-cache.outputs.cache-primary-key }}

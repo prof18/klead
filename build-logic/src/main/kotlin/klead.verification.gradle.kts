@@ -5,6 +5,8 @@ tasks.named<Test>("jvmTest") {
     filter.excludeTestsMatching("com.prof18.klead.fixtures.SiteRegressionSnapshotWriterTest")
     filter.excludeTestsMatching("com.prof18.klead.fixtures.RegressionCorpusBenchmarkTest")
     environment("TEST_RESOURCES_ROOT", commonTestResources.asFile.absolutePath)
+    // Tests read fixtures through TEST_RESOURCES_ROOT, so track them for up-to-date and build cache checks.
+    inputs.dir(commonTestResources).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("testResources")
 }
 
 tasks.register<Test>("writeSiteRegressionSnapshot") {
@@ -34,6 +36,7 @@ tasks.register("docsCheck") {
         fileTree("docs") { include("*.md") },
         fileTree("ai-notes") { include("**/*.md") },
     )
+    val rootDirectory = projectDir
     doLast {
         val requiredFiles = listOf(
             "docs/benchmarking.md",
@@ -44,7 +47,7 @@ tasks.register("docsCheck") {
             "ai-notes/notes/README.md",
         )
         for (requiredFile in requiredFiles) {
-            check(file(requiredFile).isFile) { "$requiredFile is required" }
+            check(rootDirectory.resolve(requiredFile).isFile) { "$requiredFile is required" }
         }
     }
 }
@@ -56,11 +59,12 @@ tasks.register("fixtureSecretsCheck") {
         include("**/*")
     }
     inputs.files(fixtureFiles)
+    val rootDirectory = projectDir
     doLast {
         val googleApiKey = Regex("AIza[0-9A-Za-z_-]{35}")
         val filesWithKeys = fixtureFiles.files
             .filter { file -> file.isFile && googleApiKey.containsMatchIn(file.readText()) }
-            .map { file -> file.relativeTo(projectDir).path }
+            .map { file -> file.relativeTo(rootDirectory).path }
             .sorted()
         check(filesWithKeys.isEmpty()) {
             "Fixture resources contain Google API keys:\n${filesWithKeys.joinToString("\n")}"
