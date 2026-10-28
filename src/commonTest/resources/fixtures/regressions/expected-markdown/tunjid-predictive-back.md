@@ -580,7 +580,7 @@ Typically, use of `Modifier.sharedElement` takes in an `AnimatedVisibilityScope`
 
 However, this can be an undesired effect. When going back from screens where media is the focus, a "sticky shared element" is often desired, where the shared element adheres onto the outgoing screen until the back gesture is fully committed.
 
-To create a sticky shared element `Modifier`, we need absolute control of when the shared element transition is triggered, and Compose has an API specifically for this:. With this API, instead of passing an `AnimatedVisibilityScope` to manage the transition, a `visible` flag is passed, and changes to it trigger a shared element transition. The next step therefore is knowing exactly when to trigger the transition.
+To create a sticky shared element `Modifier`, we need absolute control of when the shared element transition is triggered, and Compose has an API specifically for this: [`Modifier.sharedElementWithCallerManagedVisibility`](https://cs.android.com/androidx/platform/frameworks/support/+/androidx-main:compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SharedTransitionScope.kt;l=767). With this API, instead of passing an `AnimatedVisibilityScope` to manage the transition, a `visible` flag is passed, and changes to it trigger a shared element transition. The next step therefore is knowing exactly when to trigger the transition.
 
 Warning: This example uses `Modifier.sharedElementWithCallerManagedVisibility` which has a [bug](https://issuetracker.google.com/issues/420460328) in all versions of Compose 1.9. To implement this, please use Compose 1.10+.
 

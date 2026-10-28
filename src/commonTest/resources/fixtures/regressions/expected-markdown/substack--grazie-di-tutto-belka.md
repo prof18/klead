@@ -128,7 +128,7 @@ Cosa Sposta è un progetto in cui a questo punto ho deciso di fare *all-in*. Se 
 - Consigliami ospiti di valore
 - Presentami agli sponsor
 - **Mandami feedback** (puoi rispondere a questa mail!) su cosa funziona o non funziona per te
-- E se proprio ti senti *generosissimo* puoi anche abbonarti e [su YouTube](https://www.youtube.com/channel/UCwkM5ziXQsnI422lEwZViwg/join)
+- E se proprio ti senti *generosissimo* puoi anche abbonarti [qui su Substack](http://cosasposta.substack.com/subscribe) e [su YouTube](https://www.youtube.com/channel/UCwkM5ziXQsnI422lEwZViwg/join)
 
 Se non sei ancora iscritto, questo è il momento giusto: quello che hai visto finora era solo il prototipo di Cosa Sposta. **Da qui si cambia ritmo.**
 

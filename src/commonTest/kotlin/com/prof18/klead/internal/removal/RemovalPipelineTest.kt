@@ -77,6 +77,100 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `empty quiz embed placeholder does not take the article body with a nearby form`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <div id="article-body">
+                <p>Introductory article prose remains before the consent form.</p>
+                <form class="newsletter-form">
+                  <input type="checkbox" name="CONTACT_OTHER_BRANDS">
+                  <input type="checkbox" name="CONTACT_PARTNERS">
+                </form>
+                <div id="embed-slot"><div class="kwizly-quiz kwizly-abc123"></div></div>
+                <p>Closing article prose remains after the quiz placeholder.</p>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+        val removals = mutableListOf<RemovalRecord>()
+
+        RemovalPipeline.apply(article, removals)
+
+        assertTrue(article.text().contains("Introductory article prose remains"))
+        assertTrue(article.text().contains("Closing article prose remains"))
+        assertTrue(removals.none { it.step == "removeInteractiveQuizBlocks" })
+    }
+
+    @Test
+    fun `quiz container that holds its own answer controls is removed`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Introductory article prose remains before the embedded widget.</p>
+              <div class="quiz-widget">
+                <p>Which year was the first game released?</p>
+                <label><input type="radio" name="year"> 2007</label>
+                <label><input type="radio" name="year"> 2008</label>
+              </div>
+              <p>Closing article prose remains after the embedded widget.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Introductory article prose remains"))
+        assertTrue(article.text().contains("Closing article prose remains"))
+        assertFalse(article.text().contains("Which year was the first game released?"))
+    }
+
+    @Test
+    fun `inline prose link is kept when only its url slug contains a clutter token`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Studios went in different directions after the launch, and
+                <a href="https://example.com/news/developers-share-the-moment"
+                  data-url="https://example.com/news/developers-share-the-moment">some of them</a>
+                spent the following weeks mourning the cancelled sequel together.</p>
+              <p>A <a href="/news/radiation-related-cancer-study">study this month</a> found a clear link.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+        val removals = mutableListOf<RemovalRecord>()
+
+        RemovalPipeline.apply(article, removals)
+
+        assertTrue(article.text().contains("directions after the launch, and some of them spent"))
+        assertTrue(article.text().contains("A study this month found a clear link."))
+        assertTrue(removals.none { it.step == "removePartialSelectors" })
+    }
+
+    @Test
+    fun `standalone links whose url names a clutter token are still removed`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Body paragraph with enough words to clearly be the article content and remain present here.</p>
+              <p class="button-wrapper"><a href="https://example.com/p/post?action=share"><span>Share</span></a></p>
+              <ul><li><a href="/wiki/Related_topic_A">Topic A</a></li></ul>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Body paragraph with enough words"))
+        assertFalse(article.text().contains("Share"))
+        assertFalse(article.text().contains("Topic A"))
+    }
+
+    @Test
     fun `delimiter-less anchor id is kept even when it contains a clutter token`() {
         val document = Ksoup.parse(
             """

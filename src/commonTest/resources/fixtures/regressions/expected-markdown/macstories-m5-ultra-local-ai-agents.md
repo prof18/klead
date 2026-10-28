@@ -14,7 +14,7 @@ Since last Thursday, I’ve been comparing this Mac Studio to its predecessor, t
 
 ![](https://cdn.macstories.net/images/uploads/2026/09/19/workbench-original-1789826192842-d4ab3c3d8f.png)
 
-Remote desktop for AI agents and headless Mac minis. Free for 20 mins/day.
+**[Astropad Workbench:](https://astropad.com/product/workbench/?utm_source=macstories&utm_medium=sponsored-review&utm_campaign=macstories-sep26)** Remote desktop for AI agents and headless Mac minis. Free for 20 mins/day.
 
 As I’ll explore in this article, running the latest [Qwen3.8-Flash-Next model](https://qwen.ai/blog?id=qwen3.8-flash-next) on the M5 Ultra Mac Studio has been so *nice* and fast, I’ve made it my default in both [Open Minis for iOS](https://openminis.app/) and Hermes Agent. That’s right: the personal assistants I use the most – [more than Siri AI](https://www.macstories.net/reviews/open-minis-is-the-ios-agent-i-wish-siri-ai-could-be/), in fact – are now entirely powered by a model running locally on a Mac Studio. Furthermore, thanks to the M5 Ultra’s faster GPU and higher memory bandwidth, these agents start responding more quickly, stay fast at larger context windows, and can run long, multi-turn loops without slowing to a crawl as the session grows. Because of this, I’ve also been using local models in the Codex app on my Mac – either as main threads or subagents orchestrated by GPT-6 Astra – and I’ve had a great experience doing so.
 
@@ -130,7 +130,7 @@ I tested a different Qwen model for the comparisons between Mac and PC.
 
 Second, my gaming PC is massive compared to a Mac Studio that fits on my desk – and I have a [compact build](https://uk.pcpartpicker.com/list/Yzpzh9) with a Lian-Li A3 case. Not to mention how loud and hot it gets when I’m running local models at high context windows: when I walked into my office after some benchmarks had run, it was uncomfortably warmer compared to the rest of my apartment. By contrast, the “diminutive” Mac Studio on my desk was warm to the touch, but it was also appreciably quieter than my 5090, the fans were not spinning as fast or loudly, and, most important, it allowed me to run larger models such as GLM-5.3-Flash locally with decent performance thanks to Apple silicon’s unified memory. In my day-to-day use, when I was running [Flash-Next oQ4e](https://huggingface.co/Jundot/Qwen3.8-Flash-Next-oQ4e-mtp) all the time, I could never hear the fan of the Studio on my desk unless I placed my ear directly on top of the computer.
 
-Judging by the progress Apple has made in recent years, I wouldn’t be surprised to see an that outperforms the memory bandwidth of a 5090 in the near future. But that’s a story for another time.
+Judging by the progress Apple has made in recent years, I wouldn’t be surprised to see an [M7 Ultra](https://www.bloomberg.com/news/newsletters/2026-07-12/apple-s-chip-plans-m6-m7-pro-m7-max-m7-ultra-m8-details-touch-macbook-pro) that outperforms the memory bandwidth of a 5090 in the near future. But that’s a story for another time.
 
 ### A Note on Testing
 
@@ -216,7 +216,7 @@ At the end of this experiment, I have a simple, tangible result: the M5 Ultra le
 
 This would have seemed impossible a couple of years ago. But here we are.
 
-Supported by: Remote desktop for AI agents and headless Mac minis. Free for 20 mins/day.
+Supported by [Astropad Workbench](https://astropad.com/product/workbench/?utm_source=macstories&utm_medium=sponsored-review&utm_campaign=macstories-sep26): Remote desktop for AI agents and headless Mac minis. Free for 20 mins/day.
 
 ![Club MacStories](https://www.macstories.net/wp-content/themes/macstories4/images/logo-shape-gold.svg)
 

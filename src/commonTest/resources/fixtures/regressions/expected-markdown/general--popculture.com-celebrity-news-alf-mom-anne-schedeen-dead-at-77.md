@@ -11,7 +11,7 @@ Hollywood is mourning this week after actress passed away over the weekend at th
 
 Schedeen was most commonly known for her role as Kate Tanner on the 1980s sitcom *[ALF](https://www.imdb.com/title/tt0090390/).* The sitcom spanned four seasons, airing from 1986 to 1990.
 
-Her passing was made public by a post on her which read: “It is with the heaviest of hearts that we share Annie has passed peacefully. She leaves behind an extraordinary legacy of creative energy, whip smart humor, delight in her family, adoration for little dogs, burning hatred for Trump, passion for second-hand thrifting, and love for a good story.”
+Her passing was made public by a post on her [official Facebook page](https://www.facebook.com/share/18i4N95o1R/?mibextid=wwXIfr) which read: “It is with the heaviest of hearts that we share Annie has passed peacefully. She leaves behind an extraordinary legacy of creative energy, whip smart humor, delight in her family, adoration for little dogs, burning hatred for Trump, passion for second-hand thrifting, and love for a good story.”
 
 “We are bereft without her. We loved her so so much, as did all who met her,” the statement continued. “She was a force. And it is unimaginable to think about life without her in it. But as she said, ‘I’m always with you.’ And she’s right. The memories, artwork, belly laughter, handmade jewelry, oil paintings, sculptures, costumes, and all around joie de vivre live on. Raise a margarita in her honor.”
 

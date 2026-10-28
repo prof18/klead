@@ -26,7 +26,7 @@ The Honor Magic V6 represents the best in foldable phones. It sports an incredib
 - -A few software quirks
 - -No North American availability
 
-Why you can trust Android Central Our expert reviewers spend hours testing and comparing products and services so you can choose the best for you..
+Why you can trust Android Central Our expert reviewers spend hours testing and comparing products and services so you can choose the best for you. [Find out more about how we test](https://www.androidcentral.com/phones/android-centrals-review-and-recommendation-process).
 
 As a person who reviews dozens upon dozens of different kinds of phones every year, I've long struggled with whether I prefer a foldable or a slab phone. [Book-style foldables](https://www.androidcentral.com/best-foldable-phone), like the Galaxy Z Fold or Honor Magic V series, are synonymous with multitasking and productivity, something I find myself using a lot as a remote worker.
 
@@ -103,7 +103,7 @@ But there are still some weird quirks that bother me daily. Many apps "don't sup
 
 And while those are annoying complaints, I truly enjoy [Honor's ecosystem of products](https://www.androidcentral.com/phones/sometimes-the-ecosystem-is-more-important-than-the-individual-devices) and how well they work together. I get message and call notifications on my Honor laptop, can easily run my phone's apps on that same machine, quickly transfer files between them, set up a hotspot (that doesn't use my carrier's hotspot data), and more.
 
-Honor also heavily touts its interoperability with [Apple](https://www.androidcentral.com/tag/apple) products — something I care very little about — but it will undoubtedly come in handy for plenty of people. From Mac one-tap sharing and screen casting to notification sharing between the Magic V6, Apple Watches, and iPhones, plus native AirPods controls. There's a lot to explore here. And, yes, it supports the new for each iPhone to Android file sharing.
+Honor also heavily touts its interoperability with [Apple](https://www.androidcentral.com/tag/apple) products — something I care very little about — but it will undoubtedly come in handy for plenty of people. From Mac one-tap sharing and screen casting to notification sharing between the Magic V6, Apple Watches, and iPhones, plus native AirPods controls. There's a lot to explore here. And, yes, it supports the new [Apple AirDrop/Google Quick Share interoperability](https://www.androidcentral.com/apps-software/android-os/quick-share-is-getting-a-useful-upgrade-for-sharing-files-with-iphones) for each iPhone to Android file sharing.
 
 ![The Gemini app on an Honor Magic V6](https://cdn.mos.cms.futurecdn.net/x6g7PL3L2FP9Rg7bHj9Psd-1200-80.jpg.webp)
 

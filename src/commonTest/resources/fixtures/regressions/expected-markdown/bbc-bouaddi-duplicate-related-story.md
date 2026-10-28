@@ -20,7 +20,7 @@ Many long-distance high-altitude flights from Paris would have taken her near th
 
 *Image caption, Air France said that the health of its staff was "an absolute imperative"*
 
-found that flight attendants and pilots had the highest level of radiation-related cancer deaths among more than 500 different professions.
+[A study this month at the Harvard Medical School in the US, external](https://hms.harvard.edu/news/pilots-flight-attendants-have-greater-risk-radiation-related-cancer-death-other-professions) found that flight attendants and pilots had the highest level of radiation-related cancer deaths among more than 500 different professions.
 
 In all, about 6.9% of deaths among flight attendants and 6.7% of deaths among pilots were from radiation-related cancers, according to the analysis.
 

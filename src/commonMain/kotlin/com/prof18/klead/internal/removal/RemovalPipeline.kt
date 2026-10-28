@@ -132,9 +132,18 @@ internal object RemovalPipeline {
             checkCancelled()
             if (INTERACTIVE_QUIZ_PATTERN.containsMatchIn(heading.text())) addNearestQuizContainer(heading)
         }
+        // A class or id hint marks the widget element itself, so it must hold the answer controls.
+        // Climbing from it would let an empty embed placeholder claim the article body as soon as
+        // an unrelated form elsewhere in the body supplies two checkboxes.
         for (element in content.select(INTERACTIVE_QUIZ_CONTAINER_SELECTOR)) {
             checkCancelled()
-            if (INTERACTIVE_QUIZ_PATTERN.containsMatchIn(partialHaystack(element))) addNearestQuizContainer(element)
+            if (
+                INTERACTIVE_QUIZ_PATTERN.containsMatchIn(partialHaystack(element)) &&
+                element.select(INTERACTIVE_QUIZ_CONTROL_SELECTOR).size >= MIN_INTERACTIVE_QUIZ_CONTROLS &&
+                quizContainers.none { it === element }
+            ) {
+                quizContainers.add(element)
+            }
         }
 
         // Work from the leaves upward so a quiz is removed without taking surrounding article
@@ -569,13 +578,35 @@ internal object RemovalPipeline {
 // must equal a selector token outright.
 private fun Element.matchesPartialClutter(): Boolean {
     val nonIdHaystack = elementHintHaystack(this, includeId = false)
-    if (PARTIAL_PATTERNS.any { it in nonIdHaystack }) return true
+    val hintMatches = PARTIAL_PATTERNS.any { it in nonIdHaystack }
+    if (hintMatches && !(linkTargetIsOnlyClutterHint() && isLinkInsideProse())) return true
 
     val id = id().trim().lowercase()
     if (id.isEmpty()) return false
     val idHasDelimiter = id.any { it == ' ' || it == '_' || it == '-' || it == ':' || it == '.' }
     return if (idHasDelimiter) PARTIAL_PATTERNS.any { it in id } else id in PARTIAL_PATTERNS
 }
+
+// A link's URL slug (in href, or copied into attributes like data-url) is written from the
+// target article's headline, so it says nothing about the link itself
+// ("developers-share-the-moment", "radiation-related-cancer").
+// It only marks clutter when the link stands alone, like a share button or a list of
+// related links; a link inside a sentence is part of the prose.
+private fun Element.linkTargetIsOnlyClutterHint(): Boolean {
+    if (!hasAttr("href")) return false
+    val haystackWithoutUrls = elementHintHaystack(this, includeId = false, includeUrls = false)
+    return PARTIAL_PATTERNS.none { it in haystackWithoutUrls }
+}
+
+private fun Element.isLinkInsideProse(): Boolean {
+    if (normalName() != "a") return false
+    val block = parents().firstOrNull { it.normalName() in PROSE_LINK_BLOCK_TAGS } ?: return false
+    val surroundingText = block.text().length - text().length
+    return surroundingText >= MIN_PROSE_TEXT_AROUND_LINK
+}
+
+private val PROSE_LINK_BLOCK_TAGS = setOf("p", "li", "blockquote", "dd", "figcaption")
+private const val MIN_PROSE_TEXT_AROUND_LINK = 20
 
 private fun Element.isInsideTableCell(): Boolean = parents().any { it.normalName() == "td" || it.normalName() == "th" }
 
