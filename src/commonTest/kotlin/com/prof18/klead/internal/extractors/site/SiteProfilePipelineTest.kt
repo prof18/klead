@@ -2163,6 +2163,71 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `github release extractor keeps release notes without repository chrome`() {
+        val result = parseHtmlForTest(
+            html = """
+                <nav aria-label="Repository"><h2>Repository navigation</h2></nav>
+                <div data-hpc>
+                  <div class="Box"><div class="Box-body">
+                    <h1>Version 2.0</h1>
+                    <a href="/test-owner/test-repo/releases/latest">Latest</a>
+                    <div>
+                      <a class="text-bold" href="/release-bot">release-bot</a> released this
+                      <relative-time datetime="2026-10-25T12:57:03Z">25 Oct</relative-time>
+                    </div>
+                    <div data-test-selector="body-content" class="markdown-body">
+                      <p>Release notes with a long enough body to count as the article content.</p>
+                      <ul><li>First change</li><li>Second change</li></ul>
+                    </div>
+                  </div></div>
+                </div>
+                <h2>Assets 3</h2>
+            """.trimIndent(),
+            url = "https://github.com/test-owner/test-repo/releases/tag/v2.0",
+            options = testOptions(debug = true),
+        )
+
+        assertEquals("Version 2.0", result.metadata.title)
+        assertEquals("release-bot", result.metadata.author)
+        assertEquals("GitHub - test-owner/test-repo", result.metadata.site)
+        assertEquals(listOf("github"), result.debug["extractorIds"])
+        assertEquals(
+            """
+            Release notes with a long enough body to count as the article content.
+
+            - First change
+            - Second change
+            """.trimIndent() + "\n",
+            result.content.requireMarkdown(),
+        )
+    }
+
+    @Test
+    fun `github tag page without release keeps only the tag message`() {
+        val result = parseHtmlForTest(
+            html = """
+                <h1 class="sr-only">v2.0</h1>
+                <nav aria-label="Repository"><h2>Repository navigation</h2></nav>
+                <div class="commit-desc"><pre class="text-small">Tag message line one
+                continues here
+
+                Second paragraph</pre></div>
+                <h2>Assets 2</h2>
+            """.trimIndent(),
+            url = "https://github.com/test-owner/test-repo/releases/tag/v2.0",
+            options = testOptions(debug = true),
+        )
+
+        assertEquals("v2.0", result.metadata.title)
+        assertEquals(listOf("github"), result.debug["extractorIds"])
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.startsWith("Tag message line one"), markdown)
+        assertTrue(markdown.contains("Second paragraph"), markdown)
+        assertFalse(markdown.contains("Repository navigation"), markdown)
+        assertFalse(markdown.contains("Assets"), markdown)
+    }
+
+    @Test
     fun `github issue extractor preserves issue body without activity chrome`() {
         val result = parseHtmlForTest(
             html = """

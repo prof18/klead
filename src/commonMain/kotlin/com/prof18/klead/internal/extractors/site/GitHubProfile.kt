@@ -16,8 +16,50 @@ internal object GitHubProfile : DomExtractor {
     override val id: String = "github"
     override val domains: Set<String> = setOf("github.com")
 
-    override fun extract(context: DomExtractorContext): ExtractorResult? =
-        extractPullRequest(context) ?: extractIssue(context) ?: extractRepositoryReadme(context)
+    override fun extract(context: DomExtractorContext): ExtractorResult? = extractRelease(context)
+        ?: extractPullRequest(context)
+        ?: extractIssue(context)
+        ?: extractRepositoryReadme(context)
+
+    private fun extractRelease(context: DomExtractorContext): ExtractorResult? {
+        val path = parseKleadUri(context.url.orEmpty())?.path.orEmpty().trim('/').split('/')
+        val isReleasePage = path.size >= 5 && path[2] == "releases" && path[3] == "tag"
+        if (!isReleasePage) return null
+
+        val document = context.document
+        val article = Element("article")
+        val releaseNotes = document.selectFirst("""[data-test-selector="body-content"].markdown-body""")
+        if (releaseNotes != null) {
+            article.appendChildNodesFrom(releaseNotes.deepCopy())
+        } else {
+            // A tag without a published release only carries the annotated tag message.
+            val tagMessage = document.selectFirst(".commit-desc pre")?.wholeText()?.trim().orEmpty()
+            tagMessage.split(BLANK_LINE)
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .forEach { paragraph ->
+                    val element = article.appendElement("p")
+                    paragraph.lines().forEachIndexed { index, line ->
+                        if (index > 0) element.appendElement("br")
+                        element.appendText(line.trim())
+                    }
+                }
+        }
+        if (article.text().isBlank()) return null
+
+        val author = document.select("relative-time[datetime]")
+            .firstNotNullOfOrNull { time -> time.parent()?.selectFirst("a.text-bold")?.textTrimmedOrNull() }
+        val releaseName = document.selectFirst("[data-hpc] .Box-body h1")?.textTrimmedOrNull()
+            ?: document.selectFirst("h1.sr-only")?.textTrimmedOrNull()
+        return ExtractorResult(
+            contentHtml = article.outerHtml(),
+            metadata = ExtractorMetadata(
+                title = releaseName ?: document.githubIssueTitle(),
+                author = author,
+                site = context.repositorySiteName(),
+            ),
+        )
+    }
 
     private fun extractRepositoryReadme(context: DomExtractorContext): ExtractorResult? {
         val path = parseKleadUri(context.url.orEmpty())?.path.orEmpty().trim('/').split('/')
@@ -207,5 +249,6 @@ internal object GitHubProfile : DomExtractor {
     private data class GitHubComment(val author: String, val date: String, val body: Element)
 
     private val GITHUB_REPOSITORY_TITLE_SUFFIX = Regex("""\s+·\s+[^·\s]+/[^·\s]+$""")
+    private val BLANK_LINE = Regex("""\n\s*\n""")
     private const val GITHUB_SITE_NAME = "GitHub"
 }
