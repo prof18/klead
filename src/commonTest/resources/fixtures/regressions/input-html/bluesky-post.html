@@ -1,0 +1,237 @@
+<!-- {"url":"https://bsky.app/profile/feedflow.dev/post/3meojcvqtip2v"} -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="origin-when-cross-origin">
+  <!--
+    Preconnect to essential domains
+  -->
+  <link rel="preconnect" href="https://bsky.social">
+  <link rel="preconnect" href="https://go.bsky.app">
+  <title>@feedflow.dev on Bluesky</title>
+
+  <!-- Hello Humans! API docs at https://atproto.com -->
+
+  <link rel="preload" as="font" type="font/woff2" href="https://web-cdn.bsky.app/static/assets/assets/fonts/inter/InterVariable.2bf3d951bf9d6109437ea0874bbf12fb.woff2" crossorigin>
+<style>
+  @font-face {
+    font-family: 'InterVariable';
+    src: url("https://web-cdn.bsky.app/static/assets/assets/fonts/inter/InterVariable.2bf3d951bf9d6109437ea0874bbf12fb.woff2") format('woff2');
+    font-weight: 300 1000;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'InterVariableItalic';
+    src: url("https://web-cdn.bsky.app/static/assets/assets/fonts/inter/InterVariable-Italic.8d1dc86da25893737b6bb8a9c64b790e.woff2") format('woff2');
+    font-weight: 300 1000;
+    font-style: italic;
+    font-display: swap;
+  }
+</style>
+
+
+  <style>
+    /**
+     * Minimum styles required to render splash.
+     *
+     * ALL OTHER STYLES BELONG IN `src/style.css`
+     *
+     * THIS NEEDS TO BE DUPLICATED IN `bskyweb/templates/base.html`
+     */
+    html,
+    body {
+      margin: 0px;
+      padding: 0px;
+      font-family: InterVariable, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Liberation Sans', Helvetica, Arial, sans-serif;
+      text-rendering: optimizeLegibility;
+      /* Platform-specific reset */
+      -webkit-overflow-scrolling: touch;
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      -ms-overflow-style: scrollbar;
+      font-synthesis-weight: none;
+    }
+    :root {
+      --text: black;
+      --background: white;
+      --backgroundLight: #e2e7ee;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --text: white;
+        --background: black;
+        --backgroundLight: #232e3e;
+      }
+    }
+    html,
+    body,
+    #root {
+      display: flex;
+      flex: 1 0 auto;
+      min-height: 100%;
+      width: 100%;
+    }
+    html.theme--light,
+    html.theme--light body,
+    html.theme--light #root {
+      background-color: white;
+      --text: black;
+      --background: white;
+      --backgroundLight: #DCE2EA;
+    }
+    html.theme--dark,
+    html.theme--dark body,
+    html.theme--dark #root {
+      color-scheme: dark;
+      background-color: black;
+      --text: white;
+      --background: black;
+      --backgroundLight: #232E3E;
+    }
+    html.theme--dim,
+    html.theme--dim body,
+    html.theme--dim #root {
+      color-scheme: dark;
+      background-color: #151D28;
+      --text: white;
+      --background: #151D28;
+      --backgroundLight: #2C3A4E;
+    }
+    #splash {
+      display: flex;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      align-items: center;
+      justify-content: center;
+    }
+    #splash svg {
+      position: relative;
+      top: -50px;
+      width: 100px;
+    }
+    /**
+     * We need these styles to prevent shifting due to scrollbar show/hide on
+     * OSs that have them enabled by default. This also handles cases where the
+     * screen wouldn't otherwise scroll, and therefore hide the scrollbar and
+     * shift the content, by forcing the page to show a scrollbar.
+     */
+    body {
+      width: 100%;
+      overflow-y: scroll;
+    }
+  </style>
+  <script>
+    const theme = localStorage.getItem('ALF_THEME')
+    if (theme) {
+      document.documentElement.classList.add(`theme--${theme}`)
+    }
+  </script>
+
+  
+  <script id="bsky-app-config" type="application/json">{"schemaVersion":1,"apiHost":"https://events.bsky.app/gb","clientKey":"sdk-7gkUkGy9wguUjyFe","fetchedAt":"2026-10-29T14:57:22.280466132Z","payload":{"status":200,"features":{"import_contacts:onboarding:disable":{"defaultValue":false},"import_contacts:settings:disable":{"defaultValue":false},"live_now_beta:disable":{"defaultValue":false},"debug_feed_context":{"defaultValue":false,"rules":[{"id":"fr_7q8pm31umkpzxi23","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true}]},"is_bsky_team":{"defaultValue":false,"rules":[{"id":"fr_lw1mmkq0cbbi","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true}]},"aa-test":{"defaultValue":false,"rules":[{"id":"fr_1onl741omnxqo3z4","coverage":1,"hashAttribute":"deviceId","seed":"ee5b02f6-5479-4a67-856f-62700a35d22a","hashVersion":2,"variations":[false,true],"weights":[0.5,0.5],"key":"aa-test-2","meta":[{"key":"0","name":"Control"},{"key":"1","name":"Variation 1"}],"phase":"0","name":"aa-test-stableid"}]},"new-feature":{"defaultValue":false,"rules":[{"id":"fr_bx8rg91ommava75g","coverage":1,"hashAttribute":"did","seed":"a42d68e7-ccd7-44b7-a34b-24e980c962cb","hashVersion":2,"variations":[true,false],"weights":[0.5,0.5],"key":"test-experiment","meta":[{"key":"0","name":"Enabled"},{"key":"1","name":"Disabled"}],"phase":"0","name":"Test Experiment"}]},"group_chats:enable":{"defaultValue":false,"rules":[{"id":"fr_1zplommtj13kb","condition":{"$or":[{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},{"did":{"$inGroup":"grp_2Cbj8H2A7QAFVgLS7ozALK"}}]},"force":true},{"id":"fr_mq5htzb0","condition":{"$or":[{"did":"did:plc:f4asnsmbc5lqabfxv2pn6y6g"},{"did":"did:plc:kpgl5x5a5aod2zswhl6bxbg5"},{"did":"did:plc:vc7f4oafdgxsihk4cry2xpze"},{"did":"did:plc:gxfepdd2pudwxqsl43ffkjjl"}]},"force":true}]},"image_uploads:high_resolution":{"defaultValue":false,"rules":[{"id":"fr_3iazi4ommwmywst","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true},{"id":"fr_4xihpmn7n85cc","condition":{"did":"did:plc:gq4fo3u6tqzzdkjlwzpb23tj"},"force":true},{"id":"fr_5kjcomngk0k5s","force":true}]},"image_uploads:blob_size_2mb:enabled":{"defaultValue":false,"rules":[{"id":"fr_765bcomntkub30","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true},{"id":"fr_kkx5omo09ehqs","force":true}]},"dms:new_message_composer:enable":{"defaultValue":false,"rules":[{"id":"fr_1q7omnoyf2vo","condition":{"$or":[{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}}]},"force":true},{"id":"fr_3n3romnqnogma","condition":{"$or":[{"did":"did:plc:sflxm2fxohaqpfgahgdlm7rl"},{"did":"did:plc:vc7f4oafdgxsihk4cry2xpze"}]},"force":true},{"id":"fr_mq8nvb1m","force":true}]},"klipy_gif_provider:enable":{"defaultValue":false,"rules":[{"id":"fr_3s8p3omo04dhqj","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true},{"id":"fr_7romordxnpg","force":true}]},"post_gallery_embed:enable":{"defaultValue":false,"rules":[{"id":"fr_4dzdfomoe2krnf","condition":{"$or":[{"did":"did:plc:oisofpd7lj26yvgiivf3lxsi"},{"did":"did:plc:tndeaffsojahb3tzjut27gi5"}]},"force":true}]},"group_chats:has_been_released":{"defaultValue":true},"composer:language_detection:enable":{"defaultValue":false,"rules":[{"id":"fr_1zf8omo8w7ch8","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true}]},"composer:language_detection:config":{"defaultValue":{"acceptanceThreshold":{"web":0.95,"ios":0.9,"android":0.9,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"ios":0.8,"android":0.8,"default":0.97},"overrides":{"id":{"acceptanceThreshold":{"web":0.99,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"ms":{"acceptanceThreshold":{"web":0.99,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"nb":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"no":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"da":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"hr":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"sr":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"bs":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"cs":{"acceptanceThreshold":{"web":0.95,"default":0.92},"deviceLocaleAcceptanceThreshold":{"web":0.95,"default":0.85}},"sk":{"acceptanceThreshold":{"web":0.95,"default":0.92},"deviceLocaleAcceptanceThreshold":{"web":0.95,"default":0.85}},"gl":{"acceptanceThreshold":{"web":0.95,"default":0.92}},"ca":{"acceptanceThreshold":{"web":0.95,"default":0.92}}}},"rules":[{"id":"fr_eaennmomo8w8rhl","coverage":1,"hashAttribute":"did","seed":"5d27bacb-fc91-4263-927d-381d20e7f9d0","hashVersion":2,"variations":[{"acceptanceThreshold":{"web":0.95,"ios":0.9,"android":0.9,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"ios":0.8,"android":0.8,"default":0.97},"overrides":{"id":{"acceptanceThreshold":{"web":0.99,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"ms":{"acceptanceThreshold":{"web":0.99,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"nb":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"no":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"da":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"hr":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"sr":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"bs":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"cs":{"acceptanceThreshold":{"web":0.95,"default":0.92},"deviceLocaleAcceptanceThreshold":{"web":0.95,"default":0.85}},"sk":{"acceptanceThreshold":{"web":0.95,"default":0.92},"deviceLocaleAcceptanceThreshold":{"web":0.95,"default":0.85}},"gl":{"acceptanceThreshold":{"web":0.95,"default":0.92}},"ca":{"acceptanceThreshold":{"web":0.95,"default":0.92}}}},{"acceptanceThreshold":{"web":0.95,"ios":0.9,"android":0.9,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"ios":0.8,"android":0.8,"default":0.97},"overrides":{"id":{"acceptanceThreshold":{"web":0.99,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"ms":{"acceptanceThreshold":{"web":0.99,"default":0.95},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"nb":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"no":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"da":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"hr":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"sr":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"bs":{"acceptanceThreshold":{"web":0.97,"default":0.93},"deviceLocaleAcceptanceThreshold":{"web":0.97,"default":0.9}},"cs":{"acceptanceThreshold":{"web":0.95,"default":0.92},"deviceLocaleAcceptanceThreshold":{"web":0.95,"default":0.85}},"sk":{"acceptanceThreshold":{"web":0.95,"default":0.92},"deviceLocaleAcceptanceThreshold":{"web":0.95,"default":0.85}},"gl":{"acceptanceThreshold":{"web":0.95,"default":0.92}},"ca":{"acceptanceThreshold":{"web":0.95,"default":0.92}}}}],"weights":[0.5,0.5],"key":"composer:language_detection:override","meta":[{"key":"0","name":"Defaults"},{"key":"1","name":"Overrides"}],"phase":"0","name":"composer:language_detection:override"}]},"notifications:expanded_profile_card:enable":{"defaultValue":false,"rules":[{"id":"fr_l9oomqbj9voo","coverage":1,"hashAttribute":"did","seed":"dad98324-19e3-4b2d-bcc7-350381f35da5","hashVersion":2,"force":true},{"id":"fr_3nr9fomoa9ixij","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true}]},"large_video_uploads:enable":{"defaultValue":false,"rules":[{"id":"fr_zsl2komp5otdxw","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true},{"id":"fr_mpr70kj4","force":true}]},"group_chats:disable":{"defaultValue":false},"advanced_search_v2:enable":{"defaultValue":true},"search_v2:enable":{"defaultValue":true},"composer:image_layout_toggle:enable":{"defaultValue":false,"rules":[{"id":"fr_mr9ak9e6","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"post_thread:known_likers:enable":{"defaultValue":false,"rules":[{"id":"fr_mr9yyduf","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true},{"id":"fr_mseyda9s","coverage":1,"hashAttribute":"did","seed":"fcc6186b-d630-404b-9ef9-ce544e063ab1","hashVersion":2,"variations":[false,true],"weights":[0.5,0.5],"key":"post_thread:known_likers:enable:v1","meta":[{"key":"0","name":"Control"},{"key":"1","name":"Variation 1"}],"phase":"0","name":"Show known likers on post page"}]},"post_thread:known_likers:fetch:enable":{"defaultValue":false,"rules":[{"id":"fr_mrflywiu","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true},{"id":"fr_msdrk334","force":true}]},"custom_logo:japan:enable":{"defaultValue":false},"ota-config":{"defaultValue":{},"rules":[{"id":"fr_mrw4wk18","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":{"channels":["canary","nightly"]}},{"id":"fr_mrw4xvqe","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":{"channels":["nightly"]}}]},"search_starter_packs_v2:enable":{"defaultValue":true,"rules":[{"id":"fr_mrwhqccx","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true}]},"follow_sort:enable":{"defaultValue":false,"rules":[{"id":"fr_mrwpx9a5","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":false}]},"video:multipart_upload:enable":{"defaultValue":false,"rules":[{"id":"fr_mrxjq5q6","condition":{"$or":[{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}}]},"force":true},{"id":"fr_msq6g4hb","force":true}]},"trending_discover:values":{"defaultValue":{"topics":5,"accounts":15,"videos":30}},"trending_explore_topics_count:value":{"defaultValue":5,"rules":[{"id":"fr_mv95bbgj","condition":{"did":{"$inGroup":"grp_16m7nl1ommffbszc"}},"force":10},{"id":"fr_1psdqimv95ilq7","coverage":1,"hashAttribute":"did","seed":"e1d8c9ce-6b9b-4785-984f-6fd8d7f2fd0a","hashVersion":2,"force":10}]},"video:allow-10-minute:enable":{"defaultValue":true,"rules":[{"id":"fr_mrxjq5q6","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"onboarding:interests:required:enable":{"defaultValue":false,"rules":[{"id":"fr_msiawf5a","condition":{"did":{"$inGroup":"grp_2Cbj8H2A7QAFVgLS7ozALK"}},"force":true},{"id":"fr_msp2bg7a","coverage":1,"hashAttribute":"did","seed":"1cce7e13-85a0-4c1a-8cdb-663fde4fcd6e","hashVersion":2,"variations":[false,true],"weights":[0.5,0.5],"key":"onboarding:interests:required:enable:v1","meta":[{"key":"0","name":"Control"},{"key":"1","name":"Variation 1"}],"phase":"0","name":"Require at least one interest selected during onboarding"}]},"canonical_post_numbering:enable":{"defaultValue":false,"rules":[{"id":"fr_msiakzdn","condition":{"isBetaUser":true},"force":true}]},"following_feed:resume:enable":{"defaultValue":false,"rules":[{"id":"fr_msqjxhgn","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"content_visibility_settings:enable":{"defaultValue":true,"rules":[{"id":"fr_msrjuzj5","condition":{"$or":[{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}}]},"force":true}]},"session:secure_storage:read:enable":{"defaultValue":false,"rules":[{"id":"fr_msuk14ny","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"notifications_v2:enable":{"defaultValue":false,"rules":[{"id":"fr_mveefum6","condition":{"did":{"$in":["did:plc:oisofpd7lj26yvgiivf3lxsi"]}},"force":false},{"id":"fr_mt7tdry0","condition":{"$or":[{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}}]},"force":true},{"id":"fr_mvbh0ohw","condition":{"did":"did:plc:vpkhqolt662uhesyj6nxm7ys"},"force":true},{"id":"fr_mvpqmcmb","condition":{"isBetaUser":true},"force":true}]},"moderation_inbox:enable":{"defaultValue":false,"rules":[{"id":"fr_mt8yj0u9","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true},{"id":"fr_mv9s3nxv","condition":{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},"force":true},{"id":"fr_mvh05oqz","condition":{"did":{"$inGroup":"grp_2CgDwcZTHB4q4LtiUeHt5H"}},"force":true}]},"post_feed:known_likers:enable":{"defaultValue":false,"rules":[{"id":"fr_mtpo0y9b","condition":{"did":"did:plc:p2cp5gopk7mgjegy6wadk3ep"},"force":false},{"id":"fr_mtn9i0qw","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"following_v2:enable":{"defaultValue":false},"hide_post:enable":{"defaultValue":false,"rules":[{"id":"fr_mtum2az6","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"starter_packs:config":{"defaultValue":{"limit":150},"rules":[{"id":"fr_mtvqib2f","condition":{"did":"did:plc:p2cp5gopk7mgjegy6wadk3ep"},"force":{"limit":250}}]},"quote_sort:enable":{"defaultValue":false,"rules":[{"id":"fr_munucqwn","condition":{"$or":[{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}}]},"force":true}]},"profile_links:enable":{"defaultValue":true,"rules":[{"id":"fr_muvcqdyj","condition":{"$or":[{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}}]},"force":true},{"id":"fr_mva29iyg","condition":{"$or":[{"did":"did:plc:wck4rqrzcr3okkrj432somyy"},{"did":"did:plc:oultcggnkydwfblojek4llmg"},{"did":"did:plc:pcwbwgn24dzycl4am4n7x32h"},{"did":"did:plc:kavrsfz7yj5uaboyrvoehdyk"},{"did":"did:plc:2pm5e76kwxhdoaw4dunx3l4j"},{"did":"did:plc:e637redb2k5we44dwh3y7jk4"},{"did":"did:plc:zmyfofoht5okbve3436oniyy"},{"did":"did:plc:3ovfbpy4lnx4i43k4742rxfi"},{"did":"did:plc:uqjon6amgqigyqvqfmqlp5s4"},{"did":"did:plc:rkpzrwxex34r36ypejhew7ml"},{"did":"did:plc:5w4eqcxzw5jv5qfnmzxcakfy"},{"did":"did:plc:scfktrjhkhwpydirnontb3nj"},{"did":"did:plc:4c3n47el5epvzjjob6mijk57"},{"did":"did:plc:opm7kjzippurg433jh7rt4ax"},{"did":"did:plc:upyx3raxzpwlnzojrncogd7yf"},{"did":"did:plc:2darfo36xds4oznvip7x2ux7"},{"did":"did:plc:2buz4gf5sew3rdwzbxsvcd4s"},{"did":"did:plc:f5oj3h5yslnl5ymnvya5aecv"},{"did":"did:plc:ciaf7bfernf2qc62qsvehyc6"},{"did":"did:plc:ximulq22wv5n33kkmzbi5voo"},{"did":"did:plc:sfytqb5ksdwbhen5jorylyf6"}]},"force":true},{"id":"fr_mvfux0ms","condition":{"$or":[{"did":"did:plc:kkf4naxqmweop7dv4l2iqqf5"},{"did":"did:plc:7t2urmt3i33jl6tjgiolio6g"},{"did":"did:plc:zsinkx53bfl6duozk5giq2bu"},{"did":"did:plc:wwykl5m4bzhyngbrnkhjwsk7"},{"did":"did:plc:6cbrxnrfmwpb7rhjkihqezzh"},{"did":"did:plc:frn77uzoidkkchx7whfe22iw"},{"did":"did:plc:r6zr6ekojabtxjboxuqoh2wb"},{"did":"did:plc:v5solxumlmpbska2gev4ms3z"},{"did":"did:plc:2atpw7zrdrdptzqo7jw63rzv"},{"did":"did:plc:b25fw5q6tr2faqdy52du276g"},{"did":"did:plc:45uheisi25szrjvjurfpritx"},{"did":"did:plc:oio4hkxaop4ao4wz2pp3f4cr"},{"did":"did:plc:nejscld5zlavytijxz27qhvj"},{"did":"did:plc:6mxrrgl4t35elobme3k4vznf"},{"did":"did:plc:35ixfjwiz7l5dg77akthjgkg"},{"did":"did:plc:dcscyyx2ffgkbpyfnp6vapa4"},{"did":"did:plc:sm2lbzg4wbewetqtbxu3szky"},{"did":"did:plc:wzyarg3l7loi7lldboms2mqy"},{"did":"did:plc:xgvzy7ni6ig6ievcbls5jaxe"},{"did":"did:plc:qy5pluw2bsuq2x6albsgkvx3"},{"did":"did:plc:jjsc5rflv3cpv6hgtqhn2dcm"},{"did":"did:plc:c54hcflqn6rv53qumfnxc5mj"},{"did":"did:plc:aujkwexvmmcaf77yfxcuitql"},{"did":"did:plc:252n5cfhxlwdzzeixqw7tbem"},{"did":"did:plc:i7lvp4e6nkzlyi6xdgig7r7g"},{"did":"did:plc:jg7zvku4khzmvyjwbzv4lnly"},{"did":"did:plc:u37ojtrgyezq2haj2awk622j"},{"did":"did:plc:osm6m7fbpcketne46phru4ii"},{"did":"did:plc:qpbuxrel3f3njvjw5rakf532"}]},"force":true}]},"share_destinations:enable":{"defaultValue":false,"rules":[{"id":"fr_mva8b2zj","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"web_list:virtualization:enable":{"defaultValue":false,"rules":[{"id":"433f6a36-fff4-490c-9d82-7c05f19db862","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"notifications_v2:classic_layout:enable":{"defaultValue":false,"rules":[{"id":"8e1236b6-6b6c-49f8-ba98-a4dd1b33c23d","condition":{"did":"did:plc:p2cp5gopk7mgjegy6wadk3ep"},"force":true},{"id":"fr_mvr0oefy","condition":{"did":{"$inGroup":"grp_306djet1mmmav05a7"}},"force":true}]},"atmosphere_screen:enable":{"defaultValue":false,"rules":[{"id":"fr_mvlis0uj","condition":{"$or":[{"did":{"$inGroup":"grp_5jfg1omkpx8ufb"}},{"did":{"$inGroup":"grp_306djet1mmmav05a7"}}]},"force":true}]}},"dateUpdated":"2026-10-27T18:26:40.538Z","savedGroups":{"grp_16m7nl1ommffbszc":["did:plc:tgqseeot47ymot4zro244fj3","did:plc:esfp3jurmmtjcugslja5dhb6","did:plc:6rn66vit5xmoho7minunpqan","did:plc:3272gdrjsuikiff7qsgokgas","did:plc:3jy64f6b6u2kxpanp2rlzrfv"],"grp_2Cbj8H2A7QAFVgLS7ozALK":[],"grp_2CgDwcZTHB4q4LtiUeHt5H":["did:plc:z4ieudrpbvn6h7ocl4tldwet","did:plc:ksjfbda7262bbqmuoly54lww","did:plc:ecbx5js53f3e5wd2xpq2sh5h","did:plc:iwxhuuog5n272whkmfyxi66y","did:plc:ypzbaa45bsr4gjb7ihhmuvx3","did:plc:wck4rqrzcr3okkrj432somyy","did:plc:rtqgvc74s63qehj23qwdnicm"],"grp_306djet1mmmav05a7":["did:plc:f57ltatxgp5fxc6ajgpd7xx5","did:plc:fdzw5e5atynz3j3r5czcziu3","did:plc:25nkscfkf4ovaewviishlajq","did:plc:3jpt2mvvsumj2r7eqk4gzzjz","did:plc:mfmak3wlgviv6zoj4uandsr5","did:plc:6tm5ojdr5sgjfo5pqgn7szrk","did:plc:ubvsev66j6angr65hdny6oqf","did:plc:gsbue2dtbtqzw5du5btlh7p2","did:plc:riodasjrp2rly4egc2hdfwkm","did:plc:zcdweimjoxplcxascwoj4kzz","did:plc:2dzyut5lxna5ljiaasgeuffz","did:plc:dpajgwmnecpdyjyqzjzm6bnb","did:plc:p2cp5gopk7mgjegy6wadk3ep","did:plc:ydfn75us2pk4dhfvqejyla2p","did:plc:wd63o7xyctdatf6iqmiliqvv","did:plc:og5t4xeyapx5fwjx5hnr2c56","did:plc:sdeg7lksnp2fusabh5lt5d2w","did:plc:mzaluk6mo2ady7vyeaypucdr","did:plc:uw5226mwovorjawlsns4ocli","did:plc:464y3vjt35kayax3f3fhk2to","did:plc:3pja5ssq2j4pafu3sgfkuwlu","did:plc:q6vf7svrkrloy2wzfuzavsfi","did:plc:57puvuufvb4ylnyg3ff2l33d","did:plc:3lcp24knrectxr7g7tndpzyj","did:plc:gvytyeka365ytf4eckaxrixl"],"grp_5jfg1omkpx8ufb":["did:plc:3jpt2mvvsumj2r7eqk4gzzjz","did:plc:gsbue2dtbtqzw5du5btlh7p2","did:plc:p2cp5gopk7mgjegy6wadk3ep","did:plc:f57ltatxgp5fxc6ajgpd7xx5","did:plc:2dzyut5lxna5ljiaasgeuffz","did:plc:ragtjsm2j2vknwkz3zp4oxrd","did:plc:tgqseeot47ymot4zro244fj3","did:plc:4uz2445cjiw7w4nobfgnu35f","did:plc:yk4dd2qkboz2yv6tpubpc6co","did:plc:7ditsi7667pzlxve5kr63u6c","did:plc:upo6iq6ekh66d4mbhmiy6se4","did:plc:bffne4bxiscwjymsqwuf7uyy","did:plc:aea5ouir47ufzoujcwwgm6yc","did:plc:l3rouwludahu3ui3bt66mfvj","did:plc:44ybard66vv44zksje25o7dz","did:plc:my4ujjzrbmcikzuddeg55u77","did:plc:3272gdrjsuikiff7qsgokgas","did:plc:xsonm4pxopcdtr4jqpc6wsal","did:plc:ksjfbda7262bbqmuoly54lww","did:plc:vwzwgnygau7ed7b7wt5ux7y2","did:plc:ry4imxuyyuy24rwptucka2a3","did:plc:qrllvid7s54k4hnwtqxwetrf","did:plc:vkj5mdp3zgu43hpdeukcesqa","did:plc:mfmak3wlgviv6zoj4uandsr5","did:plc:esfp3jurmmtjcugslja5dhb6","did:plc:ubvsev66j6angr65hdny6oqf","did:plc:6rn66vit5xmoho7minunpqan","did:plc:dpajgwmnecpdyjyqzjzm6bnb","did:plc:zcdweimjoxplcxascwoj4kzz","did:plc:riodasjrp2rly4egc2hdfwkm","did:plc:4vvaxwovyg4yo4n7dyyncaiu","did:plc:53fw67awhrxmjc5qfkw67bv3","did:plc:cwf4mmm7mpzistinx3ox2zhj","did:plc:ecbx5js53f3e5wd2xpq2sh5h","did:plc:iu3ojiii2qmz2war54x5g45p","did:plc:jdnfjgay2lf5xe2xt7ducca5","did:plc:linrigsaay5zenhg756ca6tg","did:plc:lsbclbfggq7k5e4unns4bjg6","did:plc:lysqukqdu6hsrhet5v2brjgo","did:plc:oky5czdrnfjpqslsw2a5iclo","did:plc:qjeavhlw222ppsre4rscd3n2","did:plc:vmt7o7y6titkqzzxav247zrn","did:plc:w4ecabne6ytujnc3jsnuaz6f","did:plc:ypzbaa45bsr4gjb7ihhmuvx3","did:plc:6tm5ojdr5sgjfo5pqgn7szrk","did:plc:ydfn75us2pk4dhfvqejyla2p","did:plc:67fmhjqlgmo2j2765ll2gt6c","did:plc:xhzoksmw7cmz42skapmjqmms","did:plc:pimdarauw4omqj4mri223nzq","did:plc:sppiplftd2sxt3hbw7htj3b5","did:plc:e5zplwgiznavptdxhx5n2zlp","did:plc:4hodhjl2kposuchzvpiviwps","did:plc:46rdzmqtyuu5pcfzdebnwrp5","did:plc:3jy64f6b6u2kxpanp2rlzrfv","did:plc:og5t4xeyapx5fwjx5hnr2c56","did:plc:oisofpd7lj26yvgiivf3lxsi","did:plc:ywhnrsllsu7ep7ovkf2ln3cy","did:plc:rtqgvc74s63qehj23qwdnicm","did:plc:z72i7hdynmk6r22z27h6tvur","did:plc:6ll5xi67lyuyovt6fiv4fnjo"]}}}</script>
+  
+  <link rel="stylesheet" href="https://web-cdn.bsky.app/static/_expo/static/css/style-94e56ab66ad45dc782a29deac0731bdb.css">
+<link rel="stylesheet" href="https://web-cdn.bsky.app/static/_expo/static/css/ReactCrop-718bc6539c6403aeb01b0d6a1cd7748f.css">
+<script defer="defer" src="https://web-cdn.bsky.app/static/_expo/static/js/web/__expo-metro-runtime-9187168ea77d1235d4b528a16bf5e029.js"></script>
+<script defer="defer" src="https://web-cdn.bsky.app/static/_expo/static/js/web/__common-eb16dd1ec0795d6e316090806ebe4d7b.js"></script>
+<script defer="defer" src="https://web-cdn.bsky.app/static/_expo/static/js/web/index-3ad241aa5b9beb77b77338eec8805917.js"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="https://web-cdn.bsky.app/static/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://web-cdn.bsky.app/static/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://web-cdn.bsky.app/static/favicon-16x16.png">
+  <link rel="mask-icon" href="https://web-cdn.bsky.app/static/safari-pinned-tab.svg" color="#1185fe">
+  <meta name="theme-color">
+  <meta name="application-name" content="Bluesky">
+  <meta name="generator" content="bskyweb">
+  
+  <meta property="og:site_name" content="Bluesky Social">
+  <meta property="og:logo" content="https://web-cdn.bsky.app/static/favicon.png">
+  <meta name="twitter:site" content="@bluesky" />
+  <link type="application/activity+json" href="" />
+
+  <meta property="og:type" content="article">
+  <meta property="profile:username" content="feedflow.dev">
+  
+  <meta property="og:url" content="https://bsky.app/profile/feedflow.dev/post/3meojcvqtip2v">
+  <link rel="canonical" href="https://bsky.app/profile/feedflow.dev/post/3meojcvqtip2v" />
+  
+  
+  <meta property="og:title" content="@feedflow.dev">
+  
+  <meta name="description" content="A new release is out 🚀
+
+New in this update:
+• “Open Feed Website” action from feed lists
+• Option to hide feed loading error banners
+• Better Reader Mode readability (spacing on big screen + charset handling)
+• Font size on HDPI on Linux
+• Some good old bug fixing ">
+  <meta property="og:description" content="A new release is out 🚀
+
+New in this update:
+• “Open Feed Website” action from feed lists
+• Option to hide feed loading error banners
+• Better Reader Mode readability (spacing on big screen + charset handling)
+• Font size on HDPI on Linux
+• Some good old bug fixing ">
+  <meta property="twitter:description" content="A new release is out 🚀
+
+New in this update:
+• “Open Feed Website” action from feed lists
+• Option to hide feed loading error banners
+• Better Reader Mode readability (spacing on big screen + charset handling)
+• Font size on HDPI on Linux
+• Some good old bug fixing ">
+  
+  <meta property="og:image" content="https://cdn.bsky.app/img/avatar_thumbnail/plain/did:plc:sef7nk7ii4ibcswprfmh7tvs/bafkreiesg6c3sr43vlsv3f7uj6qxrd2cmdvvyeadruejrzq7ihsm3hocjm">
+  <meta property="twitter:image" content="https://cdn.bsky.app/img/avatar_thumbnail/plain/did:plc:sef7nk7ii4ibcswprfmh7tvs/bafkreiesg6c3sr43vlsv3f7uj6qxrd2cmdvvyeadruejrzq7ihsm3hocjm">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:label1" content="Posted At">
+  <meta name="twitter:value1" content="2026-02-12T17:28:39.256Z">
+  <meta name="twitter:label2" content="Likes">
+  <meta name="twitter:value2" content="1">
+  <meta property="article:published_time" content="2026-02-12T17:28:39.256Z">
+  <link rel="alternate" type="application/json+oembed" href="https://embed.bsky.app/oembed?format=json&url=at%3A%2F%2Fdid%3Aplc%3Asef7nk7ii4ibcswprfmh7tvs%2Fapp.bsky.feed.post%2F3meojcvqtip2v" />
+  <link rel="alternate" href="at://did:plc:sef7nk7ii4ibcswprfmh7tvs/app.bsky.feed.post/3meojcvqtip2v" />
+  <meta name="at:canonical" content="at://did:plc:sef7nk7ii4ibcswprfmh7tvs/app.bsky.feed.post/3meojcvqtip2v" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","url":"https://bsky.app/profile/feedflow.dev/post/3meojcvqtip2v","mainEntity":{"@type":"DiscussionForumPosting","url":"https://bsky.app/profile/feedflow.dev/post/3meojcvqtip2v","identifier":"at://did:plc:sef7nk7ii4ibcswprfmh7tvs/app.bsky.feed.post/3meojcvqtip2v","author":{"@type":"Person","name":"@feedflow.dev","identifier":"did:plc:sef7nk7ii4ibcswprfmh7tvs","url":"https://bsky.app/profile/feedflow.dev"},"text":"A new release is out 🚀\n\nNew in this update:\n• “Open Feed Website” action from feed lists\n• Option to hide feed loading error banners\n• Better Reader Mode readability (spacing on big screen + charset handling)\n• Font size on HDPI on Linux\n• Some good old bug fixing ","datePublished":"2026-02-12T17:28:39.256Z","interactionStatistic":[{"@type":"InteractionCounter","interactionType":"https://schema.org/LikeAction","userInteractionCount":1},{"@type":"InteractionCounter","interactionType":"https://schema.org/CommentAction","userInteractionCount":0},{"@type":"InteractionCounter","interactionType":"https://schema.org/ShareAction","userInteractionCount":1}]}}</script>
+  
+</head>
+<body>
+  <div id="splash">
+    <!-- Bluesky SVG -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 57"><path fill="#006AFF" d="M13.873 3.805C21.21 9.332 29.103 20.537 32 26.55v15.882c0-.338-.13.044-.41.867-1.512 4.456-7.418 21.847-20.923 7.944-7.111-7.32-3.819-14.64 9.125-16.85-7.405 1.264-15.73-.825-18.014-9.015C1.12 23.022 0 8.51 0 6.55 0-3.268 8.579-.182 13.873 3.805ZM50.127 3.805C42.79 9.332 34.897 20.537 32 26.55v15.882c0-.338.13.044.41.867 1.512 4.456 7.418 21.847 20.923 7.944 7.111-7.32 3.819-14.64-9.125-16.85 7.405 1.264 15.73-.825 18.014-9.015C62.88 23.022 64 8.51 64 6.55c0-9.818-8.578-6.732-13.873-2.745Z"/></svg>
+  </div>
+  <div id="root">
+  </div>
+
+  <noscript>
+    <div id="bsky_post_summary">
+  <h3>Post</h3>
+  <p id="bsky_display_name"></p>
+  <p id="bsky_handle">feedflow.dev</p>
+  <p id="bsky_did">did:plc:sef7nk7ii4ibcswprfmh7tvs</p>
+  <p id="bsky_post_text">A new release is out 🚀
+
+New in this update:
+• “Open Feed Website” action from feed lists
+• Option to hide feed loading error banners
+• Better Reader Mode readability (spacing on big screen + charset handling)
+• Font size on HDPI on Linux
+• Some good old bug fixing </p>
+  <p id="bsky_post_indexedat">2026-02-12T17:28:39.256Z</p>
+</div>
+    <div data-nosnippet>
+      <p lang="en">Enable JavaScript to use Bluesky.</p>
+      <p lang="en">Learn more about Bluesky at <a href="https://bsky.social">bsky.social</a> and <a href="https://atproto.com">atproto.com</a>.</p>
+    </div>
+  </noscript>
+</body>
+</html>

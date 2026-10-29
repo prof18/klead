@@ -1845,6 +1845,39 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `bluesky extractor reads the noscript post summary`() {
+        val result = parseHtmlForTest(
+            html = """
+                <div id="splash"><svg viewBox="0 0 64 57"><path d="M0 0"></path></svg></div>
+                <div id="root"></div>
+                <noscript>
+                  <div id="bsky_post_summary">
+                    <h3>Post</h3>
+                    <p id="bsky_display_name">Test Account</p>
+                    <p id="bsky_handle">test.example</p>
+                    <p id="bsky_post_text">First line of the post
+
+                Second paragraph
+                with a wrapped line</p>
+                  </div>
+                  <div data-nosnippet><p>Enable JavaScript to use Bluesky.</p></div>
+                </noscript>
+            """.trimIndent(),
+            url = "https://bsky.app/profile/test.example/post/abc123",
+            options = testOptions(debug = true),
+        )
+
+        assertEquals("Test Account", result.metadata.title)
+        assertEquals("Bluesky", result.metadata.site)
+        assertEquals(listOf("bluesky"), result.debug["extractorIds"])
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.startsWith("First line of the post"), markdown)
+        assertTrue(markdown.contains("Second paragraph"), markdown)
+        assertFalse(markdown.contains("Enable JavaScript"), markdown)
+        assertFalse(markdown.contains("svg"), markdown)
+    }
+
+    @Test
     fun `reddit extractor reads current reddit posts with full size media and comments`() {
         val result = parseHtmlForTest(
             html = """
