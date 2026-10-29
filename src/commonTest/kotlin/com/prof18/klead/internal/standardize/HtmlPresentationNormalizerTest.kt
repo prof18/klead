@@ -143,6 +143,41 @@ class HtmlPresentationNormalizerTest {
     }
 
     @Test
+    fun `removes zero heights and size containment that collapse content without publisher CSS`() {
+        val document = Ksoup.parse(
+            """<div id="masonry" style="height:0;width:100%"><div style="overflow:clip"><img src="pin.jpg"></div></div>
+                <div id="details" style="container-type:size;min-height:fit-content;width:100%"><p>Pin details</p></div>
+                <div id="named" style="container: card / size; margin: 0"><p>Named container</p></div>
+                <div id="text" style="max-height: 0px !important; padding: 2px">Collapsed text</div>""",
+        )
+
+        HtmlPresentationNormalizer.normalize(document.body())
+
+        assertEquals("width:100%", document.getElementById("masonry")!!.attr("style"))
+        assertEquals("min-height:fit-content; width:100%", document.getElementById("details")!!.attr("style"))
+        assertEquals("margin: 0", document.getElementById("named")!!.attr("style"))
+        assertEquals("padding: 2px", document.getElementById("text")!!.attr("style"))
+    }
+
+    @Test
+    fun `keeps zero heights on empty spacers and intrinsic ratio embed wrappers`() {
+        val document = Ksoup.parse(
+            """<div id="spacer" style="height: 0; clear: both"></div>
+                <div id="ratio" style="height:0;padding-bottom:56.25%;position:relative"><iframe src="https://www.youtube.com/embed/x" style="position:absolute"></iframe></div>
+                <div id="sized" style="height: 0.5em">Text</div>""",
+        )
+
+        HtmlPresentationNormalizer.normalize(document.body())
+
+        assertEquals("height: 0; clear: both", document.getElementById("spacer")!!.attr("style"))
+        assertEquals(
+            "height:0;padding-bottom:56.25%;position:relative",
+            document.getElementById("ratio")!!.attr("style"),
+        )
+        assertEquals("height: 0.5em", document.getElementById("sized")!!.attr("style"))
+    }
+
+    @Test
     fun `HTML presentation cleanup does not change the Markdown output`() {
         val input = """<!doctype html><html><body bgcolor="white" style="background-color: white; font-family: Arial; color: black">
             <table role="presentation" bgcolor="white"><tr><td style="font-family: Arial; font-size: 14px; color: black; padding: 8px">

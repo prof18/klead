@@ -19,12 +19,18 @@ internal object HtmlPresentationNormalizer {
             if (!element.hasAttr("style") && !resetListWhitespace) continue
             val original = element.attr("style")
             val declarations = CssDeclarations.split(original)
-            val retained = declarations.flatMap { declaration ->
-                val property = CssDeclarations.withoutComments(declaration).substringBefore(':').trim().lowercase()
+            val properties = declarations.map { declaration ->
+                CssDeclarations.withoutComments(declaration).substringBefore(':').trim().lowercase()
+            }
+            val retained = declarations.zip(properties).flatMap { (declaration, property) ->
                 when {
                     property == "font" -> semanticFontProperties(declaration)
 
                     property in READER_OWNED_PROPERTIES -> emptyList()
+
+                    property in LAYOUT_CONTEXT_PROPERTIES -> emptyList()
+
+                    isCollapsingZeroHeight(element, declaration, property, properties) -> emptyList()
 
                     property in LIST_WHITESPACE_PROPERTIES && element.normalName() in LIST_TAGS ->
                         listOf("white-space: normal")
@@ -45,6 +51,24 @@ internal object HtmlPresentationNormalizer {
                 }
             }
         }
+    }
+
+    /**
+     * Script-driven layouts (masonry grids, virtualized lists) ship `height: 0` and let their
+     * stylesheet or JavaScript size the box. Without them, the content is clipped away. Empty
+     * spacers and padding-based ratio boxes for embeds keep their zero height.
+     */
+    private fun isCollapsingZeroHeight(
+        element: Element,
+        declaration: String,
+        property: String,
+        properties: List<String>,
+    ): Boolean {
+        if (property !in ZERO_HEIGHT_PROPERTIES) return false
+        val value = CssDeclarations.withoutComments(declaration).substringAfter(':', "").trim()
+        if (!ZERO_LENGTH.matches(value)) return false
+        if (properties.any { it in RATIO_PADDING_PROPERTIES }) return false
+        return element.hasText() || element.selectFirst(VISIBLE_MEDIA) != null
     }
 
     private fun isVisualMarkup(element: Element): Boolean {
@@ -83,6 +107,15 @@ internal object HtmlPresentationNormalizer {
     private val LIST_TAGS = setOf("ul", "ol", "li")
     private val LIST_CONTAINERS = setOf("ul", "ol")
     private val LIST_WHITESPACE_PROPERTIES = setOf("white-space", "white-space-collapse")
+
+    // Container queries live in the publisher stylesheet; size containment alone gives the box
+    // zero height and lets an overflow-clipping ancestor hide everything inside it.
+    private val LAYOUT_CONTEXT_PROPERTIES = setOf("container", "container-type")
+
+    private val ZERO_HEIGHT_PROPERTIES = setOf("height", "max-height")
+    private val RATIO_PADDING_PROPERTIES = setOf("padding-top", "padding-bottom")
+    private val ZERO_LENGTH = Regex("""(?i)[+-]?0*\.?0+(?:[a-z]+|%)?\s*(?:!important)?""")
+    private const val VISIBLE_MEDIA = "img, picture, video, iframe, svg, canvas"
 
     private val READER_OWNED_PROPERTIES = setOf(
         "color",

@@ -70,6 +70,7 @@ import com.prof18.klead.internal.extractors.site.OpenNetProfile
 import com.prof18.klead.internal.extractors.site.PhoneArenaProfile
 import com.prof18.klead.internal.extractors.site.PhysOrgProfile
 import com.prof18.klead.internal.extractors.site.PianetaBasketProfile
+import com.prof18.klead.internal.extractors.site.PinterestProfile
 import com.prof18.klead.internal.extractors.site.PopCultureProfile
 import com.prof18.klead.internal.extractors.site.RedditProfile
 import com.prof18.klead.internal.extractors.site.ReutersProfile
@@ -226,6 +227,7 @@ internal object DefaultExtractors {
         TomshwProfile,
         VoxProfile,
         PianetaBasketProfile,
+        PinterestProfile,
         MacRumorsProfile,
         MacStoriesProfile,
         NASAProfile,
