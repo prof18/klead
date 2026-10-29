@@ -1845,6 +1845,65 @@ class SiteProfilePipelineTest {
     }
 
     @Test
+    fun `reddit extractor reads current reddit posts with full size media and comments`() {
+        val result = parseHtmlForTest(
+            html = """
+                <shreddit-post post-title="Island in the desert" author="poster" subreddit-prefixed-name="r/test">
+                  <h1 slot="title">Island in the desert</h1>
+                  <div slot="post-media-container">
+                    <img class="media-lightbox-img" src="https://preview.redd.it/island-v0-a.jpeg?width=640">
+                    <img class="media-lightbox-img" src="https://i.redd.it/a.jpeg">
+                    <img class="media-lightbox-img" src="https://i.redd.it/b.jpeg">
+                  </div>
+                  <shreddit-post-text-body slot="text-body">
+                    <div slot="text-body"><div property="schema:articleBody"><p>Found this place today.</p></div></div>
+                  </shreddit-post-text-body>
+                  <a href="https://reddit.onelink.me/app">View in app</a>
+                </shreddit-post>
+                <shreddit-comment-tree>
+                  <shreddit-comment author="first" thingId="t1_one" created="2026-10-23T23:14:42+0000"
+                      permalink="/r/test/comments/abc/comment/one/" score="2">
+                    <div id="t1_one-comment-rtjson-content" slot="comment"><p>Nice find</p></div>
+                    <shreddit-comment author="second" thingId="t1_two" created="2026-10-24T08:00:00+0000"
+                        permalink="/r/test/comments/abc/comment/two/" score="1">
+                      <div id="t1_two-comment-rtjson-content" slot="comment"><p>Agreed</p></div>
+                    </shreddit-comment>
+                  </shreddit-comment>
+                </shreddit-comment-tree>
+            """.trimIndent(),
+            url = "https://www.reddit.com/r/test/comments/abc/island_in_the_desert/",
+            options = testOptions(debug = true),
+        )
+
+        assertEquals("Island in the desert", result.metadata.title)
+        assertEquals("poster", result.metadata.author)
+        assertEquals("r/test", result.metadata.site)
+        assertEquals(listOf("reddit"), result.debug["extractorIds"])
+        assertEquals(
+            """
+            ![](https://i.redd.it/a.jpeg)
+
+            ![](https://i.redd.it/b.jpeg)
+
+            Found this place today.
+
+            ---
+
+            ## Comments
+
+            > **first** · [2026-10-23](https://reddit.com/r/test/comments/abc/comment/one/) · 2 points
+            >
+            > Nice find
+            >
+            > > **second** · [2026-10-24](https://reddit.com/r/test/comments/abc/comment/two/) · 1 point
+            > >
+            > > Agreed
+            """.trimIndent() + "\n",
+            result.content.requireMarkdown(),
+        )
+    }
+
+    @Test
     fun `reddit extractor preserves post body and nested comment trees`() {
         val result = parseHtmlForTest(
             html = """
