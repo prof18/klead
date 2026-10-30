@@ -61,6 +61,7 @@ import com.prof18.klead.internal.extractors.site.MaggieAppletonProfile
 import com.prof18.klead.internal.extractors.site.MashableProfile
 import com.prof18.klead.internal.extractors.site.MastodonProfile
 import com.prof18.klead.internal.extractors.site.MediumProfile
+import com.prof18.klead.internal.extractors.site.MinecraftProfile
 import com.prof18.klead.internal.extractors.site.MinuteMediaSiProfile
 import com.prof18.klead.internal.extractors.site.Motor1Profile
 import com.prof18.klead.internal.extractors.site.MotorsportProfile
@@ -182,6 +183,7 @@ internal object DefaultExtractors {
         GitHubProfile,
         GamingBoltProfile,
         GolemProfile,
+        MinecraftProfile,
         GuardianProfile,
         GuardianNewsletterProfile,
         AthleticNewsletterProfile,
