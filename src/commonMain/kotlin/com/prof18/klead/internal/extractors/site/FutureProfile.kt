@@ -2,7 +2,7 @@ package com.prof18.klead.internal.extractors.site
 
 internal object FutureProfile : com.prof18.klead.extractors.Extractor {
     override val id: String = "future"
-    override val domains: Set<String> = setOf("androidcentral.com")
+    override val domains: Set<String> = setOf("androidcentral.com", "pcgamer.com")
     override val postContentRemoveSelectors: List<String> = listOf(
         "[data-jwp-carousel]",
         ".van_vid_carousel",

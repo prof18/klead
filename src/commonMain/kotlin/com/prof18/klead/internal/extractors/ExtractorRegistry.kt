@@ -25,6 +25,7 @@ import com.prof18.klead.internal.extractors.site.CorriereProfile
 import com.prof18.klead.internal.extractors.site.DDayProfile
 import com.prof18.klead.internal.extractors.site.DagelijkseStandaardProfile
 import com.prof18.klead.internal.extractors.site.DaringFireballProfile
+import com.prof18.klead.internal.extractors.site.DexertoProfile
 import com.prof18.klead.internal.extractors.site.DwProfile
 import com.prof18.klead.internal.extractors.site.ElementorArchiveProfile
 import com.prof18.klead.internal.extractors.site.EntrepreneurProfile
@@ -32,6 +33,7 @@ import com.prof18.klead.internal.extractors.site.FinanzenProfile
 import com.prof18.klead.internal.extractors.site.FortuneProfile
 import com.prof18.klead.internal.extractors.site.FutureProfile
 import com.prof18.klead.internal.extractors.site.GameSpotProfile
+import com.prof18.klead.internal.extractors.site.GamingBoltProfile
 import com.prof18.klead.internal.extractors.site.GamingOnLinuxProfile
 import com.prof18.klead.internal.extractors.site.GeopopProfile
 import com.prof18.klead.internal.extractors.site.GitHubBlogProfile
@@ -175,8 +177,10 @@ internal object DefaultExtractors {
         ArsTechnicaProfile,
         ChatGptExtractor,
         ChipProfile,
+        DexertoProfile,
         GitHubBlogProfile,
         GitHubProfile,
+        GamingBoltProfile,
         GolemProfile,
         GuardianProfile,
         GuardianNewsletterProfile,

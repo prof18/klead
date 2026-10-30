@@ -12,8 +12,6 @@ CD Projekt joint CEO Michał Nowakowski [spoke warmly of BioWare](https://www.pc
 
 "19 years ago, an ambitious dream to bring an iconic book series into the world of video games came to life with the release of The Witcher. It was the start of an unforgettable path, which wouldn't have been possible without our friends at BioWare," CD Projekt wrote.
 
-Latest Videos FromPC Gamer
-
 "From lending us their Aurora Engine and sharing their knowledge, to giving us a spot at their booth at E3, their support helped turn our vision into Geralt’s first interactive adventure. Thank you to everyone who has walked the Path with us from the very beginning. Happy 19th anniversary, witchers!"
 
 > 19 years ago, an ambitious dream to bring an iconic book series into the world of video games came to life with the release of The Witcher. It was the start of an unforgettable path, which wouldn't have been possible without our friends at BioWare.
@@ -38,47 +36,3 @@ Even in an industry as riven with layoffs, closures, and general instability as 
 [**Witcher 3 console commands**](https://www.pcgamer.com/witcher-3-console-commands-cheats/): Cheat death
 
 TOPICS
-
-![Andy Chalk](https://cdn.mos.cms.futurecdn.net/hkTeZoDeGrvhQZtrNGPkbB-140-80.png.webp)
-
-US News Lead
-
-Andy has been gaming on PCs from the very beginning, starting as a youngster with text adventures and primitive action games on a cassette-based TRS80. From there he graduated to the glory days of Sierra Online adventures and Microprose sims, ran a local BBS, learned how to build PCs, and developed a longstanding love of RPGs, immersive sims, and shooters. He began writing videogame news in 2007 for The Escapist and somehow managed to avoid getting fired until 2014, when he joined the storied ranks of PC Gamer. He covers all aspects of the industry, from new game announcements and patch notes to legal disputes, Twitch beefs, esports, and Henry Cavill. Lots of Henry Cavill.
-
-Latest in News
-
-![Microsoft CEO Satya Nadella speaks at a Microsoft Frontier Tour event in the CNIT building at La Defense business district in Puteaux, near Paris, on October 20, 2026. (Photo by Dimitar DILKOFF / AFP via Getty Images)](https://cdn.mos.cms.futurecdn.net/wtsNvAj4Aybgmx5z4NWr9L-840-80.jpg.webp)
-
-Gaming Industry
-
-Microsoft is looking to cut more than 25% of its workforce
-
-![Microsoft&#039;s Internet speed test, in Bing](https://cdn.mos.cms.futurecdn.net/XPNunYuTzxJd3VH9mGq7tR-840-80.jpg.webp)
-
-Windows
-
-New Windows 11 Insider Experimental build adds the ability to check your internet speed without a browser
-
-![The left and right Steam Frame controllers on the Steam Frame box.](https://cdn.mos.cms.futurecdn.net/Jxk6NCA9KSnag5KwJx3fQT-840-80.jpg.webp)
-
-VR Hardware
-
-Valve adds CD-ROM support to Steam Frame kernel less than ten minutes after saying it would look into it
-
-![A split image of a screenshot from the game Portal, and a PlayStation 5 console](https://cdn.mos.cms.futurecdn.net/ZknvaoNEWA5JE3dS92VY77-840-80.jpg.webp)
-
-Hardware
-
-A whole host of Steam PC games can now run locally on a jailbroken PlayStation 5, including Portal, Left 4 Dead 2, and many more
-
-![call of duty modern warfare captain price](https://cdn.mos.cms.futurecdn.net/diU34JdSV5g2woXjLLsQDP-840-80.jpg.webp)
-
-Movies & TV
-
-Call of Duty's director explains that his film will be all about the 'consequence of war' and not just a shoot-'em-up
-
-![An undead paladin in World of Warcraft: Forever, running through the plaugelands. ](https://cdn.mos.cms.futurecdn.net/QpeMyYwaXhg3wvorTLpnnN-840-80.png.webp)
-
-World of Warcraft
-
-I have jumped in WoW: Forever's beta 7738 times, roughly 135 jumps an hour, and if you'd like to find out if you beat me there's a stat tracker
