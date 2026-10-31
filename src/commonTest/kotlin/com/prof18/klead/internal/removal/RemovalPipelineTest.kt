@@ -271,6 +271,8 @@ class RemovalPipelineTest {
                   <p style="opacity:0">Opacity hidden text.</p>
                   <p class="hidden md:block">Class hidden text.</p>
                   <p class="sm:invisible">Variant invisible text.</p>
+                  <div class="white-popup-block mfp-hide td-login-modal-wrap"><p>Popup login text.</p></div>
+                  <p class="mfp-with-anim">Popup-styled visible text.</p>
                 </article></body></html>
             """.trimIndent(),
             url = "https://example.com/hidden",
@@ -284,6 +286,8 @@ class RemovalPipelineTest {
         assertFalse(result.content.requireMarkdown().contains("Opacity hidden text."))
         assertFalse(result.content.requireMarkdown().contains("Class hidden text."))
         assertFalse(result.content.requireMarkdown().contains("Variant invisible text."))
+        assertFalse(result.content.requireMarkdown().contains("Popup login text."))
+        assertTrue(result.content.requireMarkdown().contains("Popup-styled visible text."))
     }
 
     @Test

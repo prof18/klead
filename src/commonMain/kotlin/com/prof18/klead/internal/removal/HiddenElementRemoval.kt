@@ -100,8 +100,11 @@ internal object HiddenElementRemoval {
         return null
     }
 
+    // `mfp-hide` is Magnific Popup's always-`display:none` class for inline popup sources such as
+    // login or newsletter modals that themes park inside the article.
     private fun String.isHiddenClass(): Boolean = this == "hidden" ||
         this == "invisible" ||
+        this == "mfp-hide" ||
         endsWith(":hidden") ||
         endsWith(":invisible")
 
