@@ -39,6 +39,34 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `main landmark holding only a search form does not hide the article`() {
+        val story = "The article text lives outside the mislabeled search landmark. ".repeat(12)
+        val document = Ksoup.parse(
+            """
+            <div id="nav" role="main"><form action="/search"><input type="text" name="q"></form></div>
+            <div id="review-body"><p>$story</p></div>
+            """.trimIndent(),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("body", detected.selectedSelector)
+        assertTrue(detected.element.text().contains("mislabeled search landmark"))
+    }
+
+    @Test
+    fun `nearly empty main landmark with a player and a search form still yields no content`() {
+        val document = Ksoup.parse(
+            """
+            <main><form><input type="search"></form><video src="/clip.mp4"></video><p>Short caption</p></main>
+            <footer><p>${"Footer legal text with many words. ".repeat(20)}</p></footer>
+            """.trimIndent(),
+        )
+
+        assertEquals("main:empty", MainContentDetector.detect(document).selectedSelector)
+    }
+
+    @Test
     fun `body fallback without a main landmark still returns the body`() {
         val document = Ksoup.parse(
             """

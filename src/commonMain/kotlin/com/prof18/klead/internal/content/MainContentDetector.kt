@@ -127,10 +127,15 @@ internal object MainContentDetector {
         candidates: List<Candidate>,
         scoreOf: (Element) -> ContentScore,
     ): Boolean {
-        val landmarks = candidates.filter { it.selector in mainLandmarkSelectors }
+        val landmarks = candidates.filter { it.selector in mainLandmarkSelectors && !it.element.isFormOnlyWidget() }
         return landmarks.isNotEmpty() &&
             landmarks.all { scoreOf(it.element).wordCount < BROAD_REFINEMENT_MIN_WORDS }
     }
+
+    // A landmark holding a form and no media is a mislabeled search or navigation widget (GSMArena puts
+    // role="main" on its search bar), not a video or gallery page whose content lives in a player.
+    private fun Element.isFormOnlyWidget(): Boolean =
+        selectFirstSafe(FORM_CONTROL_SELECTOR) != null && selectFirstSafe(MEDIA_SELECTOR) == null
 
     private fun score(element: Element, selectorIndex: Int, scoreOf: (Element) -> ContentScore): Double {
         val priorityBonus = (entryPointSelectors.size - selectorIndex) * 30.0
@@ -466,6 +471,8 @@ internal object MainContentDetector {
     private const val BROAD_REFINEMENT_MIN_WORDS = 50
     private const val NO_CONTENT_SELECTOR = "main:empty"
     private val mainLandmarkSelectors = setOf("main", """[role="main"]""")
+    private const val FORM_CONTROL_SELECTOR = "form, input, select, textarea"
+    private const val MEDIA_SELECTOR = "video, audio, iframe, img, picture, figure, object, embed"
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
     private const val BODY_REFINEMENT_MIN_WORDS = 80
     private const val PREFERRED_SELECTOR_MIN_WORDS = 80

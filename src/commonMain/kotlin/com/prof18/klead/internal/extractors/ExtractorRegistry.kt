@@ -39,6 +39,7 @@ import com.prof18.klead.internal.extractors.site.GeopopProfile
 import com.prof18.klead.internal.extractors.site.GitHubBlogProfile
 import com.prof18.klead.internal.extractors.site.GitHubProfile
 import com.prof18.klead.internal.extractors.site.GolemProfile
+import com.prof18.klead.internal.extractors.site.GsmArenaProfile
 import com.prof18.klead.internal.extractors.site.GuardianNewsletterProfile
 import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
@@ -153,6 +154,7 @@ internal object DefaultExtractors {
         MotorsportProfile,
         MinuteMediaSiProfile,
         PhoneArenaProfile,
+        GsmArenaProfile,
         SmartWorldProfile,
         PhysOrgProfile,
         ArmNewsroomProfile,
