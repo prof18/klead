@@ -69,6 +69,7 @@ import com.prof18.klead.internal.extractors.site.MotorsportProfile
 import com.prof18.klead.internal.extractors.site.NASAProfile
 import com.prof18.klead.internal.extractors.site.NilCoalescingProfile
 import com.prof18.klead.internal.extractors.site.NineToFiveProfile
+import com.prof18.klead.internal.extractors.site.NintendoEverythingProfile
 import com.prof18.klead.internal.extractors.site.NprProfile
 import com.prof18.klead.internal.extractors.site.ObsidianPublishProfile
 import com.prof18.klead.internal.extractors.site.OpenNetProfile
@@ -186,6 +187,7 @@ internal object DefaultExtractors {
         GamingBoltProfile,
         GolemProfile,
         MinecraftProfile,
+        NintendoEverythingProfile,
         GuardianProfile,
         GuardianNewsletterProfile,
         AthleticNewsletterProfile,
