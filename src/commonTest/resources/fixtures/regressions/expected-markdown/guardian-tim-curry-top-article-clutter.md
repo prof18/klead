@@ -8,8 +8,6 @@ Tim Curry, the versatile performer of screen and stage, who made his name as the
 
 Farewell, Dr Frank N Furter: why Tim Curry’s Rocky Horror Show will go on
 
-Read more
-
 Ironically, Curry’s best-known roles all required a considerable physical transformation, to the extent that he was unrecognisable in all of them. Frank-N-Furter, Rocky Horror’s deranged scientist, saw him daubed in garish makeup and wearing stockings and suspenders, for the stage show (which debuted in 1973) and the film adaptation (released in 1975). In the Ridley Scott-directed fantasy Legend (1985), he was equipped with giant horns and scarlet skin as the Lord of Darkness. And in 1990, Curry was transformed with full-face clown pancake to play Pennywise in the TV miniseries It, based on the [Stephen King](https://www.theguardian.com/books/stephenking) novel.
 
 ![Curry in heavy makeup, a black basque, stockings and suspenders.](https://i.guim.co.uk/img/static/sys-images/Guardian/Pix/pictures/2015/11/11/1447240700670/b3bf719a-ceb6-4fbd-a84d-7692fe555646-2060x1236.jpeg?width=620&dpr=2&s=none&crop=none)
@@ -19,8 +17,6 @@ Ironically, Curry’s best-known roles all required a considerable physical tran
 Alongside these show-stopping incarnations, Curry enjoyed a successful parallel career in film, TV and theatre. Born in 1946, he earned a degree in drama and English from the University of Birmingham in 1968 and embarked on a stage career. His first significant role was in the original cast for the first West End production of the controversial musical Hair, in 1968 – where he met Richard O’Brien, who would go on to cast him in his own musical, The [Rocky Horror Show](https://www.theguardian.com/culture/rocky-horror-show). Curry went on to play Tristan Tzara in Tom Stoppard’s Travesties (taking over the role from John Hurt and Robert Powell), and Mozart in the Broadway transfer of Amadeus in 1980. Later highlights included King Arthur in the Broadway run of the Monty Python musical Spamalot.
 
 ‘Risky is the best way to be’: Tim Curry on sexuality, surviving a stroke – and 50 years of stardom
-
-Read more
 
 Curry worked regularly in film, in roles including that of Robert Graves in Jerzy Skolimowski’s sinister The Shout, and later as Jeremy in the Ian McEwan-scripted political drama The Ploughman’s Lunch. Later, Curry found himself working largely in comedies – including Home Alone 2: Lost in New York, Muppet Treasure Island, Scary Movie 2, and McHale’s Navy – before providing voiceovers for numerous animated films, such as Garfield: A Tail of Two Kitties, A Turtle’s Tale: Sammy’s Adventures and Ribbit.
 
@@ -33,8 +29,6 @@ Curry was also a regular presence on TV for more than four decades, playing [Wil
 “I’ve had the opportunities,” he said to the [Guardian in 2025](https://www.theguardian.com/lifeandstyle/ng-interactive/2025/oct/14/risky-is-the-best-way-to-be-tim-curry-sexuality-surviving-stroke-50-years-stardom), “and I’m still showing up. You know? I think that’s what you have to do. You have to keep showing up.”
 
 Clowns, corsets and kings: Tim Curry – a life in pictures
-
-Read more
 
 In 2012, Curry had a stroke while receiving a massage and received brain surgery. He was left with mobility issues and his short-term memory was also affected. “It was an odd thing, because my father had a stroke and died very soon afterwards,” he said. “I knew I had to force myself to relax and just take the opportunity to float a little.”
 

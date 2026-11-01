@@ -40,8 +40,14 @@ internal fun isRecommendationSectionHeadingBlock(scan: BlockScan): Boolean {
     }
 
     val headings = element.select("h1, h2, h3, h4, h5, h6")
-    return headings.size == 1 && headings.first()?.text()?.trim()?.collapseWhitespace() == text
+    val isWrappedHeading = headings.size == 1 && headings.first()?.text()?.trim()?.collapseWhitespace() == text
+    // A label styled with a span or div, left behind once its card grid is emptied or stripped.
+    val isStyledLabel = headings.isEmpty() && element.select(RECOMMENDATION_LABEL_CONTENT_SELECTOR).isEmpty()
+    return isWrappedHeading || isStyledLabel
 }
+
+private const val RECOMMENDATION_LABEL_CONTENT_SELECTOR =
+    "a, img, figure, picture, video, iframe, table, pre, code, p, ul, ol, blockquote"
 
 internal fun isRecommendationSiblingAfterHeading(scan: BlockScan): Boolean {
     val element = scan.element

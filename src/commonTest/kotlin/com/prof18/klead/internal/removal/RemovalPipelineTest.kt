@@ -1469,6 +1469,32 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns remove recommendation labels wrapped in spans`() {
+        val document = Ksoup.parse(
+            """
+            <div id="root">
+              <article>
+                <p>The article introduction should stay because it is normal prose with useful information and enough words.</p>
+                <p>The article conclusion should also stay after the label is removed. <span><a href="https://example.com/next">Read more</a></span></p>
+              </article>
+              <div class="container-ft">
+                <div class="flex flex-col">
+                  <div class="flex items-center"><hr><div><span class="typography-level-2">Recommended For You</span></div></div>
+                </div>
+              </div>
+            </div>
+            """.trimIndent(),
+        )
+        val root = document.selectFirst("#root") ?: error("missing root")
+
+        RemovalPipeline.apply(root, mutableListOf())
+
+        assertTrue(root.text().contains("The article introduction should stay"))
+        assertTrue(root.text().contains("Read more"))
+        assertFalse(root.text().contains("Recommended For You"))
+    }
+
+    @Test
     fun `partial selectors remove prose heavy recommendation footer`() {
         val result = parseHtmlForTest(
             html = """

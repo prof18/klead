@@ -59,7 +59,3 @@ The anxiety is big business for the haunted boom of 2026. Book publisher Zando l
 The machines are writing the stuff now, too. Inkfluence AI, a fiction-writing platform, [says](https://www.inkfluenceai.com/ai-horror-story-generator) 3,929 horror books were started on it in the 180 days to Sept. 12, with haunted-house and ghost premises leading at about a third.
 
 *Generative AI was used for research assistance and/or transcription of this article. The reporter independently reported and verified the factual claims in this article, and a human editor reviewed it before publication. This article was updated with the Nasdaq movement on Friday.*
-
----
-
-Recommended For You
