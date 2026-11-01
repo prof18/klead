@@ -151,6 +151,29 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `inline prose link is kept when its aria label only repeats a url with a clutter token`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Jamie Dimon talked about the fortress balance sheet. His
+                <a aria-label="Go to https://example.com/documents/ar2015-ceolettershareholders.pdf"
+                  href="https://example.com/documents/ar2015-ceolettershareholders.pdf">2015 letter</a>
+                set aside a section to answer the question.</p>
+              <p>Readers can follow the story as it develops, and
+                <a aria-label="Share on X" href="https://x.com/intent/post">post it</a>
+                to their followers from the article page.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("His 2015 letter set aside a section"))
+        assertFalse(article.text().contains("post it"))
+    }
+
+    @Test
     fun `standalone links whose url names a clutter token are still removed`() {
         val document = Ksoup.parse(
             """

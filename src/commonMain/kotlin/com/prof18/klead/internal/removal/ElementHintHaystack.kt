@@ -9,7 +9,7 @@ internal fun elementHintHaystack(element: Element, includeId: Boolean = true, in
 
         for (attribute in element.attributes()) {
             val key = attribute.key.lowercase()
-            val value = attribute.value.asHintValue()?.takeIf { includeUrls || !it.looksLikeUrl() }
+            val value = attribute.value.asHintValue()?.let { if (includeUrls) it else it.withoutUrls() }
             if (key.startsWith("data-")) {
                 add(key)
                 value?.let(::add)
@@ -23,6 +23,14 @@ internal fun elementHintHaystack(element: Element, includeId: Boolean = true, in
 
 private fun String.looksLikeUrl(): Boolean =
     startsWith("/") || startsWith("http://", ignoreCase = true) || startsWith("https://", ignoreCase = true)
+
+// Labels like aria-label="Go to https://…" repeat the link target inside other text.
+private fun String.withoutUrls(): String? {
+    if (looksLikeUrl()) return null
+    return EMBEDDED_URL.replace(this, " ").trim().takeIf { it.isNotBlank() }
+}
+
+private val EMBEDDED_URL = Regex("""https?://\S+""", RegexOption.IGNORE_CASE)
 
 private fun String.asHintValue(): String? = trim()
     .takeIf { it.isNotBlank() }
