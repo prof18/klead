@@ -8,4 +8,6 @@ data class KleadMetadata(
     val author: String?,
     val site: String?,
     val language: String? = null,
+    /** True when a site extractor chose the content instead of generic content detection. */
+    val fromSiteProfile: Boolean = false,
 )

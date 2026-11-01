@@ -338,6 +338,8 @@ internal object KleadParser {
                     image = metadata.image,
                     author = metadata.author,
                     site = metadata.site,
+                    fromSiteProfile = extractorResult?.contentHtml != null ||
+                        detected.debug.extractorContentSelector != null,
                 ),
                 debug = buildDebug(
                     options,

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0 — Unreleased
+
+- First stable release. The public API now follows semantic versioning.
+- `KleadMetadata.fromSiteProfile` reports whether a site extractor chose the content. Apps that reject short results can keep short posts from known sites, such as a Reddit image post or a GitHub tag page.
+
 ## 0.0.1-alpha12 — 2026-10-22
 
 - Fixed crashes on iOS and other Kotlin/Native targets when pages nest markup, JSON-LD or JSON data very deeply, or contain long hyphenated text or oversized `lang` attributes. These overflowed the stack and terminated the host app. Content nested more than 64 levels deep is now flattened to its text, and debug output reports it as `depthLimitedSubtrees`.

@@ -9,18 +9,27 @@ Supported targets: JVM, Android, iOS, and native macOS on Apple
 silicon and Intel. Kotlin deprecates the `macosX64` target as of 2.3.20, so Intel
 native support is transitional.
 
-## Alpha status
+## Used in production
 
-Klead is currently in alpha. Its API and output may change as it is tested against
-more sites.
+Klead is the article-extraction engine of [FeedFlow](https://www.feedflow.dev/), the
+open-source RSS reader available for Android, iOS, macOS, Windows, and Linux. Its
+behavior has been shaped by real-world FeedFlow usage and the reports received
+through the [FeedFlow issue tracker](https://github.com/prof18/feed-flow/issues). You
+can also browse the [FeedFlow source code](https://github.com/prof18/feed-flow).
 
-It is already being used as an experimental article-extraction engine in
-[FeedFlow](https://www.feedflow.dev/), the open-source RSS reader available for
-Android, iOS, macOS, Windows, and Linux. The results have been very promising so
-far. Klead will evolve toward a stable release based on real-world FeedFlow usage
-and the reports received through the [FeedFlow issue
-tracker](https://github.com/prof18/feed-flow/issues). You can also browse the
-[FeedFlow source code](https://github.com/prof18/feed-flow).
+The public API follows semantic versioning from 1.0.0. Extraction output keeps
+improving as more sites are covered, so minor and patch releases can change the
+content returned for a given page.
+
+## Installation
+
+Klead is published on Maven Central. Add it to the source set that needs it:
+
+```kotlin
+commonMain.dependencies {
+    implementation("com.prof18:klead:1.0.0")
+}
+```
 
 ## Features
 
@@ -54,6 +63,8 @@ suspend fun renderArticle(html: String, url: String): String {
 The result also exposes page metadata through `result.metadata`. Its nullable
 `language` field contains a normalized declared page language (for example, `it`
 or `it-IT`) when the source provides an unambiguous, valid declaration.
+`fromSiteProfile` is true when a site extractor chose the content instead of generic
+content detection, so a short result there is the page's real content.
 
 Choose the output that fits your use case. To request both Markdown and cleaned HTML:
 
