@@ -9,18 +9,6 @@ Supported targets: JVM, Android, iOS, and native macOS on Apple
 silicon and Intel. Kotlin deprecates the `macosX64` target as of 2.3.20, so Intel
 native support is transitional.
 
-## Used in production
-
-Klead is the article-extraction engine of [FeedFlow](https://www.feedflow.dev/), the
-open-source RSS reader available for Android, iOS, macOS, Windows, and Linux. Its
-behavior has been shaped by real-world FeedFlow usage and the reports received
-through the [FeedFlow issue tracker](https://github.com/prof18/feed-flow/issues). You
-can also browse the [FeedFlow source code](https://github.com/prof18/feed-flow).
-
-The public API follows semantic versioning from 1.0.0. Extraction output keeps
-improving as more sites are covered, so minor and patch releases can change the
-content returned for a given page.
-
 ## Installation
 
 Klead is published on Maven Central. Add it to the source set that needs it:
