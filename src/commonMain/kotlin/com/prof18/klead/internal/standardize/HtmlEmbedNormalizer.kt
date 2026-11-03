@@ -71,6 +71,17 @@ internal object HtmlEmbedNormalizer {
             applyEmbedAttributes(iframe, video, video.defaultTitle)
             placeholder.replaceWith(iframe)
         }
+
+        // WP YouTube Lyte renders a thumbnail in div#WYL_<videoId> and loads the player on click.
+        content.select("""div[id^="WYL_"]""").forEach { placeholder ->
+            val video = TrustedEmbeds.youtubeVideoFromId(placeholder.id().removePrefix("WYL_"))
+                ?.takeIf { it.normalizedIframeSrc != null }
+                ?: return@forEach
+            val iframe = Element("iframe")
+            applyEmbedAttributes(iframe, video, video.defaultTitle)
+            val wrapper = placeholder.parent()?.takeIf { it.hasClass("lyte-wrapper") } ?: placeholder
+            wrapper.replaceWith(iframe)
+        }
     }
 
     private fun applyEmbedAttributes(iframe: Element, media: TrustedMarkdownMedia, title: String) {

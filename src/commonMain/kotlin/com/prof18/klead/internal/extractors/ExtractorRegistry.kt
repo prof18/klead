@@ -91,6 +91,7 @@ import com.prof18.klead.internal.extractors.site.StatistaProfile
 import com.prof18.klead.internal.extractors.site.SteamPartnerEventExtractor
 import com.prof18.klead.internal.extractors.site.StripeDocsProfile
 import com.prof18.klead.internal.extractors.site.SubstackProfile
+import com.prof18.klead.internal.extractors.site.SupercarBlondieProfile
 import com.prof18.klead.internal.extractors.site.TechCrunchProfile
 import com.prof18.klead.internal.extractors.site.TomshwProfile
 import com.prof18.klead.internal.extractors.site.TunjidProfile
@@ -201,6 +202,7 @@ internal object DefaultExtractors {
         RedditProfile,
         ReutersProfile,
         StripeDocsProfile,
+        SupercarBlondieProfile,
         SteamPartnerEventExtractor,
         StatistaProfile,
         WallStreetJournalExtractor,

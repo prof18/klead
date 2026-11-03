@@ -2286,6 +2286,32 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `wp youtube lyte placeholder normalizes to safe iframe`() {
+        val article = article(
+            """
+            <article>
+              <p>Watch the tour</p>
+              <figure class="wp-block-embed-youtube">
+                <div class="lyte-wrapper"><div class="lyMe hidef" id="WYL_fCAuGbaybkY">
+                  <img src="https://i.ytimg.com/vi/fCAuGbaybkY/0.jpg" alt="">
+                </div></div>
+              </figure>
+              <div id="WYL_not a video"><img src="/photo.jpg" alt="Photo"></div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        val iframes = article.select("iframe")
+        assertEquals(1, iframes.size)
+        assertEquals("https://www.youtube-nocookie.com/embed/fCAuGbaybkY", iframes.first()?.attr("src"))
+        assertEquals("https://www.youtube.com/watch?v=fCAuGbaybkY", iframes.first()?.attr("data-klead-video-url"))
+        assertTrue(article.select("""img[src*="ytimg.com"]""").isEmpty())
+        assertNotNull(article.selectFirst("""img[src$="/photo.jpg"]"""))
+    }
+
+    @Test
     fun `source only picture and empty image wrappers are removed without leaving reserved space`() {
         val article = article(
             """<article>
