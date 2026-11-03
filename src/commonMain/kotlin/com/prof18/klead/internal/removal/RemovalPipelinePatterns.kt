@@ -16,6 +16,10 @@ internal val EXACT_SELECTORS = listOf(
     "select",
     "textarea",
     "[role=navigation]",
+    // Popovers, modals and tooltips are transient UI that sites ship hidden in the DOM beside the article.
+    "[role=alertdialog]",
+    "[role=dialog][aria-modal=true]",
+    "[role=tooltip]",
     "#comments",
     "#discussion",
     "#article-comments",
