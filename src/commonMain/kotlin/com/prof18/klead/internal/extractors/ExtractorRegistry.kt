@@ -79,6 +79,7 @@ import com.prof18.klead.internal.extractors.site.PhysOrgProfile
 import com.prof18.klead.internal.extractors.site.PianetaBasketProfile
 import com.prof18.klead.internal.extractors.site.PinterestProfile
 import com.prof18.klead.internal.extractors.site.PopCultureProfile
+import com.prof18.klead.internal.extractors.site.RealtorProfile
 import com.prof18.klead.internal.extractors.site.RedditProfile
 import com.prof18.klead.internal.extractors.site.ReutersProfile
 import com.prof18.klead.internal.extractors.site.RollingStoneProfile
@@ -199,6 +200,7 @@ internal object DefaultExtractors {
         MastodonProfile,
         BlueskyProfile,
         MediumProfile,
+        RealtorProfile,
         RedditProfile,
         ReutersProfile,
         StripeDocsProfile,
