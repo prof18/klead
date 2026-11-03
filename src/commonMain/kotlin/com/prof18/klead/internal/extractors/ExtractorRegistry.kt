@@ -2,6 +2,7 @@ package com.prof18.klead.internal.extractors
 
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.extractors.site.AlJazeeraProfile
 import com.prof18.klead.internal.extractors.site.AndroidAuthorityProfile
 import com.prof18.klead.internal.extractors.site.AndroidPoliceProfile
 import com.prof18.klead.internal.extractors.site.AnsaProfile
@@ -229,6 +230,7 @@ internal object DefaultExtractors {
         CorriereProfile,
         IlFattoQuotidianoProfile,
         GeopopProfile,
+        AlJazeeraProfile,
         AnsaProfile,
         IPhoneItaliaProfile,
         ISpazioProfile,
