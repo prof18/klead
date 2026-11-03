@@ -105,6 +105,7 @@ internal object MainContentDetector {
         if (selected.element.tagName() == "body") {
             refineBodyToTitledPost(selected, scoreOf)?.let { selected = it }
         }
+        refineBodyToShortTitledArticle(selected, scoreOf)?.let { selected = it }
         if (selected.element.tagName() == "body") {
             detectTableLayout(selected.element, scoreOf)?.let { selected = it }
         }
@@ -300,6 +301,17 @@ internal object MainContentDetector {
         return Candidate(post, "div.post", postScore.total)
     }
 
+    private fun refineBodyToShortTitledArticle(selected: Candidate, scoreOf: (Element) -> ContentScore): Candidate? {
+        // A short post (a title, a sentence and embedded media) scores below the word thresholds above, so the body
+        // fallback would return the whole site chrome. A lone <article> that owns the page's h1 is the post.
+        if (selected.element.tagName() != "body") return null
+        val articles = selected.element.select("article")
+        val article = articles.singleOrNull()?.takeIf { it.selectFirst("h1") != null } ?: return null
+        val articleScore = scoreOf(article)
+        return Candidate(article, "article", articleScore.total)
+            .takeIf { articleScore.wordCount >= SHORT_ARTICLE_MIN_WORDS }
+    }
+
     private fun Element.isDescendantOf(ancestor: Element): Boolean = parents().any { it === ancestor }
 
     private fun detectTableLayout(body: Element, scoreOf: (Element) -> ContentScore): Candidate? {
@@ -475,6 +487,7 @@ internal object MainContentDetector {
     private const val MEDIA_SELECTOR = "video, audio, iframe, img, picture, figure, object, embed"
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
     private const val BODY_REFINEMENT_MIN_WORDS = 80
+    private const val SHORT_ARTICLE_MIN_WORDS = 15
     private const val PREFERRED_SELECTOR_MIN_WORDS = 80
     private const val PREFERRED_SELECTOR_SHORT_MIN_WORDS = 35
     private const val PREFERRED_SELECTOR_MIN_PARAGRAPHS = 2
