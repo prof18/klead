@@ -218,6 +218,7 @@ internal object RemovalPipeline {
             val scan = BlockScan(element)
             if (isProtected(element, scan.haystack) || isLikelyProse(scan)) continue
             if (element.isNestedListContent()) continue
+            if (element.isHeadedOutboundLinkList(links)) continue
             val text = scan.text
             val linkText = links.sumOf { it.text().length }
             val linkDensity = if (text.isBlank()) 0.0 else linkText.toDouble() / text.length
@@ -579,7 +580,9 @@ internal object RemovalPipeline {
 private fun Element.matchesPartialClutter(): Boolean {
     val nonIdHaystack = elementHintHaystack(this, includeId = false)
     val hintMatches = PARTIAL_PATTERNS.any { it in nonIdHaystack }
-    if (hintMatches && !(linkTargetIsOnlyClutterHint() && isLinkInsideProse())) return true
+    if (hintMatches && !(linkTargetIsOnlyClutterHint() && (isLinkInsideProse() || linksToDocumentFile()))) {
+        return true
+    }
 
     val id = id().trim().lowercase()
     if (id.isEmpty()) return false
@@ -604,6 +607,42 @@ private fun Element.isLinkInsideProse(): Boolean {
     val surroundingText = block.text().length - text().length
     return surroundingText >= MIN_PROSE_TEXT_AROUND_LINK
 }
+
+// A download like ".../Advertisement2_October_2026.pdf" is the article's source document,
+// never a share button or an ad, whatever words its file name carries.
+private fun Element.linksToDocumentFile(): Boolean {
+    if (normalName() != "a") return false
+    val path = attr("href").substringBefore('#').substringBefore('?').lowercase()
+    return DOCUMENT_FILE_EXTENSIONS.any { path.endsWith(it) }
+}
+
+// An article's own "Essential links" or "Sources" section: a list right under a heading,
+// each item a single descriptive link, pointing at several different sites. Navigation
+// menus and related-article lists link back to the publisher's own pages instead.
+private fun Element.isHeadedOutboundLinkList(links: List<Element>): Boolean {
+    if (normalName() != "ul" && normalName() != "ol") return false
+    val heading = previousElementSibling()
+    val underArticleHeading = heading != null &&
+        heading.normalName() in OUTBOUND_LIST_HEADING_TAGS &&
+        !RECOMMENDATION_HEADING_PATTERN.containsMatchIn(heading.text())
+    val items = children()
+    val singleDescriptiveLinks = items.size == links.size && items.all { item ->
+        item.normalName() == "li" &&
+            item.select("a").size == 1 &&
+            item.text().wordCount() >= MIN_OUTBOUND_LINK_WORDS
+    }
+    if (!underArticleHeading || !singleDescriptiveLinks) return false
+    val hosts = links.mapNotNullTo(mutableSetOf()) { link ->
+        ABSOLUTE_LINK_HOST.find(link.attr("href"))?.groupValues?.get(1)?.lowercase()?.removePrefix("www.")
+    }
+    return hosts.size >= MIN_OUTBOUND_LINK_HOSTS
+}
+
+private val DOCUMENT_FILE_EXTENSIONS = listOf(".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt")
+private val OUTBOUND_LIST_HEADING_TAGS = setOf("h2", "h3", "h4", "h5", "h6")
+private val ABSOLUTE_LINK_HOST = Regex("""^https?://([^/:?#]+)""", RegexOption.IGNORE_CASE)
+private const val MIN_OUTBOUND_LINK_WORDS = 3
+private const val MIN_OUTBOUND_LINK_HOSTS = 3
 
 private val PROSE_LINK_BLOCK_TAGS = setOf("p", "li", "blockquote", "dd", "figcaption")
 private const val MIN_PROSE_TEXT_AROUND_LINK = 20

@@ -194,6 +194,66 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `standalone document download is kept when only its file name contains a clutter token`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Body paragraph with enough words to clearly be the article content and remain present here.</p>
+              <ul>
+                <li><a href="https://files.example.com/2026/10/Advertisement2_October_2026.pdf">Notice PDF</a></li>
+              </ul>
+              <ul><li><a href="https://example.com/advertise-with-us/">Advertise</a></li></ul>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Notice PDF"))
+        assertFalse(article.text().contains("Advertise"))
+    }
+
+    @Test
+    fun `link list under a heading pointing at several sites is kept as article content`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Body paragraph with enough words to clearly be the article content and remain present here.</p>
+              <h3>Essential Links for the Recruitment</h3>
+              <ul>
+                <li><a href="https://apply.example.org/form">Apply Online for all posts</a></li>
+                <li><a href="https://www.institute.example.gov/">Visit the Official Website</a></li>
+                <li><a href="https://whatsapp.example.com/channel/1">Join our WhatsApp Channel</a></li>
+              </ul>
+              <p>Apply before the last day and keep your documents ready for the interview.</p>
+              <h3>Related Articles</h3>
+              <ul>
+                <li><a href="https://one.example.com/a">First related story headline here</a></li>
+                <li><a href="https://two.example.com/b">Second related story headline here</a></li>
+                <li><a href="https://three.example.com/c">Third related story headline here</a></li>
+              </ul>
+              <h3>More from the site</h3>
+              <ul>
+                <li><a href="/jobs/one">Bank jobs this week listed</a></li>
+                <li><a href="/jobs/two">Railway jobs this week listed</a></li>
+                <li><a href="/jobs/three">Teaching jobs this week listed</a></li>
+              </ul>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Apply Online for all posts"))
+        assertTrue(article.text().contains("Visit the Official Website"))
+        assertTrue(article.text().contains("Join our WhatsApp Channel"))
+        assertFalse(article.text().contains("First related story headline"))
+        assertFalse(article.text().contains("Bank jobs this week"))
+    }
+
+    @Test
     fun `delimiter-less anchor id is kept even when it contains a clutter token`() {
         val document = Ksoup.parse(
             """
