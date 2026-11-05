@@ -64,6 +64,8 @@ internal val EXACT_SELECTORS = listOf(
     ".ad",
     ".ads",
     ".advertisement",
+    // Google AdSense slot; its wrapper reserves the ad's height with an inline min-height.
+    ".adsbygoogle",
     ".comments",
     ".social-comments",
     ".comment",

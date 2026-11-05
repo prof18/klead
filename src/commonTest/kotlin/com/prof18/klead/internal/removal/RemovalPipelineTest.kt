@@ -374,6 +374,30 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `adsense slots are removed with the wrappers that reserve their height`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>Opening article paragraph with enough ordinary prose to be trusted as the body of this page, describing the recruitment drive and who can apply for it.</p>
+                  <div class="code-block-center">
+                    <div style="min-height:250px; text-align:center; margin:16px auto;">
+                      <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-1" data-ad-slot="2"></ins>
+                    </div>
+                  </div>
+                  <p>Closing article paragraph with enough ordinary prose to keep the default removal attempt, explaining the application window and the documents to upload.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/recruitment",
+        )
+
+        val html = result.content.requireHtml()
+        assertTrue(html.contains("Opening article paragraph"))
+        assertTrue(html.contains("Closing article paragraph"))
+        assertFalse(html.contains("adsbygoogle"))
+        assertFalse(html.contains("min-height"))
+    }
+
+    @Test
     fun `hidden floating alerts are removed while inline alerts and article diagrams survive`() {
         val document = Ksoup.parse(
             """
