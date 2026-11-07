@@ -95,6 +95,7 @@ import com.prof18.klead.internal.extractors.site.SubstackProfile
 import com.prof18.klead.internal.extractors.site.SupercarBlondieProfile
 import com.prof18.klead.internal.extractors.site.TechCrunchProfile
 import com.prof18.klead.internal.extractors.site.TheHinduProfile
+import com.prof18.klead.internal.extractors.site.TimesOfIndiaProfile
 import com.prof18.klead.internal.extractors.site.TomshwProfile
 import com.prof18.klead.internal.extractors.site.TunjidProfile
 import com.prof18.klead.internal.extractors.site.ValnetProfile
@@ -244,6 +245,7 @@ internal object DefaultExtractors {
         DagelijkseStandaardProfile,
         TechCrunchProfile,
         TheHinduProfile,
+        TimesOfIndiaProfile,
         TomshwProfile,
         VoxProfile,
         PianetaBasketProfile,
