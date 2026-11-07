@@ -311,7 +311,7 @@ internal object HtmlImageNormalizer {
     )
 
     private val EXTERNAL_PLACEHOLDER_FILENAME = Regex(
-        """placeholder\.(?:png|gif|jpe?g|webp|svg)""",
+        """(?:placeholder|(?:[a-z0-9]+[_-])?spacer)\.(?:png|gif|jpe?g|webp|svg)""",
         RegexOption.IGNORE_CASE,
     )
     private val ASPECT_PLACEHOLDER_PADDING_VALUE = Regex(

@@ -47,6 +47,30 @@ class HtmlImageNormalizerTest {
     }
 
     @Test
+    fun `spacer URL with replacement is replaced while spacer-like article filename is kept`() {
+        val document = Ksoup.parse(
+            """
+            <div>
+              <img src="https://cdn.example/theme/1x1_spacer.png" data-original="https://cdn.example/real.jpg">
+              <img src="https://cdn.example/spacer.gif" data-src="https://cdn.example/other.jpg">
+              <img src="https://cdn.example/office-spacer-room.jpg" data-src="https://cdn.example/lazy.jpg">
+            </div>
+            """.trimIndent(),
+        )
+
+        HtmlImageNormalizer.normalizeImages(document)
+
+        assertEquals(
+            listOf(
+                "https://cdn.example/real.jpg",
+                "https://cdn.example/other.jpg",
+                "https://cdn.example/office-spacer-room.jpg",
+            ),
+            document.select("img").map { it.attr("src") },
+        )
+    }
+
+    @Test
     fun `normal source with data-src remains unchanged`() {
         val document = Ksoup.parse(
             """<img src="https://cdn.example/real.jpg" data-src="https://cdn.example/other.jpg">""",

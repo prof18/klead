@@ -459,6 +459,30 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `picture whose lazy attribute repeats the spacer src is not a duplicate of an earlier spacer image`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>Opening paragraph with enough ordinary prose, punctuation, and stable sentence structure to keep the normal parser result. It intentionally carries enough words for the retry controller to trust the cleaned output instead of falling back to a sparse-page policy.</p>
+                  <a href="https://example.com/author/"><img src="https://example.com/1x1_spacer.png" alt=""></a>
+                  <picture>
+                    <source srcset="https://cdn.example.com/lead-1200.jpg">
+                    <img src="https://example.com/1x1_spacer.png" data-original="https://example.com/1x1_spacer.png" alt="Lead photo">
+                  </picture>
+                  <p>Closing paragraph that keeps the selected content stable after image cleanup, with enough words and punctuation to stay part of the article body.</p>
+                  <img src="https://cdn.example.com/chart.png" alt="Chart">
+                  <img src="https://cdn.example.com/chart.png" alt="Chart">
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/lazy-spacer-picture",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("![Lead photo](https://cdn.example.com/lead-1200.jpg)"), markdown)
+        assertEquals(1, Regex("""!\[Chart]""").findAll(markdown).count(), markdown)
+    }
+
+    @Test
     fun `hidden section bodies remove orphan headings`() {
         val result = parseHtmlForTest(
             html = """

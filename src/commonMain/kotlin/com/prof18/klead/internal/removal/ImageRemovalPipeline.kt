@@ -172,7 +172,9 @@ internal object ImageRemovalPipeline {
             "data-url",
             "data-image-loader",
         )
-        if (lazySource != null) return lazySource
+        // A lazy attribute repeating the src (The Hindu sets data-original to the same 1x1 spacer) names the
+        // placeholder, not the image, and would make every such image a duplicate of the first.
+        if (lazySource != null && lazySource != attr("src").trim()) return lazySource
 
         val pictureSrcset = parents().firstOrNull { it.normalName() == "picture" }
             ?.selectFirst("source[srcset], source[srcSet], source[data-srcset]")
