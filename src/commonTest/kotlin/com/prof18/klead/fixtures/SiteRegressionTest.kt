@@ -331,6 +331,29 @@ class SiteRegressionTest {
         assertFalse(markdown.contains("Sponsor Content"))
         assertFalse(result.content.requireHtml().contains("<svg"))
     }
+
+    @Test
+    fun `GameSpot video page links the player poster to the video and omits page chrome`() {
+        val name = "gamespot-video-page"
+        val input = CommonTestResources.read("fixtures/regressions/input-html/$name.html")
+        val result = parseHtmlForTest(input, FixtureLoader.extractUrl(name, input), testOptions())
+        val markdown = result.content.requireMarkdown()
+
+        assertEquals("We Analyzed Every Official GTA 6 Screenshot Continued", result.metadata.title)
+        assertTrue(result.metadata.fromSiteProfile)
+        assertTrue(
+            markdown.startsWith(
+                "[![Watch the video](https://cdn.jwplayer.com/v2/media/ajZyRBnt/poster.jpg?width=1280)]" +
+                    "(https://cdn.jwplayer.com/videos/ajZyRBnt-d180wq8m.mp4)",
+            ),
+        )
+        assertEquals(1, Regex("More secrets, details, and analysis").findAll(markdown).count())
+        assertFalse(markdown.contains("Copy link"))
+        assertFalse(markdown.contains("Follow Us"))
+        assertFalse(markdown.contains("Featured In This Story"))
+        assertFalse(markdown.contains("Jake has been playing games"))
+        assertFalse(markdown.contains("Latest News"))
+    }
 }
 
 internal data class SiteRegressionCase(

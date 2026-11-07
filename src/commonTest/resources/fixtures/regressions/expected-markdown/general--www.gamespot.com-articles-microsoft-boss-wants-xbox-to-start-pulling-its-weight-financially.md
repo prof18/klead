@@ -9,8 +9,6 @@
 
 "No one can accuse Microsoft of not having invested for the last 25 years."
 
-[Follow Us](https://google.com/preferences/source?q=gamespot.com)
-
 While the new Xbox leadership team under CEO Asha Sharma has been on a charm offensive lately–while also promising a “reset” for the division that [suggests layoffs are on the way](https://www.gamespot.com/articles/xbox-reportedly-planning-big-layoffs-for-next-month/)–Microsoft CEO Satya Nadella got down to brass tacks recently. During a panel at the New York Times Hard Fork event, Nadella spoke about how Xbox will have to find a way to become more profitable as it enters a new era.
 
 “No one can accuse Microsoft of not having invested for the last 25 years,” Nadella said. “And now we have to turn this into a sustainable business that delivers what is fundamentally one of the best sources of entertainment. The challenge we have is that we’ve not been monetizing that entertainment. In fact, if anything, we’ve been subsidizing that entertainment. There’s more monetization of Xbox games happening on YouTube than at Microsoft.
