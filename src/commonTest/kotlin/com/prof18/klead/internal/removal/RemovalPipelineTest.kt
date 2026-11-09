@@ -39,6 +39,38 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `skip links preferred source buttons and text role buttons are removed while prose links and media stay`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <div><a href="https://www.google.com/preferences/source?q=example.com"><svg viewBox="0 0 20 20"><path d="M0 0" /></svg>Prefer Example on Google</a></div>
+              <section>
+                <a href="#post-1"><span>Skip next section Merz to nominate Aigner</span></a>
+                <h2>Merz to nominate Aigner</h2>
+                <p>Live update prose stays. See the <a href="#post-2">second update</a> for more.</p>
+                <p>Pick us as a preferred source by <a href="https://www.google.com/preferences/source?q=example.com">clicking here</a> today.</p>
+              </section>
+              <div role="button" tabindex="0">Show more posts</div>
+              <div role="button" tabindex="0"><span>View image in full size</span><picture><img src="https://example.com/photo.jpg" alt="Photo"></picture></div>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        val text = article.text()
+        assertFalse(text.contains("Prefer Example on Google"))
+        assertFalse(text.contains("Skip next section"))
+        assertFalse(text.contains("Show more posts"))
+        assertTrue(article.select("svg").isEmpty())
+        assertTrue(text.contains("Merz to nominate Aigner"))
+        assertNotNull(article.selectFirst("a[href=#post-2]"))
+        assertNotNull(article.selectFirst("p a[href*=preferences/source]"))
+        assertNotNull(article.selectFirst("img[src=https://example.com/photo.jpg]"))
+    }
+
+    @Test
     fun `interactive quiz block is removed without taking surrounding article prose`() {
         val document = Ksoup.parse(
             """

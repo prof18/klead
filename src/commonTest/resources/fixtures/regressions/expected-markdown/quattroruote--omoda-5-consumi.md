@@ -1,7 +1,3 @@
-SFOGLIA LA GALLERY
-
-[Aggiungi Quattroruote ai preferiti su Google](https://www.google.com/preferences/source?q=quattroruote.it)
-
 La [****Omoda 5****](https://www.quattroruote.it/prove/premium/2025/omoda_5_il_problema_e_delle_altre.html) è una delle ****SUV full hybrid**** più interessanti oggigiorno sul mercato (che le sta dando ragione): il prezzo è da ****Dacia Duster****, ma finiture e dotazione la portano a vedersela con rivali come ****Hyundai Tucson**** o ****Nissan Qashqai****, che partono da cifre ben più alte.
 
 Lunga ****445 cm****, la Omoda 5 ha ****linee personali****, con una grande calandra, proiettori verticali e luci diurne a filo del cofano. Il posteriore ha un andamento filante, quasi da ****SUV-coupé****. Il ****passo di 261 cm**** permette a cinque adulti di viaggiare comodi, anche dietro, con tanto ****agio per le gambe**** e in larghezza. Discretamente curate le finiture, così come i materiali: la plancia è dominata da un pannello che racchiude i ****due display da 12,4” ciascuno****. Il bagagliaio paga pegno alla silhouette dell’auto e mette a disposizione ****312 litri, rilevati dal Centro prove**** (di cui 36 sotto il pavimento).

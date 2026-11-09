@@ -172,7 +172,12 @@ internal object RemovalPipeline {
                     removeTableOfContentsBlock(element, debug, "removeExactSelectors", selector)
                     continue
                 }
-                if (selector == "button") {
+                if (selector == SKIP_LINK_SELECTOR && !SKIP_LINK_TEXT_PATTERN.containsMatchIn(element.text().trim())) {
+                    continue
+                }
+                if (selector == BUTTON_ROLE_SELECTOR && !element.isTextOnlyControl()) continue
+                if (selector == PREFERRED_SOURCE_LINK_SELECTOR && element.isInsideProseBlock()) continue
+                if (selector == "button" || selector == BUTTON_ROLE_SELECTOR) {
                     if (element.isInlineTextButton()) continue
                     // Buttons that wrap media (e.g. image-zoom overlays) — lift the media
                     // out before discarding the button so the image isn't lost with it.
@@ -650,12 +655,24 @@ private const val MIN_PROSE_TEXT_AROUND_LINK = 20
 private fun Element.isInsideTableCell(): Boolean = parents().any { it.normalName() == "td" || it.normalName() == "th" }
 
 private fun Element.isInlineTextButton(): Boolean {
-    if (normalName() != "button") return false
+    if (normalName() != "button" && attr("role") != "button") return false
     if (parents().none { it.normalName() in INLINE_BUTTON_CONTEXTS }) return false
     if (text().trim().isBlank()) return false
     if (select("svg, img, picture, iframe, input, select, textarea").isNotEmpty()) return false
     return true
 }
+
+// Role-button wrappers often hold an image or a whole card (lightboxes, Medium images), so only
+// short label-like controls are removed.
+private fun Element.isTextOnlyControl(): Boolean {
+    val text = text().trim()
+    if (text.isBlank() || text.length > MAX_TEXT_CONTROL_LENGTH) return false
+    return select("img, picture, video, audio, iframe, figure, p, h1, h2, h3, h4, h5, h6").isEmpty()
+}
+
+private const val MAX_TEXT_CONTROL_LENGTH = 40
+
+private fun Element.isInsideProseBlock(): Boolean = parents().any { it.normalName() in PROSE_LINK_BLOCK_TAGS }
 
 private val INLINE_BUTTON_CONTEXTS =
     setOf("p", "li", "td", "th", "span", "h1", "h2", "h3", "h4", "h5", "h6")

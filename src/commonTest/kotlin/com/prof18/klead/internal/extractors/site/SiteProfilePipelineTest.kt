@@ -399,7 +399,7 @@ class SiteProfilePipelineTest {
 
         val unrelatedMarkdown = unrelated.content.requireMarkdown()
         assertTrue(unrelatedMarkdown.contains("Duplicate responsive caption."))
-        assertTrue(unrelatedMarkdown.contains("Prefer the Guardian on Google"))
+        assertFalse(unrelatedMarkdown.contains("Prefer the Guardian on Google"))
         assertFalse(unrelated.debug.containsKey("extractorIds"))
     }
 

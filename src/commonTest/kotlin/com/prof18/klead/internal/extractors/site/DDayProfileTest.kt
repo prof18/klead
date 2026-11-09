@@ -4,6 +4,7 @@ import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class DDayProfileTest {
@@ -26,7 +27,7 @@ class DDayProfileTest {
             for (output in listOf(result.content.requireHtml(), result.content.requireMarkdown())) {
                 assertTrue(output.contains("The new phone uses two battery cells"), host)
                 assertTrue(output.contains("© riproduzione riservata"), host)
-                assertEquals(host == "example.com", output.contains("Aggiungi come fonte preferita"), host)
+                assertFalse(output.contains("Aggiungi come fonte preferita"), host)
                 assertEquals(host == "example.com", output.contains("Resta aggiornato"), host)
             }
         }

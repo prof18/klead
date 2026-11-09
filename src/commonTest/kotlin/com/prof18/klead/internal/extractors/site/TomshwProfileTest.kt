@@ -4,6 +4,7 @@ import com.prof18.klead.parseHtmlForTest
 import com.prof18.klead.testOptions
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class TomshwProfileTest {
@@ -32,7 +33,7 @@ class TomshwProfileTest {
                 assertTrue(output.contains("Domande frequenti"), host)
                 assertTrue(output.contains("Serve un dispositivo compatibile"), host)
                 assertTrue(output.contains("Il prodotto include una porta Ethernet"), host)
-                assertEquals(host == "example.com", output.contains("Aggiungi Tom's Hardware"), host)
+                assertFalse(output.contains("Aggiungi Tom's Hardware"), host)
                 assertEquals(host == "example.com", output.contains("Scopri tutti gli articoli"), host)
             }
         }

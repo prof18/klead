@@ -9,7 +9,13 @@ internal val EXACT_SELECTORS = listOf(
     "[id*=footer]",
     "form",
     "button",
+    // Scripted controls such as "Show more posts" are buttons rendered as divs.
+    BUTTON_ROLE_SELECTOR,
     "button.lightbox-trigger",
+    // In-page accessibility links ("Skip to content", "Skip next section …"); only removed when their text says skip.
+    SKIP_LINK_SELECTOR,
+    // Google's "Prefer <site> on Google" source-preference button; kept when it is a link inside a sentence.
+    PREFERRED_SOURCE_LINK_SELECTOR,
     // MB Favorite Posts renders its reusable WordPress action as a div, not a button.
     ".mbfp-btn",
     "input",
@@ -77,6 +83,11 @@ internal val EXACT_SELECTORS = listOf(
     ".toc",
     ".table-of-contents",
 )
+
+internal const val BUTTON_ROLE_SELECTOR = "[role=button]"
+internal const val SKIP_LINK_SELECTOR = """a[href^="#"]"""
+internal const val PREFERRED_SOURCE_LINK_SELECTOR = """a[href*="google.com/preferences/source"]"""
+internal val SKIP_LINK_TEXT_PATTERN = Regex("""^skip\b""", RegexOption.IGNORE_CASE)
 
 internal val EXACT_SELECTOR_INDEX = SimpleSelectorIndex(EXACT_SELECTORS)
 

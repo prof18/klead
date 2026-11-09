@@ -1,6 +1,6 @@
 ![Jason in GTA 6](https://www.dexerto.com/cdn-image/wp-content/uploads/2025/05/06/Jason-Duval-voice-actor-GTA-6.jpg?width=1200&quality=60&format=auto)Rockstar Games
 
-[Add as a preferred source on Google](https://www.google.com/preferences/source?q=dexerto.com)[Follow on Google News](https://news.google.com/publications/CAAqJQgKIh9DQklTRVFnTWFnMEtDMlJsZUdWeWRHOHVZMjl0S0FBUAE)
+[Follow on Google News](https://news.google.com/publications/CAAqJQgKIh9DQklTRVFnTWFnMEtDMlJsZUdWeWRHOHVZMjl0S0FBUAE)
 
 Rob Brinkmann, an actor GTA 6 fans were convinced was playing Jason, has denied being involved, but there’s another name in the mix.
 
