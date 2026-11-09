@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 — 2026-11-09
+
+- Extracted content no longer includes dialogs, tooltips, skip links, Google preferred-source buttons, text role buttons, or Google AdSense slots and the blank space they reserve.
+- In-article link lists and document download links are kept.
+- Short LiveJournal posts no longer fall back to the whole page body.
+- Improved extraction for ABC News sport articles, Al Jazeera, GameSpot video pages, Grawlix webcomics, Nixers newsletter archives, Realtor.com, Supercar Blondie, The Hindu and Times of India, including lazy-loaded images and WP YouTube Lyte embeds.
+
 ## 1.0.0 — 2026-11-01
 
 - First stable release. The public API now follows semantic versioning.

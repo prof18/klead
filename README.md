@@ -15,7 +15,7 @@ Klead is published on Maven Central. Add it to the source set that needs it:
 
 ```kotlin
 commonMain.dependencies {
-    implementation("com.prof18:klead:1.0.0")
+    implementation("com.prof18:klead:1.0.1")
 }
 ```
 
