@@ -2,6 +2,7 @@ package com.prof18.klead.internal.extractors
 
 import com.prof18.klead.extractors.Extractor
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.extractors.site.AbcNewsProfile
 import com.prof18.klead.internal.extractors.site.AlJazeeraProfile
 import com.prof18.klead.internal.extractors.site.AndroidAuthorityProfile
 import com.prof18.klead.internal.extractors.site.AndroidPoliceProfile
@@ -178,6 +179,7 @@ internal object DefaultExtractors {
         BusinessInsiderProfile,
         MashableProfile,
         BBCProfile,
+        AbcNewsProfile,
         NprProfile,
         NilCoalescingProfile,
         BuzzFeedProfile,
