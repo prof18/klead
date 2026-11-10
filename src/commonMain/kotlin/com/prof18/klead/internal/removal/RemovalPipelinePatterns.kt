@@ -70,6 +70,9 @@ internal val EXACT_SELECTORS = listOf(
     ".ad",
     ".ads",
     ".advertisement",
+    ".ad-container",
+    ".ad-wrapper",
+    ".ad-placeholder",
     // Google AdSense slot; its wrapper reserves the ad's height with an inline min-height.
     ".adsbygoogle",
     ".comments",
@@ -129,7 +132,7 @@ internal val RECOMMENDATION_HEADING_PATTERN = Regex(
 )
 
 internal val RECOMMENDATION_SECTION_HEADING_PATTERN = Regex(
-    """^(related\s+content|related\s+articles?|related\s+terms|recommended(?:\s+for\s+you)?|explore\s+more|keep\s+exploring|discover\s+more(?:\s+.+)?|what\s+to\s+read\s+next|read\s+more|for\s+more\s+on\s+this\s+topic|popular\s+stories|most\s+viewed|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|worth\s+checking\s+out\s+on\s+amazon|best(?:\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80})?\s+(?:accessories|deals|offers|prices?|discounts?|sales?)|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti(?:\s+anche)?|dalla\s+stessa\s+sezione|i\s+video\s+più\s+visti|le\s+più\s+lette|zobacz\s+również)\s*[:：]?$""",
+    """^(related\s+content|related\s+articles?|related\s+terms|recommended(?:\s+for\s+you)?|explore\s+more|keep\s+exploring|discover\s+more(?:\s+.+)?|what\s+to\s+read\s+next|read\s+more|for\s+more\s+on\s+this\s+topic|popular\s+stories|most\s+viewed|latest\s+articles?|latest\s+in\s+.+|more\s+stories|more\s+from\s+.+|you\s+may\s+also\s+like|check\s+out\s+our\s+other\s+(?:content|articles|stories)|quick\s+links|worth\s+checking\s+out\s+on\s+amazon|best(?:\s+[\p{L}\p{N}][\p{L}\p{N} .'"’&-]{0,80})?\s+(?:accessories|deals|offers|prices?|discounts?|sales?)|consigliati|altre\s+storie|i\s+più\s+letti|potrebbe\s+interessarti(?:\s+anche)?|dalla\s+stessa\s+sezione|i\s+video\s+più\s+visti|le\s+più\s+lette|zobacz\s+również)\s*[:：]?$""",
     RegexOption.IGNORE_CASE,
 )
 

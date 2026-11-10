@@ -3538,6 +3538,112 @@ class RemovalPipelineTest {
         assertTrue(result.content.requireMarkdown().contains("![Captioned cover](https://example.com/cover.png)"))
     }
 
+    @Test
+    fun `data flag set to false is not a clutter hint while a true flag still is`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>GTA 6 revolves around Jason and <a href="https://example.com/lucia" data-is-sponsored="false">Lucia</a>, two criminals who are also lovers.</p>
+              <div data-sponsored="true"><a href="https://shop.example.com/deal">Sponsored deal</a></div>
+              <p>The article conclusion remains after the widget.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("revolves around Jason and Lucia, two criminals"))
+        assertFalse(article.text().contains("Sponsored deal"))
+    }
+
+    @Test
+    fun `ad container placeholders are removed`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Opening article prose stays in place.</p>
+              <div class="ad-container ad-wrapper fluid-style" style="min-height: 280px;">
+                <div class="ad-placeholder default-variant"><div class="ad-placeholder-box"><span>Ad</span></div></div>
+              </div>
+              <p>Closing article prose stays in place.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.select(".ad-container, .ad-placeholder").isEmpty())
+        assertEquals("Opening article prose stays in place. Closing article prose stays in place.", article.text())
+    }
+
+    @Test
+    fun `trailing labels of removed link lists are not left behind`() {
+        // Long enough (over 200 words) that the parse keeps the default removal policy.
+        val prose = "<p>Article prose has enough words to keep the default cleaned parse result. " +
+            "It describes the article content clearly and avoids short retry paths with stable text.</p>"
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  ${prose.repeat(10)}
+                  <p>A second paragraph keeps the article long enough for the default parse to settle on the article body.</p>
+                  <hr>
+                  <p><strong>Check out our other content:</strong></p>
+                  <div><p>Quick Links</p><nav><a href="https://example.com/tag">Tag</a></nav></div>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/article",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("A second paragraph keeps the article long enough"))
+        assertFalse(markdown.contains("Check out our other content"))
+        assertFalse(markdown.contains("Quick Links"))
+    }
+
+    @Test
+    fun `noscript fallback before a lazy image with a placeholder src is one image`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>Article prose has enough words to keep the default cleaned parse result. It describes the article content clearly and avoids short retry paths with stable text.</p>
+                  <figure class="image">
+                    <noscript><img class="thumbnail" alt="Jason and Lucia" src="https://cdn.example.com/photo-1920.jpg"></noscript>
+                    <img class="lazy-img" width="1920" height="1080" alt="Jason and Lucia" src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3C/svg%3E" data-srcset="https://cdn.example.com/photo-1920.jpg?w=640 640w, https://cdn.example.com/photo-1920.jpg 1920w">
+                    <figcaption>Jason and Lucia might have history</figcaption>
+                  </figure>
+                  <p>A second paragraph keeps the article long enough for the default parse to settle on the article body.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/article",
+        )
+
+        val images = Ksoup.parse(result.content.requireHtml()).select("img")
+        assertEquals(1, images.size)
+        assertEquals("https://cdn.example.com/photo-1920.jpg", images.first()?.attr("src"))
+    }
+
+    @Test
+    fun `lazy image with a placeholder src renders its largest srcset image`() {
+        val result = parseHtmlForTest(
+            html = """
+                <html><body><article>
+                  <p>Article prose has enough words to keep the default cleaned parse result. It describes the article content clearly and avoids short retry paths with stable text.</p>
+                  <figure>
+                    <img alt="Liberty City" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-srcset="https://cdn.example.com/city.jpg?w=640 640w, https://cdn.example.com/city.jpg?w=1600 1600w">
+                    <figcaption>Liberty City could be a surprise location</figcaption>
+                  </figure>
+                  <p>A second paragraph keeps the article long enough for the default parse to settle on the article body.</p>
+                </article></body></html>
+            """.trimIndent(),
+            url = "https://example.com/article",
+        )
+
+        val image = Ksoup.parse(result.content.requireHtml()).selectFirst("img") ?: error("missing image")
+        assertEquals("https://cdn.example.com/city.jpg?w=1600", image.attr("src"))
+    }
+
     private fun mainSelectorOptions() = testOptions(customExtractors = listOf(MainSelectorExtractor))
 
     private object MainSelectorExtractor : Extractor {

@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.SMALL_IMAGE_MAX_DIMENSION
 import com.prof18.klead.internal.dom.hasLargeResponsiveSource
+import com.prof18.klead.internal.markdown.largestSrcsetUrl
 
 internal object HtmlImageNormalizer {
     fun normalizeImages(content: Element) {
@@ -69,8 +70,14 @@ internal object HtmlImageNormalizer {
                 }
             }
             firstAttr(image, "data-srcset", "data-lazy-srcset")?.let { image.attr("srcset", it) }
-            if (isPlaceholderImage(image.attr("src")) && image.attr("srcset").isBlank()) {
-                image.remove()
+            if (isPlaceholderImage(image.attr("src"))) {
+                val srcsetSource = largestSrcsetUrl(image.attr("srcset"))
+                if (srcsetSource == null) {
+                    image.remove()
+                } else {
+                    // Readers that ignore srcset would otherwise render the lazy-load placeholder.
+                    image.attr("src", srcsetSource)
+                }
             }
         }
 

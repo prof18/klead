@@ -179,7 +179,12 @@ internal object ImageRemovalPipeline {
         val pictureSrcset = parents().firstOrNull { it.normalName() == "picture" }
             ?.selectFirst("source[srcset], source[srcSet], source[data-srcset]")
             ?.firstAttr("srcset", "srcSet", "data-srcset")
-        return pictureSrcset?.let(::largestSrcsetUrl)
+        pictureSrcset?.let(::largestSrcsetUrl)?.let { return it }
+
+        // A lazy image whose src is an inline placeholder is the image named by its own srcset, so a
+        // <noscript> fallback of the same picture (Sportskeeda) is recognized as its duplicate.
+        if (!attr("src").trim().startsWith("data:", ignoreCase = true)) return null
+        return firstAttr("data-srcset", "data-lazy-srcset", "srcset", "srcSet")?.let(::largestSrcsetUrl)
     }
 
     private fun Element.firstAttr(vararg names: String): String? = names.firstNotNullOfOrNull { name ->
