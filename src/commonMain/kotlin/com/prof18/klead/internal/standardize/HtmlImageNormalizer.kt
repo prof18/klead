@@ -9,6 +9,7 @@ internal object HtmlImageNormalizer {
     fun normalizeImages(content: Element) {
         normalizeWordPressCaptionFigures(content)
         normalizeFixedImageWrappers(content)
+        normalizeOutOfFlowImageWrappers(content)
 
         content.select("img").forEach { image ->
             if (image.parent() == null) return@forEach
@@ -131,6 +132,49 @@ internal object HtmlImageNormalizer {
             if (retained.isEmpty()) wrapper.removeAttr("style") else wrapper.attr("style", retained.joinToString("; "))
         }
     }
+
+    /**
+     * Site builders such as Framer fill a sized box with an absolutely positioned image wrapper
+     * (`position: absolute; inset: 0`). Reader output has no positioned ancestor, so the wrapper
+     * would stretch over the whole viewport and cover the article.
+     */
+    private fun normalizeOutOfFlowImageWrappers(content: Element) {
+        content.select("div[style], span[style], picture[style], figure[style], a[style]").forEach { wrapper ->
+            val declarations = CssDeclarations.split(wrapper.attr("style"))
+            val properties = declarations.map { declaration ->
+                CssDeclarations.withoutComments(declaration).substringBefore(':').trim().lowercase()
+            }
+            val position = declarations.zip(properties)
+                .lastOrNull { (_, property) -> property == "position" }
+                ?.let { (declaration, _) -> CssDeclarations.withoutComments(declaration).substringAfter(':').trim() }
+                ?.lowercase()
+                .orEmpty()
+            if (!position.startsWith("absolute") && !position.startsWith("fixed")) return@forEach
+            if (!wrapper.hasImageContent() || !wrapper.isImageOnlyWrapper()) return@forEach
+
+            val retained = declarations.zip(properties)
+                .filterNot { (_, property) -> property in OUT_OF_FLOW_PROPERTIES }
+                .map { (declaration, _) -> declaration }
+            if (retained.isEmpty()) wrapper.removeAttr("style") else wrapper.attr("style", retained.joinToString("; "))
+
+            // The image filled the positioned box; in normal flow it keeps its own aspect ratio.
+            wrapper.select("img[style]").forEach { image ->
+                val imageRetained = CssDeclarations.split(image.attr("style")).filterNot { declaration ->
+                    val clean = CssDeclarations.withoutComments(declaration)
+                    clean.substringBefore(':').trim().lowercase() in BOX_FILL_PROPERTIES ||
+                        clean.trim().isFullHeightDeclaration()
+                }
+                if (imageRetained.isEmpty()) {
+                    image.removeAttr("style")
+                } else {
+                    image.attr("style", imageRetained.joinToString("; "))
+                }
+            }
+        }
+    }
+
+    private val OUT_OF_FLOW_PROPERTIES = setOf("position", "top", "right", "bottom", "left", "inset", "z-index")
+    private val BOX_FILL_PROPERTIES = setOf("object-fit", "object-position")
 
     private val FIXED_PIXEL_SIZE = Regex("""\d+(?:\.\d+)?px""")
     private val FIXED_IMAGE_WRAPPER_PROPERTIES = setOf("width", "height", "overflow", "display")

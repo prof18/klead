@@ -179,4 +179,19 @@ class HtmlImageNormalizerTest {
             content.select("img").map { it.attr("src") },
         )
     }
+
+    @Test
+    fun `absolutely positioned image wrappers return to normal flow while text overlays keep theirs`() {
+        val overlay = "position: absolute; top: 0; left: 0"
+        val document = Ksoup.parse(
+            """<div style="position:absolute;border-radius:inherit;top:0;right:0;bottom:0;left:0"><img src="hero.png" style="display:block;width:100%;height:100%;object-fit:cover"></div><div style="$overlay"><img src="badge.png">Caption</div>""",
+        )
+
+        HtmlImageNormalizer.normalizeImages(document.body())
+
+        val wrappers = document.select("div")
+        assertEquals("border-radius:inherit", wrappers[0].attr("style"))
+        assertEquals(overlay, wrappers[1].attr("style"))
+        assertEquals("display:block; width:100%", document.selectFirst("img[src=hero.png]")!!.attr("style"))
+    }
 }
