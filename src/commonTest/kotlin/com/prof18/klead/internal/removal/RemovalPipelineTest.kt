@@ -332,6 +332,56 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `link list introduced by a body paragraph is kept even when a slug looks like clutter`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Since some people like things made easy, here is every post in the series.</p>
+              <p>The posts on the geomantic figures:</p>
+              <ol>
+                <li><a href="https://example.com/2013/01/populus/">Populus</a></li>
+                <li><a href="https://example.com/2013/01/via/">Via</a></li>
+                <li><a href="https://example.com/2013/01/caput-looking-to-share-in-an-adventure/">Caput Draconis</a></li>
+              </ol>
+              <p>Feel free to share this or any of the other posts in the series.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertEquals(listOf("Populus", "Via", "Caput Draconis"), article.select("ol li").map { it.text() })
+    }
+
+    @Test
+    fun `colon-introduced link list is removed when it is a recommendation or ends the content`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Article body text long enough to be treated as the main content of the page.</p>
+              <p>You may also like these stories:</p>
+              <ul id="recommended">
+                <li><a href="/a">Story A</a></li><li><a href="/b">Story B</a></li><li><a href="/c">Story C</a></li>
+              </ul>
+              <p>More article prose follows the recommendation block here.</p>
+              <p>Find us on these sites:</p>
+              <ul id="trailing">
+                <li><a href="/x">Site X</a></li><li><a href="/y">Site Y</a></li><li><a href="/z">Site Z</a></li>
+              </ul>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.select("#recommended").isEmpty())
+        assertTrue(article.select("#trailing").isEmpty())
+        assertTrue(article.text().contains("More article prose follows"))
+    }
+
+    @Test
     fun `button wrapping an image keeps the image when the button is removed`() {
         val document = Ksoup.parse(
             """

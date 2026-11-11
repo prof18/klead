@@ -224,6 +224,7 @@ internal object RemovalPipeline {
             if (isProtected(element, scan.haystack) || isLikelyProse(scan)) continue
             if (element.isNestedListContent()) continue
             if (element.isHeadedOutboundLinkList(links)) continue
+            if (element.isProseIntroducedList()) continue
             val text = scan.text
             val linkText = links.sumOf { it.text().length }
             val linkDensity = if (text.isBlank()) 0.0 else linkText.toDouble() / text.length
@@ -585,7 +586,7 @@ internal object RemovalPipeline {
 private fun Element.matchesPartialClutter(): Boolean {
     val nonIdHaystack = elementHintHaystack(this, includeId = false)
     val hintMatches = PARTIAL_PATTERNS.any { it in nonIdHaystack }
-    if (hintMatches && !(linkTargetIsOnlyClutterHint() && (isLinkInsideProse() || linksToDocumentFile()))) {
+    if (hintMatches && !(linkTargetIsOnlyClutterHint() && linkHasContentContext())) {
         return true
     }
 
@@ -599,11 +600,21 @@ private fun Element.matchesPartialClutter(): Boolean {
 // target article's headline, so it says nothing about the link itself
 // ("developers-share-the-moment", "radiation-related-cancer").
 // It only marks clutter when the link stands alone, like a share button or a list of
-// related links; a link inside a sentence is part of the prose.
+// related links; a link inside a sentence, or an item of a list the prose introduces, is part of
+// the article.
 private fun Element.linkTargetIsOnlyClutterHint(): Boolean {
     if (!hasAttr("href")) return false
     val haystackWithoutUrls = elementHintHaystack(this, includeId = false, includeUrls = false)
     return PARTIAL_PATTERNS.none { it in haystackWithoutUrls }
+}
+
+private fun Element.linkHasContentContext(): Boolean =
+    isLinkInsideProse() || linksToDocumentFile() || isProseIntroducedListItemLink()
+
+private fun Element.isProseIntroducedListItemLink(): Boolean {
+    if (normalName() != "a") return false
+    val item = parent()?.takeIf { it.normalName() == "li" } ?: return false
+    return item.parent()?.isProseIntroducedList() == true
 }
 
 private fun Element.isLinkInsideProse(): Boolean {
@@ -643,11 +654,33 @@ private fun Element.isHeadedOutboundLinkList(links: List<Element>): Boolean {
     return hosts.size >= MIN_OUTBOUND_LINK_HOSTS
 }
 
+// A list announced by a body paragraph ending in a colon and followed by more prose is part of
+// the article (for example a recap linking to a series), not a navigation block.
+private fun Element.isProseIntroducedList(): Boolean {
+    if (normalName() != "ul" && normalName() != "ol") return false
+    val intro = previousElementSibling()
+    val next = nextElementSibling()
+    if (intro == null || next == null) return false
+    return children().all { it.normalName() == "li" } &&
+        intro.isListIntroParagraph() &&
+        next.normalName() == "p" &&
+        next.text().wordCount() >= MIN_LIST_INTRO_WORDS
+}
+
+private fun Element.isListIntroParagraph(): Boolean {
+    if (normalName() != "p" || select("a").isNotEmpty()) return false
+    val text = text().trim()
+    return (text.endsWith(':') || text.endsWith('：')) &&
+        text.wordCount() >= MIN_LIST_INTRO_WORDS &&
+        !RECOMMENDATION_HEADING_PATTERN.containsMatchIn(text)
+}
+
 private val DOCUMENT_FILE_EXTENSIONS = listOf(".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt")
 private val OUTBOUND_LIST_HEADING_TAGS = setOf("h2", "h3", "h4", "h5", "h6")
 private val ABSOLUTE_LINK_HOST = Regex("""^https?://([^/:?#]+)""", RegexOption.IGNORE_CASE)
 private const val MIN_OUTBOUND_LINK_WORDS = 3
 private const val MIN_OUTBOUND_LINK_HOSTS = 3
+private const val MIN_LIST_INTRO_WORDS = 3
 
 private val PROSE_LINK_BLOCK_TAGS = setOf("p", "li", "blockquote", "dd", "figcaption")
 private const val MIN_PROSE_TEXT_AROUND_LINK = 20
