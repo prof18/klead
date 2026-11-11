@@ -105,6 +105,9 @@ internal object MainContentDetector {
         if (selected.element.tagName() == "body") {
             refineBodyToTitledPost(selected, scoreOf)?.let { selected = it }
         }
+        if (selected.element.tagName() == "body") {
+            refineBodyToPostContentWrapper(selected, scoreOf)?.let { selected = it }
+        }
         refineBodyToShortTitledArticle(selected, scoreOf)?.let { selected = it }
         if (selected.element.tagName() == "body") {
             detectTableLayout(selected.element, scoreOf)?.let { selected = it }
@@ -128,7 +131,11 @@ internal object MainContentDetector {
         candidates: List<Candidate>,
         scoreOf: (Element) -> ContentScore,
     ): Boolean {
-        val landmarks = candidates.filter { it.selector in mainLandmarkSelectors && !it.element.isFormOnlyWidget() }
+        val landmarks = candidates.filter { candidate ->
+            candidate.selector in mainLandmarkSelectors &&
+                !candidate.element.isFormOnlyWidget() &&
+                !candidate.element.isNavigationOnlyWidget(scoreOf)
+        }
         return landmarks.isNotEmpty() &&
             landmarks.all { scoreOf(it.element).wordCount < BROAD_REFINEMENT_MIN_WORDS }
     }
@@ -137,6 +144,13 @@ internal object MainContentDetector {
     // role="main" on its search bar), not a video or gallery page whose content lives in a player.
     private fun Element.isFormOnlyWidget(): Boolean =
         selectFirstSafe(FORM_CONTROL_SELECTOR) != null && selectFirstSafe(MEDIA_SELECTOR) == null
+
+    // A landmark whose text is mostly navigation links, with no media, is a mislabeled site header (KultureGeek
+    // wraps its top bar and menu in <main>); the article lives outside it.
+    private fun Element.isNavigationOnlyWidget(scoreOf: (Element) -> ContentScore): Boolean =
+        selectFirstSafe(NAVIGATION_SELECTOR) != null &&
+            selectFirstSafe(MEDIA_SELECTOR) == null &&
+            scoreOf(this).linkDensity >= NAVIGATION_WIDGET_MIN_LINK_DENSITY
 
     private fun score(element: Element, selectorIndex: Int, scoreOf: (Element) -> ContentScore): Double {
         val priorityBonus = (entryPointSelectors.size - selectorIndex) * 30.0
@@ -299,6 +313,15 @@ internal object MainContentDetector {
         if (postScore.wordCount < BODY_REFINEMENT_MIN_WORDS) return null
         if (postScore.total < selected.score * BODY_REFINEMENT_MIN_SCORE_RATIO) return null
         return Candidate(post, "div.post", postScore.total)
+    }
+
+    private fun refineBodyToPostContentWrapper(selected: Candidate, scoreOf: (Element) -> ContentScore): Candidate? {
+        // The Bialty WordPress plugin wraps the output of the_content in div.bialty-container, so on a theme with
+        // no article or content landmark a single substantial wrapper is exactly the post body.
+        val wrapper = selected.element.select(POST_CONTENT_WRAPPER_SELECTOR).singleOrNull() ?: return null
+        val wrapperScore = scoreOf(wrapper)
+        if (wrapperScore.wordCount < BROAD_REFINEMENT_MIN_WORDS) return null
+        return Candidate(wrapper, POST_CONTENT_WRAPPER_SELECTOR, wrapperScore.total)
     }
 
     private fun refineBodyToShortTitledArticle(selected: Candidate, scoreOf: (Element) -> ContentScore): Candidate? {
@@ -484,6 +507,9 @@ internal object MainContentDetector {
     private const val NO_CONTENT_SELECTOR = "main:empty"
     private val mainLandmarkSelectors = setOf("main", """[role="main"]""")
     private const val FORM_CONTROL_SELECTOR = "form, input, select, textarea"
+    private const val POST_CONTENT_WRAPPER_SELECTOR = "div.bialty-container"
+    private const val NAVIGATION_SELECTOR = "nav, [role=navigation]"
+    private const val NAVIGATION_WIDGET_MIN_LINK_DENSITY = 0.5
     private const val MEDIA_SELECTOR = "video, audio, iframe, img, picture, figure, object, embed"
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
     private const val BODY_REFINEMENT_MIN_WORDS = 80

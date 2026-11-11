@@ -22,6 +22,37 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `body fallback selects a single substantial post content wrapper`() {
+        val story = "The post body sits in the wrapper a WordPress plugin adds. ".repeat(12)
+        val document = Ksoup.parse(
+            """
+            <div class="page-path"><a href="/">Home</a> Story title</div>
+            <h1>Story title</h1>
+            <div class="content"><div class="bialty-container" id="story"><p>$story</p></div></div>
+            <div class="latest"><p>${"Latest articles and deals from the sidebar. ".repeat(20)}</p></div>
+            """.trimIndent(),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("story", detected.element.id())
+        assertEquals("div.bialty-container", detected.selectedSelector)
+    }
+
+    @Test
+    fun `body fallback keeps the body when several post content wrappers form a listing`() {
+        val excerpt = "An excerpt from one of the posts on a listing page. ".repeat(8)
+        val document = Ksoup.parse(
+            """
+            <div class="bialty-container"><p>$excerpt</p></div>
+            <div class="bialty-container"><p>$excerpt</p></div>
+            """.trimIndent(),
+        )
+
+        assertEquals("body", MainContentDetector.detect(document).selectedSelector)
+    }
+
+    @Test
     fun `nearly empty main landmark yields no content instead of the body`() {
         val chrome = (1..40).joinToString("") { "<li><a href=\"/s$it\">Section link $it</a></li>" }
         val document = Ksoup.parse(
@@ -52,6 +83,41 @@ class MainContentDetectorTest {
 
         assertEquals("body", detected.selectedSelector)
         assertTrue(detected.element.text().contains("mislabeled search landmark"))
+    }
+
+    @Test
+    fun `main landmark holding only the site navigation does not hide the article`() {
+        val menu = (1..12).joinToString("") { "<li><a href=\"/s$it\">Section $it</a></li>" }
+        val story = "The article text lives outside the mislabeled header landmark. ".repeat(12)
+        val document = Ksoup.parse(
+            """
+            <main class="main-header"><span>Trending</span><nav><ul>$menu</ul></nav></main>
+            <div class="blog-details"><h1>Story title</h1><p>$story</p></div>
+            """.trimIndent(),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("body", detected.selectedSelector)
+        assertTrue(detected.element.text().contains("mislabeled header landmark"))
+    }
+
+    @Test
+    fun `nearly empty main landmark with a player and its own navigation still yields no content`() {
+        val chrome = (1..40).joinToString("") { "<li><a href=\"/s$it\">Section link $it</a></li>" }
+        val document = Ksoup.parse(
+            """
+            <header><nav><ul>$chrome</ul></nav></header>
+            <main>
+              <nav><a href="/videos">Videos</a></nav>
+              <video src="/clip.mp4"></video>
+              <p>Short caption for the clip shown above</p>
+            </main>
+            <footer><p>${"Footer legal text with many words. ".repeat(20)}</p></footer>
+            """.trimIndent(),
+        )
+
+        assertEquals("main:empty", MainContentDetector.detect(document).selectedSelector)
     }
 
     @Test
