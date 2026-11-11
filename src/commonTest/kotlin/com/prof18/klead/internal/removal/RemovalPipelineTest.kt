@@ -183,6 +183,83 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `article list item link is kept when only its slug contains a clutter token`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>An index of every post in the series, sorted by publication date.</p>
+              <ul>
+                <li>(Jan. 2013) <a href="/2013/01/01/fortuna-maior">Fortuna Maior</a></li>
+                <li>(Jan. 2013) <a href="/2013/01/08/caput-draconis-someone-to-share-in-an-adventure">Caput Draconis</a></li>
+                <li>(Jan. 2013) <a href="/2013/01/15/cauda-draconis">Cauda Draconis</a></li>
+                <li>(Jan. 2013) <a href="/2013/01/29/rubeus">Rubeus</a></li>
+              </ul>
+              <ul>
+                <li><a href="https://x.com/intent/share?url=a">X</a></li>
+                <li><a href="https://reddit.com/share?url=a">Reddit</a></li>
+                <li><a href="https://bsky.app/intent/share?url=a">Bluesky</a></li>
+                <li><a href="https://mastodon.social/share?url=a">Mastodon</a></li>
+              </ul>
+              <p>The article conclusion remains after the lists.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertNotNull(article.selectFirst("a[href*=caput-draconis]"))
+        assertTrue(article.select("a[href*=reddit.com]").isEmpty())
+        assertTrue(article.select("a[href*=mastodon.social]").isEmpty())
+    }
+
+    @Test
+    fun `last labeled link list of an index page is kept`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Here is an index of my posts on the topic, loosely grouped by subject, for ease of access.</p>
+              <p><strong>Posts on the figures:</strong></p>
+              <ul><li><a href="/figures-one">Figures one</a></li><li><a href="/figures-two">Figures two</a></li></ul>
+              <p><strong>Posts on generating figures:</strong></p>
+              <ul><li><a href="/generating-one">Generating one</a></li><li><a href="/generating-two">Generating two</a></li></ul>
+              <p><strong>Other posts about divination:</strong></p>
+              <ul><li><a href="/divination-one">Divination one</a></li><li><a href="/divination-two">Divination two</a></li></ul>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Divination one"))
+        assertTrue(article.text().contains("Divination two"))
+    }
+
+    @Test
+    fun `trailing related posts list after an index series is still removed`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <p>Here is an index of my posts on the topic, loosely grouped by subject, for ease of access.</p>
+              <p><strong>Posts on the figures:</strong></p>
+              <ul><li><a href="/figures-one">Figures one</a></li><li><a href="/figures-two">Figures two</a></li></ul>
+              <p><strong>Posts on generating figures:</strong></p>
+              <ul><li><a href="/generating-one">Generating one</a></li><li><a href="/generating-two">Generating two</a></li></ul>
+              <p><strong>Related posts:</strong></p>
+              <ul><li><a href="/related-one">Unrelated one</a></li><li><a href="/related-two">Unrelated two</a></li></ul>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.text().contains("Generating two"))
+        assertFalse(article.text().contains("Unrelated one"))
+    }
+
+    @Test
     fun `inline prose link is kept when its aria label only repeats a url with a clutter token`() {
         val document = Ksoup.parse(
             """

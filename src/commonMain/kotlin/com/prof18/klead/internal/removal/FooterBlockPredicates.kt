@@ -302,6 +302,7 @@ internal fun isTrailingRecirculationLinkCluster(scan: BlockScan): Boolean =
 internal fun isGenericTrailingRecirculationLinkCluster(scan: BlockScan): Boolean {
     val element = scan.element
     if (!element.isRecirculationClusterCandidate()) return false
+    if (element.continuesLabeledLinkListSeries()) return false
     val text = scan.collapsedText
     if (text.isBlank() || text.length > RECIRCULATION_CLUSTER_MAX_LENGTH) return false
 
@@ -327,6 +328,33 @@ internal fun isGenericTrailingRecirculationLinkCluster(scan: BlockScan): Boolean
 internal fun Element.isRecirculationClusterCandidate(): Boolean = normalName() in RECIRCULATION_CLUSTER_TAGS &&
     hasOnlyNonSubstantiveFollowingSiblings() &&
     select("pre, code, table, figure, img, picture, blockquote").isEmpty()
+
+// An index page ("Posts on X:", list, "Posts on Y:", list, ...) ends with a labeled link list
+// shaped like every section before it. The last one is the end of the index, not recirculation.
+private fun Element.continuesLabeledLinkListSeries(): Boolean {
+    if (!isLinkOnlyList()) return false
+    var list: Element = this
+    repeat(LINK_LIST_SERIES_MIN_PREVIOUS_SECTIONS) {
+        val label = list.previousElementSibling()?.takeIf { it.isLinkListLabel() } ?: return false
+        list = label.previousElementSibling()?.takeIf { it.isLinkOnlyList() } ?: return false
+    }
+    return previousElementSibling()?.isLinkListLabel() == true
+}
+
+private fun Element.isLinkOnlyList(): Boolean {
+    if (normalName() != "ul" && normalName() != "ol") return false
+    val items = children()
+    return items.size >= RECIRCULATION_CLUSTER_MIN_ROWS &&
+        items.all { it.normalName() == "li" && it.select("a[href]").size == 1 }
+}
+
+private fun Element.isLinkListLabel(): Boolean {
+    if (normalName() != "p") return false
+    val text = text().trim()
+    return (text.endsWith(':') || text.endsWith('：')) &&
+        text.length <= RECOMMENDATION_HEADING_MAX_LENGTH &&
+        !RECOMMENDATION_HEADING_PATTERN.containsMatchIn(text)
+}
 
 internal fun Element.hasOnlyNonSubstantiveFollowingSiblings(): Boolean {
     var sibling = nextElementSibling()

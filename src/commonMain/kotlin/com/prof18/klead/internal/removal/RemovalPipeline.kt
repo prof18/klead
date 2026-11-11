@@ -609,7 +609,23 @@ private fun Element.linkTargetIsOnlyClutterHint(): Boolean {
 }
 
 private fun Element.linkHasContentContext(): Boolean =
-    isLinkInsideProse() || linksToDocumentFile() || isProseIntroducedListItemLink()
+    isLinkInsideProse() || linksToDocumentFile() || isProseIntroducedListItemLink() || isOrdinaryLinkListItem()
+
+// One entry of a list of article links ("de-geomanteia-caput-draconis-...-share-in-an-adventure")
+// is not a share button when the other entries' slugs carry no clutter word.
+private fun Element.isOrdinaryLinkListItem(): Boolean {
+    if (normalName() != "a") return false
+    val item = parent()?.takeIf { it.normalName() == "li" } ?: return false
+    val siblingLinks = item.parent()?.children().orEmpty()
+        .filter { it !== item }
+        .mapNotNull { sibling -> sibling.children().singleOrNull { it.normalName() == "a" && it.hasAttr("href") } }
+    if (siblingLinks.size < MIN_ORDINARY_LINK_LIST_SIBLINGS) return false
+    val hintedSiblings = siblingLinks.count { link ->
+        val href = link.attr("href").lowercase()
+        PARTIAL_PATTERNS.any { it in href }
+    }
+    return hintedSiblings * 2 < siblingLinks.size
+}
 
 private fun Element.isProseIntroducedListItemLink(): Boolean {
     if (normalName() != "a") return false
@@ -681,6 +697,7 @@ private val ABSOLUTE_LINK_HOST = Regex("""^https?://([^/:?#]+)""", RegexOption.I
 private const val MIN_OUTBOUND_LINK_WORDS = 3
 private const val MIN_OUTBOUND_LINK_HOSTS = 3
 private const val MIN_LIST_INTRO_WORDS = 3
+private const val MIN_ORDINARY_LINK_LIST_SIBLINGS = 3
 
 private val PROSE_LINK_BLOCK_TAGS = setOf("p", "li", "blockquote", "dd", "figcaption")
 private const val MIN_PROSE_TEXT_AROUND_LINK = 20
