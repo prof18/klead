@@ -33,7 +33,3 @@ In addition to being a respected Hermit, Scar now holds a seat on the Gamers Out
 “Scar’s enthusiasm for our cause has made a tremendous difference and his own experiences having gone through hospitalization have given a lived perspective for how video games can improve health care environments,” said Zach Wigal, Founder and CEO of Gamers Outreach. “We’re excited he’s lent his voice to our work and we look forward to collaborating in the years ahead to make an impact for families receiving care.”
 
 We at Gamers Outreach remain in uncontainable excitement with our partnership with Hermitcraft and Scar. With the Hermits by his side, Scar is going to do some great things as a part of the Gamers Outreach Board, and we can’t wait to see what’s next!
-
-## Other posts
-
-See all posts

@@ -33,6 +33,7 @@ import com.prof18.klead.internal.extractors.site.ElementorArchiveProfile
 import com.prof18.klead.internal.extractors.site.EntrepreneurProfile
 import com.prof18.klead.internal.extractors.site.FinanzenProfile
 import com.prof18.klead.internal.extractors.site.FortuneProfile
+import com.prof18.klead.internal.extractors.site.FramerProfile
 import com.prof18.klead.internal.extractors.site.FutureProfile
 import com.prof18.klead.internal.extractors.site.GameSpotProfile
 import com.prof18.klead.internal.extractors.site.GamingBoltProfile
@@ -220,6 +221,7 @@ internal object DefaultExtractors {
         OpenNetProfile,
         SocketProfile,
         ElementorArchiveProfile,
+        FramerProfile,
         ScpWikiProfile,
         SimonWillisonProfile,
         LucumrProfile,
