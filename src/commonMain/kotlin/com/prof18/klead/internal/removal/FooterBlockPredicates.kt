@@ -301,8 +301,7 @@ internal fun isTrailingRecirculationLinkCluster(scan: BlockScan): Boolean =
 
 internal fun isGenericTrailingRecirculationLinkCluster(scan: BlockScan): Boolean {
     val element = scan.element
-    if (!element.isRecirculationClusterCandidate()) return false
-    if (element.continuesLabeledLinkListSeries()) return false
+    if (!element.isRecirculationClusterCandidate() || element.continuesLabeledLinkListSeries()) return false
     val text = scan.collapsedText
     if (text.isBlank() || text.length > RECIRCULATION_CLUSTER_MAX_LENGTH) return false
 
