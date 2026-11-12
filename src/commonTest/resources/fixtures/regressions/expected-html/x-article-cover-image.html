@@ -1,0 +1,84 @@
+<article><img alt="Article cover image" class="aspect-5/2 w-full object-cover rounded-md" decoding="async" loading="eager" src="https://pbs.twimg.com/media/HM0mwgebIAAODU7?format=webp&amp;name=large"><div class="x-article-body break-words text-[16px] leading-[1.6] [&amp;&gt;p]:mb-4">
+  <div class="contents [&amp;&gt;p]:mb-4" data-article-body-html="">
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Software factories have been all the rage these last few weeks. So I built one.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Here's what I learned, how it works, and how you can build one in an afternoon.</span></p>
+   <h2 class="font-article text-balance mt-9 mb-2.5 text-[19px] leading-[1.3] font-semibold tracking-[-0.01em]"><span style="white-space: pre-wrap;">My Goals</span></h2>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">It needed to be really simple, something that just worked and didn't require a bunch of babysitting. Ideally, it would run entirely on my existing Claude subscription.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">It sounds naive, but essentially unless it integrates easily into my existing workflow, it's not going to be something that sticks around. I don't want to build this and have to change all my existing habits just to use this new system. I know from experience that if that happens, it won't work for me long term and will fade into irrelevance.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">So instead of attacking this as one big effort, I split it up into two distinct phases: </span></p>
+   <ol class="mt-1 mb-4 list-decimal ps-6 marker:text-current/50">
+    <li value="1" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Pre-triage - figuring out the stuff "to do"</span></li>
+    <li value="2" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Implementation - actually "doing" the stuff</span></li>
+   </ol>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">In the center is Linear, the source of truth of what work needs to be done.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Every software factory needs to have this centralized repository of work to be done, whether that's GitHub issues, Linear, or something else. It should be what you already use so it's easily extensible for any system to add work for either agents or humans to pick up and complete later.</span></p>
+   <figure class="my-6 w-full">
+    <a class="block cursor-zoom-in" href="/piersonmarks/article/2075361336381555096/media/2075360916061945856"><img alt="" class="max-h-[min(80vh,720px)] w-full rounded-md object-contain" src="https://pbs.twimg.com/media/HM0pweaaAAAA68P.jpg" width="3808" height="2142"></a>
+    <figcaption class="mt-2 text-center text-sm leading-5 text-balance text-current/60">Linear with an auto-generated issue via System Health Check loop</figcaption>
+   </figure>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">The pipeline has intentionally defined seams that make the process of building a software factory actually manageable: </span></p>
+   <ol class="mt-1 mb-4 list-decimal ps-6 marker:text-current/50">
+    <li value="1" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Create work (loops w/ MCPs)</span></li>
+    <li value="2" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Store work (linear)</span></li>
+    <li value="3" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Complete work (SDLC agent)</span></li>
+   </ol>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">By splitting it up, you don't have to build both the pre-triage and implementation sides at once (and I actually recommend against it to avoid over-engineering). Linear makes the interface between what "to do" and what we're currently "doing" well defined and easy to extend.</span></p>
+   <h2 class="font-article text-balance mt-9 mb-2.5 text-[19px] leading-[1.3] font-semibold tracking-[-0.01em]"><span style="white-space: pre-wrap;">Pre-Triage Step</span></h2>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">In the above diagram, the work progresses from left to right. The left side is where work's created and contains any number of systems (either humans, agents, or APIs) that adds to what needs to be done. All outputs created in this pre-triage step is put into our Linear.</span></p>
+   <figure class="my-6 w-full">
+    <a class="block cursor-zoom-in" href="/piersonmarks/article/2075361336381555096/media/2075358016665489408"><img alt="" class="max-h-[min(80vh,720px)] w-full rounded-md object-contain" src="https://pbs.twimg.com/media/HM0nHtUbEAAofJu.jpg" width="2196" height="1118"></a>
+    <figcaption class="mt-2 text-center text-sm leading-5 text-balance text-current/60">A few loops that run in a Claude cloud environment</figcaption>
+   </figure>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">In this step, we have three main loops:</span></p>
+   <ol class="mt-1 mb-4 list-decimal ps-6 marker:text-current/50">
+    <li value="1" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">System Health Check Loop (i.e. a bug finder) - this loop runs daily at 5am and is connected to a few MCP servers: Posthog for error tracking; Vercel for system diagnostics; and Linear for creating issues.</span></li>
+    <li value="2" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">UX Improvements and Customer Feedback Loop - this loop runs weekly on Monday at 9am, and scans every new piece of feedback, every customer support chat from Intercom/Fin, and all Posthog session replays. Session replays are a goldmine. You can see where rage clicks happen or where users are struggling and confused.</span></li>
+    <li value="3" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Churn Analysis Loop - this runs daily at 6am and investigates every customer that clicked cancel in the last 24 hours. It pulls payment and user data from Stripe (including their email/location), and then looks at this customer's session replay in Posthog to see what they were doing before they cancelled. We pull their usage from Supabase to see if it was a wrong ICP, never experienced that "wow" moment, or hit bugs. The report is sent to Slack and the agent creates (or comments on) issues if they are related to customers churning to bump priority.</span></li>
+   </ol>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">To actually run these agents consistently, I kept it simple and used Claude Code Cloud Routines.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">No over-engineering with a Hetzner VPS, a caffeinated mac mini, etc.. It's by far the easiest way I've found to leverage your existing Claude Code subscription and create always on agents that can be triggered on a schedule or via a webhook event. And to all the people saying "but what about vendor lock in!!" - it's literally just some text. Feel free to copy the prompt to wherever you want, I just wanted the easiest and cheapest thing to set up that works reliably.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">And another reason to use Claude Code Cloud Routines is that Anthropic's cloud environments have close parity with Claude running locally.</span></p>
+   <figure class="my-6 w-full">
+    <a class="block cursor-zoom-in" href="/piersonmarks/article/2075361336381555096/media/2075359936121556992"><img alt="" class="max-h-[min(80vh,720px)] w-full rounded-md object-contain" src="https://pbs.twimg.com/media/HM0o3b2aUAAD6oL.jpg" width="3456" height="1944"></a>
+    <figcaption class="mt-2 text-center text-sm leading-5 text-balance text-current/60">Cloud Claude Routines</figcaption>
+   </figure>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Obviously they don't have your env vars (which can be added to the cloud environment setup, if needed) but if you set up an MCP connection via the Desktop App's connectors, both your local Claude cli and remote Claude can use them, unlike Codex. This was the killer feature for me and is what makes these pre-triage agent loops work so well. It also makes it easy to run a bunch of sessions in parallel without worrying about your laptop's memory.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">If you just implement this pre-triage step, you'll still get a lot of leverage even if you don't build the next step where the work is completed.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Start small with a single loop, try it out, refine it, then add more. Figure out what routines you can create today that put new, high-quality work into your existing issue tracker and then do whatever you currently do today for implementation.</span></p>
+   <h2 class="font-article text-balance mt-9 mb-2.5 text-[19px] leading-[1.3] font-semibold tracking-[-0.01em]"><span style="white-space: pre-wrap;">Implementation Step</span></h2>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">The most basic version of step two is to give your agent an issue ID and say to go complete it. This is what most people already do tday when working with agents, however, it probably isn't what you want if you're reading this, because you're now the bottleneck in the loop, kicking off an agent directly in a session.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Instead what I did was build a way to trigger remote Claude Code sessions directly from Linear.</span></p>
+   <figure class="my-6 w-full">
+    <a class="block cursor-zoom-in" href="/piersonmarks/article/2075361336381555096/media/2075358398733008896"><img alt="" class="max-h-[min(80vh,720px)] w-full rounded-md object-contain" src="https://pbs.twimg.com/media/HM0nd8oawAAc-KL.jpg" width="2338" height="920"></a>
+    <figcaption class="mt-2 text-center text-sm leading-5 text-balance text-current/60">Going from linear issue to Claude</figcaption>
+   </figure>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">It works like this:</span></p>
+   <ol class="mt-1 mb-4 list-decimal ps-6 marker:text-current/50">
+    <li value="1" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">First, identify how you want to trigger a new Claude session. For us, we add a 'auto' label to a Linear issue that kicks this new task off.</span></li>
+    <li value="2" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Then, Linear sends a webhook event to our internal webhook API service (a newly-created internal Hono app) that parses the event and then forwards the correct information to the Claude Routine.</span></li>
+    <li value="3" class="font-article mb-1.5 text-pretty"><span style="white-space: pre-wrap;">Finally, this lightweight API service makes a POST request to Anthropic that triggers the Claude routine with an initial prompt.</span></li>
+   </ol>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Using a 'auto' label as the trigger allows us to control automatic execution of new Claude sessions.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">By default, we do not have pre-triage steps include these 'auto' labels and require a human to add the label that triggers the agent to start work (keeping the human-in-the-loop). That's why we call step 1 the pre-triage step, because something is still figuring out what to actually work on, either via human involvement or some agent looping and watching new issues being added and kicking off new implementation sessions.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">However, because adding a label is also easily done by an agent, we could have pre-triage loops create new issues with the 'auto' label by default, which kicks off a new Claude session. Using a label becomes a very flexible way to start new implementation work either automatically by an agent or by us humans.</span></p>
+   <figure class="my-6 w-full">
+    <a class="block cursor-zoom-in" href="/piersonmarks/article/2075361336381555096/media/2075358622016774144"><img alt="" class="max-h-[min(80vh,720px)] w-full rounded-md object-contain" src="https://pbs.twimg.com/media/HM0nq8baoAAwAKl.jpg" width="2666" height="1066"></a>
+    <figcaption class="mt-2 text-center text-sm leading-5 text-balance text-current/60">A lightweight routing service to kick off Claude sessions</figcaption>
+   </figure>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Because Linear supports webhooks, the whole "push when a label is added" works. The only downside is we need to have a public API that routes accepts these webhooks and formats the events and payload data to trigger Claude Code. This new service also adds the correct authentication headers which is why you can't have Linear trigger the routine directly.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Alternatively, you could have a scheduled routine that starts every so often and tries to implement any new issues not in progress with the auto label.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">For the actual routine prompt, I recommend building a reusable skill that walks through the entire SDLC, named something like /implement or /do, that makes it easy to just say "</span><i><em class="italic" style="white-space: pre-wrap;">/do ISSUE-NNN</em></i><span style="white-space: pre-wrap;">", which documents how to correctly go through the steps of fetching issue context, implementing the work, verifying in browser, creating the PR, and watching for comments.</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">Then the Claude routine prompt, triggered by the Linear event, can just have a very simple prompt. Here's mine:</span></p>
+   <blockquote class="font-article my-6 border-s-2 border-brand ps-4 text-pretty italic">
+    <span style="white-space: pre-wrap;">Retrieve the provided issue and use the /do skill to implement the requested change and create a pull request. Only fetch the exact issue provided. If it's already complete or in progress, stop.</span>
+    <br>
+    <br>
+    <span style="white-space: pre-wrap;">The issue reference does not appear in this message — it arrives as a separate follow-up message wrapped in a `&lt;routine-fire-payload&gt;` tag, sent immediately after this one, in the same session. Wait for that message before deciding whether an issue was provided. Only conclude the issue doesn't exist, or that none was given, after checking for it in the `&lt;routine-fire-payload&gt;` message and confirming the referenced issue truly does not exist.</span>
+    <br>
+    <br>
+    <span style="white-space: pre-wrap;">When you start work, comment on the issue, set it to "In Progress", and update the issue with anything meaningful as you progress. Always prefix Linear issue comments with [Claude].</span>
+   </blockquote>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">So at this point you have parallel Claude Remotion sessions triggered via API, implementing issues, opening PRs (and hopefully verifying their work via Playwright or Agent Browser).</span></p>
+   <p class="font-article text-pretty whitespace-pre-wrap"><span style="white-space: pre-wrap;">It's essentially a full software factory that is fully observable, runs while you sleep, and works entirely on your Claude Code subscription.</span></p>
+  </div>
+ </div></article>

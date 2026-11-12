@@ -24,9 +24,13 @@ internal object XProfile : DomExtractor {
         val body = context.document.select(".x-article-body")
             .firstOrNull { it.text().isNotBlank() }
             ?: return null
-        val source = body.parent() ?: body
+        // Newer pages wrap cover, title, byline and body in sibling data-article-part blocks.
+        val source = body.parents().firstOrNull { it.attr("data-article-part") == "body" }?.parent()
+            ?: body.parent()
+            ?: body
         val title = source.selectFirst("[itemprop=headline], h1")
         val cover = source.selectFirst("img[itemprop=image][src]")
+            ?: source.selectFirst("""[data-article-part="cover"] img[src]""")
             ?: title?.previousElementSibling()?.takeIf { it.normalName() == "img" && it.hasAttr("src") }
         val article = Element("article")
         cover?.let { image ->
