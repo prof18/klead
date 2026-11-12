@@ -178,18 +178,29 @@ internal fun languageFrom(element: Element?): String? {
 }
 
 internal fun escapeInline(text: String): String = text
-    .replace("\uFEFF", "")
+    .let { if ('\uFEFF' in it) it.replace("\uFEFF", "") else it }
     .normalizePlaceholderDots()
     .normalizeSpacedEllipses()
-    .replace('\u00A0', ' ')
-    .replace('\u202F', ' ')
-    .replace("\\", "\\\\")
-    .replace("`", "\\`")
-    .replace("*", "\\*")
-    .replace("_", "\\_")
-    .replace("[", "\\[")
-    .replace("]", "\\]")
-    .escapeTagLikeOpeners()
+    .escapeInlineCharacters()
+    .let { if ('<' in it) it.escapeTagLikeOpeners() else it }
+
+// One pass for what were eight replace() calls: no-break spaces become spaces and Markdown's inline
+// punctuation gets a backslash. Escaping each character once in order equals escaping the backslash
+// first and the rest after it.
+private fun String.escapeInlineCharacters(): String {
+    if (none { it in INLINE_ESCAPED_CHARACTERS || it == '\u00A0' || it == '\u202F' }) return this
+    val builder = StringBuilder(length + length / 8)
+    for (char in this) {
+        when (char) {
+            '\u00A0', '\u202F' -> builder.append(' ')
+            in INLINE_ESCAPED_CHARACTERS -> builder.append('\\').append(char)
+            else -> builder.append(char)
+        }
+    }
+    return builder.toString()
+}
+
+private const val INLINE_ESCAPED_CHARACTERS = "\\`*_[]"
 
 // Escape "<" that opens an HTML-tag-like sequence (e.g. a title "Monte<video>") so
 // CommonMark renderers such as Obsidian don't parse it as raw HTML and swallow the

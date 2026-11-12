@@ -21,7 +21,11 @@ internal object ArmNewsroomProfile : DomExtractor {
     )
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.hostMatches(domains) || context.document.selectFirstSafe("#single_post .single_post__content") != null
+        context.hostMatches(domains) || (
+            context.signals.hasId("single_post") &&
+                context.signals.hasClass("single_post__content") &&
+                context.document.selectFirstSafe("#single_post .single_post__content") != null
+            )
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val author = context.document.selectFirst(".single_post__author__info a[href*=/author/]")

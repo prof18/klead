@@ -17,7 +17,10 @@ internal object XProfile : DomExtractor {
     override val domains: Set<String> = setOf("x.com", "twitter.com")
 
     override fun matches(context: DomExtractorContext): Boolean =
-        super.matches(context) || context.document.selectFirst("""[data-testid="twitterArticleRichTextView"]""") != null
+        super.matches(context) || (
+            context.signals.hasAttribute("data-testid") &&
+                context.document.selectFirst("""[data-testid="twitterArticleRichTextView"]""") != null
+            )
 
     override fun extract(context: DomExtractorContext): ExtractorResult? =
         extractLoggedOutArticle(context) ?: extractLongformArticle(context) ?: extractConversation(context)

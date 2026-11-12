@@ -1708,6 +1708,15 @@ class KleadMarkdownWriterTest {
         assertTrue(markdown.contains("a < b stays"), "non-tag '<' should be left intact, got: $markdown")
     }
 
+    @Test
+    fun `inline escaping handles every special character in one text`() {
+        assertEquals(
+            "a\\\\b\\`c\\*d\\_e\\[f\\] g h \\<b> 1 < 2",
+            escapeInline("a\\b`c*d_e[f]\u00A0g\u202Fh\uFEFF <b> 1 < 2"),
+        )
+        assertEquals("plain words", escapeInline("plain words"))
+    }
+
     private fun render(html: String, baseUrl: String = "https://example.com/base/"): String = KleadMarkdownWriter.write(
         root = Ksoup.parse(html, baseUrl).selectFirst("article") ?: error("missing article"),
         baseUrl = baseUrl,

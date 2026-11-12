@@ -224,8 +224,29 @@ internal val DONATION_WIDGET_HINTS = listOf(
     "buy me a coffee",
 )
 
-internal val BYLINE_METADATA_STRIP_PATTERN = Regex(
-    """^\s*by\b.+(?:\bedited\s+by\b|\breviewed\s+by\b|\bupdated\s+by\b|[|].+\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\p{L}*\.?\s+\d{1,2},\s+\d{4}\b)""",
+internal val BYLINE_METADATA_STRIP_PATTERN = GatedBylineMetadataPattern(
+    Regex(
+        """^\s*by\b.+(?:\bedited\s+by\b|\breviewed\s+by\b|\bupdated\s+by\b|[|].+\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\p{L}*\.?\s+\d{1,2},\s+\d{4}\b)""",
+        RegexOption.IGNORE_CASE,
+    ),
+)
+
+// The full pattern's two nested ".+" cost about 11 ms on a 700-character "by a|a|a…" paragraph, and it runs
+// for every short paragraph. Each check here is a necessary condition of a match and runs in linear time,
+// so text that cannot match never reaches the full pattern.
+internal class GatedBylineMetadataPattern(private val regex: Regex) {
+    fun containsMatchIn(text: CharSequence): Boolean {
+        if (!BYLINE_START_PATTERN.containsMatchIn(text)) return false
+        val mayMatch = BYLINE_EDITOR_PATTERN.containsMatchIn(text) ||
+            ('|' in text && BYLINE_MONTH_DATE_PATTERN.containsMatchIn(text))
+        return mayMatch && regex.containsMatchIn(text)
+    }
+}
+
+private val BYLINE_START_PATTERN = Regex("""^\s*by\b""", RegexOption.IGNORE_CASE)
+private val BYLINE_EDITOR_PATTERN = Regex("""\b(?:edited|reviewed|updated)\s+by\b""", RegexOption.IGNORE_CASE)
+private val BYLINE_MONTH_DATE_PATTERN = Regex(
+    """\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\p{L}*\.?\s+\d{1,2},\s+\d{4}\b""",
     RegexOption.IGNORE_CASE,
 )
 

@@ -9,7 +9,9 @@ internal object ScpWikiProfile : DomExtractor {
     override val contentSelectors: List<String> = listOf("#page-content")
 
     override fun matches(context: DomExtractorContext): Boolean = super.matches(context) || (
-        context.document.selectFirst("#main-content #page-content") != null &&
+        context.signals.hasId("main-content") &&
+            context.signals.hasId("page-content") &&
+            context.document.selectFirst("#main-content #page-content") != null &&
             context.document.selectFirst("""meta[name=keywords]""")
                 ?.attr("content")
                 ?.contains("scp", ignoreCase = true) == true

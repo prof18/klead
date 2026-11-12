@@ -67,4 +67,20 @@ class CorePipelineRetryTest {
         assertFalse(result.removalPolicy.removePartialSelectors)
         assertFalse(result.removalPolicy.removeContentPatterns)
     }
+
+    @Test
+    fun `only the chosen attempt is rendered`() {
+        val result = com.prof18.klead.parseHtmlForTest(
+            html = "<html><body><article><p>Too short to keep.</p></article></body></html>",
+            url = "https://example.com/short",
+            options = com.prof18.klead.testOptions(debug = true),
+        )
+
+        @Suppress("UNCHECKED_CAST")
+        val timings = result.debug["timingsMillis"] as Map<String, Long>
+        assertTrue((result.debug["retryAttempts"] as List<*>).size > 1, "expected retries: $timings")
+        assertEquals(1, timings.keys.count { it.endsWith(".markdownOutput") }, "$timings")
+        assertEquals(1, timings.keys.count { it.endsWith(".htmlOutput") }, "$timings")
+        assertTrue(result.content.requireMarkdown().contains("Too short to keep."))
+    }
 }

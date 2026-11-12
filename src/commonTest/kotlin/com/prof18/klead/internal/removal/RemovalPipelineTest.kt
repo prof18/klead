@@ -3771,6 +3771,33 @@ class RemovalPipelineTest {
         assertEquals("https://cdn.example.com/city.jpg?w=1600", image.attr("src"))
     }
 
+    @Test
+    fun `byline metadata pattern keeps its matches`() {
+        listOf(
+            "By Jane Doe | Jan 5, 2024",
+            "  by Jane Doe, edited by John Roe",
+            "By Jane Doe · Reviewed by Dr. Roe",
+            "BY JANE DOE | Updated: September 12, 2025",
+        ).forEach { assertTrue(BYLINE_METADATA_STRIP_PATTERN.containsMatchIn(it), it) }
+        listOf(
+            "Jane Doe | Jan 5, 2024",
+            "By Jane Doe",
+            "By Jane Doe Jan 5, 2024",
+            "by a" + "|a".repeat(340),
+            "By Jane Doe\nedited by John Roe",
+        ).forEach { assertFalse(BYLINE_METADATA_STRIP_PATTERN.containsMatchIn(it), it) }
+    }
+
+    @Test
+    fun `byline metadata pattern skips pipe-heavy text quickly`() {
+        // The full pattern took about 11 ms per paragraph like this; it runs for every short paragraph.
+        val paragraph = "by a" + "|a".repeat(340)
+        val elapsed = kotlin.time.measureTime {
+            repeat(2_000) { BYLINE_METADATA_STRIP_PATTERN.containsMatchIn(paragraph) }
+        }
+        assertTrue(elapsed.inWholeSeconds < 5, "2,000 checks took $elapsed")
+    }
+
     private fun mainSelectorOptions() = testOptions(customExtractors = listOf(MainSelectorExtractor))
 
     private object MainSelectorExtractor : Extractor {

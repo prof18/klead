@@ -12,6 +12,7 @@ internal object MediumProfile : DomExtractor {
 
     override fun matches(context: DomExtractorContext): Boolean {
         if (context.hostMatches(domains)) return true
+        if (!context.signals.hasClass("pw-post-title")) return false
         if (context.document.selectFirst("h1.pw-post-title") == null) return false
 
         val siteName = context.document.selectFirst("meta[property=og:site_name]")?.attr("content")

@@ -1,11 +1,15 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
 internal object StripeDocsProfile : DomExtractor {
+    // Probed against the document's <meta> elements only (see DocumentSignals).
+    private val STRIPE_SITE_NAME = QueryParser.parse("""meta[property=og:site_name][content="Stripe Documentation"]""")
+
     override val id: String = "stripe-docs"
     override val contentSelectors: List<String> = listOf("article#content")
     override val postContentRemoveSelectors: List<String> = listOf(
@@ -15,7 +19,7 @@ internal object StripeDocsProfile : DomExtractor {
     )
 
     override fun matches(context: DomExtractorContext): Boolean = context.hostMatches(setOf("stripe.com")) ||
-        context.document.selectFirst("""meta[property=og:site_name][content="Stripe Documentation"]""") != null ||
+        context.signals.firstMeta(STRIPE_SITE_NAME) != null ||
         context.document.title().contains("Stripe Documentation", ignoreCase = true)
 
     override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {

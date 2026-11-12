@@ -13,7 +13,12 @@ internal object BeehiivProfile : DomExtractor {
     override val contentSelectors: List<String> = listOf("#content-blocks")
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.hostMatches(domains) || context.document.hasBeehiivPostStructure()
+        context.hostMatches(domains) || (
+            context.signals.hasClass("rendered-post") &&
+                context.signals.hasId("content-blocks") &&
+                context.signals.hasClass("bh__byline_wrapper") &&
+                context.document.hasBeehiivPostStructure()
+            )
 
     override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
         content.children().forEach { block ->

@@ -18,7 +18,8 @@ internal object SteamPartnerEventExtractor : DomExtractor {
     override val id: String = "steam-partner-event"
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.document.selectFirst("#application_config[data-partnereventstore]") != null
+        context.signals.hasId("application_config") &&
+            context.document.selectFirst("#application_config[data-partnereventstore]") != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val event = context.document.partnerEvent() ?: return null

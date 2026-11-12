@@ -14,6 +14,8 @@ internal object HashnodeProfile : DomExtractor {
     )
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.document.selectFirst("""header a[href^="https://hashnode.com/?"]""") != null &&
+        context.signals.hasTag("header") &&
+            context.signals.hasClass("prose") &&
+            context.document.selectFirst("""header a[href^="https://hashnode.com/?"]""") != null &&
             context.document.selectFirst("article .prose") != null
 }

@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.internal.content.joinedWordCount
 import com.prof18.klead.internal.dom.isAttachedTo
@@ -14,10 +15,13 @@ import com.prof18.klead.internal.removal.recordAndRemove
  * says which blocks only show at other screen widths and, on CMS pages, where the article body ends.
  */
 internal object FramerProfile : DomExtractor {
+    // Probed against the document's <meta> elements only (see DocumentSignals).
+    private val FRAMER_GENERATOR = QueryParser.parse("meta[name=generator][content^=Framer]")
+
     override val id: String = "framer"
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.document.selectFirst("meta[name=generator][content^=Framer]") != null
+        context.signals.firstMeta(FRAMER_GENERATOR) != null
 
     override fun preProcess(content: Element, context: DomExtractorContext) {
         // Framer server-renders one copy of a block per breakpoint and hides the others with a

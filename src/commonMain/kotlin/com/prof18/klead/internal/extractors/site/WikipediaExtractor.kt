@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.deepCopy
@@ -9,6 +10,9 @@ import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
 internal object WikipediaExtractor : DomExtractor {
+    // Probed against the document's <meta> elements only (see DocumentSignals).
+    private val OG_SITE_NAME = QueryParser.parse("""meta[property="og:site_name"]""")
+
     override val id: String = "wikipedia"
 
     override fun matches(context: DomExtractorContext): Boolean = context.isWikipediaPage() &&
@@ -92,7 +96,7 @@ internal object WikipediaExtractor : DomExtractor {
     private fun DomExtractorContext.isWikipediaPage(): Boolean {
         if (host.orEmpty().isWikipediaHost()) return true
 
-        val siteName = document.selectFirst("""meta[property="og:site_name"]""")
+        val siteName = signals.firstMeta(OG_SITE_NAME)
             ?.attr("content")
             ?.trim()
         return siteName == "Wikipedia" && document.selectFirst("body.mediawiki") != null

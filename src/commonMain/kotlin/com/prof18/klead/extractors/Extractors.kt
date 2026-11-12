@@ -27,8 +27,11 @@ data class ExtractorContext(val url: String?, val host: String?) {
         }
     }
 
+    // Every extractor asks with its own constant domain set, about a hundred per parse; normalize each once.
+    private val normalizedDomainSets = HashMap<Set<String>, List<String>>()
+
     fun hostMatches(domains: Set<String>): Boolean {
-        val normalizedDomains = domains.mapNotNull { it.normalizedHost() }
+        val normalizedDomains = normalizedDomainSets.getOrPut(domains) { domains.mapNotNull { it.normalizedHost() } }
         if (normalizedDomains.isEmpty()) return false
         if (normalizedHost != null && normalizedHost.matchesDomain(normalizedDomains)) return true
 

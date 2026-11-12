@@ -13,7 +13,8 @@ internal object MastodonProfile : DomExtractor {
     override val id: String = "mastodon"
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.document.selectFirst(".detailed-status") != null &&
+        context.signals.hasClass("detailed-status") &&
+            context.document.selectFirst(".detailed-status") != null &&
             context.document.selectFirst("#mastodon, .app-holder, script#initial-state") != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {

@@ -3,6 +3,7 @@ package com.prof18.klead.internal
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.KleadContent
 import com.prof18.klead.KleadMetadata
 import com.prof18.klead.KleadOptions
@@ -19,6 +20,7 @@ import com.prof18.klead.internal.dom.cloneDocument
 import com.prof18.klead.internal.dom.cloneElement
 import com.prof18.klead.internal.dom.limitDepth
 import com.prof18.klead.internal.dom.parseKleadUri
+import com.prof18.klead.internal.dom.removeAllBatched
 import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.ExtractorRegistry
@@ -45,7 +47,13 @@ import kotlin.math.max
 import kotlin.time.measureTimedValue
 
 internal object KleadParser {
-    private data class ParsedResult(val result: KleadResult, val wordCount: Int)
+    // One attempt's outcome before rendering: only the winning attempt is rendered to HTML and Markdown.
+    private class ParsedResult(
+        val wordCount: Int,
+        val content: Element,
+        val timingPrefix: String,
+        val withContent: (KleadContent) -> KleadResult,
+    )
 
     // Every measured stage boundary is also a cancellation point: several stages (document
     // parse, clone, metadata, main-content detection) have no checks of their own, and on slow
@@ -143,15 +151,15 @@ internal object KleadParser {
                         )
                     }
                     RetryCandidate(
-                        value = result.result,
+                        value = result,
                         wordCount = result.wordCount,
                         removalPolicy = removalPolicy,
                     )
                 }
             }
-            retryCandidate.value.copy(
-                metadata = retryCandidate.value.metadata.copy(language = sourceLanguage),
-            )
+            val best = retryCandidate.value
+            val result = best.withContent(render(best, url, options, timings, checkCancelled))
+            result.copy(metadata = result.metadata.copy(language = sourceLanguage))
         }
 
         val parseTimeMillis = max(0, timed.duration.inWholeMilliseconds)
@@ -310,30 +318,17 @@ internal object KleadParser {
         timingPrefix: String,
         checkCancelled: () -> Unit,
     ): ParsedResult {
-        val html = if (KleadOutput.HTML in options.outputs) {
-            timings.measure("$timingPrefix.htmlOutput") {
-                content.cloneElement().also(HtmlPresentationNormalizer::normalize).cleanOuterHtml()
-            }
-        } else {
-            null
-        }
-        val markdown = if (KleadOutput.MARKDOWN in options.outputs) {
-            timings.measure("$timingPrefix.markdownOutput") {
-                KleadMarkdownWriter.write(content, url, checkCancelled)
-            }
-        } else {
-            null
-        }
         val wordCount = timings.measure("$timingPrefix.wordCount") {
             countBodyWords(content)
         }
 
         return ParsedResult(
-            result = KleadResult(
-                content = KleadContent(
-                    html = html,
-                    markdown = markdown,
-                ),
+            wordCount = wordCount,
+            content = content,
+            timingPrefix = timingPrefix,
+        ) { rendered ->
+            KleadResult(
+                content = rendered,
                 metadata = KleadMetadata(
                     title = metadata.title,
                     description = metadata.description,
@@ -351,9 +346,34 @@ internal object KleadParser {
                     removals,
                     matchedExtractors.map { it.id },
                 ),
-            ).withExtractorMetadata(extractorResult),
-            wordCount = wordCount,
-        )
+            ).withExtractorMetadata(extractorResult)
+        }
+    }
+
+    // Neither renderer changes the content (both work on copies), so rendering after the word count
+    // gives what rendering each attempt did.
+    private fun render(
+        attempt: ParsedResult,
+        url: String,
+        options: KleadOptions,
+        timings: ParseTimings,
+        checkCancelled: () -> Unit,
+    ): KleadContent {
+        val html = if (KleadOutput.HTML in options.outputs) {
+            timings.measure("${attempt.timingPrefix}.htmlOutput") {
+                attempt.content.cloneElement().also(HtmlPresentationNormalizer::normalize).cleanOuterHtml()
+            }
+        } else {
+            null
+        }
+        val markdown = if (KleadOutput.MARKDOWN in options.outputs) {
+            timings.measure("${attempt.timingPrefix}.markdownOutput") {
+                KleadMarkdownWriter.write(attempt.content, url, checkCancelled)
+            }
+        } else {
+            null
+        }
+        return KleadContent(html = html, markdown = markdown)
     }
 
     private fun KleadResult.withExtractorMetadata(extractorResult: ExtractorResult?): KleadResult {
@@ -429,11 +449,27 @@ internal object KleadParser {
             outerHtml().trim()
         }
 
+    // Words outside headings. The outermost headings leave their parents for the count and are put back in
+    // place, one child-list rebuild per parent, instead of copying the whole content to drop them. A heading
+    // that is the content root itself stays, as removing a copy's root from its document did.
     private fun countBodyWords(content: Element): Int {
-        val clone = content.cloneElement()
-        clone.select("h1, h2, h3, h4, h5, h6").remove()
-        return clone.text().joinedWordCount()
+        val headings = content.select(HEADING_EVALUATOR).filter { it !== content }
+        if (headings.isEmpty()) return content.text().joinedWordCount()
+        val headingSet = headings.toHashSet()
+        val outermost = headings.filter { heading -> heading.parents().none { it in headingSet } }
+        val savedChildren = outermost.mapNotNull { it.parent() }.distinct().map { it to it.childNodes().toList() }
+        removeAllBatched(outermost)
+        try {
+            return content.text().joinedWordCount()
+        } finally {
+            for ((parent, children) in savedChildren) {
+                parent.empty()
+                parent.appendChildren(children)
+            }
+        }
     }
+
+    private val HEADING_EVALUATOR = QueryParser.parse("h1, h2, h3, h4, h5, h6")
 
     private const val KILL_THE_NEWSLETTER_HOST = "kill-the-newsletter.com"
 }

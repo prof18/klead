@@ -89,6 +89,28 @@ class ExtractorRegistryTest {
         assertFalse(result.content.requireMarkdown().contains("Ignored generic content."))
     }
 
+    @Test
+    fun `document signals follow selector matching rules`() {
+        val document = Ksoup.parse(
+            "<html><head><meta name=generator content=\"Framer 1\"></head><body>" +
+                "<div id=\"Main\" class=\"Rendered-Post  bh__byline_wrapper\" DATA-TestId=\"x\"></div></body></html>",
+            "https://example.com",
+        )
+        val signals = DocumentSignals(document)
+
+        assertTrue(signals.hasTag("div"))
+        assertTrue(signals.hasId("Main"))
+        assertFalse(signals.hasId("main"))
+        assertTrue(signals.hasClass("rendered-post"))
+        assertTrue(signals.hasClass("BH__BYLINE_WRAPPER"))
+        assertTrue(signals.hasAttribute("data-testid"))
+        assertFalse(signals.hasClass("article"))
+        assertEquals(
+            document.selectFirst("meta[name=generator][content^=Framer]"),
+            signals.firstMeta(com.fleeksoft.ksoup.select.QueryParser.parse("meta[name=generator][content^=Framer]")),
+        )
+    }
+
     private fun namedExtractor(name: String, priority: Int = 0): Extractor = object : Extractor {
         override val id = name
         override val priority = priority

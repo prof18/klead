@@ -7,6 +7,7 @@ import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.attrTrimmedOrNull
 import com.prof18.klead.internal.dom.selectFirstSafe
+import com.prof18.klead.internal.extractors.DocumentSignals
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 import com.prof18.klead.internal.removal.recordAndRemove
@@ -26,7 +27,9 @@ internal object SubstackProfile : DomExtractor {
     )
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.hostMatches(domains) || SUBSTACK_DOM_SIGNALS.any { context.document.selectFirstSafe(it) != null }
+        context.hostMatches(domains) || SUBSTACK_DOM_SIGNALS.any { (mayMatch, selector) ->
+            mayMatch(context.signals) && context.document.selectFirstSafe(selector) != null
+        }
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val directNoteUrl = context.url.orEmpty().takeIf { it.contains("/note/c-") }
@@ -128,13 +131,14 @@ internal object SubstackProfile : DomExtractor {
         return if (embeddedOriginIndex >= 0) value.substring(embeddedOriginIndex + 1) else value
     }
 
-    private val SUBSTACK_DOM_SIGNALS = listOf(
-        "#substack-comments",
-        ".portable-archive",
-        ".portable-archive-list",
-        """[aria-label="Top Posts Footer"]""",
-        """script[src*="substackcdn.com"]""",
-        """link[href*="substackcdn.com"]""",
+    // Each selector with a cheap necessary condition on the document's signals.
+    private val SUBSTACK_DOM_SIGNALS: List<Pair<(DocumentSignals) -> Boolean, String>> = listOf(
+        { signals: DocumentSignals -> signals.hasId("substack-comments") } to "#substack-comments",
+        { signals: DocumentSignals -> signals.hasClass("portable-archive") } to ".portable-archive",
+        { signals: DocumentSignals -> signals.hasClass("portable-archive-list") } to ".portable-archive-list",
+        { signals: DocumentSignals -> signals.hasAttribute("aria-label") } to """[aria-label="Top Posts Footer"]""",
+        { signals: DocumentSignals -> signals.hasTag("script") } to """script[src*="substackcdn.com"]""",
+        { signals: DocumentSignals -> signals.hasTag("link") } to """link[href*="substackcdn.com"]""",
     )
 
     private val WHITESPACE_PATTERN = Regex("""\s+""")
