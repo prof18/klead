@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
 import com.prof18.klead.internal.dom.cloneElement
@@ -9,6 +10,7 @@ import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
 import com.prof18.klead.internal.dom.transferChildrenTo
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
+import kotlin.time.Instant
 
 internal object XProfile : DomExtractor {
     override val id: String = "x"
@@ -87,6 +89,7 @@ internal object XProfile : DomExtractor {
     private fun extractConversation(context: DomExtractorContext): ExtractorResult? {
         val tweets = context.document.select("""article[data-testid="tweet"]""")
             .mapNotNull { it.toTweet() }
+            .ifEmpty { context.loggedOutPosts() }
         if (tweets.isEmpty()) return null
 
         val mainIndex = tweets.indexOfFirst { tweet ->
@@ -154,9 +157,85 @@ internal object XProfile : DomExtractor {
         )
     }
 
+    // X's server-rendered markup for logged-out readers has no test ids. Posts stream in
+    // twice (fallback and resolved timeline), so the status link de-duplicates them.
+    private fun DomExtractorContext.loggedOutPosts(): List<XTweet> {
+        val seenStatusUrls = mutableSetOf<String>()
+        return document.select("article")
+            .filter { it.selectFirst("[data-post-avatar]") != null }
+            .mapNotNull { it.toLoggedOutPost() }
+            .filter { post -> post.statusUrl == null || seenStatusUrls.add(post.statusUrl) }
+    }
+
+    private fun Element.toLoggedOutPost(): XTweet? {
+        val body = select("div[dir=auto]")
+            .firstOrNull { text -> text.parents().none { it.normalName() == "a" } && text.text().isNotBlank() }
+            ?.cloneElement()
+            ?: return null
+        body.select("button, script").remove()
+        body.cleanXContent()
+
+        val links = select("a[href]")
+        val statusLink = links.firstOrNull { statusPathPattern.matches(it.attr("href")) }
+        val media = select("img[src]")
+            .filter { "pbs.twimg.com/media/" in it.attr("src") }
+            .map { image -> image.cleanXClone().also { it.removeAttr("srcset").removeAttr("sizes") } }
+
+        return XTweet(
+            displayName = links.firstOrNull { link ->
+                val text = link.text().trim()
+                text.isNotBlank() && !text.startsWith("@") && link !== statusLink
+            }?.text()?.trim(),
+            handle = links.firstOrNull { it.text().trim().startsWith("@") }?.text()?.trim(),
+            date = statusLink?.parent()?.relativeTimestampDate(),
+            statusUrl = statusLink?.attr("href")?.toAbsoluteSiteUrl("x.com"),
+            body = body,
+            media = media,
+        )
+    }
+
+    private fun Element.relativeTimestampDate(): String? = select("script")
+        .firstNotNullOfOrNull { script -> relativeTimestampPattern.find(script.data())?.groupValues?.get(1) }
+        ?.toLongOrNull()
+        ?.let { Instant.fromEpochMilliseconds(it).toString().isoDatePart() }
+
     private fun Element.appendTweetBody(tweet: XTweet) {
-        val paragraph = appendElement("p")
-        tweet.body.transferChildrenTo(paragraph)
+        appendPreWrapParagraphs(tweet.body)
+        tweet.media.forEach { appendChild(it) }
+    }
+
+    // Post text is rendered with `white-space: pre-wrap`, so its line breaks live in text
+    // nodes. Blank lines become paragraphs and single line breaks become <br>.
+    private fun Element.appendPreWrapParagraphs(source: Element) {
+        source.select("span").forEach { it.unwrap() }
+        var paragraph = appendElement("p")
+        var pendingBreaks = 0
+
+        fun flushBreaks() {
+            if (paragraph.childNodeSize() > 0) {
+                when {
+                    pendingBreaks >= 2 -> paragraph = appendElement("p")
+                    pendingBreaks == 1 -> paragraph.appendElement("br")
+                }
+            }
+            pendingBreaks = 0
+        }
+
+        source.childNodes().toList().forEach { node ->
+            if (node is TextNode) {
+                node.getWholeText().split('\n').forEachIndexed { index, line ->
+                    if (index > 0) pendingBreaks++
+                    if (line.isNotEmpty() && !(line.isBlank() && pendingBreaks > 0)) {
+                        flushBreaks()
+                        paragraph.appendText(line)
+                    }
+                }
+            } else {
+                flushBreaks()
+                paragraph.appendChild(node)
+            }
+        }
+        if (paragraph.childNodeSize() == 0) paragraph.remove()
     }
 
     private fun Element.appendComment(comment: XTweet) {
@@ -288,8 +367,11 @@ internal object XProfile : DomExtractor {
         val date: String?,
         val statusUrl: String?,
         val body: Element,
+        val media: List<Element> = emptyList(),
     )
 
+    private val statusPathPattern = Regex("""^(?:https://(?:x|twitter)\.com)?/\w+/status/\d+/?$""")
+    private val relativeTimestampPattern = Regex(""""timestamp"\s*:\s*(\d+)""")
     private val boldStylePattern = Regex("""font-weight\s*:\s*(?:bold|[6-9]00)\b""")
     private val xImageNameParameter = Regex("""([?&]name=)[^&#]+""")
     private val X_AUTHOR_TITLE_REGEX = Regex("""^(.+?)\s+on\s+X(?::|$)""")

@@ -43,6 +43,32 @@ class XProfileTest {
     }
 
     @Test
+    fun `captured logged out post keeps line breaks and photo without timeline controls`() {
+        val result = parseHtmlForTest(
+            html = CommonTestResources.read("fixtures/regressions/input-html/x-logged-out-post-conversation.html"),
+            url = "https://x.com/PawelHuryn/status/2120283296550547618",
+            options = testOptions(debug = true),
+        )
+
+        val markdown = result.content.requireMarkdown()
+        val html = result.content.requireHtml()
+        assertEquals(listOf("x"), result.debug["extractorIds"])
+        assertEquals("Post by @PawelHuryn on X", result.metadata.title)
+        assertEquals("@PawelHuryn", result.metadata.author)
+        assertTrue(markdown.startsWith("What a day! I tested Gemini 4 Carbon"), markdown)
+        val brokenLines = "The results:\n\n- Fable 5.2 (max): 58 for \$139.65  \n- Gemini 4 Carbon"
+        assertTrue(markdown.contains(brokenLines), markdown)
+        assertTrue(markdown.contains("pbs.twimg.com/media/HWzCanJXcAIErBb"), markdown)
+        assertEquals(1, Regex("What a day!").findAll(markdown).count(), markdown)
+        assertTrue(markdown.contains("[2026-11-10](https://x.com/PawelHuryn/status/2120284113378877712)"), markdown)
+        assertTrue(markdown.contains("> thank you for doing the testing"), markdown)
+        listOf("Show more", "profile_images", "1.8K", "2.5K", "Conversation").forEach { clutter ->
+            assertFalse(markdown.contains(clutter), clutter)
+        }
+        assertFalse(html.contains("<button"), html)
+    }
+
+    @Test
     fun `logged out article keeps prose and real lists without timeline indentation or controls`() {
         val result = parseHtmlForTest(
             html = """
