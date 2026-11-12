@@ -145,13 +145,13 @@ internal class ExtractorRegistry(private val extractors: List<Extractor> = Defau
                 }
             } == true
         }
+}
 
-    // Extractors read hostile page markup (and any page can claim a site via its canonical URL), so an
-    // extractor that throws counts as not matching and generic extraction takes over.
-    private inline fun <T> failingAsNull(block: () -> T): T? = runCatching(block).getOrElse { error ->
-        if (error is CancellationException) throw error
-        null
-    }
+// Extractors read hostile page markup (and any page can claim a site via its canonical URL), so an
+// extractor step that throws counts as not matching (or as doing nothing) and generic extraction takes over.
+internal inline fun <T> failingAsNull(block: () -> T): T? = runCatching(block).getOrElse { error ->
+    if (error is CancellationException) throw error
+    null
 }
 
 internal object DefaultExtractors {

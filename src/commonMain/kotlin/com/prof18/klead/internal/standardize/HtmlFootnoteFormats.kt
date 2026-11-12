@@ -15,6 +15,8 @@ internal object HtmlFootnoteFormats {
         // One id lookup per pass: selecting every [id] again for each reference was quadratic.
         val elementsById = content.selectDescendants("[id]").groupBy { it.id() }
         references.forEachIndexed { index, reference ->
+            // A reference can itself be an earlier reference's target, which moved it out of the tree.
+            if (reference.parent() == null) return@forEachIndexed
             val targetId = reference.attr("data-definition").trim()
             val target = elementsById[targetId]
                 ?.firstOrNull { it.parent() != null && reference.parents().none { parent -> parent === it } }
@@ -145,6 +147,8 @@ internal object HtmlFootnoteFormats {
 
     fun normalizeSidenoteFootnotes(content: Element) {
         content.selectDescendants("label.footref[for]").forEach { label ->
+            // A label that is also a sidenote was removed as the previous label's sidenote.
+            if (label.parent() == null) return@forEach
             val target = label.attr("for").trim()
             if (target.isBlank()) return@forEach
             var sibling = label.nextElementSibling()

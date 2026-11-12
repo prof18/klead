@@ -23,6 +23,7 @@ import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.ExtractorRegistry
 import com.prof18.klead.internal.extractors.createExtractorContext
+import com.prof18.klead.internal.extractors.failingAsNull
 import com.prof18.klead.internal.extractors.site.ExtractorRemovalPipeline
 import com.prof18.klead.internal.markdown.KleadMarkdownWriter
 import com.prof18.klead.internal.metadata.LanguageMetadataExtractor
@@ -217,7 +218,7 @@ internal object KleadParser {
         }
         timings.measure("$timingPrefix.extractorPreProcess") {
             matchedExtractors.filterIsInstance<DomExtractor>()
-                .forEach { it.preProcess(content, extractorContext) }
+                .forEach { extractor -> failingAsNull { extractor.preProcess(content, extractorContext) } }
         }
         timings.measure("$timingPrefix.stripUnsafe") {
             ContentSanitizer.stripUnsafe(content)
@@ -256,7 +257,9 @@ internal object KleadParser {
         )
         timings.measure("$timingPrefix.extractorPostProcess") {
             matchedExtractors.filterIsInstance<DomExtractor>()
-                .forEach { it.postProcess(content, contentExtractorContext, removals) }
+                .forEach { extractor ->
+                    failingAsNull { extractor.postProcess(content, contentExtractorContext, removals) }
+                }
         }
         applyGenericNewsletterLayout(content, url, extractorResult, timings, timingPrefix)
         timings.measure("$timingPrefix.htmlStandardizer") {

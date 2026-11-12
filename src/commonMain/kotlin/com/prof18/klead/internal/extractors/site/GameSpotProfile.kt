@@ -37,6 +37,9 @@ internal object GameSpotProfile : DomExtractor {
 
     override fun preProcess(content: Element, context: DomExtractorContext) {
         content.select(VIDEO_EMBED).forEach { embed ->
+            // A figure holding two embeds is replaced with the first; the second is then detached.
+            val replaced = embed.closest("figure") ?: embed
+            if (replaced.parent() == null) return@forEach
             val mediaId = embed.attr("data-jw-id").trim()
             if (!JW_MEDIA_ID.matches(mediaId)) return@forEach
             val href = context.document.jwContentUrl(mediaId) ?: context.url ?: return@forEach
@@ -46,7 +49,7 @@ internal object GameSpotProfile : DomExtractor {
                 .appendElement("img")
                 .attr("src", "https://cdn.jwplayer.com/v2/media/$mediaId/poster.jpg?width=1280")
                 .attr("alt", "Watch the video")
-            (embed.closest("figure") ?: embed).replaceWith(poster)
+            replaced.replaceWith(poster)
         }
         removeDeckRepeatedInBody(content)
     }

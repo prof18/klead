@@ -36,8 +36,12 @@ internal object HtmlCodeNormalizer {
                 wrapper.replaceWith(pre)
             }
         }
-        content.select("code > pre").forEach { pre ->
-            pre.parent()?.replaceWith(pre)
+        // Replace each wrapping <code> with its <pre> children, keeping all of them when there are several.
+        content.select("code > pre").mapNotNull { it.parent() }.distinct().forEach { code ->
+            val parent = code.parent() ?: return@forEach
+            val pres = code.children().filter { it.normalName() == "pre" }
+            parent.insertChildren(code.siblingIndex(), pres)
+            code.remove()
         }
     }
 

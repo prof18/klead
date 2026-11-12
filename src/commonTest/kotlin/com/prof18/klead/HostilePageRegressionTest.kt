@@ -103,6 +103,48 @@ class HostilePageRegressionTest {
         // A trailing "Further Reading" section takes everything after it, the tail paragraph included.
         assertParses(page("<h2>Further Reading</h2><p></p>".repeat(3_000) + "<p>$TAIL_TEXT</p>"), expected = LEAD_TEXT)
 
+    // Each shape below made a Ksoup replaceWith run on a node an earlier iteration had detached.
+    @Test
+    fun `gamespot figure with two video embeds`() {
+        val embed = "<div class=\"wp-block-gamespot-blocks-video-embed\" data-jw-id=\"abcdefgh\"></div>"
+        assertParses(
+            "<html><body><article class=\"type-videos\"><figure>$embed$embed</figure>" +
+                "<p>$TAIL_TEXT</p></article></body></html>",
+            url = "https://www.gamespot.com/videos/x/",
+        )
+    }
+
+    @Test
+    fun `data-definition footnote reference that is another reference's target`() = assertParses(
+        page(
+            "<p>$TAIL_TEXT <span data-definition=\"b\">1</span><span id=\"b\" data-definition=\"c\">2</span>" +
+                "<span id=\"c\">note</span></p>",
+        ),
+    )
+
+    @Test
+    fun `sidenote label that is the previous label's sidenote`() = assertParses(
+        page(
+            "<p>$TAIL_TEXT<label class=\"footref\" for=\"a\">1</label>" +
+                "<label class=\"footref sidenote\" for=\"b\">2</label></p>",
+        ),
+    )
+
+    @Test
+    fun `lyte wrapper with two placeholders`() = assertParses(
+        page(
+            "<div class=\"lyte-wrapper\"><div id=\"WYL_dQw4w9WgXcQ\"></div><div id=\"WYL_dQw4w9WgXcQ\"></div></div>" +
+                "<p>$TAIL_TEXT</p>",
+        ),
+    )
+
+    @Test
+    fun `code wrapping two pre blocks keeps both`() {
+        val html = page("<div><code><pre>first block</pre><pre>second block</pre></code></div><p>$TAIL_TEXT</p>")
+        assertParses(html, expected = "first block")
+        assertParses(html, expected = "second block")
+    }
+
     private fun redditComment(replies: String) = "<div class=\"thing comment\" data-permalink=\"/r/x/c\">" +
         "<div class=\"entry\"><div class=\"tagline\"><a class=\"author\">user</a>" +
         "<time datetime=\"2024-01-01T00:00:00Z\"></time></div>" +

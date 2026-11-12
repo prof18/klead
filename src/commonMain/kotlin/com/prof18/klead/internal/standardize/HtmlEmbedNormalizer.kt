@@ -80,6 +80,8 @@ internal object HtmlEmbedNormalizer {
             val iframe = Element("iframe")
             applyEmbedAttributes(iframe, video, video.defaultTitle)
             val wrapper = placeholder.parent()?.takeIf { it.hasClass("lyte-wrapper") } ?: placeholder
+            // A wrapper with two placeholders is replaced on the first; skip the detached second.
+            if (wrapper.parent() == null) return@forEach
             wrapper.replaceWith(iframe)
         }
     }
