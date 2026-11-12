@@ -24,37 +24,43 @@ internal object TimesOfIndiaProfile : DomExtractor {
 
     // The story is bare text split by empty span.br markers, with ad slots and the lead image as
     // sibling divs, so the paragraphs only exist as runs of inline nodes between them.
+    // The new child list is built in one pass and set once: inserting each paragraph and removing each
+    // marker reindexed the body for every marker. A run with content becomes a paragraph, its comments
+    // staying in front of it; a run without content stays as it is; markers are dropped.
     private fun wrapParagraphs(body: Element) {
+        val children = mutableListOf<Node>()
+        val paragraphs = mutableListOf<Pair<Element, List<Node>>>()
         val run = mutableListOf<Node>()
 
-        fun flush(before: Node) {
+        fun flush() {
             if (run.any { it is Element || (it is TextNode && !it.isBlank()) }) {
                 val paragraph = Element("p")
-                before.before(paragraph)
-                run.filter { it !is Comment }.forEach(paragraph::appendChild)
+                children.addAll(run.filterIsInstance<Comment>())
+                children.add(paragraph)
+                paragraphs.add(paragraph to run.filter { it !is Comment })
+            } else {
+                children.addAll(run)
             }
             run.clear()
         }
 
         body.childNodes().toList().forEach { node ->
             when {
-                node is Element && node.isBreakMarker() -> {
-                    flush(node)
-                    node.remove()
-                }
+                node is Element && node.isBreakMarker() -> flush()
 
                 node is TextNode || node is Comment || (node is Element && node.normalName() in INLINE_TAGS) ->
                     run += node
 
-                else -> flush(node)
+                else -> {
+                    flush()
+                    children.add(node)
+                }
             }
         }
-        if (run.isNotEmpty()) {
-            val end = Element("span")
-            body.appendChild(end)
-            flush(end)
-            end.remove()
-        }
+        flush()
+        body.empty()
+        paragraphs.forEach { (paragraph, nodes) -> paragraph.appendChildren(nodes) }
+        body.appendChildren(children)
     }
 
     private fun Element.isBreakMarker(): Boolean =

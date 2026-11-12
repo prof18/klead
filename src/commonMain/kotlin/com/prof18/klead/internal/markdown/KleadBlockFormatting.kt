@@ -98,7 +98,9 @@ internal fun renderCodeBlock(element: Element): String {
         .normalizeFinalNewline()
         .replace("\t", "    ")
     val fence = codeFence(rawText)
-    return "$fence$language\n$rawText$fence"
+    // The language is page markup: keep its first word without backticks, which can end a fence's info string.
+    val infoString = language.trim().takeWhile { !it.isWhitespace() }.filterNot { it == '`' }
+    return "$fence$infoString\n$rawText$fence"
 }
 
 internal fun Element.isBlockCodeElement(): Boolean = normalName() == "code" && classNames().contains("block")

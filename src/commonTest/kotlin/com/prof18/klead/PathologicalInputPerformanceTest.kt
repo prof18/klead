@@ -154,8 +154,8 @@ class PathologicalInputPerformanceTest {
         expected = null,
     )
 
-    // Shapes from the 2026-11 audit that grew quadratically. Each is parsed at n and 8n: linear work grows
-    // about 8×, the old quadratic paths about 64×. A ratio is used instead of a fixed budget so the check
+    // Shapes from the 2026-11 audit that grew quadratically. Each is parsed at n and 16n: linear work grows
+    // about 16×, the old quadratic paths up to 256×. A ratio is used instead of a fixed budget so the check
     // holds on fast and slow platforms alike.
     @Test
     fun `many footnotes under one body wrapper scale linearly`() = assertScalesLinearly(150) { n ->
@@ -171,7 +171,7 @@ class PathologicalInputPerformanceTest {
     }
 
     @Test
-    fun `many bare spans in one paragraph scale linearly`() = assertScalesLinearly(5_000) { n ->
+    fun `many bare spans in one paragraph scale linearly`() = assertScalesLinearly(2_500) { n ->
         page("<p>" + "<span>word </span>".repeat(n) + "</p>")
     }
 
@@ -301,14 +301,33 @@ class PathologicalInputPerformanceTest {
         repeat(depth) { append(close) }
     }
 
+    @Test
+    fun `many gamespot video embeds and ld+json scripts scale linearly`() = assertScalesLinearly(
+        60,
+        url = "https://www.gamespot.com/videos/x/",
+    ) { n ->
+        "<html><head>" + repeatIndexed(n) {
+            "<script type=\"application/ld+json\">{\"contentUrl\":\"https://cdn.jwplayer.com/videos/x$it\"}</script>"
+        } + "</head><body><article class=\"type-videos\">" +
+            repeatIndexed(n) {
+                "<div class=\"wp-block-gamespot-blocks-video-embed\" data-jw-id=\"abcd${it.toString().padStart(4, '0')}\"></div>"
+            } + "<p>$LEAD_TEXT</p></article></body></html>"
+    }
+
+    @Test
+    fun `many times of india break markers scale linearly`() = assertScalesLinearly(
+        2_000,
+        url = "https://timesofindia.indiatimes.com/x",
+    ) { n -> "<html><body><div data-articlebody>" + "a<span class=\"br\"></span>".repeat(n) + "</div></body></html>" }
+
     private fun repeatIndexed(count: Int, item: (Int) -> String) = buildString { repeat(count) { append(item(it)) } }
 
-    private fun assertScalesLinearly(n: Int, html: (Int) -> String) {
+    private fun assertScalesLinearly(n: Int, url: String = "https://example.com/pathological", html: (Int) -> String) {
         val small = html(n)
         val large = html(n * GROWTH_STEP)
         fun best(page: String, runs: Int) = (1..runs).minOf {
             measureTime {
-                runBlocking(Dispatchers.Default) { Klead.parseHtml(page, "https://example.com/pathological", testOptions()) }
+                runBlocking(Dispatchers.Default) { Klead.parseHtml(page, url, testOptions()) }
             }
         }
         best(small, runs = 2) // Warm-up.
@@ -344,9 +363,9 @@ class PathologicalInputPerformanceTest {
     private companion object {
         // Generous for slow CI runners executing debug native binaries; the guarded shapes used to take minutes.
         const val BUDGET_SECONDS = 60
-        const val GROWTH_STEP = 8
-        // Linear work grows about 8× (a little more with garbage collection); the old paths grew about 64×.
-        const val MAX_GROWTH = 20
+        const val GROWTH_STEP = 16
+        // Linear work grows about 16× (a little more with garbage collection); the old paths grew about 256×.
+        const val MAX_GROWTH = 32
         const val GROWTH_ATTEMPTS = 3
         val MIN_MEASURED_TIME = 10.milliseconds
         const val DEEP_TEXT = "Readable tail paragraph"

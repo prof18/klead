@@ -217,16 +217,26 @@ internal object ImageRemovalPipeline {
         ?.first
 
     private fun imageVariantKey(source: String): String? {
-        val url = source
+        val candidate = source
             .substringBefore(",")
             .trim()
             .split(WHITESPACE_PATTERN)
             .firstOrNull()
             ?.substringBefore("#")
-            ?.substringBefore("?")
-            ?.trimEnd('/')
             ?: return null
+        // Next.js serves every image from /_next/image and names the real one in its url parameter.
+        val url = (candidate.nextImageTarget() ?: candidate.substringBefore("?")).trimEnd('/')
         return url.substringAfterLast('/').lowercase().ifBlank { null }
+    }
+
+    private fun String.nextImageTarget(): String? {
+        if (!substringBefore("?").endsWith("/_next/image")) return null
+        val target = substringAfter("?", "").split('&')
+            .firstOrNull { it.startsWith("url=") }
+            ?.removePrefix("url=")
+            ?.replace("%2F", "/", ignoreCase = true)
+            ?: return null
+        return target.substringBefore("%3F").substringBefore("?").ifBlank { null }
     }
 
     private fun coverImageSelector(element: Element): String = when {
@@ -299,6 +309,7 @@ internal object ImageRemovalPipeline {
     private val DIMENSION_VALUE_PATTERN = Regex("""^\s*(\d+)""")
     private val srcsetDelimiter = Regex(""",\s+""")
     private val WHITESPACE_PATTERN = Regex("""\s+""")
-    private val WIDTH_STYLE_DIMENSION_PATTERN = Regex("""width\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
-    private val HEIGHT_STYLE_DIMENSION_PATTERN = Regex("""height\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
+    // Not border-width, min-width, line-height and the like.
+    private val WIDTH_STYLE_DIMENSION_PATTERN = Regex("""(?<![\w-])width\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
+    private val HEIGHT_STYLE_DIMENSION_PATTERN = Regex("""(?<![\w-])height\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
 }

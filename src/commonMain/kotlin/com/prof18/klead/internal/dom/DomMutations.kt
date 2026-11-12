@@ -135,6 +135,9 @@ internal fun Element.cloneElement(): Element {
 }
 
 private fun Element.copyElement(baseUri: String? = null): Element {
+    // Most elements have no attribute object at all; attributes() would allocate an empty one just to copy.
+    // The base URI and child-element cache live in that object, so an element without one has neither.
+    if (!hasAttributes()) return Element(tag(), baseUri, null)
     val attributes = attributes().clone()
     attributes.userData("ksoup.childEls", null)
     return Element(tag(), baseUri, attributes)

@@ -119,7 +119,8 @@ internal fun postProcessMarkdown(markdown: String): String {
     for ((index, line) in lines.withIndex()) {
         val backtickCount = line.takeWhile { it == '`' }.length
         val wasInFence = fenceLength > 0
-        if (!wasInFence && backtickCount >= 3) {
+        // A backtick fence's info string cannot hold a backtick, so "```code``` text" is a code span, not a fence.
+        if (!wasInFence && backtickCount >= 3 && '`' !in line.drop(backtickCount)) {
             fenceLength = backtickCount
         } else if (wasInFence && backtickCount >= fenceLength && line.drop(backtickCount).isBlank()) {
             fenceLength = 0

@@ -115,6 +115,7 @@ internal object HackerNewsProfile : DomExtractor {
             ?.attr("width")
             ?.toIntOrNull()
             ?.div(HN_INDENT_WIDTH)
+            ?.coerceAtLeast(0)
             ?: 0
         return HackerNewsComment(
             id = id,

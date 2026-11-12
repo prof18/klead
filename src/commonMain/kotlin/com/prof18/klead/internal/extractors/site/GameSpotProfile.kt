@@ -36,13 +36,16 @@ internal object GameSpotProfile : DomExtractor {
     }
 
     override fun preProcess(content: Element, context: DomExtractorContext) {
+        // Every ld+json content URL in document order, parsed once instead of once per embed.
+        val contentUrls by lazy(LazyThreadSafetyMode.NONE) { context.document.jwContentUrls() }
         content.select(VIDEO_EMBED).forEach { embed ->
             // A figure holding two embeds is replaced with the first; the second is then detached.
             val replaced = embed.closest("figure") ?: embed
             if (replaced.parent() == null) return@forEach
             val mediaId = embed.attr("data-jw-id").trim()
             if (!JW_MEDIA_ID.matches(mediaId)) return@forEach
-            val href = context.document.jwContentUrl(mediaId) ?: context.url ?: return@forEach
+            val prefix = "https://cdn.jwplayer.com/videos/$mediaId"
+            val href = contentUrls.firstOrNull { it.startsWith(prefix) } ?: context.url ?: return@forEach
             // Markdown figures keep only their images, so the linked poster goes in a paragraph.
             val poster = Element("p")
             poster.appendElement("a").attr("href", href)
@@ -62,13 +65,11 @@ internal object GameSpotProfile : DomExtractor {
         if (body.text().trim() == deckText) deck.remove()
     }
 
-    private fun Document.jwContentUrl(mediaId: String): String? {
-        val prefix = "https://cdn.jwplayer.com/videos/$mediaId"
-        return select("""script[type="application/ld+json"]""").firstNotNullOfOrNull { script ->
+    private fun Document.jwContentUrls(): List<String> =
+        select("""script[type="application/ld+json"]""").flatMap { script ->
             val json = JSON.parseToJsonElementOrNull(script.data().ifBlank { script.html() })
-            json?.contentUrls()?.firstOrNull { it.startsWith(prefix) }
+            json?.contentUrls()?.toList().orEmpty()
         }
-    }
 
     private fun JsonElement.contentUrls(): Sequence<String> = when (this) {
         is JsonArray -> asSequence().flatMap { it.contentUrls() }

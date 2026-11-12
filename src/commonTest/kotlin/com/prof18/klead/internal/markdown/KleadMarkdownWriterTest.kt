@@ -1709,6 +1709,29 @@ class KleadMarkdownWriterTest {
     }
 
     @Test
+    fun `a line opening with a triple backtick code span is not a fence`() {
+        assertEquals("```a``` b\n\nc *d*\n", postProcessMarkdown("```a``` b\n\n\n\nc *d*"))
+    }
+
+    @Test
+    fun `page supplied code language cannot break out of the fence`() {
+        val markdown = render("<article><pre><code data-lang=\"kotlin\n# Injected\">val x = 1</code></pre></article>")
+
+        assertTrue(markdown.startsWith("```kotlin\nval x = 1\n```"), markdown)
+        assertFalse(markdown.contains("# Injected"), markdown)
+    }
+
+    @Test
+    fun `page supplied callout type cannot end the callout marker`() {
+        val markdown = render(
+            "<article><div class=\"callout\" data-callout=\"note]\n# Injected\">" +
+                "<div class=\"callout-content\"><p>Body</p></div></div></article>",
+        )
+
+        assertTrue(markdown.startsWith("> [!noteinjected]"), markdown)
+    }
+
+    @Test
     fun `inline escaping handles every special character in one text`() {
         assertEquals(
             "a\\\\b\\`c\\*d\\_e\\[f\\] g h \\<b> 1 < 2",

@@ -154,6 +154,35 @@ class HostilePageRegressionTest {
         ),
     )
 
+    @Test
+    fun `hacker news comment with a negative indent keeps the thread`() {
+        val html = "<html><body><table class=\"fatitem\"><tr class=\"athing\"><td>" +
+            "<span class=\"titleline\"><a href=\"https://example.com/story\">Story</a></span></td></tr>" +
+            "<tr><td class=\"subtext\"><a class=\"hnuser\">poster</a></td></tr></table>" +
+            "<table class=\"comment-tree\"><tr class=\"athing comtr\" id=\"1\"><td>" +
+            "<table><tr><td class=\"ind\"><img src=\"s.gif\" width=\"-40\"></td><td>" +
+            "<span class=\"comhead\"><a class=\"hnuser\">commenter</a> " +
+            "<span class=\"age\" title=\"2026-01-01T00:00:00\">1 day ago</span></span>" +
+            "<div class=\"commtext\">$TAIL_TEXT from the comment.</div></td></tr></table></td></tr></table></body></html>"
+
+        assertParses(html, url = "https://news.ycombinator.com/item?id=1", expected = "Comments")
+    }
+
+    @Test
+    fun `border width does not make an image small`() {
+        val image = "<img src=\"https://example.com/photo.jpg\" alt=\"Photo\" style=\"border-width: 2px; height: 30px\">"
+        assertParses(page("<p>$TAIL_TEXT</p>$image"), expected = "photo.jpg")
+    }
+
+    @Test
+    fun `different next images in one wrapper are both kept`() {
+        val images = "<div><img src=\"/_next/image?url=%2Fimages%2Ffirst.jpg&amp;w=640\">" +
+            "<img src=\"/_next/image?url=%2Fimages%2Fsecond.jpg&amp;w=640\"></div>"
+        val html = page("<p>$TAIL_TEXT</p>$images")
+        assertParses(html, expected = "first.jpg")
+        assertParses(html, expected = "second.jpg")
+    }
+
     // Nested matching containers each copied the same content into the output once per level.
     @Test
     fun `nested chatgpt message wrappers keep one copy of the message`() {
@@ -201,6 +230,17 @@ class HostilePageRegressionTest {
 
         assertTrue(markdown.contains(TAIL_TEXT), "Markdown lost the content: ${markdown.take(300)}")
         assertTrue(markdown.length < 100_000, "Markdown grew to ${markdown.length} characters")
+    }
+
+    @Test
+    fun `nested table text is written once`() {
+        val depth = 6
+        val html = page(
+            "<table><tr><td>a</td><td>".repeat(depth) + UNIQUE_TEXT + "</td></tr></table>".repeat(depth) +
+                "<p>$TAIL_TEXT</p>",
+        )
+
+        assertOccursOnce(html, url = "https://example.com/hostile")
     }
 
     private fun assertOccursOnce(html: String, url: String) {

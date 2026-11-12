@@ -430,8 +430,10 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
     private fun renderTable(element: Element): String {
         if (element.select("th, td").all { it.text().trim().isBlank() }) return ""
         if (element.selectFirst("table table") != null || element.select("th, td").any { it.hasComplexSpan() }) {
-            return element.select("tr").joinToString("\n") { row ->
-                row.select("th, td").joinToString(" ") { it.text().trim() }
+            // Only this table's rows and cells: a nested table's text is already in its enclosing cell.
+            return element.select("tr").filter { it.closest("table") === element }.joinToString("\n") { row ->
+                row.children().filter { it.normalName() == "th" || it.normalName() == "td" }
+                    .joinToString(" ") { it.text().trim() }
             }.trim()
         }
         val rows = element.select("tr").map { row -> row.select("th, td").map { renderInline(it).escapeTableCell() } }
@@ -459,7 +461,10 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
     }
 
     private fun renderCallout(element: Element, listDepth: Int): String {
-        val type = element.attr("data-callout").ifBlank { "note" }.lowercase()
+        // Page markup: keep only characters a callout type can hold, so "]" or a newline cannot end the marker.
+        val type = element.attr("data-callout").lowercase()
+            .filter { it.isLetterOrDigit() || it == '-' || it == '_' }
+            .ifBlank { "note" }
         val fold = element.attr("data-callout-fold").trim().takeIf { it == "-" || it == "+" }.orEmpty()
         val title = (element.selectFirst(".callout-title-inner") ?: element.selectFirst(".callout-title"))
             ?.text()
