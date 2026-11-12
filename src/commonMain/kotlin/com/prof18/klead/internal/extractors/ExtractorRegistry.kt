@@ -112,14 +112,20 @@ import com.prof18.klead.internal.extractors.site.XProfile
 import kotlinx.coroutines.CancellationException
 
 internal class ExtractorRegistry(private val extractors: List<Extractor> = DefaultExtractors.all) {
-    fun resolve(context: DomExtractorContext): List<Extractor> = matchingExtractors(context)
-        .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
-        .toList()
+    fun resolve(context: DomExtractorContext, checkCancelled: () -> Unit = {}): List<Extractor> =
+        matchingExtractors(context, checkCancelled)
+            .sortedWith(compareByDescending<Extractor> { it.priority }.thenBy { it.id })
+            .toList()
 
     fun extract(context: DomExtractorContext): ExtractorResult? = extract(context, resolve(context))
 
-    fun extract(context: DomExtractorContext, extractors: List<Extractor>): ExtractorResult? {
+    fun extract(
+        context: DomExtractorContext,
+        extractors: List<Extractor>,
+        checkCancelled: () -> Unit = {},
+    ): ExtractorResult? {
         for (extractor in extractors) {
+            checkCancelled()
             val result = failingAsNull {
                 if (extractor is DomExtractor) {
                     extractor.extract(context)
@@ -134,17 +140,19 @@ internal class ExtractorRegistry(private val extractors: List<Extractor> = Defau
         return null
     }
 
-    private fun matchingExtractors(context: DomExtractorContext): Sequence<Extractor> = extractors
-        .asSequence()
-        .filter { extractor ->
-            failingAsNull {
-                if (extractor is DomExtractor) {
-                    extractor.matches(context)
-                } else {
-                    extractor.matches(context.publicContext)
-                }
-            } == true
-        }
+    private fun matchingExtractors(context: DomExtractorContext, checkCancelled: () -> Unit): Sequence<Extractor> =
+        extractors
+            .asSequence()
+            .filter { extractor ->
+                checkCancelled()
+                failingAsNull {
+                    if (extractor is DomExtractor) {
+                        extractor.matches(context)
+                    } else {
+                        extractor.matches(context.publicContext)
+                    }
+                } == true
+            }
 }
 
 // Extractors read hostile page markup (and any page can claim a site via its canonical URL), so an

@@ -94,7 +94,7 @@ internal object KleadParser {
             }
             val sourceLanguage = LanguageMetadataExtractor.extract(document)
             timings.measure("prepareDocument") {
-                DocumentPreparation.prepare(document)
+                DocumentPreparation.prepare(document, checkCancelled)
                 // React streaming replay moves segments into deeper templates, re-nesting past the cap.
                 depthLimitedSubtrees += document.limitDepth()
             }
@@ -107,12 +107,13 @@ internal object KleadParser {
                 ExtractorRegistry(options.effectiveExtractors())
             }
             val matchedExtractors = timings.measure("extractorResolve") {
-                extractorRegistry.resolve(context = extractorContext)
+                extractorRegistry.resolve(context = extractorContext, checkCancelled = checkCancelled)
             }
             val extractorResult = timings.measure("extractorExtract") {
                 extractorRegistry.extract(
                     context = extractorContext,
                     extractors = matchedExtractors,
+                    checkCancelled = checkCancelled,
                 )
             }
             val parseDocument = extractorResult?.contentHtml?.let { contentHtml ->
@@ -269,7 +270,7 @@ internal object KleadParser {
                     failingAsNull { extractor.postProcess(content, contentExtractorContext, removals) }
                 }
         }
-        applyGenericNewsletterLayout(content, url, extractorResult, timings, timingPrefix)
+        applyGenericNewsletterLayout(content, url, extractorResult, timings, timingPrefix, checkCancelled)
         timings.measure("$timingPrefix.htmlStandardizer") {
             HtmlStandardizer.apply(content, extractorResult?.metadata?.title ?: metadata.title, checkCancelled)
         }
@@ -296,11 +297,12 @@ internal object KleadParser {
         extractorResult: ExtractorResult?,
         timings: ParseTimings,
         timingPrefix: String,
+        checkCancelled: () -> Unit,
     ) {
         if (extractorResult != null || url.hostOrNull() != KILL_THE_NEWSLETTER_HOST) return
         if (!NewsletterLayoutNormalizer.hasEligiblePresentationTable(content)) return
         timings.measure("$timingPrefix.newsletterLayoutNormalize") {
-            NewsletterLayoutNormalizer.normalize(content)
+            NewsletterLayoutNormalizer.normalize(content, checkCancelled)
         }
     }
 
@@ -361,7 +363,9 @@ internal object KleadParser {
     ): KleadContent {
         val html = if (KleadOutput.HTML in options.outputs) {
             timings.measure("${attempt.timingPrefix}.htmlOutput") {
-                attempt.content.cloneElement().also(HtmlPresentationNormalizer::normalize).cleanOuterHtml()
+                attempt.content.cloneElement()
+                    .also { HtmlPresentationNormalizer.normalize(it, checkCancelled) }
+                    .cleanOuterHtml()
             }
         } else {
             null

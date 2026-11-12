@@ -13,12 +13,12 @@ import com.prof18.klead.internal.dom.parseFragment
 // fallbacks (Next.js lazy images) and replays React streaming-SSR segment moves ($RC calls) so
 // suspended content sits where the browser would have placed it.
 internal object DocumentPreparation {
-    fun prepare(document: Document) {
-        promoteNoscriptImages(document)
-        hydrateReactStreamedSegments(document)
+    fun prepare(document: Document, checkCancelled: () -> Unit = {}) {
+        promoteNoscriptImages(document, checkCancelled)
+        hydrateReactStreamedSegments(document, checkCancelled)
     }
 
-    private fun hydrateReactStreamedSegments(document: Document) {
+    private fun hydrateReactStreamedSegments(document: Document, checkCancelled: () -> Unit) {
         val segmentMoves = document.select("script")
             .flatMap { script ->
                 REACT_STREAM_SEGMENT_CALL.findAll(script.data()).map { match ->
@@ -32,6 +32,7 @@ internal object DocumentPreparation {
         // set and fall back to the scan, so lookups still answer exactly as getElementById does.
         val knownIds = document.select("[id]").mapTo(HashSet()) { it.id() }
         for ((templateId, segmentId) in segmentMoves) {
+            checkCancelled()
             if (templateId !in knownIds || segmentId !in knownIds) continue
             val template = document.getElementById(templateId) ?: continue
             val segment = document.getElementById(segmentId) ?: continue
@@ -75,11 +76,12 @@ internal object DocumentPreparation {
 
     private fun Node.isReactBoundaryEnd(): Boolean = this is Comment && getData().trim() == "/$"
 
-    private fun promoteNoscriptImages(document: Document) {
+    private fun promoteNoscriptImages(document: Document, checkCancelled: () -> Unit) {
         // Per figure: many noscript images in one figure each searched it for a caption. Promoted images
         // and alt captions are not figcaptions, so the answers hold for the whole pass.
         val figureHasCaption = HashMap<Element, Boolean>()
         for (noscript in document.select("noscript").toList()) {
+            checkCancelled()
             val fragmentNodes = parseFragment(noscript.html(), document.baseUri())
             val fragmentRoot = Element("fragment")
             fragmentNodes.forEach { fragmentRoot.appendChild(it) }

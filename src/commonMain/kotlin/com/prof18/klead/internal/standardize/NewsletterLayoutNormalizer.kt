@@ -14,9 +14,11 @@ internal object NewsletterLayoutNormalizer {
         content.select(PRESENTATION_TABLE).any { isEligible(it, content) }
 
     /** Generic cleanup for unknown newsletter templates. */
-    fun normalize(content: Element) {
+    fun normalize(content: Element, checkCancelled: () -> Unit = {}) {
         flattenPresentationTables(content, preserveContentMarkup = true)
+        checkCancelled()
         (listOf(content) + content.select("*")).distinct().forEach { element ->
+            checkCancelled()
             if (isProtected(element, content)) return@forEach
             LAYOUT_ATTRIBUTES.forEach(element::removeAttr)
             val isMedia = element.normalName() in PROTECTED_MEDIA

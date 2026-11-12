@@ -4,8 +4,9 @@ import com.fleeksoft.ksoup.nodes.Element
 
 /** Removes publisher styling that can override the reader's theme from cleaned HTML output. */
 internal object HtmlPresentationNormalizer {
-    fun normalize(content: Element) {
+    fun normalize(content: Element, checkCancelled: () -> Unit = {}) {
         for (element in content.select("*").toList()) {
+            checkCancelled()
             if (isVisualMarkup(element)) continue
 
             element.removeAttr("bgcolor")

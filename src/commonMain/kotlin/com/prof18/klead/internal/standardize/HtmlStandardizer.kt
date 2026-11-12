@@ -24,7 +24,7 @@ internal object HtmlStandardizer {
             { HtmlImageNormalizer.normalizeImages(content) },
             { HtmlImageNormalizer.normalizeGalleryImageLists(content) },
             { HtmlImageNormalizer.normalizeImageAspectPlaceholders(content) },
-            { HtmlFootnoteNormalizer.normalizeFootnotes(content) },
+            { HtmlFootnoteNormalizer.normalizeFootnotes(content, checkCancelled) },
             { HtmlChromeNormalizer.removeTrailingSectionHeadings(content) },
             { normalizeTables(content) },
             { removeEmptySvgElements(content) },

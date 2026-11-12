@@ -250,7 +250,7 @@ internal object RemovalPipeline {
         checkCancelled: () -> Unit,
     ) {
         measure("removeContentPatterns.openingArticleHeaders") {
-            removeOpeningArticleHeaderBlocks(content, debug)
+            removeOpeningArticleHeaderBlocks(content, debug, checkCancelled)
         }
         measure("removeContentPatterns.recommendationSiblingRuns") {
             removeRecommendationSiblingRuns(content, debug, checkCancelled)
@@ -262,12 +262,17 @@ internal object RemovalPipeline {
             removeNestedArticleFooterBlocks(content, debug, checkCancelled)
         }
         measure("removeContentPatterns.trailingChildren") {
-            removeTrailingChildPatterns(content, debug)
+            removeTrailingChildPatterns(content, debug, checkCancelled)
         }
     }
 
-    private fun removeTrailingChildPatterns(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removeTrailingChildPatterns(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        checkCancelled: () -> Unit,
+    ) {
         for (element in content.children().toList().asReversed()) {
+            checkCancelled()
             val scan = BlockScan(element)
             val text = scan.trimmedText
             if (text.isBlank()) continue
@@ -316,8 +321,13 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun removeOpeningArticleHeaderBlocks(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removeOpeningArticleHeaderBlocks(
+        content: Element,
+        debug: MutableList<RemovalRecord>,
+        checkCancelled: () -> Unit,
+    ) {
         for (article in openingArticleCandidates(content)) {
+            checkCancelled()
             val header = article.firstSubstantiveChild() ?: continue
             if (!header.isOpeningArticleHeaderCandidate()) continue
             if (!header.hasOpeningArticleHeaderChromeHint()) continue

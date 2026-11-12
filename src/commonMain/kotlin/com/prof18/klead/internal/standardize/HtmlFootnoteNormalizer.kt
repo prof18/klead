@@ -7,29 +7,36 @@ import com.fleeksoft.ksoup.nodes.Element
 // definitions, and finally the divider cleanup once every definition has moved into the shared
 // footnote section.
 internal object HtmlFootnoteNormalizer {
-    fun normalizeFootnotes(content: Element) {
-        HtmlFootnoteFormats.normalizeDataDefinitionFootnotes(content)
-        HtmlFootnoteFormats.normalizeTexinfoFootnotes(content)
-        HtmlFootnoteFormats.normalizeOReillyFootnotes(content)
-        HtmlFootnoteFormats.normalizeInlineFootnoteSpans(content)
-        HtmlFootnoteFormats.normalizeInlineFootnoteContainers(content)
-        HtmlFootnoteListNormalizer.normalizeParagraphFootnoteDefinitions(content)
-        HtmlFootnoteListNormalizer.normalizeNamedAnchorFootnotes(content)
-        HtmlFootnoteListNormalizer.normalizeBrSeparatedNamedAnchorFootnotes(content)
-        HtmlFootnoteFormats.normalizeSidenoteFootnotes(content)
-        HtmlFootnoteFormats.normalizeOrgModeFootdefs(content)
-        HtmlFootnoteFormats.normalizeSubstackFootnotes(content)
-        HtmlFootnoteFormats.normalizeWikidotFootnotes(content)
-        HtmlFootnoteFormats.normalizeDhammatalksFootnotes(content)
-        HtmlFootnoteListNormalizer.normalizeFootnoteDefinitionBlocks(content)
-        HtmlFootnoteListNormalizer.normalizeAsideFootnoteLists(content)
-        HtmlFootnoteListNormalizer.normalizeReferenceDivFootnotes(content)
-        HtmlFootnoteListNormalizer.normalizeReferenceFootnoteLists(content)
-        HtmlFootnoteListNormalizer.normalizeFootnoteLists(content)
-        HtmlFootnoteListNormalizer.normalizeLooseFootnoteSections(content)
-        HtmlFootnoteListNormalizer.normalizeTrailingLooseFootnoteDefinitions(content)
-        removeFootnoteDividers(content)
-        wrapLooseFootnoteItems(content)
+    // About twenty passes, each over the whole content: check for cancellation between them.
+    fun normalizeFootnotes(content: Element, checkCancelled: () -> Unit = {}) {
+        val passes: List<(Element) -> Unit> = listOf(
+            HtmlFootnoteFormats::normalizeDataDefinitionFootnotes,
+            HtmlFootnoteFormats::normalizeTexinfoFootnotes,
+            HtmlFootnoteFormats::normalizeOReillyFootnotes,
+            HtmlFootnoteFormats::normalizeInlineFootnoteSpans,
+            HtmlFootnoteFormats::normalizeInlineFootnoteContainers,
+            HtmlFootnoteListNormalizer::normalizeParagraphFootnoteDefinitions,
+            HtmlFootnoteListNormalizer::normalizeNamedAnchorFootnotes,
+            HtmlFootnoteListNormalizer::normalizeBrSeparatedNamedAnchorFootnotes,
+            HtmlFootnoteFormats::normalizeSidenoteFootnotes,
+            HtmlFootnoteFormats::normalizeOrgModeFootdefs,
+            HtmlFootnoteFormats::normalizeSubstackFootnotes,
+            HtmlFootnoteFormats::normalizeWikidotFootnotes,
+            HtmlFootnoteFormats::normalizeDhammatalksFootnotes,
+            HtmlFootnoteListNormalizer::normalizeFootnoteDefinitionBlocks,
+            HtmlFootnoteListNormalizer::normalizeAsideFootnoteLists,
+            HtmlFootnoteListNormalizer::normalizeReferenceDivFootnotes,
+            HtmlFootnoteListNormalizer::normalizeReferenceFootnoteLists,
+            HtmlFootnoteListNormalizer::normalizeFootnoteLists,
+            HtmlFootnoteListNormalizer::normalizeLooseFootnoteSections,
+            HtmlFootnoteListNormalizer::normalizeTrailingLooseFootnoteDefinitions,
+            ::removeFootnoteDividers,
+            ::wrapLooseFootnoteItems,
+        )
+        for (pass in passes) {
+            checkCancelled()
+            pass(content)
+        }
     }
 
     private fun wrapLooseFootnoteItems(content: Element) {

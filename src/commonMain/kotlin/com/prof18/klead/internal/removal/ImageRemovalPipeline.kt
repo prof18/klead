@@ -15,22 +15,23 @@ internal object ImageRemovalPipeline {
         checkCancelled: () -> Unit = {},
     ) {
         checkCancelled()
-        removeSmallImages(content, debug)
+        removeSmallImages(content, debug, checkCancelled)
         checkCancelled()
-        deduplicateImages(content, debug)
+        deduplicateImages(content, debug, checkCancelled)
         checkCancelled()
-        removeCoverImage(content, metadataImage, debug, hintFor)
+        removeCoverImage(content, metadataImage, debug, hintFor, checkCancelled)
     }
 
-    private fun removeSmallImages(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun removeSmallImages(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
         for (image in content.select("img").toList()) {
+            checkCancelled()
             if (image.isSmallImage() && !image.isLinkedAuthorImage()) {
                 recordAndRemove(image, debug, "removeSmallImages", "img", "small image dimensions")
             }
         }
     }
 
-    private fun deduplicateImages(content: Element, debug: MutableList<RemovalRecord>) {
+    private fun deduplicateImages(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
         val seen = mutableMapOf<String, Element>()
         val seenVariants = mutableMapOf<String, Element>()
         // Per figure: re-searching every ancestor figure for a caption per duplicate image was quadratic.
@@ -40,6 +41,7 @@ internal object ImageRemovalPipeline {
         // images cannot change a wrapper's verdict (images carry no text and count as visual children).
         val visualOnlyWrappers = HashMap<Element, Boolean>()
         for (image in content.select("img[src]").toList()) {
+            checkCancelled()
             if (!image.isDeduplicableImage(paragraphHasText)) continue
             val key = image.imageKey() ?: continue
             val firstImage = seen[key]
@@ -68,9 +70,11 @@ internal object ImageRemovalPipeline {
         metadataImage: String?,
         debug: MutableList<RemovalRecord>,
         hintFor: (Element) -> String,
+        checkCancelled: () -> Unit,
     ) {
         val coverKey = metadataImage?.trim()?.takeIf { it.isNotBlank() } ?: return
         for (image in content.select("img[src]").toList()) {
+            checkCancelled()
             val key = image.imageKey() ?: continue
             if (key == coverKey) {
                 if (image.hasVisibleImageCaption()) continue

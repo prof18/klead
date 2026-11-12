@@ -207,6 +207,7 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
         var lastNonWhitespace: Char? = null
         val nextInlineTexts = NextInlineTexts(nodes)
         nodes.forEachIndexed { index, node ->
+            checkCancelled()
             var value = renderInlineNode(node, inLink)
             value = normalizeLeadingInlineSpacing(
                 rendered = rendered,
