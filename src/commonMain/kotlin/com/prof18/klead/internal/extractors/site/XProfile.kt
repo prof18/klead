@@ -87,8 +87,10 @@ internal object XProfile : DomExtractor {
         ?.firstOrNull { image -> image.parents().none { it === richText } }
 
     private fun extractConversation(context: DomExtractorContext): ExtractorResult? {
+        // Nested tweet articles find the same tweet text; take each text once instead of once per level.
+        val seenBodies = HashSet<Element>()
         val tweets = context.document.select("""article[data-testid="tweet"]""")
-            .mapNotNull { it.toTweet() }
+            .mapNotNull { it.toTweet(seenBodies) }
             .ifEmpty { context.loggedOutPosts() }
         if (tweets.isEmpty()) return null
 
@@ -124,8 +126,10 @@ internal object XProfile : DomExtractor {
         )
     }
 
-    private fun Element.toTweet(): XTweet? {
-        val body = selectFirst("""[data-testid="tweetText"]""")?.cloneElement() ?: return null
+    private fun Element.toTweet(seenBodies: MutableSet<Element>): XTweet? {
+        val source = selectFirst("""[data-testid="tweetText"]""") ?: return null
+        if (!seenBodies.add(source)) return null
+        val body = source.cloneElement()
         body.cleanXContent()
         if (body.text().isBlank()) return null
 
@@ -161,17 +165,19 @@ internal object XProfile : DomExtractor {
     // twice (fallback and resolved timeline), so the status link de-duplicates them.
     private fun DomExtractorContext.loggedOutPosts(): List<XTweet> {
         val seenStatusUrls = mutableSetOf<String>()
+        val seenBodies = HashSet<Element>()
         return document.select("article")
             .filter { it.selectFirst("[data-post-avatar]") != null }
-            .mapNotNull { it.toLoggedOutPost() }
+            .mapNotNull { it.toLoggedOutPost(seenBodies) }
             .filter { post -> post.statusUrl == null || seenStatusUrls.add(post.statusUrl) }
     }
 
-    private fun Element.toLoggedOutPost(): XTweet? {
-        val body = select("div[dir=auto]")
+    private fun Element.toLoggedOutPost(seenBodies: MutableSet<Element>): XTweet? {
+        val source = select("div[dir=auto]")
             .firstOrNull { text -> text.parents().none { it.normalName() == "a" } && text.text().isNotBlank() }
-            ?.cloneElement()
             ?: return null
+        if (!seenBodies.add(source)) return null
+        val body = source.cloneElement()
         body.select("button, script").remove()
         body.cleanXContent()
 

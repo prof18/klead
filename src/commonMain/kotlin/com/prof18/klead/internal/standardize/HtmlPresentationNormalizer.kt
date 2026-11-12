@@ -66,7 +66,7 @@ internal object HtmlPresentationNormalizer {
     ): Boolean {
         if (property !in ZERO_HEIGHT_PROPERTIES) return false
         val value = CssDeclarations.withoutComments(declaration).substringAfter(':', "").trim()
-        if (!ZERO_LENGTH.matches(value)) return false
+        if (value.length > MAX_ZERO_LENGTH_CHARS || !ZERO_LENGTH.matches(value)) return false
         if (properties.any { it in RATIO_PADDING_PROPERTIES }) return false
         return element.hasText() || element.selectFirst(VISIBLE_MEDIA) != null
     }
@@ -114,7 +114,9 @@ internal object HtmlPresentationNormalizer {
 
     private val ZERO_HEIGHT_PROPERTIES = setOf("height", "max-height")
     private val RATIO_PADDING_PROPERTIES = setOf("padding-top", "padding-bottom")
-    private val ZERO_LENGTH = Regex("""(?i)[+-]?0*\.?0+(?:[a-z]+|%)?\s*(?:!important)?""")
+    // No overlapping zero runs: "0*\.?0+" backtracked polynomially over a long run of zeros.
+    private val ZERO_LENGTH = Regex("""(?i)[+-]?(?:0+(?:\.0+)?|\.0+)(?:[a-z]+|%)?\s*(?:!important)?""")
+    private const val MAX_ZERO_LENGTH_CHARS = 64
     private const val VISIBLE_MEDIA = "img, picture, video, iframe, svg, canvas"
 
     private val READER_OWNED_PROPERTIES = setOf(

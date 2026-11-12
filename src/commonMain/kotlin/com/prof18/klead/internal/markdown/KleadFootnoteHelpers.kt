@@ -12,7 +12,16 @@ import com.fleeksoft.ksoup.nodes.Element
 internal fun String.stripTerminalInlineElementPeriod(): String {
     if (!endsWith(".")) return this
     val withoutPeriod = dropLast(1)
-    return if (footnoteTerminalInlineElementPattern.containsMatchIn(withoutPeriod)) withoutPeriod else this
+    return if (withoutPeriod.endsWithInlineElement()) withoutPeriod else this
+}
+
+// Same as matching (?:\]\([^)]+\)|`+)$, without the regex rescanning to the end from every "](".
+private fun String.endsWithInlineElement(): Boolean {
+    if (endsWith('`')) return true
+    if (!endsWith(')') || length < 4) return false
+    // A link destination: "](" followed by at least one character and no ")" before the final one.
+    val linkStart = lastIndexOf("](", startIndex = length - 4)
+    return linkStart >= 0 && linkStart + 2 > lastIndexOf(')', startIndex = length - 2)
 }
 
 internal fun Element.cleanupFootnoteDefinition() {

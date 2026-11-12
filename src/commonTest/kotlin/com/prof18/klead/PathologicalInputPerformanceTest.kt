@@ -80,6 +80,78 @@ class PathologicalInputPerformanceTest {
         )
     }
 
+    // Shapes from the 2026-11 audit that hung a parse for minutes on small inputs.
+    @Test
+    fun `long run of zeros in a max-height declaration`() =
+        assertFast(page("<div style=\"max-height:" + "0".repeat(50_000) + "!\"><p>$DEEP_TEXT</p></div>"))
+
+    @Test
+    fun `footnote definition made of link openers`() = assertFast(
+        page(
+            "<p>$DEEP_TEXT<sup><a href=\"#fn1\">1</a></sup></p><ol class=\"footnotes\"><li id=\"fn1\">" +
+                "](".repeat(40_000) + ".</li></ol>",
+        ),
+    )
+
+    @Test
+    fun `nested links kept apart by marquee`() {
+        val depth = 24
+        val links = (1..depth).joinToString("") { "<marquee><a href=\"https://e.com/$it\">" }
+        assertFast(
+            page("<p><a href=\"https://e.com/0\">$links$DEEP_TEXT" + "</a></marquee>".repeat(depth) + "</a></p>"),
+        )
+    }
+
+    @Test
+    fun `reddit comment id cannot inject a selector regex`() {
+        val thingId = "x,:matches((.*a){10}b),#y"
+        val html = "<html><body><shreddit-post><div slot=\"text-body\"><div property=\"schema:articleBody\">" +
+            "<p>$DEEP_TEXT of the post.</p></div></div></shreddit-post>" +
+            "<shreddit-comment author=\"a\" created=\"2026-01-01T00:00:00Z\" thingid=\"$thingId\">" +
+            "<div id=\"$thingId-comment-rtjson-content\"><p>${"a".repeat(40)}!</p></div></shreddit-comment>" +
+            "</body></html>"
+        assertFast(html, url = "https://www.reddit.com/r/a/comments/1/")
+    }
+
+    @Test
+    fun `many github comment bodies in one comment`() {
+        val bodies = "<div class=\"comment-body markdown-body\">x</div>".repeat(20_000)
+        assertFast(
+            "<html><body><div class=\"pull-discussion-timeline\"><div class=\"js-comment\">" +
+                "<div class=\"comment-body markdown-body\"><p>$DEEP_TEXT</p></div>$bodies</div></div></body></html>",
+            url = "https://github.com/a/b/pull/1",
+        )
+    }
+
+    @Test
+    fun `many guardian newsletter cells in one module`() {
+        val cells = "<tr><td class=\"text\">lorem ipsum dolor sit amet</td></tr>".repeat(10_000)
+        assertFast(
+            "<html><head><title>X | The Guardian</title></head><body>" +
+                "<img alt=\"Football Daily\" src=\"https://i.guim.co.uk/a.png\">" +
+                "<div aria-roledescription=\"email\" role=\"article\"><h1>T</h1><div style=\"max-width:600px\"><table>" +
+                "<tr><td class=\"text\">$DEEP_TEXT</td></tr>$cells</table></div></div></body></html>",
+            url = "https://kill-the-newsletter.com/feeds/x.xml",
+        )
+    }
+
+    @Test
+    fun `steam event body with many unclosed paragraph tags`() = assertFast(
+        "<html><body><div id=\"application_config\" data-partnereventstore='[{\"announcement_body\":{\"body\":\"" +
+            "$DEEP_TEXT " + "[p]".repeat(80_000) + "\"}}]'></div></body></html>",
+        url = "https://example.com/steam",
+    )
+
+    @Test
+    fun `substack note title with many handle openers`() = assertFast(
+        "<html><head><link href=\"https://substackcdn.com/a.css\">" +
+            "<meta property=\"og:url\" content=\"https://substack.com/@a/note/c-1\">" +
+            "<meta property=\"og:title\" content=\"x" + " (@".repeat(80_000) + "\"></head>" +
+            "<body><div class=\"feedCommentBody\"><p>$DEEP_TEXT</p></div></body></html>",
+        url = "https://example.com/s",
+        expected = null,
+    )
+
     private fun page(body: String) = "<html><body><article><h1>Pathological</h1>" +
         "<p>$LEAD_TEXT with enough words to be article content for the reader parser.</p>" +
         body + "</article></body></html>"
@@ -90,12 +162,12 @@ class PathologicalInputPerformanceTest {
         repeat(depth) { append(close) }
     }
 
-    private fun assertFast(html: String, expected: String? = DEEP_TEXT) {
+    private fun assertFast(html: String, expected: String? = DEEP_TEXT, url: String = "https://example.com/pathological") {
         for (output in KleadOutput.entries) {
             lateinit var result: KleadResult
             val elapsed = measureTime {
                 result = runBlocking(Dispatchers.Default) {
-                    Klead.parseHtml(html, "https://example.com/pathological", testOptions(outputs = setOf(output)))
+                    Klead.parseHtml(html, url, testOptions(outputs = setOf(output)))
                 }
             }
             assertTrue(elapsed.inWholeSeconds < BUDGET_SECONDS, "$output parse took $elapsed")

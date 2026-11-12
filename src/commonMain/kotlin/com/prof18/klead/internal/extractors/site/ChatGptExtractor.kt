@@ -25,8 +25,13 @@ internal object ChatGptExtractor : DomExtractor {
             // may carry content both before and after a Thought section. Take every content
             // fragment from every message element that belongs to this turn (not a nested one).
             // Compare the attribute directly: the role is page text and would break a built selector.
-            val messageBlocks = turn.select("[data-message-author-role]")
+            val messages = turn.select("[data-message-author-role]")
                 .filter { it.attr("data-message-author-role").trim() == role && it.closestConversationTurn() === turn }
+            // A message element nested in another one is already covered by the outer one's content;
+            // taking both copied the same content once per nesting level.
+            val messageSet = messages.toHashSet()
+            val messageBlocks = messages
+                .filter { message -> message.parents().none { it in messageSet } }
                 .flatMap { it.messageContentElements() }
             if (messageBlocks.isEmpty()) return@forEachIndexed
 

@@ -25,8 +25,10 @@ internal object MastodonProfile : DomExtractor {
         val instanceName = mainAccount.substringAfterLast("@", missingDelimiterValue = "")
             .ifBlank { context.document.selectFirst("""meta[property="og:site_name"]""")?.attr("content").orEmpty() }
 
+        // Nested status wrappers find the same status text; take each text once instead of once per level.
+        val seenBodies = HashSet<Element>()
         val threadStatuses = context.document.select(".status.status--in-thread")
-            .mapNotNull { it.toMastodonStatus(baseUrl) }
+            .mapNotNull { it.toMastodonStatus(baseUrl, seenBodies) }
 
         val article = Element("article")
         article.appendStatusBody(mainContent, baseUrl)
@@ -86,8 +88,10 @@ internal object MastodonProfile : DomExtractor {
         )
     }
 
-    private fun Element.toMastodonStatus(baseUrl: String): MastodonStatus? {
-        val body = selectFirst(".status__content__text")?.deepCopy() ?: return null
+    private fun Element.toMastodonStatus(baseUrl: String, seenBodies: MutableSet<Element>): MastodonStatus? {
+        val source = selectFirst(".status__content__text") ?: return null
+        if (source in seenBodies) return null
+        val body = source.deepCopy()
         val displayName = selectFirst(".display-name__html")?.text()?.trim().orEmpty()
         val account = selectFirst(".display-name__account")?.text()?.trim().orEmpty()
         val date = selectFirst(".status__relative-time time[datetime]")
@@ -99,6 +103,7 @@ internal object MastodonProfile : DomExtractor {
             ?.toAbsoluteUrl(baseUrl)
             .orEmpty()
         if (displayName.isBlank() || account.isBlank() || date.isBlank() || permalink.isBlank()) return null
+        seenBodies.add(source)
 
         return MastodonStatus(
             author = "$displayName $account",

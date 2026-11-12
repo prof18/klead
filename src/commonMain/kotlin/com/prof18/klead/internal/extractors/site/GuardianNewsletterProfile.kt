@@ -24,10 +24,11 @@ internal object GuardianNewsletterProfile : DomExtractor {
         val document = context.document
         val title = document.selectFirst("h1")?.text()?.trim()?.ifBlank { null } ?: return null
         val output = Element("article")
+        val modules = ModuleCache()
 
         document.select(".text, .text-with-border, .dark-theme-text, img[alt]").forEach { source ->
             when {
-                source.normalName() == "img" && source.isNewsletterEditorialImage() &&
+                source.normalName() == "img" && source.isNewsletterEditorialImage(modules) &&
                     source.parents().none { it.isEditorialTextCell() } -> {
                     val imageOrLink = source.parent()?.takeIf { it.normalName() == "a" } ?: source
                     source.authorNameFromImageRow()?.let { name -> output.appendElement("p").text(name) }
@@ -36,13 +37,14 @@ internal object GuardianNewsletterProfile : DomExtractor {
 
                 source.normalName() == "img" -> Unit
 
-                source.normalName() == "td" && source.isEditorialTextCell() && source.isNewsletterEditorialText() ->
+                source.normalName() == "td" && source.isEditorialTextCell() && source.isNewsletterEditorialText(modules) ->
                     output.appendChild(source.deepCopy())
             }
         }
 
         if (output.text().isBlank()) return null
-        output.select("img").toList().filterNot { it.isNewsletterEditorialImage() }.forEach { it.remove() }
+        val outputModules = ModuleCache()
+        output.select("img").toList().filterNot { it.isNewsletterEditorialImage(outputModules) }.forEach { it.remove() }
         NewsletterDomNormalizer.normalize(output)
         return ExtractorResult(
             contentHtml = output.outerHtml(),
@@ -53,18 +55,29 @@ internal object GuardianNewsletterProfile : DomExtractor {
         )
     }
 
-    private fun Element.isNewsletterEditorialText(): Boolean {
+    // Every cell and image of a module asks the same questions about it; a module holding thousands of
+    // cells made each per-cell scan of the whole module quadratic. Answers are computed once per module.
+    private class ModuleCache {
+        val footer = HashMap<Element, Boolean>()
+        val excluded = HashMap<Element, Boolean>()
+        val cells = HashMap<Element, List<Element>>()
+    }
+
+    private fun Element.isNewsletterEditorialText(modules: ModuleCache): Boolean {
         val text = text().trim()
         if (text.isBlank()) return false
         if (isNewsletterFooterText(text) || text.equals("unsubscribe", ignoreCase = true)) return false
         val module = closestNewsletterModule() ?: return true
-        if (module.isAcquisitionModule() || module.isNewsletterFooterModule()) return false
+        val excluded = modules.excluded.getOrPut(module) {
+            module.isAcquisitionModule() || module.isNewsletterFooterModule(modules)
+        }
+        if (excluded) return false
         val sectionHeading = selectFirst("h2")?.text()?.trim()
-        return sectionHeading == null || text != sectionHeading || module.hasFollowingEditorialTextCell(this)
+        return sectionHeading == null || text != sectionHeading || module.hasFollowingEditorialTextCell(this, modules)
     }
 
-    private fun Element.hasFollowingEditorialTextCell(headingCell: Element): Boolean {
-        val cells = select("td.text, td.text-with-border, td.dark-theme-text")
+    private fun Element.hasFollowingEditorialTextCell(headingCell: Element, modules: ModuleCache): Boolean {
+        val cells = modules.cells.getOrPut(this) { select("td.text, td.text-with-border, td.dark-theme-text") }
         val index = cells.indexOfFirst { it === headingCell }
         return index >= 0 && cells.drop(index + 1).any { cell ->
             cell.text().isNotBlank() && cell.selectFirst("h1, h2") == null &&
@@ -72,7 +85,7 @@ internal object GuardianNewsletterProfile : DomExtractor {
         }
     }
 
-    private fun Element.isNewsletterEditorialImage(): Boolean {
+    private fun Element.isNewsletterEditorialImage(modules: ModuleCache): Boolean {
         val altText = attr("alt").trim()
         if (altText.isBlank() || altText.lowercase() in DECORATIVE_ALT_TEXT) return false
         val isMasthead = altText.contains("Guardian", ignoreCase = true) &&
@@ -81,7 +94,7 @@ internal object GuardianNewsletterProfile : DomExtractor {
         if (isMasthead || isFooterLogo || altText in SOCIAL_ICON_ALT_TEXT) return false
         if (attr("src").contains("podcast", ignoreCase = true)) return false
         val module = closestNewsletterModule()
-        if (module?.isNewsletterFooterModule() == true) return false
+        if (module?.isNewsletterFooterModule(modules) == true) return false
         return !isNewsletterFooterText(altText)
     }
 
@@ -100,9 +113,10 @@ internal object GuardianNewsletterProfile : DomExtractor {
     private fun Element.isAcquisitionModule(): Boolean =
         selectFirst("img[alt='Person Image']") != null && selectFirst("a[href*=support.theguardian.com]") != null
 
-    private fun Element.isNewsletterFooterModule(): Boolean =
+    private fun Element.isNewsletterFooterModule(modules: ModuleCache): Boolean = modules.footer.getOrPut(this) {
         (isNewsletterFooterText(text()) || selectFirst("a[href*=unsubscribe]") != null) &&
             selectFirst("h1, h2") == null
+    }
 
     private fun isNewsletterFooterText(text: String): Boolean =
         text.trim().equals("get in touch", ignoreCase = true) || listOf(

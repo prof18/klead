@@ -289,12 +289,14 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
         if (!inLink) {
             renderLinkedImage(element, baseUrl)?.let { return it }
         }
-        val parts = renderLinkTextNodes(element.childNodes()).splitInlineWhitespace()
-        val text = parts.body
         val href = element.attr("href").trim()
+        // Decide before rendering the link text: rendering the children twice per nested link level
+        // made nested anchors (which <marquee> lets the HTML parser keep) exponential.
         if (inLink || href.isBlank() || isDangerousUrl(href)) {
             return renderInlineNodes(element.childNodes(), inLink = true)
         }
+        val parts = renderLinkTextNodes(element.childNodes()).splitInlineWhitespace()
+        val text = parts.body
         val url = if (href.startsWith("#")) href else resolveUrl(baseUrl, href)
         if (url.isBlank()) return parts.original
         if (text.isBlank()) return parts.original
@@ -436,12 +438,16 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
         // A markdown table's width is fixed by its separator row; parsers drop body
         // cells beyond it and pad rows that fall short. Source tables can be ragged,
         // so size every row to the widest one instead of dropping trailing columns.
+        // A hostile ragged table (one very wide row, many short ones) would grow to
+        // rows × widest cells, so past a cap only the header is widened and parsers
+        // pad the short body rows themselves.
         val columnCount = rows.maxOf { it.size }
         if (columnCount == 0) return element.text()
+        val padBody = rows.size.toLong() * columnCount <= MAX_PADDED_TABLE_CELLS
         fun padRow(row: List<String>): List<String> =
             if (row.size < columnCount) row + List(columnCount - row.size) { "" } else row
         val header = padRow(rows.first())
-        val body = rows.drop(1).map(::padRow)
+        val body = rows.drop(1).let { if (padBody) it.map(::padRow) else it }
         return buildString {
             append("| ${header.joinToString(" | ")} |\n")
             append("| ${header.joinToString(" | ") { "---" }} |")
@@ -537,3 +543,6 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
         return attr(name).trim().toIntOrNull() != 1
     }
 }
+
+// Above this many cells a ragged table keeps its short body rows unpadded.
+private const val MAX_PADDED_TABLE_CELLS = 100_000L

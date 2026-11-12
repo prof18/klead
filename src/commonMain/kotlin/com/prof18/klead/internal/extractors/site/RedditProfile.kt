@@ -69,7 +69,11 @@ internal object RedditProfile : DomExtractor {
     private fun Element.toShredditComment(): RedditComment? {
         val author = attr("author").trim()
         val date = attr("created").trim().isoDatePart()
-        val body = selectFirst("#${attr("thingid")}-comment-rtjson-content")?.deepCopy() ?: return null
+        // Look the id up directly: a selector built from the page's thingid would let the page inject
+        // selector syntax such as :matches(regex).
+        val body = getElementById("${attr("thingid")}-comment-rtjson-content")
+            ?.takeIf { it !== this }
+            ?.deepCopy() ?: return null
         if (author.isBlank() || date.isBlank() || body.text().isBlank()) return null
 
         return RedditComment(

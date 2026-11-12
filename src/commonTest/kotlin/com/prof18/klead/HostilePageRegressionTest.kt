@@ -3,6 +3,7 @@ package com.prof18.klead
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.measureTime
 
@@ -145,6 +146,63 @@ class HostilePageRegressionTest {
         assertParses(html, expected = "second block")
     }
 
+    // Nested matching containers each copied the same content into the output once per level.
+    @Test
+    fun `nested chatgpt message wrappers keep one copy of the message`() {
+        val depth = 20
+        val html = "<html><head><link rel=\"canonical\" href=\"https://chatgpt.com/share/abc\"></head><body>" +
+            "<div data-testid=\"conversation-turn-1\">" + "<div data-message-author-role=\"assistant\">".repeat(depth) +
+            "<div class=\"markdown\"><p>$UNIQUE_TEXT</p></div>" + "</div>".repeat(depth) + "</div></body></html>"
+
+        assertOccursOnce(html, url = "https://chatgpt.com/share/abc")
+    }
+
+    @Test
+    fun `nested x tweet articles keep one copy of the tweet`() {
+        val depth = 6
+        val html = "<html><body>" + "<article data-testid=\"tweet\">".repeat(depth) +
+            "<div data-testid=\"tweetText\"><span>$UNIQUE_TEXT</span></div>" + "</article>".repeat(depth) +
+            "</body></html>"
+
+        assertOccursOnce(html, url = "https://x.com/a/status/1")
+    }
+
+    @Test
+    fun `nested mastodon status wrappers keep one copy of the status`() {
+        val depth = 6
+        val status = "<div class=\"status__content__text\"><p>$UNIQUE_TEXT</p></div>" +
+            "<span class=\"display-name__html\">Bob</span><span class=\"display-name__account\">@bob@example.social</span>" +
+            "<a class=\"status__relative-time\" href=\"/@bob/2\"><time datetime=\"2026-01-02T00:00:00Z\">x</time></a>"
+        val html = "<html><body><div id=\"mastodon\"><div class=\"detailed-status\">" +
+            "<div class=\"status__content__text\"><p>$LEAD_TEXT of the main post with enough words.</p></div>" +
+            "<span class=\"display-name__html\">Ann</span><span class=\"display-name__account\">@ann@example.social</span>" +
+            "</div>" + "<div class=\"status status--in-thread status--first-in-thread\">".repeat(depth) + status +
+            "</div>".repeat(depth) + "</div></body></html>"
+
+        assertOccursOnce(html, url = "https://example.social/@ann/1")
+    }
+
+    @Test
+    fun `ragged table does not pad every row to the widest one`() {
+        val columns = 2_000
+        val html = page("<table><tr>" + "<td>x</td>".repeat(columns) + "</tr>" + "<tr><td>y</td></tr>".repeat(columns) +
+            "</table><p>$TAIL_TEXT</p>")
+        val markdown = runBlocking(Dispatchers.Default) {
+            Klead.parseHtml(html, "https://example.com/hostile", testOptions(outputs = setOf(KleadOutput.MARKDOWN)))
+        }.content.requireMarkdown()
+
+        assertTrue(markdown.contains(TAIL_TEXT), "Markdown lost the content: ${markdown.take(300)}")
+        assertTrue(markdown.length < 100_000, "Markdown grew to ${markdown.length} characters")
+    }
+
+    private fun assertOccursOnce(html: String, url: String) {
+        val markdown = runBlocking(Dispatchers.Default) {
+            Klead.parseHtml(html, url, testOptions(outputs = setOf(KleadOutput.MARKDOWN)))
+        }.content.requireMarkdown()
+
+        assertEquals(1, markdown.split(UNIQUE_TEXT).size - 1, "Expected one copy in: ${markdown.take(600)}")
+    }
+
     private fun redditComment(replies: String) = "<div class=\"thing comment\" data-permalink=\"/r/x/c\">" +
         "<div class=\"entry\"><div class=\"tagline\"><a class=\"author\">user</a>" +
         "<time datetime=\"2024-01-01T00:00:00Z\"></time></div>" +
@@ -179,5 +237,6 @@ class HostilePageRegressionTest {
         const val BUDGET_SECONDS = 60
         const val LEAD_TEXT = "Lead paragraph"
         const val TAIL_TEXT = "Readable tail paragraph"
+        const val UNIQUE_TEXT = "Distinctive nested message text"
     }
 }

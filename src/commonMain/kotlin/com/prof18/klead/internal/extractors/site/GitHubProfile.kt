@@ -82,8 +82,10 @@ internal object GitHubProfile : DomExtractor {
         val article = Element("article")
         article.appendChildNodesFrom(body)
 
+        // Bodies in one container share its author and date; look them up once per container.
+        val headers = HashMap<Element, Pair<String, String>>()
         val comments = bodies.drop(1)
-            .mapNotNull { body -> body.githubComment() }
+            .mapNotNull { body -> body.githubComment(headers) }
         if (comments.isNotEmpty()) {
             article.appendElement("hr")
             article.appendElement("h2").text("Comments")
@@ -159,15 +161,18 @@ internal object GitHubProfile : DomExtractor {
     private fun DomExtractorContext.isPullRequestPage(): Boolean = url.orEmpty().contains("/pull/") ||
         document.selectFirst(".pull-discussion-timeline") != null
 
-    private fun Element.githubComment(): GitHubComment? {
+    private fun Element.githubComment(headers: MutableMap<Element, Pair<String, String>>): GitHubComment? {
         val container = parents().firstOrNull { it.hasClass("js-comment") }
             ?: parents().firstOrNull { it.hasClass("timeline-comment-group") }
             ?: return null
-        val author = container.selectFirst(".author")?.text()?.trim().orEmpty()
-        val date = container.selectFirst("relative-time[datetime]")
-            ?.attr("datetime")
-            ?.isoDatePart()
-            .orEmpty()
+        val (author, date) = headers.getOrPut(container) {
+            val author = container.selectFirst(".author")?.text()?.trim().orEmpty()
+            val date = container.selectFirst("relative-time[datetime]")
+                ?.attr("datetime")
+                ?.isoDatePart()
+                .orEmpty()
+            author to date
+        }
         if (author.isBlank() || date.isBlank()) return null
         return GitHubComment(author = author, date = date, body = this)
     }

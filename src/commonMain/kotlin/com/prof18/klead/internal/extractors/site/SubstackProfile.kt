@@ -92,9 +92,27 @@ internal object SubstackProfile : DomExtractor {
 
     private fun Document.substackAuthor(): String? = metaContent("author")
         ?: metaContent("og:title")
-            ?.replace(Regex("""\s+\(@[^)]+\)$"""), "")
+            ?.withoutHandleSuffix()
             ?.trim()
             ?.ifBlank { null }
+
+    // Same as replacing \s+\(@[^)]+\)$ with "", without the regex rescanning to the end from every " (@".
+    private fun String.withoutHandleSuffix(): String {
+        if (!endsWith(')')) return this
+        // The handle may not contain ")", so it starts after the last ")" before the final one.
+        var handle = indexOf("(@", startIndex = lastIndexOf(')', startIndex = length - 2) + 1)
+        while (handle in 0..length - 4) {
+            if (handle > 0 && this[handle - 1].isRegexWhitespace()) {
+                var start = handle - 1
+                while (start > 0 && this[start - 1].isRegexWhitespace()) start--
+                return substring(0, start)
+            }
+            handle = indexOf("(@", startIndex = handle + 1)
+        }
+        return this
+    }
+
+    private fun Char.isRegexWhitespace(): Boolean = this in " \t\n\u000B\u000C\r"
 
     private fun String.normalizedWhitespace(): String = trim().replace(WHITESPACE_PATTERN, " ")
 
