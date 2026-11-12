@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
 import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.internal.dom.deepCopy
+import com.prof18.klead.internal.dom.removeAllBatched
 import com.prof18.klead.internal.dom.replaceWithChildren
 
 // Removes headings that duplicate the page title (and the byline/date chrome hugging them) and
@@ -144,12 +145,24 @@ internal object HtmlTitleNormalizer {
     private fun Element.isCompactTitleMetadataWrapper(heading: Element, title: String): Boolean {
         if (this === heading) return false
         if (hasNonMetadataSiblingHeading(heading, title)) return false
+        // A block outside the headings settles it without the copy below, which for a single wrapper div
+        // copied the whole article once per attempt.
+        if (select(COMPACT_TITLE_BLOCKS).any { !it.hasHeadingAncestorBelow(this) }) return false
         val clone = deepCopy()
         clone.select("h1, h2").remove()
-        if (clone.select("p, pre, blockquote, table, figure, img, picture, iframe").isNotEmpty()) return false
+        if (clone.select(COMPACT_TITLE_BLOCKS).isNotEmpty()) return false
         val remaining = clone.text().trim()
         return remaining.isBlank() ||
             (remaining.length <= COMPACT_TITLE_METADATA_MAX_LENGTH && remaining.isMetadataChromeText())
+    }
+
+    private fun Element.hasHeadingAncestorBelow(root: Element): Boolean {
+        var current: Element? = this
+        while (current != null && current !== root) {
+            if (current.normalName() == "h1" || current.normalName() == "h2") return true
+            current = current.parent()
+        }
+        return false
     }
 
     private fun Element.hasNonMetadataSiblingHeading(heading: Element, title: String): Boolean =
@@ -233,20 +246,22 @@ internal object HtmlTitleNormalizer {
         return ARTICLE_BODY_HINTS.any { it in hints }
     }
 
+    // Each verdict depends only on the sibling itself, so both runs are collected first and removed with one
+    // rebuild: removing them one by one reindexed the parent for every sibling.
     private fun removeAdjacentHeadingChrome(heading: Element) {
+        val chrome = mutableListOf<Element>()
         var before = heading.previousElementSibling()
         while (before != null && before.isLeadingHeadingChrome()) {
-            val previous = before.previousElementSibling()
-            before.remove()
-            before = previous
+            chrome.add(before)
+            before = before.previousElementSibling()
         }
 
         var after = heading.nextElementSibling()
         while (after != null && after.isTrailingHeadingChrome()) {
-            val next = after.nextElementSibling()
-            after.remove()
-            after = next
+            chrome.add(after)
+            after = after.nextElementSibling()
         }
+        removeAllBatched(chrome)
     }
 
     private fun Element.isLeadingHeadingChrome(): Boolean {
@@ -315,6 +330,7 @@ internal object HtmlTitleNormalizer {
         SITE_PREFIX_WITH_TITLE,
     }
 
+    private const val COMPACT_TITLE_BLOCKS = "p, pre, blockquote, table, figure, img, picture, iframe"
     private val TITLE_SEPARATOR_PATTERN = Regex("""^[|:\-–—]\s+\S+""")
     private val TITLE_PREFIX_SEPARATOR_PATTERN = Regex("""\S\s*:$""")
     private val REFERENCE_TITLE_SUFFIX = Regex("""^[|:\-–—]\s+(?:javascript|typescript|css|html|web api|mdn)\b.*""")

@@ -8,7 +8,9 @@ internal fun elementHintHaystack(element: Element, includeId: Boolean = true, in
         element.className().takeIf { it.isNotBlank() }?.let(::add)
 
         for (attribute in element.attributes()) {
-            val key = attribute.key.lowercase()
+            // Capped like values: ancestors' haystacks are rebuilt per descendant, so a huge attribute name
+            // made checks under it quadratic.
+            val key = attribute.key.take(HINT_ATTRIBUTE_VALUE_MAX_LENGTH).lowercase()
             val value = attribute.value.asHintValue()?.let { if (includeUrls) it else it.withoutUrls() }
             if (key.startsWith("data-")) {
                 // A flag set to false (data-is-sponsored="false") says the element is not that thing.

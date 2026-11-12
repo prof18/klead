@@ -2,6 +2,7 @@ package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.select.QueryParser
+import com.prof18.klead.internal.dom.removeAllBatched
 
 // Removes standalone metadata chrome — bare dates, read times, "By" labels, timezone widgets,
 // live-update labels, edge dividers — and trailing boilerplate sections like "See also".
@@ -80,21 +81,23 @@ internal object HtmlChromeNormalizer {
         }
     }
 
+    // Each verdict depends only on the child itself, so the edge run is found on one snapshot and removed
+    // with one rebuild: copying children() and removing one child per iteration was quadratic.
     private fun removeEdgeChrome(content: Element, fromStart: Boolean) {
-        while (true) {
-            val child = if (fromStart) content.children().firstOrNull() else content.children().lastOrNull()
-            if (child == null || !child.isStandaloneTimeChrome()) return
-            child.remove()
+        val children = content.children().toList()
+        val edge = if (fromStart) {
+            children.takeWhile { it.isStandaloneTimeChrome() }
+        } else {
+            children.takeLastWhile { it.isStandaloneTimeChrome() }
         }
+        removeAllBatched(edge)
     }
 
     private fun removeEdgeDividers(content: Element) {
-        while (content.children().firstOrNull()?.normalName() == "hr") {
-            content.children().first()?.remove()
-        }
-        while (content.children().lastOrNull()?.normalName() == "hr") {
-            content.children().last()?.remove()
-        }
+        val children = content.children().toList()
+        val leading = children.takeWhile { it.normalName() == "hr" }
+        val trailing = children.drop(leading.size).takeLastWhile { it.normalName() == "hr" }
+        removeAllBatched(leading + trailing)
     }
 
     private fun removeLeadingMetadataChrome(content: Element) {
@@ -225,16 +228,17 @@ internal object HtmlChromeNormalizer {
     }
 
     private fun Element.removeTrailingRemovableSection() {
+        // Collected first and removed with one rebuild: removing one sibling at a time reindexed the parent.
+        val removed = mutableListOf(this)
         var sibling = nextElementSibling()
-        remove()
         while (sibling != null) {
-            val next = sibling.nextElementSibling()
             val text = sibling.text().trim()
             if (sibling.hasAttr("data-footnotes")) break
             if (text.isNotBlank() && sibling.isHeading() && !TRAILING_REMOVABLE_SECTION_HEADING.matches(text)) break
-            sibling.remove()
-            sibling = next
+            removed.add(sibling)
+            sibling = sibling.nextElementSibling()
         }
+        removeAllBatched(removed)
     }
 
     private fun Element.hasFrontMatterHint(): Boolean {

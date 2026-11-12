@@ -27,6 +27,60 @@ internal fun removeAllBatched(elements: Collection<Element>) {
     }
 }
 
+// Collects removals, replacements and unwraps of many child nodes and applies each parent's share with a single
+// rebuild of its child list. Ksoup reindexes a parent's children (and falls back to a linear search in remove())
+// after every single removal or insert, so editing thousands of siblings one at a time is quadratic.
+// Edits to a parent's children become visible when that parent is flushed; callers that inspect a parent's
+// children or siblings must flush it first or ask isRemoved().
+internal class ChildListBatch {
+    private class Edit(val replacement: List<Node>, val unwrapped: Element?)
+
+    private val pending = LinkedHashMap<Element, MutableMap<Node, Edit>>()
+
+    fun remove(node: Node) = edit(node, Edit(emptyList(), null))
+
+    fun replace(node: Node, replacement: Node) = edit(node, Edit(listOf(replacement), null))
+
+    fun replace(node: Node, replacement: List<Node>) = edit(node, Edit(replacement, null))
+
+    fun unwrap(element: Element) {
+        flush(element)
+        edit(element, Edit(element.childNodes().toList(), element))
+    }
+
+    fun isRemoved(node: Node): Boolean {
+        val parent = node.parent() as? Element ?: return true
+        return pending[parent]?.get(node)?.replacement?.isEmpty() == true
+    }
+
+    fun flush(parent: Element) {
+        val edits = pending.remove(parent) ?: return
+        val rebuilt = ArrayList<Node>(parent.childNodeSize() + edits.size)
+        for (child in parent.childNodes()) {
+            val edit = edits[child]
+            if (edit == null) {
+                rebuilt.add(child)
+            } else {
+                // Detach the unwrapped element's children in one go so appending them does not
+                // remove them from it one by one.
+                edit.unwrapped?.empty()
+                rebuilt.addAll(edit.replacement)
+            }
+        }
+        parent.empty()
+        parent.appendChildren(rebuilt)
+    }
+
+    fun flushAll() {
+        while (pending.isNotEmpty()) flush(pending.keys.first())
+    }
+
+    private fun edit(node: Node, edit: Edit) {
+        val parent = node.parent() as? Element ?: return
+        pending.getOrPut(parent) { HashMap() }[node] = edit
+    }
+}
+
 internal fun Element.unwrapSafely() {
     replaceWithChildren()
 }

@@ -246,12 +246,15 @@ internal object HtmlFootnoteFormats {
         }
         if (notes.isEmpty()) return
 
-        notes.forEach { note ->
-            val definitionIds = note.dhammatalksDefinitionIds()
+        // One reference pass for every note's ids: a pass over all links per note was quadratic.
+        val definitionIdsByNote = notes.map { it to it.dhammatalksDefinitionIds() }
+        content.normalizeDhammatalksReferences(definitionIdsByNote.flatMapTo(HashSet()) { it.second })
+        // Looked up once: lazyFootnoteSection searches the whole content for an existing section.
+        var section: Element? = null
+        definitionIdsByNote.forEach { (note, definitionIds) ->
             if (definitionIds.isEmpty()) return@forEach
-
-            content.normalizeDhammatalksReferences(definitionIds)
-            note.moveDhammatalksDefinitionsTo(lazyFootnoteSection(content), definitionIds)
+            val target = section ?: lazyFootnoteSection(content).also { section = it }
+            note.moveDhammatalksDefinitionsTo(target, definitionIds)
         }
     }
 

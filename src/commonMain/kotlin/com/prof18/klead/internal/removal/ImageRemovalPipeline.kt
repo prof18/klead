@@ -36,6 +36,9 @@ internal object ImageRemovalPipeline {
         // Per figure: re-searching every ancestor figure for a caption per duplicate image was quadratic.
         val figureHasCaption = HashMap<Element, Boolean>()
         val paragraphHasText = HashMap<Element, Boolean>()
+        // Per ancestor: images sharing a file name each re-measured the text of every shared ancestor. Removing
+        // images cannot change a wrapper's verdict (images carry no text and count as visual children).
+        val visualOnlyWrappers = HashMap<Element, Boolean>()
         for (image in content.select("img[src]").toList()) {
             if (!image.isDeduplicableImage(paragraphHasText)) continue
             val key = image.imageKey() ?: continue
@@ -52,7 +55,7 @@ internal object ImageRemovalPipeline {
             if (firstVariant == null) {
                 seenVariants[variantKey] = image
             } else if (
-                image.isSameVisualImageVariant(firstVariant) &&
+                image.isSameVisualImageVariant(firstVariant, visualOnlyWrappers) &&
                 !image.isRepeatedCaptionedFigureImage(firstVariant, figureHasCaption)
             ) {
                 recordAndRemove(image, debug, "deduplicateImages", "img[src]", "duplicate image variant")
@@ -120,11 +123,17 @@ internal object ImageRemovalPipeline {
         return figure !== firstFigure
     }
 
-    private fun Element.isSameVisualImageVariant(firstImage: Element): Boolean {
-        val firstParents = firstImage.parents()
+    private fun Element.isSameVisualImageVariant(
+        firstImage: Element,
+        visualOnlyWrappers: MutableMap<Element, Boolean>,
+    ): Boolean {
+        val firstParents = firstImage.parents().toHashSet()
         var current = parent()
         while (current != null) {
-            if (current.isVisualOnlyImageWrapper() && current in firstParents) return true
+            val wrapper = current
+            if (visualOnlyWrappers.getOrPut(wrapper) { wrapper.isVisualOnlyImageWrapper() } && wrapper in firstParents) {
+                return true
+            }
             current = current.parent()
         }
         return false

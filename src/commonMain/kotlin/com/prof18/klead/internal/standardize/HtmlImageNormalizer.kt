@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.SMALL_IMAGE_MAX_DIMENSION
 import com.prof18.klead.internal.dom.hasLargeResponsiveSource
+import com.prof18.klead.internal.dom.removeAllBatched
 import com.prof18.klead.internal.markdown.largestSrcsetUrl
 
 internal object HtmlImageNormalizer {
@@ -12,6 +13,11 @@ internal object HtmlImageNormalizer {
         normalizeFixedImageWrappers(content)
         normalizeOutOfFlowImageWrappers(content)
 
+        // Removals of src-less placeholders are applied with one rebuild per parent after the pass:
+        // removing them one by one reindexed the parent each time. Only the current image is ever queued, and
+        // a queued image has no real source, so later images' sibling checks are unaffected.
+        val removedPlaceholders = mutableListOf<Element>()
+        val pictureVerdicts = HashMap<Element, Boolean>()
         content.select("img").forEach { image ->
             if (image.parent() == null) return@forEach
             // Ghost sizes bookmark favicons with publisher CSS, which reader output lacks.
@@ -41,7 +47,7 @@ internal object HtmlImageNormalizer {
             if (pictureSourceSrcset != null) {
                 image.attr("srcset", pictureSourceSrcset)
             }
-            if (image.hasLargeResponsiveSource() && image.hasSmallDeclaredDimensions()) {
+            if (image.hasSmallDeclaredDimensions() && image.hasLargeResponsiveSource(pictureVerdicts)) {
                 image.removeAttr("width")
                 image.removeAttr("height")
             }
@@ -73,13 +79,14 @@ internal object HtmlImageNormalizer {
             if (isPlaceholderImage(image.attr("src"))) {
                 val srcsetSource = largestSrcsetUrl(image.attr("srcset"))
                 if (srcsetSource == null) {
-                    image.remove()
+                    removedPlaceholders.add(image)
                 } else {
                     // Readers that ignore srcset would otherwise render the lazy-load placeholder.
                     image.attr("src", srcsetSource)
                 }
             }
         }
+        removeAllBatched(removedPlaceholders)
 
         content.select("a[href] > img").forEach { image ->
             val link = image.parent() ?: return@forEach

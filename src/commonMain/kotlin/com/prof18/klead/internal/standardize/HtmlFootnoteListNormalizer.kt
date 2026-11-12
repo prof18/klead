@@ -5,6 +5,7 @@ import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isAttachedTo
+import com.prof18.klead.internal.dom.removeAllBatched
 
 // Collects generically structured footnote definitions — footnote-classed lists, paragraph and
 // named-anchor definitions, and loose "Notes" sections delimited by a heading or divider — into
@@ -101,6 +102,11 @@ internal object HtmlFootnoteListNormalizer {
         val definitions = content.selectDescendants(".footnote-definition").toList()
         if (definitions.isEmpty()) return
         val section = lazyFootnoteSection(content)
+        // Emptied definitions are removed together at the end: one removal per definition reindexed
+        // their shared parent every time.
+        val emptied = mutableListOf<Element>()
+        // Counted here: childrenSize() rebuilds the section's element list after every append.
+        var itemCount = section.childrenSize()
         definitions.forEach { definition ->
             val id = definition.id().ifBlank {
                 definition.selectFirst(".footnote-definition-label")?.text()?.trim()?.let { "fn$it" }
@@ -109,11 +115,13 @@ internal object HtmlFootnoteListNormalizer {
             }
             definition.select(".footnote-definition-label").remove()
             definition.removeFootnoteBackrefs()
-            val item = Element("li").attr("id", id.ifBlank { "fn${section.childrenSize() + 1}" })
-            definition.childNodes().toList().forEach { item.appendChild(it) }
+            val item = Element("li").attr("id", id.ifBlank { "fn${itemCount + 1}" })
+            item.appendChildren(definition.childNodes().toList())
             section.appendChild(item)
-            definition.remove()
+            itemCount++
+            emptied.add(definition)
         }
+        removeAllBatched(emptied)
     }
 
     fun normalizeAsideFootnoteLists(content: Element) {

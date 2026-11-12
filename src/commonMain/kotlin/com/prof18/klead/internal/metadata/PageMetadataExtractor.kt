@@ -139,12 +139,19 @@ internal object PageMetadataExtractor {
     private fun SchemaOrgResult.primaryArticleImage(): String? {
         val articleTypes = setOf("article", "newsarticle", "blogposting", "reportageNewsArticle".lowercase())
         val pageTypes = setOf("webpage")
+        // The first item per @id, built once: searching every item per reference was quadratic.
+        val itemsById = buildMap {
+            for (item in items) {
+                val id = item["@id"] as? String ?: continue
+                if (id !in this) put(id, item)
+            }
+        }
         val primary = items.firstNotNullOfOrNull { item ->
             if (item.hasType(
                     articleTypes,
                 )
             ) {
-                imageValue(item["image"], items) ?: imageValue(item["primaryImageOfPage"], items)
+                imageValue(item["image"], itemsById) ?: imageValue(item["primaryImageOfPage"], itemsById)
             } else {
                 null
             }
@@ -153,8 +160,8 @@ internal object PageMetadataExtractor {
 
         return items.firstNotNullOfOrNull { item ->
             if (item.hasType(pageTypes)) {
-                imageValue(item["primaryImageOfPage"], items)
-                    ?: imageValue(item["image"], items)
+                imageValue(item["primaryImageOfPage"], itemsById)
+                    ?: imageValue(item["image"], itemsById)
                     ?: (item["thumbnailUrl"] as? String)?.takeIf { it.isNotBlank() }
             } else {
                 null
@@ -171,7 +178,7 @@ internal object PageMetadataExtractor {
         }
     }
 
-    private fun imageValue(value: Any?, items: List<Map<String, Any?>>): String? {
+    private fun imageValue(value: Any?, itemsById: Map<String, Map<String, Any?>>): String? {
         var current = value
         val visitedIds = mutableSetOf<String>()
         while (current is Map<*, *>) {
@@ -180,11 +187,11 @@ internal object PageMetadataExtractor {
             if (url != null) return url
             val id = current["@id"] as? String ?: return null
             if (!visitedIds.add(id)) return null
-            current = items.firstOrNull { it["@id"] == id } ?: return null
+            current = itemsById[id] ?: return null
         }
         return when (current) {
             is String -> current.takeIf { it.isNotBlank() }
-            is List<*> -> current.firstNotNullOfOrNull { imageValue(it, items) }
+            is List<*> -> current.firstNotNullOfOrNull { imageValue(it, itemsById) }
             else -> null
         }
     }

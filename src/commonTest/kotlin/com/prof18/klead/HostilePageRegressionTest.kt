@@ -146,6 +146,14 @@ class HostilePageRegressionTest {
         assertParses(html, expected = "second block")
     }
 
+    @Test
+    fun `react segment move without a fallback end marker keeps the following siblings`() = assertParses(
+        page(
+            "<div><template id=\"t\"></template><p>$TAIL_TEXT after the template.</p></div>" +
+                "<div hidden id=\"s\"><p>streamed</p></div><script>\$RC(\"t\",\"s\")</script>",
+        ),
+    )
+
     // Nested matching containers each copied the same content into the output once per level.
     @Test
     fun `nested chatgpt message wrappers keep one copy of the message`() {

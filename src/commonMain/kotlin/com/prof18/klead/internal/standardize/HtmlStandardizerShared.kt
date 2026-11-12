@@ -22,13 +22,13 @@ internal fun removeEmptyAncestors(start: Element?, boundary: Element) {
     var current = start
     while (current != null && current !== boundary) {
         val parent = current.parent()
-        if (
-            current.normalName() in EMPTY_WRAPPER_TAGS &&
-            current.text().isBlank() &&
-            current.children().isEmpty()
-        ) {
-            current.remove()
-        }
+        // An element that stays keeps every ancestor non-empty, so stop there instead of measuring the
+        // text of each remaining ancestor up to the boundary (quadratic for many footnotes in one wrapper).
+        val isEmptyWrapper = current.normalName() in EMPTY_WRAPPER_TAGS &&
+            current.childrenSize() == 0 &&
+            current.text().isBlank()
+        if (!isEmptyWrapper) return
+        current.remove()
         current = parent
     }
 }

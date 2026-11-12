@@ -107,7 +107,9 @@ internal object RemovalPipeline {
         debug: MutableList<RemovalRecord>,
         checkCancelled: () -> Unit,
     ) {
-        val quizContainers = mutableListOf<Element>()
+        val quizContainers = LinkedHashSet<Element>()
+        // Many quiz signals share their ancestors; count each candidate's answer controls once.
+        val controlCounts = HashMap<Element, Int>()
 
         fun addNearestQuizContainer(signal: Element) {
             var candidate: Element? = if (signal.normalName() in INTERACTIVE_QUIZ_CONTAINER_TAGS) {
@@ -117,10 +119,11 @@ internal object RemovalPipeline {
             }
             while (candidate != null && candidate !== content) {
                 if (candidate.normalName() in INTERACTIVE_QUIZ_CONTAINER_TAGS) {
-                    val optionControlCount = candidate.select(INTERACTIVE_QUIZ_CONTROL_SELECTOR).size
+                    val optionControlCount = controlCounts.getOrPut(candidate) {
+                        candidate.select(INTERACTIVE_QUIZ_CONTROL_SELECTOR).size
+                    }
                     if (optionControlCount >= MIN_INTERACTIVE_QUIZ_CONTROLS) {
-                        val quizContainer = candidate
-                        if (quizContainers.none { it === quizContainer }) quizContainers.add(quizContainer)
+                        quizContainers.add(candidate)
                         return
                     }
                 }
@@ -139,8 +142,10 @@ internal object RemovalPipeline {
             checkCancelled()
             if (
                 INTERACTIVE_QUIZ_PATTERN.containsMatchIn(partialHaystack(element)) &&
-                element.select(INTERACTIVE_QUIZ_CONTROL_SELECTOR).size >= MIN_INTERACTIVE_QUIZ_CONTROLS &&
-                quizContainers.none { it === element }
+                element !in quizContainers &&
+                controlCounts.getOrPut(element) {
+                    element.select(INTERACTIVE_QUIZ_CONTROL_SELECTOR).size
+                } >= MIN_INTERACTIVE_QUIZ_CONTROLS
             ) {
                 quizContainers.add(element)
             }
@@ -194,13 +199,17 @@ internal object RemovalPipeline {
         debug: MutableList<RemovalRecord>,
         checkCancelled: () -> Unit,
     ) {
+        // Text length of each prose block a link sits in, measured once per pass instead of once per link.
+        val blockTextLengths = HashMap<Element, Int>()
         for (element in content.descendantsSnapshot()) {
             checkCancelled()
             if (!element.isAttachedTo(content)) continue
-            if (!element.matchesPartialClutter()) continue
+            if (!element.matchesPartialClutter(blockTextLengths)) continue
             val scan = BlockScan(element)
             if (isProtected(element, scan.haystack)) continue
             if (isLikelyProse(scan) && !isStrongRecirculationChrome(scan)) continue
+            // The removal shortens every enclosing block's text.
+            element.parents().forEach { blockTextLengths.remove(it) }
             recordAndRemove(element, debug, "removePartialSelectors", null, "partial clutter attribute")
         }
     }
@@ -319,18 +328,14 @@ internal object RemovalPipeline {
     }
 
     private fun openingArticleCandidates(content: Element): List<Element> {
-        val candidates = mutableListOf<Element>()
-
-        fun addUnique(element: Element) {
-            if (candidates.none { it === element }) candidates.add(element)
-        }
-
+        // A set keeps the de-duplication linear for pages with many articles.
+        val candidates = LinkedHashSet<Element>()
         if (content.normalName() == "article" || content.id().equals("post", ignoreCase = true)) {
-            addUnique(content)
+            candidates.add(content)
         }
-        content.select("article, #post").forEach(::addUnique)
+        content.select("article, #post").forEach { candidates.add(it) }
 
-        return candidates
+        return candidates.toList()
     }
 
     private fun removeRecommendationSiblingRuns(
@@ -338,12 +343,16 @@ internal object RemovalPipeline {
         debug: MutableList<RemovalRecord>,
         checkCancelled: () -> Unit,
     ) {
+        // Ancestors known to hold too few links, articles and images to be a recommendation block. This pass
+        // only removes, so those counts never grow back; without the memo, many headings in one wrapper each
+        // re-measured the whole wrapper.
+        val tooFewCards = HashSet<Element>()
         for (headingBlock in content.select("h1, h2, h3, h4, h5, h6, div, p, section").toList()) {
             checkCancelled()
             if (!headingBlock.isAttachedTo(content)) continue
             if (!isRecommendationSectionHeadingBlock(BlockScan(headingBlock))) continue
 
-            val enclosingBlock = headingBlock.enclosingRecommendationBlock(content)
+            val enclosingBlock = headingBlock.enclosingRecommendationBlock(content, tooFewCards)
             if (enclosingBlock != null) {
                 recordAndRemove(
                     enclosingBlock,
@@ -380,12 +389,14 @@ internal object RemovalPipeline {
         }
     }
 
-    private fun Element.enclosingRecommendationBlock(root: Element): Element? {
+    private fun Element.enclosingRecommendationBlock(root: Element, tooFewCards: MutableSet<Element>): Element? {
         var current = parent()
         while (current != null && current !== root) {
             if (
+                current !in tooFewCards &&
                 current.isAttachedTo(root) &&
                 current.startsWithHeadingBlock(this) &&
+                current.hasRecommendationCardCounts(tooFewCards) &&
                 isTrailingRecommendationBlock(BlockScan(current))
             ) {
                 return current
@@ -393,6 +404,16 @@ internal object RemovalPipeline {
             current = current.parent()
         }
         return null
+    }
+
+    // The count condition of isTrailingRecommendationBlock, checked first so a failing ancestor is
+    // measured once per pass.
+    private fun Element.hasRecommendationCardCounts(tooFewCards: MutableSet<Element>): Boolean {
+        val enough = select("a").size >= RECOMMENDATION_MIN_LINKS ||
+            select("article").size >= RECOMMENDATION_MIN_ARTICLES ||
+            select("img, figure, picture").size >= RECOMMENDATION_MIN_IMAGES
+        if (!enough) tooFewCards.add(this)
+        return enough
     }
 
     private fun Element.startsWithHeadingBlock(headingBlock: Element): Boolean {
@@ -583,10 +604,10 @@ internal object RemovalPipeline {
 // from heading words (e.g. "correlatedvariables", "marketshareanalysis") —
 // substring matching would wrongly strip it (hitting "related"/"share"), so it
 // must equal a selector token outright.
-private fun Element.matchesPartialClutter(): Boolean {
+private fun Element.matchesPartialClutter(blockTextLengths: MutableMap<Element, Int>): Boolean {
     val nonIdHaystack = elementHintHaystack(this, includeId = false)
     val hintMatches = PARTIAL_PATTERNS.any { it in nonIdHaystack }
-    if (hintMatches && !(linkTargetIsOnlyClutterHint() && linkHasContentContext())) {
+    if (hintMatches && !(linkTargetIsOnlyClutterHint() && linkHasContentContext(blockTextLengths))) {
         return true
     }
 
@@ -608,8 +629,8 @@ private fun Element.linkTargetIsOnlyClutterHint(): Boolean {
     return PARTIAL_PATTERNS.none { it in haystackWithoutUrls }
 }
 
-private fun Element.linkHasContentContext(): Boolean =
-    isLinkInsideProse() || linksToDocumentFile() || isProseIntroducedListItemLink() || isOrdinaryLinkListItem()
+private fun Element.linkHasContentContext(blockTextLengths: MutableMap<Element, Int>): Boolean =
+    isLinkInsideProse(blockTextLengths) || linksToDocumentFile() || isProseIntroducedListItemLink() || isOrdinaryLinkListItem()
 
 // One entry of a list of article links ("de-geomanteia-caput-draconis-...-share-in-an-adventure")
 // is not a share button when the other entries' slugs carry no clutter word.
@@ -633,10 +654,10 @@ private fun Element.isProseIntroducedListItemLink(): Boolean {
     return item.parent()?.isProseIntroducedList() == true
 }
 
-private fun Element.isLinkInsideProse(): Boolean {
+private fun Element.isLinkInsideProse(blockTextLengths: MutableMap<Element, Int>): Boolean {
     if (normalName() != "a") return false
     val block = parents().firstOrNull { it.normalName() in PROSE_LINK_BLOCK_TAGS } ?: return false
-    val surroundingText = block.text().length - text().length
+    val surroundingText = blockTextLengths.getOrPut(block) { block.text().length } - text().length
     return surroundingText >= MIN_PROSE_TEXT_AROUND_LINK
 }
 

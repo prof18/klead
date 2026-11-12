@@ -2,6 +2,7 @@ package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
+import com.prof18.klead.internal.dom.ChildListBatch
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 
 // Converts callout-like markup — Obsidian-style [!type] blockquotes, Bootstrap alerts, and
@@ -72,7 +73,10 @@ internal object HtmlCalloutNormalizer {
     }
 
     private fun Element.rebuildCallout(type: String, title: String, bodyNodes: List<Node>) {
-        bodyNodes.forEach(Node::remove)
+        // One rebuild per parent: removing the body nodes one at a time reindexed their parent each time.
+        val detach = ChildListBatch()
+        bodyNodes.forEach(detach::remove)
+        detach.flushAll()
         empty()
         tagName("div")
         addClass("callout")

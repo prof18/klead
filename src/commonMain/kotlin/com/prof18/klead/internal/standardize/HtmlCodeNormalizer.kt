@@ -12,6 +12,7 @@ internal object HtmlCodeNormalizer {
         normalizeVersoLeanExamples(content)
         normalizeStandalonePreformattedCode(content)
         normalizeCodeTables(content)
+        val chromeTexts = HashMap<Element, String>()
         content.select("pre").forEach { pre ->
             normalizeCodeMirrorBlock(pre)
             pre.select(CODE_UI_SELECTOR).remove()
@@ -28,7 +29,7 @@ internal object HtmlCodeNormalizer {
                 code.attr("data-lang", language)
                 code.addClass("language-$language")
             }
-            removeCodeBlockChromeAround(pre, language)
+            removeCodeBlockChromeAround(pre, language, chromeTexts)
         }
         content.select("devsite-code").forEach { wrapper ->
             val pre = wrapper.children().singleOrNull()?.takeIf { it.normalName() == "pre" }
@@ -139,12 +140,15 @@ internal object HtmlCodeNormalizer {
         }
     }
 
-    private fun removeCodeBlockChromeAround(pre: Element, language: String?) {
+    // chromeTexts holds each candidate sibling's chrome-sized text (empty when it cannot be chrome), so a large
+    // block before many code blocks is measured once, not once per code block. A candidate comes before the
+    // code blocks that ask about it, and the document-order pass has finished changing it by then.
+    private fun removeCodeBlockChromeAround(pre: Element, language: String?, chromeTexts: MutableMap<Element, String>) {
         var current: Element? = pre
         repeat(CODE_CHROME_ANCESTOR_DEPTH) {
             val element = current ?: return
             element.previousElementSibling()
-                ?.takeIf { it.isCodeChromeSibling(language) }
+                ?.takeIf { it.isCodeChromeSibling(language, chromeTexts) }
                 ?.remove()
             current = element.parent()
         }
@@ -320,10 +324,14 @@ internal object HtmlCodeNormalizer {
         .replace(MULTI_NEWLINE_PATTERN, "\n\n")
         .trimEnd()
 
-    private fun Element.isCodeChromeSibling(language: String?): Boolean {
-        val normalizedText = text().trim().collapseWhitespace()
-        if (normalizedText.isBlank() || normalizedText.length > CODE_CHROME_MAX_LENGTH) return false
-        if (select("pre, code, p, blockquote, table, figure, img, picture").isNotEmpty()) return false
+    private fun Element.isCodeChromeSibling(language: String?, chromeTexts: MutableMap<Element, String>): Boolean {
+        val normalizedText = chromeTexts.getOrPut(this) {
+            val text = text().trim().collapseWhitespace()
+            val couldBeChrome = text.isNotBlank() && text.length <= CODE_CHROME_MAX_LENGTH &&
+                select("pre, code, p, blockquote, table, figure, img, picture").isEmpty()
+            // Empty, not null, marks "cannot be chrome": getOrPut recomputes null values.
+            if (couldBeChrome) text else ""
+        }.ifEmpty { return false }
         if (language != null && normalizedText.equals(language, ignoreCase = true)) return true
         val hints = partialCodeChromeHaystack()
         return select("button").isNotEmpty() ||

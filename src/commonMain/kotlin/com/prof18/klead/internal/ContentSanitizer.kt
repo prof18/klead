@@ -2,6 +2,7 @@ package com.prof18.klead.internal
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.internal.dom.isDangerousUrl
+import com.prof18.klead.internal.dom.removeAllBatched
 import com.prof18.klead.internal.media.TrustedEmbeds
 
 // Strips active and dangerous markup from the detected content before any other processing:
@@ -9,13 +10,19 @@ import com.prof18.klead.internal.media.TrustedEmbeds
 // iframes, event-handler attributes, srcdoc, and dangerous URLs in link-bearing attributes.
 internal object ContentSanitizer {
     fun stripUnsafe(content: Element) {
-        content.select("script").filterNot { script ->
-            script.attr("type").contains("math/tex", ignoreCase = true)
-        }.forEach { it.remove() }
+        // Each group is removed with one rebuild per parent: thousands of sibling scripts removed one by
+        // one reindexed their parent every time.
+        removeAllBatched(
+            content.select("script").filterNot { script ->
+                script.attr("type").contains("math/tex", ignoreCase = true)
+            },
+        )
         // <link> would load third-party stylesheets or imports into the reader, and <meta http-equiv>
         // (refresh) would navigate it away; microdata <meta itemprop> stays for metadata extraction.
-        content.select("style, noscript, frame, frameset, object, embed, applet, base, link, meta[http-equiv]").remove()
-        content.select("iframe").filterNot(::isTrustedVideoIframe).forEach { it.remove() }
+        removeAllBatched(
+            content.select("style, noscript, frame, frameset, object, embed, applet, base, link, meta[http-equiv]"),
+        )
+        removeAllBatched(content.select("iframe").filterNot(::isTrustedVideoIframe))
 
         for (element in content.select("*")) {
             if (element.attributesSize() == 0) continue

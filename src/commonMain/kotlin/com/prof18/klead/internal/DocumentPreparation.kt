@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Comment
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
+import com.prof18.klead.internal.dom.ChildListBatch
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.parseFragment
@@ -25,32 +26,48 @@ internal object DocumentPreparation {
                 }
             }
 
+        if (segmentMoves.isEmpty()) return
+        // Every id the document has held: a call naming an id outside it cannot match, and skipping it
+        // avoids a whole-document getElementById scan per call. Ids that later leave the tree stay in the
+        // set and fall back to the scan, so lookups still answer exactly as getElementById does.
+        val knownIds = document.select("[id]").mapTo(HashSet()) { it.id() }
         for ((templateId, segmentId) in segmentMoves) {
+            if (templateId !in knownIds || segmentId !in knownIds) continue
             val template = document.getElementById(templateId) ?: continue
             val segment = document.getElementById(segmentId) ?: continue
             removeReactFallbackAfter(template)
             // Copies are inserted in one go: before() per node reindexed the siblings every time, and
             // Ksoup's clone() is quadratic on big subtrees, unlike the iterative cloneElement().
             val copies = segment.childNodes().map { node -> node.deepCopy() }
+            copies.forEach { copy -> if (copy is Element) copy.select("[id]").mapTo(knownIds) { it.id() } }
             template.parent()?.insertChildren(template.siblingIndex(), copies)
             template.remove()
             segment.remove()
         }
     }
 
+    // Removes the fallback between the template and its boundary's end marker. Without an end marker
+    // nothing is a fallback, so nothing is removed (this used to delete every following sibling). The
+    // run is removed with one rebuild of the parent instead of one reindex per node.
     private fun removeReactFallbackAfter(template: Element) {
+        val parent = template.parent() ?: return
+        val fallback = mutableListOf<Node>()
         var node = template.nextSibling()
         var nestedBoundaryDepth = 0
         while (node != null) {
-            val next = node.nextSibling()
-            if (node.isReactBoundaryEnd() && nestedBoundaryDepth == 0) return
+            if (node.isReactBoundaryEnd() && nestedBoundaryDepth == 0) {
+                val batch = ChildListBatch()
+                fallback.forEach(batch::remove)
+                batch.flush(parent)
+                return
+            }
             if (node.isReactBoundaryStart()) {
                 nestedBoundaryDepth++
             } else if (node.isReactBoundaryEnd()) {
                 nestedBoundaryDepth--
             }
-            node.remove()
-            node = next
+            fallback += node
+            node = node.nextSibling()
         }
     }
 
@@ -59,6 +76,9 @@ internal object DocumentPreparation {
     private fun Node.isReactBoundaryEnd(): Boolean = this is Comment && getData().trim() == "/$"
 
     private fun promoteNoscriptImages(document: Document) {
+        // Per figure: many noscript images in one figure each searched it for a caption. Promoted images
+        // and alt captions are not figcaptions, so the answers hold for the whole pass.
+        val figureHasCaption = HashMap<Element, Boolean>()
         for (noscript in document.select("noscript").toList()) {
             val fragmentNodes = parseFragment(noscript.html(), document.baseUri())
             val fragmentRoot = Element("fragment")
@@ -70,7 +90,7 @@ internal object DocumentPreparation {
             val promoted = mutableListOf<Node>()
             var previous = noscript.previousElementSibling()
             for (image in promotedImages) {
-                val altCaption = noscript.nextJsAltCaptionForPromotedImage(image, previous)
+                val altCaption = noscript.nextJsAltCaptionForPromotedImage(image, previous, figureHasCaption)
                 val copy = image.deepCopy()
                 promoted.add(copy)
                 previous = copy
@@ -84,9 +104,17 @@ internal object DocumentPreparation {
         }
     }
 
-    private fun Element.nextJsAltCaptionForPromotedImage(image: Element, previous: Element?): String? {
+    private fun Element.nextJsAltCaptionForPromotedImage(
+        image: Element,
+        previous: Element?,
+        figureHasCaption: MutableMap<Element, Boolean>,
+    ): String? {
         if (!image.hasAttr("data-nimg")) return null
-        if (parents().any { it.normalName() == "figure" && it.selectFirst("figcaption") != null }) return null
+        val inCaptionedFigure = parents().any { ancestor ->
+            ancestor.normalName() == "figure" &&
+                figureHasCaption.getOrPut(ancestor) { ancestor.selectFirst("figcaption") != null }
+        }
+        if (inCaptionedFigure) return null
 
         val placeholder = previous
             ?.takeIf { it.normalName() == "img" && it.hasAttr("data-nimg") }
