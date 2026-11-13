@@ -25,7 +25,7 @@ internal object HtmlCodeNormalizer {
             code.select(CODE_UI_SELECTOR).remove()
             code.text(normalizeCodeText(code.textWithLineBreaks()))
             val language = languageFrom(code) ?: languageFrom(pre)
-                ?: if (pre in styledCodeBlocks) null else languageFromCodeAncestor(pre)
+                ?: if (pre in styledCodeBlocks) null else languageFromCodeAncestor(pre, content)
             if (language != null) {
                 code.attr("data-lang", language)
                 code.addClass("language-$language")
@@ -175,7 +175,7 @@ internal object HtmlCodeNormalizer {
             val code = codeSource.selectFirst("code")
             val language = code?.let(::languageFrom)
                 ?: languageFrom(codeSource)
-                ?: languageFromCodeAncestor(table)
+                ?: languageFromCodeAncestor(table, content)
             val pre = Element("pre")
             val codeElement = Element("code")
             val text = normalizeCodeText((code ?: codeSource).textWithLineBreaks())
@@ -227,11 +227,12 @@ internal object HtmlCodeNormalizer {
         return null
     }
 
-    private fun languageFromCodeAncestor(element: Element): String? {
+    // Stops at the content root: page wrappers above it (a <div class="post">) are not code containers.
+    private fun languageFromCodeAncestor(element: Element, content: Element): String? {
         var current: Element? = element
         while (current != null) {
             languageFrom(current)?.let { return it }
-            if (current.normalName() == "devsite-code") return null
+            if (current.normalName() == "devsite-code" || current === content) return null
             current = current.parent()
         }
         return null

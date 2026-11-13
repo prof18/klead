@@ -2315,6 +2315,16 @@ class HtmlStandardizerTest {
         assertFalse(article.outerHtml().contains("<span></span>"))
     }
 
+    @Test
+    fun `code language is not read from a wrapper above the content`() {
+        val content = Ksoup.parse("<div class=\"post\"><article><pre><code>val x = 1</code></pre></article></div>")
+            .selectFirst("article")!!
+
+        HtmlCodeNormalizer.normalizeCodeBlocks(content)
+
+        assertFalse(content.selectFirst("code")!!.hasAttr("data-lang"), content.outerHtml())
+    }
+
     private fun article(html: String): Element =
         Ksoup.parse(html, "https://example.com").selectFirst("article") ?: error("missing article")
 }

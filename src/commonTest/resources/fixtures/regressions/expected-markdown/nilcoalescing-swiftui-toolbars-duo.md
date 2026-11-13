@@ -10,7 +10,7 @@ SwiftUI uses an item's content to decide whether it can move into a vertical bar
 
 For example, we can create a menu with a custom label that combines a shape and text. With the default `automatic` axis behavior, SwiftUI places this menu in the horizontal bar:
 
-```article-page
+```
 ToolbarItem(placement: .bottomBar) {
     Menu {
         // Actions for choosing the line width
@@ -27,7 +27,7 @@ ToolbarItem(placement: .bottomBar) {
 
 If our custom toolbar button label is small enough to fit in the vertical bar, we can apply `.axisBehavior(.verticalPreferred)` to the enclosing `ToolbarItem`:
 
-```article-page
+```
 ToolbarItem(placement: .bottomBar) {
     // ... Menu with the custom label shown above ...
 }
@@ -40,7 +40,7 @@ The menu now joins the other controls along the right edge, leaving no toolbar i
 
 For custom content that needs more horizontal space, we can use the `horizontalOnly` option to keep the item in a horizontal bar. For example, a slider already stays horizontal with `automatic`, but applying `horizontalOnly` makes that constraint explicit:
 
-```article-page
+```
 ToolbarItem(placement: .bottomBar) {
     Slider(value: $width, in: 2...6, step: 2) {
         Text("Line width")
@@ -59,7 +59,7 @@ We can also adapt the layout of custom toolbar content using the new [toolbarVer
 
 For example, we can adapt a custom toolbar button label for an item whose `axisBehavior(_:)` modifier is set to `verticalPreferred`. We arrange its shape and text horizontally when `toolbarVerticalEdge` is `nil`, and vertically otherwise:
 
-```article-page
+```
 struct AdaptiveToolbarLabel: View {
     @Environment(\.toolbarVerticalEdge) private var verticalEdge
 
@@ -93,7 +93,7 @@ The default `automatic` behavior favors the tab bar on iOS, so toolbar items mov
 
 For example, we can give the tab bar priority over the toolbar actions provided by a view in a navigation stack:
 
-```article-page
+```
 TabView {
     Tab("Library", systemImage: "photo.on.rectangle") {
         NavigationStack {
@@ -112,7 +112,7 @@ When space is limited, SwiftUI keeps the tabs visible and moves some of the edit
 
 When toolbar actions should take priority over tab navigation, we can set the `toolbarVerticalCompressionBehavior(_:)` modifier to `prefersToolbarItems`:
 
-```article-page
+```
 PhotoEditor()
     .toolbarVerticalCompressionBehavior(.prefersToolbarItems)
 ```
@@ -133,7 +133,7 @@ For example, in a sheet where the only toolbar action is a close button, the ver
 
 To disable vertical bars for a window or presentation, we can apply the `toolbarVerticalBehavior(_:)` modifier with the `disabled` option to a view within it:
 
-```article-page
+```
 .sheet(isPresented: $showsHelp) {
     AnnotationHelp()
         .toolbarVerticalBehavior(.disabled)
