@@ -43,6 +43,7 @@ internal class DocumentSignals(document: Document) {
                 attributes.add(key)
                 when (key) {
                     "id" -> ids.add(attribute.value)
+
                     "class" -> attribute.value.split(CLASS_SEPARATOR).forEach { name ->
                         if (name.isNotEmpty()) classes.add(name.lowercase())
                     }

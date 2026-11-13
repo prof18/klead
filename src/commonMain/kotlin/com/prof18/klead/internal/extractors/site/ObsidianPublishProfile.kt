@@ -15,12 +15,11 @@ internal object ObsidianPublishProfile : DomExtractor {
     override val id: String = "obsidian-publish"
     override val domains: Set<String> = setOf("publish.obsidian.md")
 
-    override fun matches(context: DomExtractorContext): Boolean =
-        context.hostMatches(domains) || (
-            context.signals.hasClass("markdown-preview-view") &&
-                context.signals.hasClass("markdown-preview-section") &&
-                context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR) != null
-            )
+    override fun matches(context: DomExtractorContext): Boolean = context.hostMatches(domains) || (
+        context.signals.hasClass("markdown-preview-view") &&
+            context.signals.hasClass("markdown-preview-section") &&
+            context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR) != null
+    )
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val content = context.document.selectFirstSafe(OBSIDIAN_CONTENT_SELECTOR)?.cloneElement() ?: return null

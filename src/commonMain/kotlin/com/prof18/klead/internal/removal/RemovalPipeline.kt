@@ -403,9 +403,7 @@ internal object RemovalPipeline {
         var current = parent()
         while (current != null && current !== root) {
             if (
-                current !in tooFewCards &&
-                current.isAttachedTo(root) &&
-                current.startsWithHeadingBlock(this) &&
+                current.isAttachedWrapperStartingWith(this, root, tooFewCards) &&
                 current.hasRecommendationCardCounts(tooFewCards) &&
                 isTrailingRecommendationBlock(BlockScan(current))
             ) {
@@ -415,6 +413,13 @@ internal object RemovalPipeline {
         }
         return null
     }
+
+    // Cheapest checks first: the memo of ancestors with too few cards, then position.
+    private fun Element.isAttachedWrapperStartingWith(
+        headingBlock: Element,
+        root: Element,
+        tooFewCards: Set<Element>,
+    ): Boolean = this !in tooFewCards && isAttachedTo(root) && startsWithHeadingBlock(headingBlock)
 
     // The count condition of isTrailingRecommendationBlock, checked first so a failing ancestor is
     // measured once per pass.
@@ -639,8 +644,9 @@ private fun Element.linkTargetIsOnlyClutterHint(): Boolean {
     return PARTIAL_PATTERNS.none { it in haystackWithoutUrls }
 }
 
-private fun Element.linkHasContentContext(blockTextLengths: MutableMap<Element, Int>): Boolean =
-    isLinkInsideProse(blockTextLengths) || linksToDocumentFile() || isProseIntroducedListItemLink() || isOrdinaryLinkListItem()
+private fun Element.linkHasContentContext(blockTextLengths: MutableMap<Element, Int>): Boolean = isLinkInsideProse(
+    blockTextLengths,
+) || linksToDocumentFile() || isProseIntroducedListItemLink() || isOrdinaryLinkListItem()
 
 // One entry of a list of article links ("de-geomanteia-caput-draconis-...-share-in-an-adventure")
 // is not a share button when the other entries' slugs carry no clutter word.

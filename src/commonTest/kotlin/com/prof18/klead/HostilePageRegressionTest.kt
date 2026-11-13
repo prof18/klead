@@ -222,8 +222,10 @@ class HostilePageRegressionTest {
     @Test
     fun `ragged table does not pad every row to the widest one`() {
         val columns = 2_000
-        val html = page("<table><tr>" + "<td>x</td>".repeat(columns) + "</tr>" + "<tr><td>y</td></tr>".repeat(columns) +
-            "</table><p>$TAIL_TEXT</p>")
+        val html = page(
+            "<table><tr>" + "<td>x</td>".repeat(columns) + "</tr>" + "<tr><td>y</td></tr>".repeat(columns) +
+                "</table><p>$TAIL_TEXT</p>",
+        )
         val markdown = runBlocking(Dispatchers.Default) {
             Klead.parseHtml(html, "https://example.com/hostile", testOptions(outputs = setOf(KleadOutput.MARKDOWN)))
         }.content.requireMarkdown()

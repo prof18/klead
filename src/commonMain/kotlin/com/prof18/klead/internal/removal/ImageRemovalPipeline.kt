@@ -135,7 +135,10 @@ internal object ImageRemovalPipeline {
         var current = parent()
         while (current != null) {
             val wrapper = current
-            if (visualOnlyWrappers.getOrPut(wrapper) { wrapper.isVisualOnlyImageWrapper() } && wrapper in firstParents) {
+            if (visualOnlyWrappers.getOrPut(
+                    wrapper,
+                ) { wrapper.isVisualOnlyImageWrapper() } && wrapper in firstParents
+            ) {
                 return true
             }
             current = current.parent()
@@ -309,6 +312,7 @@ internal object ImageRemovalPipeline {
     private val DIMENSION_VALUE_PATTERN = Regex("""^\s*(\d+)""")
     private val srcsetDelimiter = Regex(""",\s+""")
     private val WHITESPACE_PATTERN = Regex("""\s+""")
+
     // Not border-width, min-width, line-height and the like.
     private val WIDTH_STYLE_DIMENSION_PATTERN = Regex("""(?<![\w-])width\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)
     private val HEIGHT_STYLE_DIMENSION_PATTERN = Regex("""(?<![\w-])height\s*:\s*(\d+)px""", RegexOption.IGNORE_CASE)

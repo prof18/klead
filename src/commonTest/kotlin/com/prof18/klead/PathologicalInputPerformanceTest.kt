@@ -187,9 +187,11 @@ class PathologicalInputPerformanceTest {
     }
 
     @Test
-    fun `many code blocks after a large sibling scale linearly`() = assertScalesLinearly(200) { n ->
-        page("<div>" + repeatIndexed(n * 4) { "<p>Body paragraph $it $LEAD_TEXT words.</p>" } + "</div><div>" +
-            "<pre>x</pre>".repeat(n) + "</div>")
+    fun `many code blocks after a large sibling scale linearly`() = assertScalesLinearly(600) { n ->
+        page(
+            "<div>" + repeatIndexed(n * 4) { "<p>Body paragraph $it $LEAD_TEXT words.</p>" } + "</div><div>" +
+                "<pre>x</pre>".repeat(n) + "</div>",
+        )
     }
 
     @Test
@@ -199,7 +201,14 @@ class PathologicalInputPerformanceTest {
 
     @Test
     fun `many images sharing a file name scale linearly`() = assertScalesLinearly(300) { n ->
-        page(nest("<div>", "</div>", depth = 30, inner = repeatIndexed(n) { "<img src=\"/i/$it/photo.jpg\">" } + "<p>$LEAD_TEXT</p>"))
+        page(
+            nest(
+                "<div>",
+                "</div>",
+                depth = 30,
+                inner = repeatIndexed(n) { "<img src=\"/i/$it/photo.jpg\">" } + "<p>$LEAD_TEXT</p>",
+            ),
+        )
     }
 
     @Test
@@ -214,12 +223,22 @@ class PathologicalInputPerformanceTest {
 
     @Test
     fun `many hidden spans under a huge attribute name scale linearly`() = assertScalesLinearly(1_000) { n ->
-        page("<div data-" + "a".repeat(n * 20) + "=\"1\">" + "<span hidden>h</span>".repeat(n) + "<p>$LEAD_TEXT</p></div>")
+        page(
+            "<div data-" + "a".repeat(
+                n * 20,
+            ) + "=\"1\">" + "<span hidden>h</span>".repeat(n) + "<p>$LEAD_TEXT</p></div>",
+        )
     }
 
     @Test
     fun `many dhammatalks notes scale linearly`() = assertScalesLinearly(200) { n ->
-        page(repeatIndexed(n) { "<div class=\"note\"><p id=\"anote$it\">n</p></div>" } + "<p>" + "<a href=\"x\">l</a> ".repeat(n * 10) + "</p>")
+        page(
+            repeatIndexed(
+                n,
+            ) { "<div class=\"note\"><p id=\"anote$it\">n</p></div>" } + "<p>" + "<a href=\"x\">l</a> ".repeat(
+                n * 10,
+            ) + "</p>",
+        )
     }
 
     @Test
@@ -255,8 +274,10 @@ class PathologicalInputPerformanceTest {
 
     @Test
     fun `long react fallback scales linearly`() = assertScalesLinearly(3_000) { n ->
-        page("<div><!--\$?--><template id=\"t\"></template>" + "<p>x</p>".repeat(n) + "<!--/\$--></div>" +
-            "<div hidden id=\"s\"><p>$LEAD_TEXT streamed.</p></div><script>\$RC(\"t\",\"s\")</script>")
+        page(
+            "<div><!--\$?--><template id=\"t\"></template>" + "<p>x</p>".repeat(n) + "<!--/\$--></div>" +
+                "<div hidden id=\"s\"><p>$LEAD_TEXT streamed.</p></div><script>\$RC(\"t\",\"s\")</script>",
+        )
     }
 
     @Test
@@ -266,7 +287,9 @@ class PathologicalInputPerformanceTest {
 
     @Test
     fun `many json-ld image references scale linearly`() = assertScalesLinearly(1_000) { n ->
-        val items = "{\"@type\":\"Article\",\"image\":{\"@id\":\"x\"},\"primaryImageOfPage\":{\"@id\":\"x\"}},".repeat(n)
+        val items = "{\"@type\":\"Article\",\"image\":{\"@id\":\"x\"},\"primaryImageOfPage\":{\"@id\":\"x\"}},".repeat(
+            n,
+        )
         "<html><head><script type=\"application/ld+json\">[$items{}]</script></head><body><article>" +
             "<h1>Pathological</h1><p>$LEAD_TEXT</p></article></body></html>"
     }
@@ -310,7 +333,10 @@ class PathologicalInputPerformanceTest {
             "<script type=\"application/ld+json\">{\"contentUrl\":\"https://cdn.jwplayer.com/videos/x$it\"}</script>"
         } + "</head><body><article class=\"type-videos\">" +
             repeatIndexed(n) {
-                "<div class=\"wp-block-gamespot-blocks-video-embed\" data-jw-id=\"abcd${it.toString().padStart(4, '0')}\"></div>"
+                "<div class=\"wp-block-gamespot-blocks-video-embed\" data-jw-id=\"abcd${it.toString().padStart(
+                    4,
+                    '0',
+                )}\"></div>"
             } + "<p>$LEAD_TEXT</p></article></body></html>"
     }
 
@@ -341,7 +367,11 @@ class PathologicalInputPerformanceTest {
         fail("${GROWTH_STEP}× the input took ${attempts.joinToString()} the time")
     }
 
-    private fun assertFast(html: String, expected: String? = DEEP_TEXT, url: String = "https://example.com/pathological") {
+    private fun assertFast(
+        html: String,
+        expected: String? = DEEP_TEXT,
+        url: String = "https://example.com/pathological",
+    ) {
         for (output in KleadOutput.entries) {
             lateinit var result: KleadResult
             val elapsed = measureTime {
@@ -364,6 +394,7 @@ class PathologicalInputPerformanceTest {
         // Generous for slow CI runners executing debug native binaries; the guarded shapes used to take minutes.
         const val BUDGET_SECONDS = 60
         const val GROWTH_STEP = 16
+
         // Linear work grows about 16× (a little more with garbage collection); the old paths grew about 256×.
         const val MAX_GROWTH = 32
         const val GROWTH_ATTEMPTS = 3

@@ -17,9 +17,8 @@ import kotlinx.serialization.json.contentOrNull
 internal object SteamPartnerEventExtractor : DomExtractor {
     override val id: String = "steam-partner-event"
 
-    override fun matches(context: DomExtractorContext): Boolean =
-        context.signals.hasId("application_config") &&
-            context.document.selectFirst("#application_config[data-partnereventstore]") != null
+    override fun matches(context: DomExtractorContext): Boolean = context.signals.hasId("application_config") &&
+        context.document.selectFirst("#application_config[data-partnereventstore]") != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val event = context.document.partnerEvent() ?: return null
@@ -153,7 +152,14 @@ internal object SteamPartnerEventExtractor : DomExtractor {
                 tagValue.candidates(open + PREVIEW_YOUTUBE_OPEN.length).firstNotNullOfOrNull { (value, afterValue) ->
                     var close = afterValue
                     while (close < length && this[close] in REGEX_WHITESPACE) close++
-                    if (regionMatches(close, PREVIEW_YOUTUBE_CLOSE, 0, PREVIEW_YOUTUBE_CLOSE.length, ignoreCase = true)) {
+                    if (regionMatches(
+                            close,
+                            PREVIEW_YOUTUBE_CLOSE,
+                            0,
+                            PREVIEW_YOUTUBE_CLOSE.length,
+                            ignoreCase = true,
+                        )
+                    ) {
                         BbCodeBlock(open until close + PREVIEW_YOUTUBE_CLOSE.length, "", value)
                     } else {
                         null
@@ -180,7 +186,15 @@ internal object SteamPartnerEventExtractor : DomExtractor {
             val link = if (regionMatches(open, URL_OPEN, 0, URL_OPEN.length, ignoreCase = true)) {
                 tagValue.candidates(open + URL_OPEN.length).firstNotNullOfOrNull { (value, afterValue) ->
                     val end = linkEnd.from(afterValue)
-                    if (end < 0) null else BbCodeLink(open until end + URL_CLOSE.length, value, substring(afterValue, end))
+                    if (end < 0) {
+                        null
+                    } else {
+                        BbCodeLink(
+                            open until end + URL_CLOSE.length,
+                            value,
+                            substring(afterValue, end),
+                        )
+                    }
                 }
             } else {
                 null

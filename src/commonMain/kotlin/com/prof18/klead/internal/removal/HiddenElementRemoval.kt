@@ -13,11 +13,14 @@ internal object HiddenElementRemoval {
         val checkedHeadings = HashSet<Element>()
         // Removed in one batch at the end; until then, scheduled elements count as already gone.
         val scheduled = ScheduledRemovals()
+        // Each hidden element asks about all of its ancestors; their hints cannot change in this pass
+        // (removals are batched), so each ancestor's haystack is built once.
+        val ancestorHints = HashMap<Element, AncestorHints>()
         for (element in content.descendantsSnapshot()) {
             checkCancelled()
             if (!element.isAttachedTo(content) || scheduled.containsSelfOrAncestor(element)) continue
-            val reason = removableHiddenReason(element) ?: continue
-            element.orphanedHeadingBeforeHiddenBlock(checkedHeadings, scheduled)?.let { heading ->
+            val reason = removableHiddenReason(element, ancestorHints) ?: continue
+            element.orphanedHeadingBeforeHiddenBlock(checkedHeadings, scheduled, ancestorHints)?.let { heading ->
                 recordRemoval(heading, debug, "removeHiddenElements", null, "orphan heading before hidden block")
                 scheduled.add(heading)
             }
@@ -47,12 +50,30 @@ internal object HiddenElementRemoval {
         }
     }
 
-    private fun removableHiddenReason(element: Element): String? {
+    private class AncestorHints(val isFixed: Boolean, val isCallout: Boolean, val isFootnote: Boolean)
+
+    private fun MutableMap<Element, AncestorHints>.of(element: Element): AncestorHints = getOrPut(element) {
+        val hints = partialHaystack(element)
+        AncestorHints(
+            // Floating notifications are UI, even when their names contain "alert".
+            isFixed = element.hasClass("fixed") ||
+                "position:fixed" in element.attr("style").lowercase().replace(" ", ""),
+            isCallout = "callout" in hints || "admonition" in hints || "alert" in hints,
+            isFootnote = "footnote" in hints ||
+                "footnotes" in hints ||
+                "fnref" in hints ||
+                "ftnt" in hints ||
+                "fna-content" in hints ||
+                "data-definition" in hints,
+        )
+    }
+
+    private fun removableHiddenReason(element: Element, ancestorHints: MutableMap<Element, AncestorHints>): String? {
         val reason = hiddenReason(element) ?: return null
         val isProtectedHidden = element.isRenderableAriaHiddenSvg() ||
             element.isMathWrapper() ||
-            element.isWithinCalloutLike() ||
-            element.isWithinFootnoteLike()
+            element.isWithinCalloutLike(ancestorHints) ||
+            element.isWithinFootnoteLike(ancestorHints)
 
         return reason.takeUnless { isProtectedHidden }
     }
@@ -60,6 +81,7 @@ internal object HiddenElementRemoval {
     private fun Element.orphanedHeadingBeforeHiddenBlock(
         checkedHeadings: MutableSet<Element>,
         scheduled: ScheduledRemovals,
+        ancestorHints: MutableMap<Element, AncestorHints>,
     ): Element? {
         val heading = scheduled.previousKeptSibling(this)
             ?.takeIf { it.normalName().matches(HEADING_TAG_PATTERN) && checkedHeadings.add(it) }
@@ -72,7 +94,7 @@ internal object HiddenElementRemoval {
             if (sibling.normalName().matches(HEADING_TAG_PATTERN)) {
                 return if (sibling.headingLevel() <= heading.headingLevel()) heading else null
             }
-            if (removableHiddenReason(sibling) != null || !sibling.hasSubstantiveContent()) {
+            if (removableHiddenReason(sibling, ancestorHints) != null || !sibling.hasSubstantiveContent()) {
                 sibling = sibling.nextElementSibling()
                 continue
             }
@@ -129,31 +151,18 @@ internal object HiddenElementRemoval {
             "mathjax" in className
     }
 
-    private fun Element.isWithinCalloutLike(): Boolean {
+    private fun Element.isWithinCalloutLike(ancestorHints: MutableMap<Element, AncestorHints>): Boolean {
         var hasCalloutHint = false
         for (ancestor in generateSequence(this) { it.parent() }) {
-            // Floating notifications are UI, even when their names contain "alert".
-            if (ancestor.hasClass("fixed") ||
-                "position:fixed" in ancestor.attr("style").lowercase().replace(" ", "")
-            ) {
-                return false
-            }
-            val hints = partialHaystack(ancestor)
-            hasCalloutHint = hasCalloutHint || "callout" in hints || "admonition" in hints || "alert" in hints
+            val hints = ancestorHints.of(ancestor)
+            if (hints.isFixed) return false
+            hasCalloutHint = hasCalloutHint || hints.isCallout
         }
         return hasCalloutHint
     }
 
-    private fun Element.isWithinFootnoteLike(): Boolean = generateSequence(this) { it.parent() }
-        .any {
-            val hints = partialHaystack(it)
-            "footnote" in hints ||
-                "footnotes" in hints ||
-                "fnref" in hints ||
-                "ftnt" in hints ||
-                "fna-content" in hints ||
-                "data-definition" in hints
-        }
+    private fun Element.isWithinFootnoteLike(ancestorHints: MutableMap<Element, AncestorHints>): Boolean =
+        generateSequence(this) { it.parent() }.any { ancestorHints.of(it).isFootnote }
 
     private fun hiddenSelector(element: Element): String = when {
         element.id().isNotBlank() -> "#${element.id()}"

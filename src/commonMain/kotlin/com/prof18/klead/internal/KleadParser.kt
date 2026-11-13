@@ -276,7 +276,6 @@ internal object KleadParser {
         }
         return buildParsedResult(
             content = content,
-            url = url,
             options = options,
             metadata = metadata,
             detected = detected,
@@ -286,7 +285,6 @@ internal object KleadParser {
             extractorResult = extractorResult,
             timings = timings,
             timingPrefix = timingPrefix,
-            checkCancelled = checkCancelled,
         )
     }
 
@@ -308,7 +306,6 @@ internal object KleadParser {
 
     private fun buildParsedResult(
         content: Element,
-        url: String,
         options: KleadOptions,
         metadata: PageMetadata,
         detected: DetectedContent,
@@ -318,7 +315,6 @@ internal object KleadParser {
         extractorResult: ExtractorResult?,
         timings: ParseTimings,
         timingPrefix: String,
-        checkCancelled: () -> Unit,
     ): ParsedResult {
         val wordCount = timings.measure("$timingPrefix.wordCount") {
             countBodyWords(content)

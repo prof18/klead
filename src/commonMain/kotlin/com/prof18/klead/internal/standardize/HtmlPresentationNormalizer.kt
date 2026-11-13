@@ -115,6 +115,7 @@ internal object HtmlPresentationNormalizer {
 
     private val ZERO_HEIGHT_PROPERTIES = setOf("height", "max-height")
     private val RATIO_PADDING_PROPERTIES = setOf("padding-top", "padding-bottom")
+
     // No overlapping zero runs: "0*\.?0+" backtracked polynomially over a long run of zeros.
     private val ZERO_LENGTH = Regex("""(?i)[+-]?(?:0+(?:\.0+)?|\.0+)(?:[a-z]+|%)?\s*(?:!important)?""")
     private const val MAX_ZERO_LENGTH_CHARS = 64

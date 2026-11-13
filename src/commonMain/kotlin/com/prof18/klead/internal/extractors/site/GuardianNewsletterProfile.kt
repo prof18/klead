@@ -37,7 +37,9 @@ internal object GuardianNewsletterProfile : DomExtractor {
 
                 source.normalName() == "img" -> Unit
 
-                source.normalName() == "td" && source.isEditorialTextCell() && source.isNewsletterEditorialText(modules) ->
+                source.normalName() == "td" && source.isEditorialTextCell() && source.isNewsletterEditorialText(
+                    modules,
+                ) ->
                     output.appendChild(source.deepCopy())
             }
         }

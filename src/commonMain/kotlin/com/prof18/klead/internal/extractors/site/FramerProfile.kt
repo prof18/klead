@@ -20,8 +20,7 @@ internal object FramerProfile : DomExtractor {
 
     override val id: String = "framer"
 
-    override fun matches(context: DomExtractorContext): Boolean =
-        context.signals.firstMeta(FRAMER_GENERATOR) != null
+    override fun matches(context: DomExtractorContext): Boolean = context.signals.firstMeta(FRAMER_GENERATOR) != null
 
     override fun preProcess(content: Element, context: DomExtractorContext) {
         // Framer server-renders one copy of a block per breakpoint and hides the others with a

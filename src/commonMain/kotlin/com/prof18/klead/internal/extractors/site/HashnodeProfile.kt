@@ -13,9 +13,8 @@ internal object HashnodeProfile : DomExtractor {
         """article > div > div:first-child:has(a[href^="https://hashnode.com/@"]):not(.prose):not(:has(.prose))""",
     )
 
-    override fun matches(context: DomExtractorContext): Boolean =
-        context.signals.hasTag("header") &&
-            context.signals.hasClass("prose") &&
-            context.document.selectFirst("""header a[href^="https://hashnode.com/?"]""") != null &&
-            context.document.selectFirst("article .prose") != null
+    override fun matches(context: DomExtractorContext): Boolean = context.signals.hasTag("header") &&
+        context.signals.hasClass("prose") &&
+        context.document.selectFirst("""header a[href^="https://hashnode.com/?"]""") != null &&
+        context.document.selectFirst("article .prose") != null
 }

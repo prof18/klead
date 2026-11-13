@@ -232,23 +232,37 @@ internal val BYLINE_METADATA_STRIP_PATTERN = GatedBylineMetadataPattern(
 )
 
 // The full pattern's two nested ".+" cost about 11 ms on a 700-character "by a|a|a…" paragraph, and it runs
-// for every short paragraph. Each check here is a necessary condition of a match and runs in linear time,
-// so text that cannot match never reaches the full pattern.
+// for every short paragraph. Each check here is a necessary condition of a match and runs in linear time.
+// They are substring checks rather than regexes: Kotlin/Native retries an unanchored regex at every offset.
 internal class GatedBylineMetadataPattern(private val regex: Regex) {
     fun containsMatchIn(text: CharSequence): Boolean {
         if (!BYLINE_START_PATTERN.containsMatchIn(text)) return false
-        val mayMatch = BYLINE_EDITOR_PATTERN.containsMatchIn(text) ||
-            ('|' in text && BYLINE_MONTH_DATE_PATTERN.containsMatchIn(text))
+        val folded = text.foldedForGate()
+        val mayMatch = BYLINE_EDITOR_WORDS.any { it in folded } ||
+            ('|' in text && text.any(Char::isDigit) && BYLINE_MONTH_PREFIXES.any { it in folded })
         return mayMatch && regex.containsMatchIn(text)
+    }
+
+    // Lowercase, plus the non-ASCII letters a case-insensitive regex also equates with ASCII ones.
+    private fun CharSequence.foldedForGate(): String = buildString(length) {
+        for (char in this@foldedForGate) {
+            append(
+                when (char) {
+                    '\u017F' -> 's'
+                    '\u0131', '\u0130' -> 'i'
+                    '\u212A' -> 'k'
+                    else -> char.lowercaseChar()
+                },
+            )
+        }
     }
 }
 
+// Anchored at the start, so it is checked once rather than at every offset.
 private val BYLINE_START_PATTERN = Regex("""^\s*by\b""", RegexOption.IGNORE_CASE)
-private val BYLINE_EDITOR_PATTERN = Regex("""\b(?:edited|reviewed|updated)\s+by\b""", RegexOption.IGNORE_CASE)
-private val BYLINE_MONTH_DATE_PATTERN = Regex(
-    """\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\p{L}*\.?\s+\d{1,2},\s+\d{4}\b""",
-    RegexOption.IGNORE_CASE,
-)
+private val BYLINE_EDITOR_WORDS = listOf("edited", "reviewed", "updated")
+private val BYLINE_MONTH_PREFIXES =
+    listOf("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
 
 internal val BYLINE_METADATA_DATE_PATTERN = Regex(
     """\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\p{L}*\.?\s+\d{1,2},\s+\d{4}\b|\b\d{4}-\d{2}-\d{2}T""",

@@ -86,7 +86,10 @@ class KleadCoroutineApiTest {
             Klead.parseHtml(
                 html = "<html><body><p>Cancelled before extraction.</p></body></html>",
                 url = "https://example.com/cancelled",
-                options = KleadOptions(outputs = setOf(KleadOutput.MARKDOWN), customExtractors = listOf(canceller, later)),
+                options = KleadOptions(
+                    outputs = setOf(KleadOutput.MARKDOWN),
+                    customExtractors = listOf(canceller, later),
+                ),
             )
         }
         job.join()
