@@ -38,6 +38,9 @@ class RegressionCorpusBenchmarkTest {
                     html = html,
                     inputBytes = html.encodeToByteArray().size.toLong(),
                     isCore = name in coreFixtureNames,
+                    expectsHtml = expectsOutput("$EXPECTED_HTML_DIRECTORY$name$HTML_SUFFIX"),
+                    expectsMarkdown = expectsOutput("$EXPECTED_MARKDOWN_DIRECTORY$name.md"),
+                    url = FixtureLoader.extractUrl(name, html),
                 )
             }
         assertTrue(fixtures.isNotEmpty(), "Expected real-world regression fixtures")
@@ -76,13 +79,17 @@ class RegressionCorpusBenchmarkTest {
         val mark = TimeSource.Monotonic.markNow()
         val result = KleadParser.parseHtml(
             html = fixture.html,
-            url = FixtureLoader.extractUrl(fixture.name, fixture.html),
+            url = fixture.url,
             options = options,
             parserDispatcher = dispatcher,
         )
         val elapsedMicros = mark.elapsedNow().inWholeMicroseconds
-        assertTrue(result.content.requireHtml().isNotBlank(), "${fixture.name} produced empty HTML")
-        assertTrue(result.content.requireMarkdown().isNotBlank(), "${fixture.name} produced empty Markdown")
+        if (fixture.expectsHtml) {
+            assertTrue(result.content.requireHtml().isNotBlank(), "${fixture.name} produced empty HTML")
+        }
+        if (fixture.expectsMarkdown) {
+            assertTrue(result.content.requireMarkdown().isNotBlank(), "${fixture.name} produced empty Markdown")
+        }
         FixtureTiming(
             name = fixture.name,
             elapsedMicros = elapsedMicros,
@@ -161,7 +168,21 @@ class RegressionCorpusBenchmarkTest {
 
     private fun Long.microsToMillis(): Long = (this + MICROS_PER_MILLISECOND / 2) / MICROS_PER_MILLISECOND
 
-    private data class FixtureInput(val name: String, val html: String, val inputBytes: Long, val isCore: Boolean)
+    // Fixtures whose expected snapshot is empty (consent walls, pages with nothing to extract) may produce
+    // empty output; one without a snapshot keeps the non-empty check.
+    private fun expectsOutput(snapshotPath: String): Boolean =
+        snapshotPath !in CommonTestResources.paths || CommonTestResources.read(snapshotPath).isNotBlank()
+
+    private data class FixtureInput(
+        val name: String,
+        val html: String,
+        val inputBytes: Long,
+        val isCore: Boolean,
+        val expectsHtml: Boolean,
+        val expectsMarkdown: Boolean,
+        // Worked out when loading, outside the timed parse.
+        val url: String,
+    )
 
     private data class FixtureTiming(
         val name: String,
@@ -189,6 +210,8 @@ class RegressionCorpusBenchmarkTest {
         const val INPUT_DIRECTORY = "fixtures/regressions/input-html/"
         const val CORE_MANIFEST_PATH = "fixtures/regressions/performance-core.txt"
         const val HTML_SUFFIX = ".html"
+        const val EXPECTED_HTML_DIRECTORY = "fixtures/regressions/expected-html/"
+        const val EXPECTED_MARKDOWN_DIRECTORY = "fixtures/regressions/expected-markdown/"
         const val RUN_BENCHMARK_ENV = "KLEAD_RUN_REGRESSION_BENCHMARK"
         const val PLATFORM_ENV = "KLEAD_BENCHMARK_PLATFORM"
         const val TARGET_ENV = "KLEAD_BENCHMARK_TARGET"

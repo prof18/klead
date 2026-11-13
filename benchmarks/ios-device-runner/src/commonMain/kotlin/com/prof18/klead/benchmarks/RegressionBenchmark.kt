@@ -13,7 +13,16 @@ internal data class BenchmarkFixture(
     val html: String,
     val inputBytes: Long,
     val isCore: Boolean,
-)
+    // False when the fixture's expected snapshot is empty, as for consent walls that yield no content.
+    val expectsHtml: Boolean = true,
+    val expectsMarkdown: Boolean = true,
+) {
+    // Worked out once, outside the timed parse.
+    val url: String = sourceUrl(name, html)
+}
+
+// A fixture without an expected snapshot keeps the non-empty check.
+internal fun expectsOutput(expectedSnapshot: String?): Boolean = expectedSnapshot?.isNotBlank() ?: true
 
 internal data class RegressionBenchmarkConfig(
     val platform: String,
@@ -92,12 +101,16 @@ internal class RegressionBenchmark(
         val mark = TimeSource.Monotonic.markNow()
         val result = Klead.parseHtml(
             html = fixture.html,
-            url = sourceUrl(fixture.name, fixture.html),
+            url = fixture.url,
             options = options,
         )
         val elapsedMicros = mark.elapsedNow().inWholeMicroseconds
-        require(result.content.requireHtml().isNotBlank()) { "${fixture.name} produced empty HTML" }
-        require(result.content.requireMarkdown().isNotBlank()) { "${fixture.name} produced empty Markdown" }
+        require(!fixture.expectsHtml || result.content.requireHtml().isNotBlank()) {
+            "${fixture.name} produced empty HTML"
+        }
+        require(!fixture.expectsMarkdown || result.content.requireMarkdown().isNotBlank()) {
+            "${fixture.name} produced empty Markdown"
+        }
         FixtureTiming(
             name = fixture.name,
             elapsedMicros = elapsedMicros,
@@ -195,6 +208,8 @@ private data class CorpusMetrics(
 internal const val INPUT_DIRECTORY = "fixtures/regressions/input-html/"
 internal const val CORE_MANIFEST_PATH = "fixtures/regressions/performance-core.txt"
 internal const val HTML_SUFFIX = ".html"
+internal const val EXPECTED_HTML_DIRECTORY = "fixtures/regressions/expected-html/"
+internal const val EXPECTED_MARKDOWN_DIRECTORY = "fixtures/regressions/expected-markdown/"
 
 private const val DEFAULT_SAMPLE_COUNT = 5
 private const val MAX_SAMPLE_COUNT = 15

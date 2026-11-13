@@ -1,8 +1,11 @@
 package com.prof18.klead.benchmarks
 
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class RegressionBenchmarkTest {
     @Test
@@ -47,6 +50,37 @@ class RegressionBenchmarkTest {
 
         assertEquals("https://example.com/article", sourceUrl("fixture", html))
     }
+
+    @Test
+    fun fixtureWithEmptySnapshotMayProduceEmptyOutput() = runTest {
+        val consentWall = BenchmarkFixture(
+            name = "consent-wall",
+            html = "",
+            inputBytes = 0,
+            isCore = true,
+            expectsHtml = expectsOutput(""),
+            expectsMarkdown = expectsOutput("\n"),
+        )
+
+        val result = RegressionBenchmark(singleSampleConfig, listOf(consentWall)).run()
+
+        assertNull(result.error)
+    }
+
+    @Test
+    fun fixtureWithContentSnapshotMustProduceOutput() = runTest {
+        val fixture = BenchmarkFixture(name = "article", html = "", inputBytes = 0, isCore = true)
+
+        assertTrue(expectsOutput(null))
+        assertTrue(expectsOutput("<p>Body</p>"))
+        assertFailsWith<IllegalArgumentException> {
+            RegressionBenchmark(singleSampleConfig, listOf(fixture)).run()
+        }
+    }
+
+    private val singleSampleConfig = RegressionBenchmarkConfig.fromEnvironment(
+        mapOf("KLEAD_BENCHMARK_PLATFORM" to "test", "KLEAD_BENCHMARK_SAMPLES" to "1")::get,
+    )
 
     @Test
     fun fallsBackToFixtureNameForSourceUrl() {

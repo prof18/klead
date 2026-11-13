@@ -53,6 +53,9 @@ class AndroidRegressionCorpusBenchmarkTest {
                     html = html,
                     inputBytes = html.toByteArray(Charsets.UTF_8).size.toLong(),
                     isCore = name in coreFixtureNames,
+                    expectsHtml = expectsOutput("$EXPECTED_HTML_DIRECTORY/$name$HTML_SUFFIX"),
+                    expectsMarkdown = expectsOutput("$EXPECTED_MARKDOWN_DIRECTORY/$name.md"),
+                    url = sourceUrl(name, html),
                 )
             }
             val missingCoreFixtures = coreFixtureNames - fixtures.map(FixtureInput::name).toSet()
@@ -106,10 +109,14 @@ class AndroidRegressionCorpusBenchmarkTest {
     private suspend fun parseCorpus(fixtures: List<FixtureInput>, options: KleadOptions): List<FixtureTiming> =
         fixtures.map { fixture ->
             val startNanos = SystemClock.elapsedRealtimeNanos()
-            val result = Klead.parseHtml(fixture.html, sourceUrl(fixture.name, fixture.html), options)
+            val result = Klead.parseHtml(fixture.html, fixture.url, options)
             val elapsedMicros = (SystemClock.elapsedRealtimeNanos() - startNanos) / NANOS_PER_MICROSECOND
-            assertTrue("${fixture.name} produced empty HTML", result.content.requireHtml().isNotBlank())
-            assertTrue("${fixture.name} produced empty Markdown", result.content.requireMarkdown().isNotBlank())
+            if (fixture.expectsHtml) {
+                assertTrue("${fixture.name} produced empty HTML", result.content.requireHtml().isNotBlank())
+            }
+            if (fixture.expectsMarkdown) {
+                assertTrue("${fixture.name} produced empty Markdown", result.content.requireMarkdown().isNotBlank())
+            }
             FixtureTiming(
                 name = fixture.name,
                 elapsedMicros = elapsedMicros,
@@ -117,6 +124,11 @@ class AndroidRegressionCorpusBenchmarkTest {
                 isCore = fixture.isCore,
             )
         }
+
+    // Fixtures whose expected snapshot is empty may produce empty output; one without a snapshot keeps the check.
+    private fun expectsOutput(snapshotPath: String): Boolean =
+        javaClass.classLoader?.getResourceAsStream(snapshotPath)?.bufferedReader()?.use { it.readText().isNotBlank() }
+            ?: true
 
     private fun readResource(path: String): String = requireNotNull(javaClass.classLoader?.getResourceAsStream(path)) {
         "Missing Android benchmark resource: $path"
@@ -181,7 +193,16 @@ class AndroidRegressionCorpusBenchmarkTest {
 
     private fun Long.microsToMillis(): Long = (this + MICROS_PER_MILLISECOND / 2) / MICROS_PER_MILLISECOND
 
-    private data class FixtureInput(val name: String, val html: String, val inputBytes: Long, val isCore: Boolean)
+    private data class FixtureInput(
+        val name: String,
+        val html: String,
+        val inputBytes: Long,
+        val isCore: Boolean,
+        val expectsHtml: Boolean,
+        val expectsMarkdown: Boolean,
+        // Worked out when loading, outside the timed parse.
+        val url: String,
+    )
 
     private data class FixtureTiming(
         val name: String,
@@ -208,6 +229,8 @@ class AndroidRegressionCorpusBenchmarkTest {
         const val MAX_SAMPLE_COUNT = 15
         const val SLOW_REPORT_LIMIT = 12
         const val INPUT_DIRECTORY = "fixtures/regressions/input-html"
+        const val EXPECTED_HTML_DIRECTORY = "fixtures/regressions/expected-html"
+        const val EXPECTED_MARKDOWN_DIRECTORY = "fixtures/regressions/expected-markdown"
         const val CORE_MANIFEST_PATH = "fixtures/regressions/performance-core.txt"
         const val HTML_SUFFIX = ".html"
         const val PLATFORM_ARGUMENT = "KLEAD_BENCHMARK_PLATFORM"

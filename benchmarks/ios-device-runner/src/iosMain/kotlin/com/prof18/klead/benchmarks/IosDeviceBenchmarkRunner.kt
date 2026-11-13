@@ -3,6 +3,7 @@ package com.prof18.klead.benchmarks
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.toKString
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,7 +23,8 @@ class IosDeviceBenchmarkRunner {
 
     fun start(completion: (output: String?, error: String?) -> Unit) {
         scope.launch {
-            runCatching {
+            // Not runCatching: a cancelled run must stay cancelled instead of reporting a failure.
+            try {
                 require(environment(RUN_BENCHMARK_ENV) == "true") {
                     "$RUN_BENCHMARK_ENV must be true"
                 }
@@ -48,6 +50,8 @@ class IosDeviceBenchmarkRunner {
                             html = html,
                             inputBytes = html.encodeToByteArray().size.toLong(),
                             isCore = name in coreFixtureSet,
+                            expectsHtml = expectsOutput(resources.readOrNull("$EXPECTED_HTML_DIRECTORY$name.html")),
+                            expectsMarkdown = expectsOutput(resources.readOrNull("$EXPECTED_MARKDOWN_DIRECTORY$name.md")),
                         )
                     }
                 val missingCoreFixtures = coreFixtureSet - fixtures.map(BenchmarkFixture::name).toSet()
@@ -55,14 +59,16 @@ class IosDeviceBenchmarkRunner {
                 require(missingCoreFixtures.isEmpty()) {
                     "$CORE_MANIFEST_PATH references missing fixtures: ${missingCoreFixtures.sorted()}"
                 }
-                RegressionBenchmark(
+                val result = RegressionBenchmark(
                     config = RegressionBenchmarkConfig.fromEnvironment(::environment),
                     fixtures = fixtures,
                 ).run()
-            }.fold(
-                onSuccess = { result -> completion(result.output, result.error) },
-                onFailure = { failure -> completion(null, failure.stackTraceToString()) },
-            )
+                completion(result.output, result.error)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (failure: Throwable) {
+                completion(null, failure.stackTraceToString())
+            }
         }
     }
 
@@ -80,6 +86,8 @@ private class BenchmarkResources {
         .orEmpty()
         .map { it.toString() }
         .toSet()
+
+    fun readOrNull(path: String): String? = if (path in paths) read(path) else null
 
     @OptIn(BetaInteropApi::class)
     fun read(path: String): String {
