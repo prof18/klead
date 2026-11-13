@@ -1,5 +1,9 @@
 package com.prof18.klead
 
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.dom.MAX_DOM_DEPTH
+import com.prof18.klead.internal.standardize.HtmlStandardizer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
@@ -43,10 +47,37 @@ class DeepNestingRobustnessTest {
         expected = "Lead paragraph",
     )
 
-    private fun nest(open: String, close: String, inner: String = DEEP_TEXT) = buildString {
-        repeat(DEPTH) { append(open) }
+    // 63 levels stay under the parse-time cap, but each alert gains a callout-content wrapper.
+    @Test
+    fun `nested alerts`() = assertSurvives(nest("<div class=\"alert\">", "</div>", depth = 63))
+
+    @Test
+    fun `nested alerts stay within the depth cap after standardizing`() {
+        val content = Ksoup.parse(
+            "<article><p>Lead paragraph</p>" + nest("<div class=\"alert\">", "</div>", depth = 63) + "</article>",
+        ).selectFirst("article")!!
+
+        HtmlStandardizer.apply(content, title = null)
+
+        assertTrue(content.maxDepth() <= MAX_DOM_DEPTH, "depth ${content.maxDepth()} passed the cap")
+        assertTrue(content.text().contains(DEEP_TEXT))
+    }
+
+    private fun Element.maxDepth(): Int {
+        var deepest = 0
+        val pending = ArrayDeque(listOf(this to 0))
+        while (pending.isNotEmpty()) {
+            val (element, depth) = pending.removeAt(pending.lastIndex)
+            deepest = maxOf(deepest, depth)
+            element.children().forEach { pending.addLast(it to depth + 1) }
+        }
+        return deepest
+    }
+
+    private fun nest(open: String, close: String, inner: String = DEEP_TEXT, depth: Int = DEPTH) = buildString {
+        repeat(depth) { append(open) }
         append(inner)
-        repeat(DEPTH) { append(close) }
+        repeat(depth) { append(close) }
     }
 
     private fun assertSurvives(body: String, head: String = "", expected: String = DEEP_TEXT) {

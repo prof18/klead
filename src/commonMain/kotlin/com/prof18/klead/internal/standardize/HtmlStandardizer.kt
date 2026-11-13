@@ -16,6 +16,8 @@ internal object HtmlStandardizer {
             { content.limitDepth() },
             { HtmlEmbedNormalizer.normalizeEmbeds(content) },
             { HtmlCalloutNormalizer.normalizeCallouts(content) },
+            // Each callout gains a content wrapper, so nested callouts can double the depth after the cap.
+            { content.limitDepth() },
             { HtmlTitleNormalizer.normalizeHeadings(content, title) },
             { HtmlArxivNormalizer.normalize(content) },
             { HtmlChromeNormalizer.removeMetadataChrome(content) },
@@ -24,6 +26,8 @@ internal object HtmlStandardizer {
             { HtmlImageNormalizer.normalizeGalleryImageLists(content) },
             { HtmlImageNormalizer.normalizeImageAspectPlaceholders(content) },
             { HtmlFootnoteNormalizer.normalizeFootnotes(content, checkCancelled) },
+            // Footnote lists are wrapped again (section, list, item), which can also pass the cap.
+            { content.limitDepth() },
             { HtmlChromeNormalizer.removeTrailingSectionHeadings(content) },
             { normalizeTables(content) },
             { removeEmptySvgElements(content) },
