@@ -3798,6 +3798,22 @@ class RemovalPipelineTest {
         assertTrue(elapsed.inWholeSeconds < 5, "2,000 checks took $elapsed")
     }
 
+    @Test
+    fun `removal rules never detach the content root`() {
+        listOf(
+            "<div id=\"root\"><h2>Related articles</h2></div>",
+            "<div id=\"root\"><a href=\"/a\">A</a> <a href=\"/b\">B</a> <a href=\"/c\">C</a></div>",
+            "<div id=\"root\" class=\"quiz\"><h2>Quiz time</h2><input type=\"radio\"><input type=\"radio\"></div>",
+        ).forEach { html ->
+            val content = Ksoup.parse("<html><body>$html</body></html>").getElementById("root")!!
+            val debug = mutableListOf<RemovalRecord>()
+
+            RemovalPipeline.apply(content, debug)
+
+            assertNotNull(content.parent(), "content was detached for $html")
+        }
+    }
+
     private fun mainSelectorOptions() = testOptions(customExtractors = listOf(MainSelectorExtractor))
 
     private object MainSelectorExtractor : Extractor {

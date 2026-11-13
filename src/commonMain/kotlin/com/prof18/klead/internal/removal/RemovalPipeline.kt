@@ -140,6 +140,7 @@ internal object RemovalPipeline {
         // an unrelated form elsewhere in the body supplies two checkboxes.
         for (element in content.select(INTERACTIVE_QUIZ_CONTAINER_SELECTOR)) {
             checkCancelled()
+            if (element === content) continue
             if (
                 INTERACTIVE_QUIZ_PATTERN.containsMatchIn(partialHaystack(element)) &&
                 element !in quizContainers &&
@@ -221,7 +222,8 @@ internal object RemovalPipeline {
     ) {
         for (element in content.select("section, aside, div, ul, ol").toList()) {
             checkCancelled()
-            if (!element.isAttachedTo(content)) continue
+            // The selection includes the root; removing it would only leave a misleading removal record.
+            if (element === content || !element.isAttachedTo(content)) continue
             // Skip elements inside table cells — a cell's content is structural, not a
             // standalone navigation block, and removing it leaves the table malformed.
             // The table itself isn't scored here, so genuine nav tables are unaffected.
@@ -359,7 +361,7 @@ internal object RemovalPipeline {
         val tooFewCards = HashSet<Element>()
         for (headingBlock in content.select("h1, h2, h3, h4, h5, h6, div, p, section").toList()) {
             checkCancelled()
-            if (!headingBlock.isAttachedTo(content)) continue
+            if (headingBlock === content || !headingBlock.isAttachedTo(content)) continue
             if (!isRecommendationSectionHeadingBlock(BlockScan(headingBlock))) continue
 
             val enclosingBlock = headingBlock.enclosingRecommendationBlock(content, tooFewCards)
@@ -431,8 +433,6 @@ internal object RemovalPipeline {
         return enough
     }
 
-    private fun Element.startsWithHeadingBlock(headingBlock: Element): Boolean {
-        val firstChild = firstChildElementWithText() ?: return false
     // Indexes the child list and stops at the first element with text, usually the first child: children()
     // and childNodes() copy the whole list, which for every heading in one wrapper was quadratic.
     private fun Element.firstChildElementWithText(): Element? {
@@ -443,6 +443,8 @@ internal object RemovalPipeline {
         return null
     }
 
+    private fun Element.startsWithHeadingBlock(headingBlock: Element): Boolean {
+        val firstChild = firstChildElementWithText() ?: return false
         return firstChild === headingBlock || headingBlock.parents().any { it === firstChild }
     }
 
