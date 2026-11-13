@@ -20,3 +20,5 @@ private val testResourcesRoot: File by lazy {
 }
 
 private const val TEST_RESOURCES_ROOT = "TEST_RESOURCES_ROOT"
+
+internal actual val growthTestSizeDivisor: Int = 1

@@ -1,5 +1,6 @@
 package com.prof18.klead
 
+import com.prof18.klead.fixtures.growthTestSizeDivisor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
@@ -351,8 +352,9 @@ class PathologicalInputPerformanceTest {
     private fun repeatIndexed(count: Int, item: (Int) -> String) = buildString { repeat(count) { append(item(it)) } }
 
     private fun assertScalesLinearly(n: Int, url: String = "https://example.com/pathological", html: (Int) -> String) {
-        val small = html(n)
-        val large = html(n * GROWTH_STEP)
+        val size = (n / growthTestSizeDivisor).coerceAtLeast(1)
+        val small = html(size)
+        val large = html(size * GROWTH_STEP)
         fun best(page: String, runs: Int) = (1..runs).minOf {
             measureTime {
                 runBlocking(Dispatchers.Default) { Klead.parseHtml(page, url, testOptions()) }
