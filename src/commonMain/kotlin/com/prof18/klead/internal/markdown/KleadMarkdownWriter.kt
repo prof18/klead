@@ -3,6 +3,7 @@ package com.prof18.klead.internal.markdown
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isDangerousUrl
 import com.prof18.klead.internal.dom.resolveUrl
@@ -429,7 +430,8 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
 
     private fun renderTable(element: Element): String {
         if (element.select("th, td").all { it.text().trim().isBlank() }) return ""
-        if (element.selectFirst("table table") != null || element.select("th, td").any { it.hasComplexSpan() }) {
+        val hasNestedTable = element.selectFirst(NESTED_TABLE_EVALUATOR) != null
+        if (hasNestedTable || element.select("th, td").any { it.hasComplexSpan() }) {
             // Only this table's rows and cells: a nested table's text is already in its enclosing cell.
             return element.select("tr").filter { it.closest("table") === element }.joinToString("\n") { row ->
                 row.children().filter { it.normalName() == "th" || it.normalName() == "td" }
@@ -484,9 +486,7 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
         footnoteHeading = root.select("section[data-footnotes]").firstOrNull()
             ?.directFootnoteHeadingMarkdown()
 
-        val items = root.select(
-            "section[data-footnotes] li[id], ol.footnotes li[id], ol[class*=footnote] li[id], ol.references li[id]",
-        )
+        val items = root.select(FOOTNOTE_ITEM_EVALUATOR)
         val reservedIds = items.map { cleanFootnoteId(it.id()) }
             .filter { it.matches(footnoteNumberPattern) }.toSet()
         items.forEachIndexed { index, item ->
@@ -552,3 +552,9 @@ private class Renderer(private val baseUrl: String, private val checkCancelled: 
 
 // Above this many cells a ragged table keeps its short body rows unpadded.
 private const val MAX_PADDED_TABLE_CELLS = 100_000L
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val NESTED_TABLE_EVALUATOR = QueryParser.parse("table table")
+private val FOOTNOTE_ITEM_EVALUATOR = QueryParser.parse(
+    "section[data-footnotes] li[id], ol.footnotes li[id], ol[class*=footnote] li[id], ol.references li[id]",
+)

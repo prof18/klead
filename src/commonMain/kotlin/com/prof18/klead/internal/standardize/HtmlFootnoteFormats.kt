@@ -2,6 +2,7 @@ package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.internal.dom.deepCopy
 
 // One converter per publishing format: each rewrites that format's footnote markup into the
@@ -165,7 +166,7 @@ internal object HtmlFootnoteFormats {
             label.replaceWith(sup)
         }
 
-        content.selectDescendants("sup.footnote-reference + span.sidenote").forEach { it.remove() }
+        content.selectDescendants(SIDENOTE_AFTER_REFERENCE_EVALUATOR).forEach { it.remove() }
     }
 
     fun normalizeOrgModeFootdefs(content: Element) {
@@ -217,11 +218,11 @@ internal object HtmlFootnoteFormats {
     }
 
     fun normalizeWikidotFootnotes(content: Element) {
-        val definitions = content.selectDescendants(".footnotes-footer .footnote-footer[id]").toList()
+        val definitions = content.selectDescendants(FOOTNOTE_FOOTER_EVALUATOR).toList()
         if (definitions.isEmpty()) return
 
         val definitionIds = definitions.map { it.id() }.toSet()
-        content.selectDescendants("sup.footnoteref a, a.footnoteref").forEach { link ->
+        content.selectDescendants(FOOTNOTEREF_LINK_EVALUATOR).forEach { link ->
             val target = link.wikidotFootnoteTarget()
             if (target != null && target in definitionIds) {
                 link.normalizeFootnoteReferenceLink(target)
@@ -232,7 +233,7 @@ internal object HtmlFootnoteFormats {
         definitions.forEach { definition ->
             val item = Element("li").attr("id", definition.id())
             val clone = definition.deepCopy()
-            clone.select("> a:first-child").remove()
+            clone.select(FIRST_CHILD_LINK_EVALUATOR).remove()
             clone.removeLeadingFootnoteDefinitionPunctuation()
             clone.childNodes().toList().forEach { item.appendChild(it) }
             section.appendChild(item)
@@ -242,7 +243,7 @@ internal object HtmlFootnoteFormats {
 
     fun normalizeDhammatalksFootnotes(content: Element) {
         val notes = content.selectDescendants("div.note").filter { note ->
-            note.select("> p[id]").any { it.id().matches(DHAMMATALKS_NOTE_ID_PATTERN) }
+            note.select(CHILD_PARAGRAPH_WITH_ID_EVALUATOR).any { it.id().matches(DHAMMATALKS_NOTE_ID_PATTERN) }
         }
         if (notes.isEmpty()) return
 
@@ -258,13 +259,13 @@ internal object HtmlFootnoteFormats {
         }
     }
 
-    private fun Element.dhammatalksDefinitionIds(): Set<String> = select("> p[id]")
+    private fun Element.dhammatalksDefinitionIds(): Set<String> = select(CHILD_PARAGRAPH_WITH_ID_EVALUATOR)
         .filter { it.id().matches(DHAMMATALKS_NOTE_ID_PATTERN) }
         .map { it.id() }
         .toSet()
 
     private fun Element.normalizeDhammatalksReferences(definitionIds: Set<String>) {
-        select("span.fn a[href], a[href]").forEach { link ->
+        select(DHAMMATALKS_LINK_EVALUATOR).forEach { link ->
             val target = link.hrefFragmentTarget()
             if (target != null && target in definitionIds) {
                 link.replaceWithFootnoteReference(target)
@@ -401,5 +402,13 @@ internal object HtmlFootnoteFormats {
     private val TRAILING_PERIOD_PATTERN = Regex("""\.\s*$""")
     private val DHAMMATALKS_NOTE_ID_PATTERN = Regex("""(?i).+note\d{1,4}$""")
     private val wikidotFootnoteRefIdPattern = Regex("""footnoteref-(\d+)""")
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val SIDENOTE_AFTER_REFERENCE_EVALUATOR = QueryParser.parse("sup.footnote-reference + span.sidenote")
+private val FOOTNOTE_FOOTER_EVALUATOR = QueryParser.parse(".footnotes-footer .footnote-footer[id]")
+private val FOOTNOTEREF_LINK_EVALUATOR = QueryParser.parse("sup.footnoteref a, a.footnoteref")
+private val FIRST_CHILD_LINK_EVALUATOR = QueryParser.parse("> a:first-child")
+private val CHILD_PARAGRAPH_WITH_ID_EVALUATOR = QueryParser.parse("> p[id]")
+private val DHAMMATALKS_LINK_EVALUATOR = QueryParser.parse("span.fn a[href], a[href]")
     private val wikidotFootnoteScrollTargetPattern = Regex("""scrollToReference\(['"]([^'"]+)['"]\)""")
 }

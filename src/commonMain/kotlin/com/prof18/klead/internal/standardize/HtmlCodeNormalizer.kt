@@ -3,6 +3,7 @@ package com.prof18.klead.internal.standardize
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.internal.dom.deepCopy
 
 internal object HtmlCodeNormalizer {
@@ -38,7 +39,7 @@ internal object HtmlCodeNormalizer {
             }
         }
         // Replace each wrapping <code> with its <pre> children, keeping all of them when there are several.
-        content.select("code > pre").mapNotNull { it.parent() }.distinct().forEach { code ->
+        content.select(PRE_IN_CODE_EVALUATOR).mapNotNull { it.parent() }.distinct().forEach { code ->
             val parent = code.parent() ?: return@forEach
             val pres = code.children().filter { it.normalName() == "pre" }
             parent.insertChildren(code.siblingIndex(), pres)
@@ -166,10 +167,10 @@ internal object HtmlCodeNormalizer {
     }
 
     private fun normalizeCodeTables(content: Element) {
-        content.select("table.lntable, table.rouge-table, figure.highlight table").forEach { table ->
-            val codeSource = table.selectFirst("td.rouge-code pre")
-                ?: table.selectFirst("td.code pre")
-                ?: table.select("td.lntd pre").lastOrNull()
+        content.select(CODE_TABLE_EVALUATOR).forEach { table ->
+            val codeSource = table.selectFirst(ROUGE_CODE_PRE_EVALUATOR)
+                ?: table.selectFirst(CODE_CELL_PRE_EVALUATOR)
+                ?: table.select(LNTD_PRE_EVALUATOR).lastOrNull()
                 ?: return@forEach
             val code = codeSource.selectFirst("code")
             val language = code?.let(::languageFrom)
@@ -400,3 +401,10 @@ internal object HtmlCodeNormalizer {
         "typeset",
     )
 }
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val PRE_IN_CODE_EVALUATOR = QueryParser.parse("code > pre")
+private val CODE_TABLE_EVALUATOR = QueryParser.parse("table.lntable, table.rouge-table, figure.highlight table")
+private val ROUGE_CODE_PRE_EVALUATOR = QueryParser.parse("td.rouge-code pre")
+private val CODE_CELL_PRE_EVALUATOR = QueryParser.parse("td.code pre")
+private val LNTD_PRE_EVALUATOR = QueryParser.parse("td.lntd pre")

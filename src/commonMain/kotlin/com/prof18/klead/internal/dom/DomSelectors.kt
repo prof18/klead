@@ -1,6 +1,8 @@
 package com.prof18.klead.internal.dom
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.Evaluator
+import com.fleeksoft.ksoup.select.QueryParser
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 
@@ -33,6 +35,23 @@ internal fun Element.closestSafe(selector: String): Element? {
 
 internal fun Element.childrenMatching(selector: String): List<Element> = childrenElements().filter {
     it.matchesSafe(selector)
+}
+
+// Parsed selectors shared across parses. On Kotlin/Native every evaluator with a combinator or :has/:not
+// keeps a per-thread memo slot (Stately ThreadLocalRef) that is never released, so parsing the same selector
+// string on every call retained hundreds of bytes per call for the life of the thread. Selector strings come
+// from code and extractor definitions, so the cache stays small; past the cap a selector is parsed per call.
+internal object ParsedSelectors {
+    private const val MAX_CACHED_SELECTORS = 1_024
+    private val cache = HashMap<String, Evaluator>()
+    private val lock = SynchronizedObject()
+
+    operator fun get(selector: String): Evaluator = synchronized(lock) { cache[selector] } ?: run {
+        val evaluator = QueryParser.parse(selector)
+        synchronized(lock) {
+            if (cache.size < MAX_CACHED_SELECTORS) cache.getOrPut(selector) { evaluator } else evaluator
+        }
+    }
 }
 
 internal object SelectorDiagnostics {
@@ -71,7 +90,7 @@ private fun Element.selectSingleSafe(selector: String): List<Element> {
         return selectScopeDirect(selector)
     }
 
-    return runCatching { select(selector).toList() }
+    return runCatching { select(ParsedSelectors[selector]).toList() }
         .getOrElse {
             SelectorDiagnostics.recordUnsupported(selector)
             emptyList()
@@ -85,7 +104,7 @@ private fun Element.matchesSingleSafe(selector: String): Boolean {
         return matches(attrSelector)
     }
 
-    return runCatching { this.`is`(selector) }
+    return runCatching { this.`is`(ParsedSelectors[selector]) }
         .getOrElse {
             SelectorDiagnostics.recordUnsupported(selector)
             false
@@ -116,7 +135,7 @@ private fun Element.knownHasFallback(selector: String): List<Element>? = when (s
         .filter { !it.hasAttr("src") && it.selectFirst("source") == null }
 
     "header:not(:has(p + p)):not(:has(img))" -> select("header")
-        .filter { it.selectFirst("p + p") == null && it.selectFirst("img") == null }
+        .filter { it.selectFirst(ADJACENT_PARAGRAPHS) == null && it.selectFirst("img") == null }
 
     "span:has(img)" -> select("span")
         .filter { it.selectFirst("img") != null }
@@ -192,3 +211,5 @@ private fun String.splitSelectorList(): List<String> {
     parts += substring(start).trim()
     return parts.filter { it.isNotBlank() }
 }
+
+private val ADJACENT_PARAGRAPHS = QueryParser.parse("p + p")

@@ -3,6 +3,7 @@ package com.prof18.klead.internal.standardize
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isAttachedTo
 import com.prof18.klead.internal.dom.removeAllBatched
@@ -109,11 +110,11 @@ internal object HtmlFootnoteListNormalizer {
         var itemCount = section.childrenSize()
         definitions.forEach { definition ->
             val id = definition.id().ifBlank {
-                definition.selectFirst(".footnote-definition-label")?.text()?.trim()?.let { "fn$it" }
-                    ?: definition.selectFirst("[id]")?.id()
+                definition.selectFirst(DEFINITION_LABEL_EVALUATOR)?.text()?.trim()?.let { "fn$it" }
+                    ?: definition.selectFirst(WITH_ID_EVALUATOR)?.id()
                     ?: ""
             }
-            definition.select(".footnote-definition-label").remove()
+            definition.select(DEFINITION_LABEL_EVALUATOR).remove()
             definition.removeFootnoteBackrefs()
             val item = Element("li").attr("id", id.ifBlank { "fn${itemCount + 1}" })
             item.appendChildren(definition.childNodes().toList())
@@ -125,12 +126,12 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeAsideFootnoteLists(content: Element) {
-        content.selectDescendants("aside ol").forEach { list ->
+        content.selectDescendants(ASIDE_LIST_EVALUATOR).forEach { list ->
             if (list.parent()?.hasAttr("data-footnotes") == true) return@forEach
-            if (list.select("> li").isEmpty()) return@forEach
+            if (list.select(CHILD_ITEM_EVALUATOR).isEmpty()) return@forEach
             val start = list.attr("start").toIntOrNull() ?: 1
             val section = lazyFootnoteSection(content)
-            list.select("> li").forEachIndexed { index, item ->
+            list.select(CHILD_ITEM_EVALUATOR).forEachIndexed { index, item ->
                 if (item.id().isBlank()) {
                     item.attr("id", "fn${start + index}")
                 }
@@ -142,7 +143,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeReferenceDivFootnotes(content: Element) {
-        val references = content.selectDescendants(".references .reference").filter {
+        val references = content.selectDescendants(REFERENCE_ITEM_EVALUATOR).filter {
             it.selectFirst(".reference-number[id], [id].reference-number") != null &&
                 it.selectFirst(".reference-content") != null
         }
@@ -170,7 +171,7 @@ internal object HtmlFootnoteListNormalizer {
         content.selectDescendants("ol").forEach { list ->
             if (list.parent()?.hasAttr("data-footnotes") == true) return@forEach
             if (!list.isReferenceFootnoteList()) return@forEach
-            list.select("> li").forEachIndexed { index, item ->
+            list.select(CHILD_ITEM_EVALUATOR).forEachIndexed { index, item ->
                 if (item.id().isBlank()) {
                     val nestedId = item.selectFirst("[id]")?.id().orEmpty()
                     item.attr("id", nestedId.ifBlank { "fn${index + 1}" })
@@ -192,10 +193,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     fun normalizeFootnoteLists(content: Element) {
-        content.selectDescendants(
-            "ol.footnotes, ol.references, ol[class*=footnote], ol[id*=footnote], ol[id*=fn], " +
-                "section[data-footnotes] ol, .footnotes ol",
-        ).forEach { list ->
+        content.selectDescendants(FOOTNOTE_LIST_EVALUATOR).forEach { list ->
             if (list.parent()?.hasAttr("data-footnotes") == true) return@forEach
             list.select("li").forEachIndexed { index, item ->
                 if (item.id().isBlank()) {
@@ -273,19 +271,14 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     private fun Element.removeFootnoteBackrefs() {
-        select(
-            "a[href*=fnref], a[href*=ftnt_ref], a[href*=_ftnref], a[class*=backref], a[class*=to-top], " +
-                "a[href*=FnAnchor], a[href*=-link], a[aria-label*=Back], a[aria-label*=back], " +
-                "a[aria-label*=Jump], a[aria-label*=jump], " +
-                ".footnote-backref, .footnote-back-link, .data-footnote-backref",
-        ).remove()
+        select(BACKREF_LINK_EVALUATOR).remove()
         // Return arrows are often the only thing marking a backref — the link itself can be a bare
         // "#" with the navigation done in an onclick handler.
-        select("a").filter { BACKREF_SYMBOL_PATTERN.matches(it.text().trim()) }.forEach { link ->
+        select(LINK_EVALUATOR).filter { BACKREF_SYMBOL_PATTERN.matches(it.text().trim()) }.forEach { link ->
             val wrapper = link.parent()
             if (wrapper?.normalName() == "sup" && wrapper.childrenSize() == 1) wrapper.remove() else link.remove()
         }
-        select(".easy-footnote-margin-adjust").remove()
+        select(MARGIN_ADJUST_EVALUATOR).remove()
     }
 
     private fun Element.isLooseFootnoteDelimiter(): Boolean =
@@ -413,7 +406,7 @@ internal object HtmlFootnoteListNormalizer {
     }
 
     private fun Element.isReferenceFootnoteList(): Boolean {
-        if (select("> li[id], > li [id]").isEmpty()) return false
+        if (select(CHILD_ITEM_WITH_ID_EVALUATOR).isEmpty()) return false
         val previous = previousElementSibling()
         return previous != null &&
             previous.normalName().matches(HEADING_TAG_PATTERN) &&
@@ -430,3 +423,25 @@ internal object HtmlFootnoteListNormalizer {
     private val FOOTNOTE_MARKER_TAGS = setOf("sup", "strong", "b")
     private val BACKREF_SYMBOL_PATTERN = Regex("""[\^↩↥↑↵⤴⤵⏎︎]+""")
 }
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val ASIDE_LIST_EVALUATOR = QueryParser.parse("aside ol")
+private val CHILD_ITEM_EVALUATOR = QueryParser.parse("> li")
+private val REFERENCE_ITEM_EVALUATOR = QueryParser.parse(".references .reference")
+private val CHILD_ITEM_WITH_ID_EVALUATOR = QueryParser.parse("> li[id], > li [id]")
+private val FOOTNOTE_LIST_EVALUATOR = QueryParser.parse(
+    "ol.footnotes, ol.references, ol[class*=footnote], ol[id*=footnote], ol[id*=fn], " +
+        "section[data-footnotes] ol, .footnotes ol",
+)
+
+// Run once per footnote definition, so parsed once instead of per call.
+private val BACKREF_LINK_EVALUATOR = QueryParser.parse(
+    "a[href*=fnref], a[href*=ftnt_ref], a[href*=_ftnref], a[class*=backref], a[class*=to-top], " +
+        "a[href*=FnAnchor], a[href*=-link], a[aria-label*=Back], a[aria-label*=back], " +
+        "a[aria-label*=Jump], a[aria-label*=jump], " +
+        ".footnote-backref, .footnote-back-link, .data-footnote-backref",
+)
+private val LINK_EVALUATOR = QueryParser.parse("a")
+private val MARGIN_ADJUST_EVALUATOR = QueryParser.parse(".easy-footnote-margin-adjust")
+private val DEFINITION_LABEL_EVALUATOR = QueryParser.parse(".footnote-definition-label")
+private val WITH_ID_EVALUATOR = QueryParser.parse("[id]")

@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.select.QueryParser
 
 // Orchestrates footnote normalization: format-specific converters run first (their markup is
 // the most distinctive), then the generic list/definition collectors, then loose trailing
@@ -41,7 +42,7 @@ internal object HtmlFootnoteNormalizer {
 
     private fun wrapLooseFootnoteItems(content: Element) {
         content.selectDescendants("section[data-footnotes]").forEach { section ->
-            val items = section.select("> li").toList()
+            val items = section.select(CHILD_ITEM_EVALUATOR).toList()
             if (items.isEmpty()) return@forEach
 
             val list = Element("ol")
@@ -93,3 +94,6 @@ internal object HtmlFootnoteNormalizer {
         return "footnote" in hints || "footnotes" in hints || "ftnt" in hints
     }
 }
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val CHILD_ITEM_EVALUATOR = QueryParser.parse("> li")

@@ -2,6 +2,7 @@ package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.internal.dom.SMALL_IMAGE_MAX_DIMENSION
 import com.prof18.klead.internal.dom.hasLargeResponsiveSource
 import com.prof18.klead.internal.dom.removeAllBatched
@@ -88,7 +89,7 @@ internal object HtmlImageNormalizer {
         }
         removeAllBatched(removedPlaceholders)
 
-        content.select("a[href] > img").forEach { image ->
+        content.select(LINKED_IMAGE_EVALUATOR).forEach { image ->
             val link = image.parent() ?: return@forEach
             val duplicate = link.nextElementSibling()?.takeIf { it.normalName() == "img" } ?: return@forEach
             val href = link.attr("href").trim()
@@ -325,6 +326,9 @@ internal object HtmlImageNormalizer {
         val height = attr("height").trim().toIntOrNull()
         return width != null && height != null &&
             width in 1..SMALL_IMAGE_MAX_DIMENSION &&
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val LINKED_IMAGE_EVALUATOR = QueryParser.parse("a[href] > img")
             height in 1..SMALL_IMAGE_MAX_DIMENSION
     }
 
