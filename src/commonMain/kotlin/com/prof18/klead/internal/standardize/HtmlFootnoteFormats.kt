@@ -317,10 +317,9 @@ internal object HtmlFootnoteFormats {
         item.appendChild(this)
     }
 
+    // Wikidot's scrollToReference() onclick handler is stripped with every other on* attribute before
+    // this runs, so the reference id and the number are what is left to go on.
     private fun Element.wikidotFootnoteTarget(): String? {
-        wikidotFootnoteScrollTargetPattern.find(attr("onclick"))?.let { match ->
-            return match.groupValues[1]
-        }
         wikidotFootnoteRefIdPattern.matchEntire(id())?.let { match ->
             return "footnote-${match.groupValues[1]}"
         }
@@ -402,6 +401,7 @@ internal object HtmlFootnoteFormats {
     private val TRAILING_PERIOD_PATTERN = Regex("""\.\s*$""")
     private val DHAMMATALKS_NOTE_ID_PATTERN = Regex("""(?i).+note\d{1,4}$""")
     private val wikidotFootnoteRefIdPattern = Regex("""footnoteref-(\d+)""")
+}
 
 // Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
 private val SIDENOTE_AFTER_REFERENCE_EVALUATOR = QueryParser.parse("sup.footnote-reference + span.sidenote")
@@ -410,5 +410,3 @@ private val FOOTNOTEREF_LINK_EVALUATOR = QueryParser.parse("sup.footnoteref a, a
 private val FIRST_CHILD_LINK_EVALUATOR = QueryParser.parse("> a:first-child")
 private val CHILD_PARAGRAPH_WITH_ID_EVALUATOR = QueryParser.parse("> p[id]")
 private val DHAMMATALKS_LINK_EVALUATOR = QueryParser.parse("span.fn a[href], a[href]")
-    private val wikidotFootnoteScrollTargetPattern = Regex("""scrollToReference\(['"]([^'"]+)['"]\)""")
-}

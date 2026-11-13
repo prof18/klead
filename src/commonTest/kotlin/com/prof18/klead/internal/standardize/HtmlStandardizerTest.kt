@@ -1688,56 +1688,6 @@ class HtmlStandardizerTest {
     }
 
     @Test
-    fun `placeholder image uses sibling noscript image source`() {
-        val article = article(
-            """
-            <article>
-              <span>
-                <img alt="Architecture diagram." src="data:image/gif;base64,placeholder" data-nimg="intrinsic">
-                <noscript>
-                  <img alt="Architecture diagram." srcset="/images/architecture.png?imwidth=3840 1x" src="/images/architecture.png?imwidth=3840">
-                </noscript>
-              </span>
-            </article>
-            """.trimIndent(),
-        )
-
-        HtmlStandardizer.apply(article, title = null)
-
-        val image = article.selectFirst("img")
-        assertEquals("/images/architecture.png?imwidth=3840", image?.attr("src"))
-        assertEquals("/images/architecture.png?imwidth=3840 1x", image?.attr("srcset"))
-        assertTrue(article.outerHtml().contains(">Architecture diagram."), article.outerHtml())
-        assertFalse(article.outerHtml().contains("<noscript>"))
-    }
-
-    @Test
-    fun `placeholder noscript image variant is removed when preview image already exists`() {
-        val article = article(
-            """
-            <article>
-              <figure>
-                <div>
-                  <img src="https://cdn.example.com/max/60/hero.png?q=20" width="1200" height="800" role="presentation">
-                </div>
-                <img width="1200" height="800" role="presentation">
-                <noscript>
-                  <img src="https://cdn.example.com/max/2400/hero.png" width="1200" height="800" role="presentation">
-                </noscript>
-                <figcaption>Hero caption.</figcaption>
-              </figure>
-            </article>
-            """.trimIndent(),
-        )
-
-        HtmlStandardizer.apply(article, title = null)
-
-        assertEquals(1, article.select("img").size)
-        assertEquals("https://cdn.example.com/max/60/hero.png?q=20", article.selectFirst("img")?.attr("src"))
-        assertFalse(article.outerHtml().contains("<noscript>"))
-    }
-
-    @Test
     fun `unresolved placeholder images are removed while data image loader is promoted`() {
         val article = article(
             """

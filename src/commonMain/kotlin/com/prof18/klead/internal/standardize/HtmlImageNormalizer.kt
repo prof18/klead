@@ -43,8 +43,6 @@ internal object HtmlImageNormalizer {
                 "data-url",
                 "data-image-loader",
             )
-            val nextNoscript = image.nextElementSibling()?.takeIf { it.normalName() == "noscript" }
-            val noscriptReplacement = nextNoscript?.noscriptImage()
             if (pictureSourceSrcset != null) {
                 image.attr("srcset", pictureSourceSrcset)
             }
@@ -52,29 +50,11 @@ internal object HtmlImageNormalizer {
                 image.removeAttr("width")
                 image.removeAttr("height")
             }
-            if (isPlaceholderImage(image.attr("src")) ||
-                (replacement != null && isExternalPlaceholderImage(image.attr("src")))
+            // A sibling <noscript> fallback never reaches this point: ContentSanitizer removes every noscript first.
+            if (replacement != null &&
+                (isPlaceholderImage(image.attr("src")) || isExternalPlaceholderImage(image.attr("src")))
             ) {
-                when {
-                    replacement != null -> image.attr("src", replacement)
-
-                    noscriptReplacement != null && image.hasPriorImageVariant(noscriptReplacement) -> {
-                        nextNoscript.remove()
-                        image.remove()
-                        return@forEach
-                    }
-
-                    noscriptReplacement != null -> {
-                        firstAttr(noscriptReplacement, "srcset", "srcSet", "data-srcset")?.let {
-                            image.attr("srcset", it)
-                        }
-                        firstAttr(noscriptReplacement, "src", "data-src")?.let {
-                            image.attr("src", it)
-                        }
-                        image.addNoscriptAltCaption(noscriptReplacement)
-                        nextNoscript.remove()
-                    }
-                }
+                image.attr("src", replacement)
             }
             firstAttr(image, "data-srcset", "data-lazy-srcset")?.let { image.attr("srcset", it) }
             if (isPlaceholderImage(image.attr("src"))) {
@@ -295,73 +275,12 @@ internal object HtmlImageNormalizer {
         return ASPECT_PLACEHOLDER_PADDING_VALUE.matches(parts[1].trim())
     }
 
-    private fun Element.noscriptImage(): Element? =
-        selectFirst("img[src], img[srcset], img[srcSet], img[data-src], img[data-srcset]")
-
-    private fun Element.hasPriorImageVariant(replacement: Element): Boolean {
-        val replacementKey = replacement.imageVariantKey() ?: return false
-        val parent = parent() ?: return false
-        for (sibling in parent.children()) {
-            if (sibling === this) return false
-            if (sibling.imageVariantKeys().any { it == replacementKey }) return true
-        }
-        return false
-    }
-
-    private fun Element.imageVariantKeys(): List<String> {
-        val candidates = if (normalName() == "img") listOf(this) else select("img")
-        return candidates
-            .filter { it.hasRealImageSource() }
-            .mapNotNull { it.imageVariantKey() }
-    }
-
-    private fun Element.hasRealImageSource(): Boolean {
-        val src = attr("src").trim()
-        return (src.isNotBlank() && !isPlaceholderImage(src)) ||
-            firstAttr(this, "srcset", "srcSet", "data-src", "data-srcset") != null
-    }
-
     private fun Element.hasSmallDeclaredDimensions(): Boolean {
         val width = attr("width").trim().toIntOrNull()
         val height = attr("height").trim().toIntOrNull()
         return width != null && height != null &&
             width in 1..SMALL_IMAGE_MAX_DIMENSION &&
-
-// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
-private val LINKED_IMAGE_EVALUATOR = QueryParser.parse("a[href] > img")
             height in 1..SMALL_IMAGE_MAX_DIMENSION
-    }
-
-    private fun Element.imageVariantKey(): String? =
-        firstAttr(this, "src", "data-src", "srcset", "srcSet", "data-srcset")
-            ?.let(::imageVariantKey)
-
-    private fun imageVariantKey(source: String): String? {
-        val url = source
-            .substringBefore(",")
-            .trim()
-            .split(WHITESPACE_PATTERN)
-            .firstOrNull()
-            ?.substringBefore("#")
-            ?.substringBefore("?")
-            ?.trimEnd('/')
-            ?: return null
-        return url.substringAfterLast('/').lowercase().ifBlank { null }
-    }
-
-    private fun Element.addNoscriptAltCaption(noscriptImage: Element) {
-        if (!hasAttr("data-nimg") && !noscriptImage.hasAttr("data-nimg")) return
-        if (parents().any { it.normalName() == "figure" && it.selectFirst("figcaption") != null }) return
-        if (nextElementSibling()?.normalName() == "figcaption") return
-
-        val caption = attr("alt").trim().ifBlank {
-            noscriptImage.attr("alt").trim()
-        }
-        if (caption.isBlank()) return
-
-        val captionElement = Element("span")
-        captionElement.text(caption)
-        after(captionElement)
     }
 
     private fun isPlaceholderImage(src: String): Boolean = src.isBlank() ||
@@ -407,3 +326,6 @@ private val LINKED_IMAGE_EVALUATOR = QueryParser.parse("a[href] > img")
 
     private val IMAGE_WRAPPER_IGNORED_TAGS = setOf("img", "picture", "source", "noscript", "figcaption", "small")
 }
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val LINKED_IMAGE_EVALUATOR = QueryParser.parse("a[href] > img")
