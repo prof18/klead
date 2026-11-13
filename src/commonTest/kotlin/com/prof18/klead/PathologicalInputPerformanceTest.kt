@@ -175,9 +175,10 @@ class PathologicalInputPerformanceTest {
         page("<p>" + "<span>word </span>".repeat(n) + "</p>")
     }
 
+    // Line breaks keep the other passes cheap, so the old one-by-one removal of blank top-level text dominates.
     @Test
-    fun `many top-level paragraphs with newlines scale linearly`() = assertScalesLinearly(5_000) { n ->
-        "<html><body><article><h1>Pathological</h1>" + "<p>a b c d</p>\n".repeat(n) + "</article></body></html>"
+    fun `many top-level line breaks with newlines scale linearly`() = assertScalesLinearly(5_000) { n ->
+        page("<br>\n".repeat(n))
     }
 
     @Test
@@ -246,9 +247,10 @@ class PathologicalInputPerformanceTest {
         page("<table><tr><td>x</td></tr></table>".repeat(n))
     }
 
+    // Two short cells per table keep the other passes cheap, so the old per-table sibling insert dominates.
     @Test
-    fun `many layout tables scale linearly`() = assertScalesLinearly(1_500) { n ->
-        page(repeatIndexed(n) { "<table><tr><td><p>Layout cell $it $LEAD_TEXT</p></td></tr></table>" })
+    fun `many layout tables scale linearly`() = assertScalesLinearly(4_000) { n ->
+        page("<table class=\"layout\"><tr><td>x</td><td>y</td></tr></table>".repeat(n))
     }
 
     @Test
