@@ -432,7 +432,17 @@ internal object RemovalPipeline {
     }
 
     private fun Element.startsWithHeadingBlock(headingBlock: Element): Boolean {
-        val firstChild = children().firstOrNull { it.text().trim().isNotBlank() } ?: return false
+        val firstChild = firstChildElementWithText() ?: return false
+    // Indexes the child list and stops at the first element with text, usually the first child: children()
+    // and childNodes() copy the whole list, which for every heading in one wrapper was quadratic.
+    private fun Element.firstChildElementWithText(): Element? {
+        for (index in 0 until childNodeSize()) {
+            val child = childNode(index)
+            if (child is Element && child.text().trim().isNotBlank()) return child
+        }
+        return null
+    }
+
         return firstChild === headingBlock || headingBlock.parents().any { it === firstChild }
     }
 

@@ -6,6 +6,7 @@ import com.fleeksoft.ksoup.nodes.TextNode
 import com.fleeksoft.ksoup.select.Elements
 import com.fleeksoft.ksoup.select.NodeTraversor
 import com.fleeksoft.ksoup.select.NodeVisitor
+import com.prof18.klead.internal.content.textWithoutParentReindex
 
 // Marks the elements of a subtree whose own subtrees are too large to be the compact chrome
 // (footers, bylines, tag lists, promos) the removal predicates target. The text cap sits above
@@ -67,7 +68,8 @@ internal class ChromeBlockCaps private constructor(private val exceeded: Map<Ele
 // predicate. Scans must not outlive DOM mutations: create one per candidate element, evaluate,
 // then discard before anything is removed or moved.
 internal class BlockScan(val element: Element) {
-    val text: String by lazy(LazyThreadSafetyMode.NONE) { element.text() }
+    // Same as element.text(); see textWithoutParentReindex for why it avoids Ksoup's traversal.
+    val text: String by lazy(LazyThreadSafetyMode.NONE) { element.textWithoutParentReindex() }
     val trimmedText: String by lazy(LazyThreadSafetyMode.NONE) { text.trim() }
     val collapsedText: String by lazy(LazyThreadSafetyMode.NONE) { trimmedText.collapseWhitespace() }
     val haystack: String by lazy(LazyThreadSafetyMode.NONE) { elementHintHaystack(element) }

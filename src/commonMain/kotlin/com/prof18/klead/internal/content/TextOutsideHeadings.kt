@@ -81,3 +81,68 @@ private fun StringBuilder.endsWithSpace(): Boolean = isNotEmpty() && this[length
 
 private val HEADING_TAGS = setOf("h1", "h2", "h3", "h4", "h5", "h6")
 private const val PRESERVE_WHITESPACE_LEVELS = 6
+
+// Exactly what text() returns, without the root's next-sibling lookup that Ksoup's traversal makes on the
+// way out. That lookup reindexes the root's parent whenever a sibling was removed before it, so measuring
+// each of many siblings while removing some of them was quadratic. Children are read by index, and the
+// sibling that decides a trailing space comes from the traversal's own position.
+internal fun Element.textWithoutParentReindex(): String {
+    val accum = StringBuilder()
+    val elements = ArrayList<Element>()
+    val nextIndexes = ArrayList<Int>()
+    elements.add(this)
+    nextIndexes.add(0)
+    while (elements.isNotEmpty()) {
+        val last = elements.lastIndex
+        val element = elements[last]
+        val index = nextIndexes[last]
+        if (index < element.childNodeSize()) {
+            nextIndexes[last] = index + 1
+            when (val child = element.childNode(index)) {
+                is TextNode -> appendTextAsKsoup(accum, child)
+
+                is Element -> {
+                    val startsBlock = child.isBlock() || child.nameIs("br")
+                    if (accum.isNotEmpty() && startsBlock && !accum.endsWithSpace()) accum.append(' ')
+                    elements.add(child)
+                    nextIndexes.add(0)
+                }
+
+                else -> Unit
+            }
+        } else {
+            elements.removeAt(last)
+            nextIndexes.removeAt(last)
+            // The root's own trailing space would be trimmed, so its siblings are never asked for.
+            if (elements.isNotEmpty()) {
+                val parent = elements[elements.lastIndex]
+                val nextIndex = nextIndexes[nextIndexes.lastIndex]
+                val next = if (nextIndex < parent.childNodeSize()) parent.childNode(nextIndex) else null
+                val nextIsText = next is TextNode || (next is Element && next.tag().isInline())
+                if (!element.tag().isInline() && nextIsText && !accum.endsWithSpace()) accum.append(' ')
+            }
+        }
+    }
+    return accum.toString().trim()
+}
+
+// Ksoup's rule: the text's parent and five more ancestors decide whether whitespace is kept.
+private fun appendTextAsKsoup(accum: StringBuilder, textNode: TextNode) {
+    val text = textNode.getWholeText()
+    var element = textNode.parent() as? Element
+    var level = 0
+    var preserve = false
+    while (element != null && level < PRESERVE_WHITESPACE_LEVELS) {
+        if (element.tag().preserveWhitespace()) {
+            preserve = true
+            break
+        }
+        element = element.parent()
+        level++
+    }
+    if (textNode is CDataNode || preserve) {
+        accum.append(text)
+    } else {
+        StringUtil.appendNormalisedWhitespace(accum, text, accum.endsWithSpace())
+    }
+}

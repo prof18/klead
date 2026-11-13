@@ -37,6 +37,17 @@ class TextOutsideHeadingsTest {
         assertSameAsCopy(Ksoup.parse(html).selectFirst("span")!!, html)
     }
 
+    @Test
+    fun `text without parent reindex matches text`() {
+        val document = Ksoup.parse(
+            "<article><p>a<br>b <b>bold</b></p><div>block</div>inline<pre>  keep  </pre>" +
+                "<ul><li>one</li><li>two</li></ul>tail<span> x </span><table><tr><td>c</td></tr></table></article>",
+        )
+        document.getAllElements().forEach { element ->
+            assertEquals(element.text(), element.textWithoutParentReindex(), element.outerHtml())
+        }
+    }
+
     private fun assertSameAsCopy(root: Element, html: String) {
         val before = root.outerHtml()
         val copy = root.cloneElement()
