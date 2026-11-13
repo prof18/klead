@@ -3,7 +3,6 @@ package com.prof18.klead.internal
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
-import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.KleadContent
 import com.prof18.klead.KleadMetadata
 import com.prof18.klead.KleadOptions
@@ -16,11 +15,11 @@ import com.prof18.klead.internal.content.ContentDetectionDebug
 import com.prof18.klead.internal.content.DetectedContent
 import com.prof18.klead.internal.content.MainContentDetector
 import com.prof18.klead.internal.content.joinedWordCount
+import com.prof18.klead.internal.content.textOutsideHeadings
 import com.prof18.klead.internal.dom.cloneDocument
 import com.prof18.klead.internal.dom.cloneElement
 import com.prof18.klead.internal.dom.limitDepth
 import com.prof18.klead.internal.dom.parseKleadUri
-import com.prof18.klead.internal.dom.removeAllBatched
 import com.prof18.klead.internal.extractors.DefaultExtractors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.ExtractorRegistry
@@ -449,27 +448,8 @@ internal object KleadParser {
             outerHtml().trim()
         }
 
-    // Words outside headings. The outermost headings leave their parents for the count and are put back in
-    // place, one child-list rebuild per parent, instead of copying the whole content to drop them. A heading
-    // that is the content root itself stays, as removing a copy's root from its document did.
-    private fun countBodyWords(content: Element): Int {
-        val headings = content.select(HEADING_EVALUATOR).filter { it !== content }
-        if (headings.isEmpty()) return content.text().joinedWordCount()
-        val headingSet = headings.toHashSet()
-        val outermost = headings.filter { heading -> heading.parents().none { it in headingSet } }
-        val savedChildren = outermost.mapNotNull { it.parent() }.distinct().map { it to it.childNodes().toList() }
-        removeAllBatched(outermost)
-        try {
-            return content.text().joinedWordCount()
-        } finally {
-            for ((parent, children) in savedChildren) {
-                parent.empty()
-                parent.appendChildren(children)
-            }
-        }
-    }
-
-    private val HEADING_EVALUATOR = QueryParser.parse("h1, h2, h3, h4, h5, h6")
+    // Words outside headings, read without copying or changing the content (see textOutsideHeadings).
+    private fun countBodyWords(content: Element): Int = content.textOutsideHeadings().joinedWordCount()
 
     private const val KILL_THE_NEWSLETTER_HOST = "kill-the-newsletter.com"
 }
