@@ -8,4 +8,9 @@ data class KleadContent(val html: String?, val markdown: String?) {
     fun requireHtml(): String = checkNotNull(html) { "HTML output was not requested." }
 
     fun requireMarkdown(): String = checkNotNull(markdown) { "Markdown output was not requested." }
+
+    // Lengths instead of the whole article, so logging a result stays readable.
+    override fun toString(): String = "KleadContent(html=${html.lengthLabel()}, markdown=${markdown.lengthLabel()})"
 }
+
+private fun String?.lengthLabel(): String = if (this == null) "null" else "$length chars"

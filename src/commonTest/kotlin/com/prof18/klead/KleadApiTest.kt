@@ -8,6 +8,32 @@ import kotlin.test.assertTrue
 
 class KleadApiTest {
     @Test
+    fun `results print lengths and keys instead of the article`() {
+        val article = "Article body " + "words ".repeat(200)
+        val result = KleadResult(
+            content = KleadContent(html = "<p>$article</p>", markdown = article),
+            metadata = KleadMetadata(
+                title = "Title",
+                description = null,
+                favicon = null,
+                image = null,
+                author = null,
+                site = null,
+            ),
+            debug = mapOf("removals" to List(50) { "removal $it" }),
+        )
+
+        val printed = result.toString()
+
+        assertFalse(printed.contains("words words"), printed)
+        assertFalse(printed.contains("removal 49"), printed)
+        assertTrue(printed.contains("html=${article.length + 7} chars"), printed)
+        assertTrue(printed.contains("Title") && printed.contains("removals"), printed)
+        assertEquals(result, result.copy())
+        assertEquals("KleadContent(html=null, markdown=2 chars)", KleadContent(html = null, markdown = "ok").toString())
+    }
+
+    @Test
     fun `empty html parses without crashing`() {
         val result = parseHtmlForTest(
             html = "",
