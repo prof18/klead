@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.dom.toAbsoluteSiteUrl
@@ -68,16 +69,16 @@ internal object HackerNewsProfile : DomExtractor {
     }
 
     private fun extractStoryComments(context: DomExtractorContext): ExtractorResult? {
-        val story = context.document.selectFirst("table.fatitem tr.athing") ?: return null
-        val storyLink = story.selectFirst(".titleline > a[href]") ?: return null
+        val story = context.document.selectFirst(ParsedSelectors["table.fatitem tr.athing"]) ?: return null
+        val storyLink = story.selectFirst(ParsedSelectors[".titleline > a[href]"]) ?: return null
         val storyUrl = storyLink.attr("href").trim()
         if (storyUrl.isBlank()) return null
-        val author = context.document.selectFirst("table.fatitem .subtext .hnuser")
+        val author = context.document.selectFirst(ParsedSelectors["table.fatitem .subtext .hnuser"])
             ?.text()
             ?.trim()
             ?.ifBlank { null }
 
-        val comments = context.document.select("table.comment-tree tr.comtr")
+        val comments = context.document.select(ParsedSelectors["table.comment-tree tr.comtr"])
             .mapNotNull { it.toHackerNewsComment() }
         if (comments.isEmpty()) return null
 

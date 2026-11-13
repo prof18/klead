@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -11,7 +12,7 @@ internal object ScpWikiProfile : DomExtractor {
     override fun matches(context: DomExtractorContext): Boolean = super.matches(context) || (
         context.signals.hasId("main-content") &&
             context.signals.hasId("page-content") &&
-            context.document.selectFirst("#main-content #page-content") != null &&
+            context.document.selectFirst(ParsedSelectors["#main-content #page-content"]) != null &&
             context.document.selectFirst("""meta[name=keywords]""")
                 ?.attr("content")
                 ?.contains("scp", ignoreCase = true) == true

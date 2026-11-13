@@ -2,6 +2,7 @@ package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -37,7 +38,7 @@ internal object RealtorProfile : DomExtractor {
         if (imagesByCaption.isEmpty()) return
 
         content.select("figure").forEach { figure ->
-            figure.selectFirst(".image-caption + .image-credit")?.prependText(" ")
+            figure.selectFirst(ParsedSelectors[".image-caption + .image-credit"])?.prependText(" ")
             val picture = figure.selectFirst("""picture[data-lazy]""") ?: return@forEach
             if (picture.selectFirst("img[src], source[srcset]") != null) return@forEach
             val caption = figure.selectFirst(".image-caption")?.text()?.normalizedSpaces() ?: return@forEach

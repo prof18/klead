@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -17,8 +18,8 @@ internal object AndroidPoliceProfile : DomExtractor {
     }
 
     private fun prependFeatureImage(content: Element, document: Document) {
-        val figure = document.selectFirst(".heading_image[data-is-feature-img=true] figure")
-            ?: document.selectFirst(".heading_image figure")
+        val figure = document.selectFirst(ParsedSelectors[".heading_image[data-is-feature-img=true] figure"])
+            ?: document.selectFirst(ParsedSelectors[".heading_image figure"])
             ?: return
         val image = figure.selectFirst("img[src], img[data-img-url]") ?: return
         val imageKey = image.androidPoliceImageKey() ?: return

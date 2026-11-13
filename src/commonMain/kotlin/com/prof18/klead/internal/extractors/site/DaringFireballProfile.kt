@@ -2,6 +2,7 @@ package com.prof18.klead.internal.extractors.site
 
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -15,7 +16,7 @@ internal object DaringFireballProfile : DomExtractor {
     )
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
-        val author = context.document.selectFirst("#Sidebar p strong")
+        val author = context.document.selectFirst(ParsedSelectors["#Sidebar p strong"])
             ?.text()
             ?.trim()
             ?.ifBlank { null }

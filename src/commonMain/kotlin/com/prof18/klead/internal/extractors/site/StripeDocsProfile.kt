@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -28,7 +29,7 @@ internal object StripeDocsProfile : DomExtractor {
                 heading.parent() === content || heading.parents().any { it === content }
             }
             ?.remove()
-        content.select(".CodeBlock code[class], .CodeBlock pre[class]").forEach { code ->
+        content.select(ParsedSelectors[".CodeBlock code[class], .CodeBlock pre[class]"]).forEach { code ->
             code.removeAttr("class")
         }
         content.select("pre").forEach { pre ->

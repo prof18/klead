@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.RemovalRecord
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -25,11 +26,11 @@ internal object GrawlixComicProfile : DomExtractor {
         val generator = context.signals.firstMeta(GENERATOR_META)?.attr("content")
             ?: return false
         return generator.startsWith("The Grawlix CMS", ignoreCase = true) &&
-            context.document.selectFirst("$COMIC_FIGURE_SELECTOR img[src]") != null
+            context.document.selectFirst(ParsedSelectors["$COMIC_FIGURE_SELECTOR img[src]"]) != null
     }
 
     override fun postProcess(content: Element, context: DomExtractorContext, debug: MutableList<RemovalRecord>) {
-        val figure = context.document.selectFirst(COMIC_FIGURE_SELECTOR) ?: return
+        val figure = context.document.selectFirst(ParsedSelectors[COMIC_FIGURE_SELECTOR]) ?: return
         val comicSources = figure.select("img[src]").map { it.absUrl("src").ifBlank { it.attr("src") } }
         if (comicSources.isEmpty()) return
         val contentSources = content.select("img[src]").map { it.absUrl("src").ifBlank { it.attr("src") } }.toSet()

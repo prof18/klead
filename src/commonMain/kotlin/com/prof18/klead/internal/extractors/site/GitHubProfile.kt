@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.appendChildNodesFrom
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.isoDatePart
@@ -33,7 +34,7 @@ internal object GitHubProfile : DomExtractor {
             article.appendChildNodesFrom(releaseNotes.deepCopy())
         } else {
             // A tag without a published release only carries the annotated tag message.
-            val tagMessage = document.selectFirst(".commit-desc pre")?.wholeText()?.trim().orEmpty()
+            val tagMessage = document.selectFirst(ParsedSelectors[".commit-desc pre"])?.wholeText()?.trim().orEmpty()
             tagMessage.split(BLANK_LINE)
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
@@ -49,7 +50,7 @@ internal object GitHubProfile : DomExtractor {
 
         val author = document.select("relative-time[datetime]")
             .firstNotNullOfOrNull { time -> time.parent()?.selectFirst("a.text-bold")?.textTrimmedOrNull() }
-        val releaseName = document.selectFirst("[data-hpc] .Box-body h1")?.textTrimmedOrNull()
+        val releaseName = document.selectFirst(ParsedSelectors["[data-hpc] .Box-body h1"])?.textTrimmedOrNull()
             ?: document.selectFirst("h1.sr-only")?.textTrimmedOrNull()
         return ExtractorResult(
             contentHtml = article.outerHtml(),
@@ -69,14 +70,14 @@ internal object GitHubProfile : DomExtractor {
         // Legacy pages wrap the README in #readme; current repository overviews
         // render its article directly inside the repository content container.
         val selector = listOf("#readme .markdown-body", "#repo-content-pjax-container article.markdown-body")
-            .firstOrNull { context.document.selectFirst(it) != null }
+            .firstOrNull { context.document.selectFirst(ParsedSelectors[it]) != null }
             ?: return null
         return ExtractorResult(contentSelector = selector)
     }
 
     private fun extractPullRequest(context: DomExtractorContext): ExtractorResult? {
         if (!context.isPullRequestPage()) return null
-        val bodies = context.document.select(".pull-discussion-timeline .comment-body.markdown-body")
+        val bodies = context.document.select(ParsedSelectors[".pull-discussion-timeline .comment-body.markdown-body"])
         val body = bodies.firstOrNull() ?: return null
 
         val article = Element("article")
@@ -98,7 +99,7 @@ internal object GitHubProfile : DomExtractor {
             contentHtml = article.outerHtml(),
             metadata = ExtractorMetadata(
                 title = context.document.title().ifBlank { null },
-                author = context.document.selectFirst(".pull-discussion-timeline .author")
+                author = context.document.selectFirst(ParsedSelectors[".pull-discussion-timeline .author"])
                     ?.text()
                     ?.trim()
                     ?.ifBlank { null },

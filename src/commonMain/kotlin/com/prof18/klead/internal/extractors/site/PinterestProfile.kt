@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -36,11 +37,11 @@ internal object PinterestProfile : DomExtractor {
     )
 
     override fun matches(context: DomExtractorContext): Boolean =
-        context.hostMatches(domains) && context.document.selectFirst(PIN_IMAGE) != null
+        context.hostMatches(domains) && context.document.selectFirst(ParsedSelectors[PIN_IMAGE]) != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
         val document = context.document
-        val image = document.selectFirst(PIN_IMAGE) ?: return null
+        val image = document.selectFirst(ParsedSelectors[PIN_IMAGE]) ?: return null
         val title = document.selectFirst("""[data-test-id="pinTitle"] h1""")?.text()?.trim().orEmpty()
         val description = document.selectFirst("""[data-test-id="truncated-description"]""")
             ?.text()

@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 import com.prof18.klead.internal.json.parseToJsonElementOrNull
@@ -31,7 +32,7 @@ internal object GameSpotProfile : DomExtractor {
 
     // Video pages carry a one-line body, so pin the content root to keep that short result.
     override fun extract(context: DomExtractorContext): ExtractorResult? {
-        context.document.selectFirst("$VIDEO_ARTICLE $VIDEO_EMBED") ?: return null
+        context.document.selectFirst(ParsedSelectors["$VIDEO_ARTICLE $VIDEO_EMBED"]) ?: return null
         return ExtractorResult(contentSelector = VIDEO_ARTICLE)
     }
 

@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -19,7 +20,7 @@ internal object AthleticNewsletterProfile : DomExtractor {
         val document = context.document
         val content = Element("div").attr("id", CONTENT_ID)
 
-        document.select(".nl-container table.row").forEach { row ->
+        document.select(ParsedSelectors[".nl-container table.row"]).forEach { row ->
             val text = row.text()
             val isMasthead = row.selectFirst("img[alt='The Athletic FC']") != null
             val isLoginBanner = text.contains(LOGIN_BANNER, ignoreCase = true)

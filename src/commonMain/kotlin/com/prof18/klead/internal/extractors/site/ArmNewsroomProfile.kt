@@ -2,6 +2,7 @@ package com.prof18.klead.internal.extractors.site
 
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -27,7 +28,7 @@ internal object ArmNewsroomProfile : DomExtractor {
     )
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
-        val author = context.document.selectFirst(".single_post__author__info a[href*=/author/]")
+        val author = context.document.selectFirst(ParsedSelectors[".single_post__author__info a[href*=/author/]"])
             ?.text()
             ?.trim()
             ?.ifBlank { null }

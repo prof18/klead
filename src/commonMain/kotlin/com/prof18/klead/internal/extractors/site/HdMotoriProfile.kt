@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -19,7 +20,7 @@ internal object HdMotoriProfile : DomExtractor {
 
     override fun preProcess(content: Element, context: DomExtractorContext) {
         if (!content.hasClass("article_content")) return
-        val introduction = context.document.selectFirst(".article_head > p") ?: return
+        val introduction = context.document.selectFirst(ParsedSelectors[".article_head > p"]) ?: return
         content.prependChild(introduction.deepCopy())
     }
 }

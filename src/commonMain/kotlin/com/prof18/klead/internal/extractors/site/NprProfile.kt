@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.extractors.site
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -21,7 +22,7 @@ internal object NprProfile : DomExtractor {
 
             creditCaption.select(".hide-caption, .toggle-caption").remove()
             if (creditCaption.children().any { it.normalName() == "span" && it.hasClass("credit") }) {
-                creditCaption.select(".caption-wrap .credit").remove()
+                creditCaption.select(ParsedSelectors[".caption-wrap .credit"]).remove()
             }
             creditCaption.select(".caption-wrap").toList().forEach { captionWrapper ->
                 if (captionWrapper.text().isBlank()) captionWrapper.remove()

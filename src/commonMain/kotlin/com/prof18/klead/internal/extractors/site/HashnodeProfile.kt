@@ -1,5 +1,6 @@
 package com.prof18.klead.internal.extractors.site
 
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -15,6 +16,6 @@ internal object HashnodeProfile : DomExtractor {
 
     override fun matches(context: DomExtractorContext): Boolean = context.signals.hasTag("header") &&
         context.signals.hasClass("prose") &&
-        context.document.selectFirst("""header a[href^="https://hashnode.com/?"]""") != null &&
-        context.document.selectFirst("article .prose") != null
+        context.document.selectFirst(ParsedSelectors["""header a[href^="https://hashnode.com/?"]"""]) != null &&
+        context.document.selectFirst(ParsedSelectors["article .prose"]) != null
 }

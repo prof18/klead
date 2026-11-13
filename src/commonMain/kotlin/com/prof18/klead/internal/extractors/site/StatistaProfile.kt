@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.absUrlOrEmpty
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -29,7 +30,7 @@ internal object StatistaProfile : DomExtractor {
             (preview?.numericAttribute("data-height") ?: renderedImage?.numericAttribute("height"))
                 ?.let { image.attr("height", it) }
         }
-        context.document.selectFirst("#readingAidText > p")?.let { description ->
+        context.document.selectFirst(ParsedSelectors["#readingAidText > p"])?.let { description ->
             article.appendChild(description.deepCopy())
         }
 
@@ -38,7 +39,9 @@ internal object StatistaProfile : DomExtractor {
             metadata = ExtractorMetadata(
                 title = context.document.selectFirst("#statisticTitle")?.text()?.trim()?.ifBlank { null }
                     ?: context.document.selectFirst("#statisticSectionTitle")?.text()?.trim()?.ifBlank { null },
-                author = context.document.selectFirst(".content__author--name a")?.text()?.trim()?.ifBlank { null },
+                author = context.document.selectFirst(
+                    ParsedSelectors[".content__author--name a"],
+                )?.text()?.trim()?.ifBlank { null },
                 site = context.document.metaContent("og:site_name") ?: "Statista",
                 description = context.document.metaContent("og:description"),
             ),

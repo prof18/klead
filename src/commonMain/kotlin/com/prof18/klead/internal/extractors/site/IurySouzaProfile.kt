@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.nodes.Node
 import com.fleeksoft.ksoup.nodes.TextNode
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
 
@@ -14,7 +15,7 @@ internal object IurySouzaProfile : DomExtractor {
     override val postContentRemoveSelectors: List<String> = listOf(POPUP_SELECTOR)
 
     override fun preProcess(content: Element, context: DomExtractorContext) {
-        content.select(POPUP_SELECTOR).forEach(::repairSplitParagraph)
+        content.select(ParsedSelectors[POPUP_SELECTOR]).forEach(::repairSplitParagraph)
     }
 
     // A popup div inside a paragraph closes the paragraph during HTML parsing, leaving its

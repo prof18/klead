@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Document
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.selectFirstSafe
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -25,7 +26,9 @@ internal object ApostoNewsletterProfile : DomExtractor {
         val article = Element("article")
         cards.forEachIndexed { index, card ->
             val content = card.selectFirst(".card-content") ?: return@forEachIndexed
-            val heading = card.selectFirst(".card-header .compact-channel-label")?.text()?.trim().orEmpty()
+            val heading = card.selectFirst(
+                ParsedSelectors[".card-header .compact-channel-label"],
+            )?.text()?.trim().orEmpty()
             if (isSponsor(heading, content.text())) return@forEachIndexed
 
             val section = Element("section")

@@ -3,6 +3,7 @@ package com.prof18.klead.internal.extractors.site
 import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DomExtractor
 import com.prof18.klead.internal.extractors.DomExtractorContext
@@ -29,7 +30,9 @@ internal object NixersNewsletterProfile : DomExtractor {
             .firstOrNull { it.postDate() == issueDate }
             ?: return null
         val content = post.selectFirst(".feed_content") ?: return null
-        val issueNumber = post.selectFirst(".post_author a[href^=#]")?.text()?.trim()?.takeIf { it.isNotEmpty() }
+        val issueNumber = post.selectFirst(
+            ParsedSelectors[".post_author a[href^=#]"],
+        )?.text()?.trim()?.takeIf { it.isNotEmpty() }
         return ExtractorResult(
             contentHtml = content.outerHtml(),
             contentSelector = "table.postbit_table .feed_content",

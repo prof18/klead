@@ -5,6 +5,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.prof18.klead.RemovalRecord
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.parseKleadUri
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -121,7 +122,7 @@ internal object IlPostProfile : DomExtractor {
     }
 
     private fun promoteGalleryThumbnails(content: Element) {
-        content.select(".gallery img.attachment-thumbnail[src], .gallery img.size-thumbnail[src]").forEach { image ->
+        content.select(GALLERY_THUMBNAIL_SELECTOR).forEach { image ->
             val thumbnailSrc = image.attr("src")
             if ("/wp-content/uploads/" !in thumbnailSrc) return@forEach
             val originalSrc = thumbnailSrc.withoutWordPressImageSize() ?: return@forEach
@@ -222,3 +223,7 @@ internal object IlPostProfile : DomExtractor {
     private val AUDIO_EXTENSIONS = setOf("aac", "m4a", "mp3", "ogg", "wav")
     private val DETAIL_SEPARATOR = Regex("""\s+-\s+""")
 }
+
+// Parsed once: see ParsedSelectors for why selectors with combinators are not parsed per call.
+private val GALLERY_THUMBNAIL_SELECTOR =
+    ParsedSelectors[".gallery img.attachment-thumbnail[src], .gallery img.size-thumbnail[src]"]

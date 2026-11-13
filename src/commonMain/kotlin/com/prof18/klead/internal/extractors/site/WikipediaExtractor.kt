@@ -4,6 +4,7 @@ import com.fleeksoft.ksoup.nodes.Element
 import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.extractors.ExtractorMetadata
 import com.prof18.klead.extractors.ExtractorResult
+import com.prof18.klead.internal.dom.ParsedSelectors
 import com.prof18.klead.internal.dom.deepCopy
 import com.prof18.klead.internal.dom.textTrimmedOrNull
 import com.prof18.klead.internal.extractors.DomExtractor
@@ -16,10 +17,12 @@ internal object WikipediaExtractor : DomExtractor {
     override val id: String = "wikipedia"
 
     override fun matches(context: DomExtractorContext): Boolean = context.isWikipediaPage() &&
-        context.document.selectFirst(WIKIPEDIA_CONTENT_SELECTOR) != null
+        context.document.selectFirst(ParsedSelectors[WIKIPEDIA_CONTENT_SELECTOR]) != null
 
     override fun extract(context: DomExtractorContext): ExtractorResult? {
-        val content = context.document.selectFirst(WIKIPEDIA_CONTENT_SELECTOR)?.deepCopy() ?: return null
+        val content = context.document.selectFirst(
+            ParsedSelectors[WIKIPEDIA_CONTENT_SELECTOR],
+        )?.deepCopy() ?: return null
         content.cleanWikipediaChrome()
         if (content.text().isBlank()) return null
 
