@@ -37,5 +37,3 @@ private val testResourcesRoot: String by lazy {
 }
 
 private const val TEST_RESOURCES_ROOT = "TEST_RESOURCES_ROOT"
-
-internal actual val growthTestSizeDivisor: Int = 4
