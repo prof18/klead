@@ -9,7 +9,8 @@ import kotlin.time.measureTime
 
 // Shapes from the 2026-11 audit that grew quadratically. Each is parsed at n and 16n: linear work grows
 // about 16×, the old quadratic paths up to 256×. A ratio is used instead of a fixed budget so the check
-// holds on fast and slow machines alike.
+// holds on fast and slow machines alike. Sizes are kept small but large enough that the code before the
+// fixes (1de82a4) grew at least about 48× at that size; the current code grows about 15 to 24×.
 //
 // These run on the JVM only. The parser is common code with no platform-specific source, so a quadratic
 // path is quadratic on every target, and debug Kotlin/Native binaries are too slow to parse inputs large
@@ -25,7 +26,7 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many share links inside one paragraph scale linearly`() = assertScalesLinearly(1_000) { n ->
+    fun `many share links inside one paragraph scale linearly`() = assertScalesLinearly(500) { n ->
         page("<p>" + repeatIndexed(n) { "<a href=\"/share/$it\">word$it</a> " } + "</p>")
     }
 
@@ -41,13 +42,13 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many leading horizontal rules scale linearly`() = assertScalesLinearly(4_000) { n ->
+    fun `many leading horizontal rules scale linearly`() = assertScalesLinearly(1_000) { n ->
         "<html><head><title>Pathological</title></head><body><article><h1>Pathological</h1>" + "<hr>".repeat(n) +
             "<p>$LEAD_TEXT one.</p><p>$LEAD_TEXT two.</p></article></body></html>"
     }
 
     @Test
-    fun `many code blocks after a large sibling scale linearly`() = assertScalesLinearly(600) { n ->
+    fun `many code blocks after a large sibling scale linearly`() = assertScalesLinearly(300) { n ->
         page(
             "<div>" + repeatIndexed(n * 4) { "<p>Body paragraph $it $LEAD_TEXT words.</p>" } + "</div><div>" +
                 "<pre>x</pre>".repeat(n) + "</div>",
@@ -72,7 +73,7 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many recommendation headings in one wrapper scale linearly`() = assertScalesLinearly(1_000) { n ->
+    fun `many recommendation headings in one wrapper scale linearly`() = assertScalesLinearly(250) { n ->
         page("<div>" + "<h2>Related articles</h2>".repeat(n) + "</div>")
     }
 
@@ -82,7 +83,7 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many hidden spans under a huge attribute name scale linearly`() = assertScalesLinearly(1_000) { n ->
+    fun `many hidden spans under a huge attribute name scale linearly`() = assertScalesLinearly(500) { n ->
         page(
             "<div data-" + "a".repeat(
                 n * 20,
@@ -91,7 +92,7 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many dhammatalks notes scale linearly`() = assertScalesLinearly(200) { n ->
+    fun `many dhammatalks notes scale linearly`() = assertScalesLinearly(100) { n ->
         page(
             repeatIndexed(
                 n,
@@ -102,23 +103,23 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many single cell tables scale linearly`() = assertScalesLinearly(4_000) { n ->
+    fun `many single cell tables scale linearly`() = assertScalesLinearly(2_000) { n ->
         page("<table><tr><td>x</td></tr></table>".repeat(n))
     }
 
     // Two short cells per table keep the other passes cheap, so the old per-table sibling insert dominates.
     @Test
-    fun `many layout tables scale linearly`() = assertScalesLinearly(4_000) { n ->
+    fun `many layout tables scale linearly`() = assertScalesLinearly(2_000) { n ->
         page("<table class=\"layout\"><tr><td>x</td><td>y</td></tr></table>".repeat(n))
     }
 
     @Test
-    fun `many empty articles scale linearly`() = assertScalesLinearly(5_000) { n ->
+    fun `many empty articles scale linearly`() = assertScalesLinearly(2_500) { n ->
         page("<article></article>".repeat(n))
     }
 
     @Test
-    fun `many next image noscripts in one figure scale linearly`() = assertScalesLinearly(1_000) { n ->
+    fun `many next image noscripts in one figure scale linearly`() = assertScalesLinearly(500) { n ->
         page("<figure>" + repeatIndexed(n) { "<noscript><img data-nimg src=a$it></noscript>" } + "</figure>")
     }
 
@@ -129,7 +130,7 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many react segment calls without targets scale linearly`() = assertScalesLinearly(1_000) { n ->
+    fun `many react segment calls without targets scale linearly`() = assertScalesLinearly(500) { n ->
         page("<script>" + "\$RC(\"a\",\"b\");".repeat(n) + "</script>" + "<br>".repeat(n * 3))
     }
 
@@ -142,7 +143,7 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many paragraphs after further reading scale linearly`() = assertScalesLinearly(4_000) { n ->
+    fun `many paragraphs after further reading scale linearly`() = assertScalesLinearly(2_000) { n ->
         page("<h2>Further Reading</h2>" + "<p>x</p>".repeat(n))
     }
 
@@ -156,7 +157,7 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many src-less images scale linearly`() = assertScalesLinearly(4_000) { n ->
+    fun `many src-less images scale linearly`() = assertScalesLinearly(2_000) { n ->
         page("<div>" + "<img>".repeat(n) + "</div>")
     }
 
@@ -166,12 +167,12 @@ class LinearGrowthTest {
     }
 
     @Test
-    fun `many line breaks in one alert scale linearly`() = assertScalesLinearly(15_000) { n ->
+    fun `many line breaks in one alert scale linearly`() = assertScalesLinearly(7_500) { n ->
         page("<div class=\"alert\">" + "a<br>".repeat(n) + "</div>")
     }
 
     @Test
-    fun `many sibling scripts styles and iframes scale linearly`() = assertScalesLinearly(5_000) { n ->
+    fun `many sibling scripts styles and iframes scale linearly`() = assertScalesLinearly(2_500) { n ->
         page("<script></script><style></style><iframe></iframe>".repeat(n))
     }
 
