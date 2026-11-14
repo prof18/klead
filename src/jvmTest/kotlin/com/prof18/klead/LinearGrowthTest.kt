@@ -217,11 +217,12 @@ class LinearGrowthTest {
                 runBlocking(Dispatchers.Default) { Klead.parseHtml(page, url, testOptions()) }
             }
         }
-        best(small, runs = 2) // Warm-up.
-        // Garbage collection and compilation make single timings noisy; a quadratic path fails every attempt.
+        best(small, runs = 1) // Warm-up.
+        // Garbage collection and compilation make single timings noisy, so a slow large run gets another
+        // attempt instead of a second run every time; a quadratic path fails every attempt.
         val attempts = (1..GROWTH_ATTEMPTS).map {
             val smallTime = maxOf(best(small, runs = 3), MIN_MEASURED_TIME)
-            val largeTime = best(large, runs = 2)
+            val largeTime = best(large, runs = 1)
             if (largeTime < smallTime * MAX_GROWTH) return
             "${largeTime / smallTime}× ($smallTime → $largeTime)"
         }
