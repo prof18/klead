@@ -55,11 +55,7 @@ await client.start(); // spawns the CLI as a subprocess
 const session = await client.createSession({
     /* ... */
 });</code></pre>
-<clipboard-copy aria-label="Copy" class="code-copy-btn" data-copy-feedback="Copied!" value="const client = new CopilotClient();
-await client.start(); // spawns the CLI as a subprocess
-const session = await client.createSession({
-    /* ... */
-});" tabindex="0" role="button"><svg aria-hidden="true" height="16" viewbox="0 0 16 16" version="1.1" width="16" class="octicon octicon-copy js-clipboard-copy-icon"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" /><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" /></svg></clipboard-copy></div>
+</div>
 
 
 <p class="wp-block-paragraph">The process would need to launch and host Node and V8. It meant parsing the significant amount of JavaScript produced from the TypeScript code in the CLI, generating bytecode for it, and potentially optimizing hot code in later JIT tiers. It meant all the memory overhead associated with V8. It meant inheriting Node’s threading model, which by default pushes us towards a model of all CPU-bound work being serialized. And it meant forced out-of-process communication just to make function calls. It meant every SDK consumer, in every language, ships Node.js or a bundled binary containing V8. It meant the C#, Python, Go, Java, and Rust SDKs all paid for a whole second language runtime per client, on the order of 100 MB of working set minimum, for a runtime their application otherwise had no use for. It meant every event, every message, and every abstracted session file system read and write was pushed across a process boundary. It meant a crash in Node took the session with it. And it meant anyone deploying this had, at a minimum, two processes to supervise, monitor, and debug.</p>
@@ -660,20 +656,7 @@ Then enter a review/fix loop where you launch a subagent per opus 5, gpt-5.6-sol
 If a review surfaces issues, validate them, and then if there are any to fix, fix them, and iterate to do another full review. Continue iterating with reviewing/fixing until all reviews come back clean. After every set of changes in response to review feedback, commit and push so that CI validation runs concurrently with subsequent reviews.
 
 Don't bother running full test suites; that'll be handled in CI. Try to minimize CPU-consuming efforts to the bare minimum, as we'll likely have many operations happening concurrently.</code></pre>
-<clipboard-copy aria-label="Copy" class="code-copy-btn" data-copy-feedback="Copied!" value="Squash into a single commit, then rebase on the latest in origin/main, resolving all conflicts, and force push. As part of rebasing, pay extra special attention to anything that has changed, been added, been removed, and ensure that logic is all ported over to the corresponding Rust code correctly. Always do the rebasing yourself / in the main agent; do not spawn a subagent for it.
-
-Then enter a review/fix loop where you launch a subagent per opus 5, gpt-5.6-sol, and grok 4.6.
-
-- That subagent should do a line-by-line comparison of the old TypeScript and the new Rust, confirming behavioral equality.
-- Look for anything introducing any kind of incompatibility; our goal is to move this code into Rust with as close as is possible to 100% the same semantics. If you hit anything questionable, ask me about it.
-- We want to ensure we're writing as efficient and idiomatic Rust code as we can; look for opportunities to simplify, to use routines like from the memchr crate to optimize searches instead of open-coded loops, avoid unnecessary allocation, use traits for reuse and loose coupling, etc.
-- Ensure that all defunct TypeScript code (e.g. code that has been fully ported, tests that are now no longer necessary because they're duplicative, unnecessary napi shims, etc.) has been deleted.
-- Ensure that we've ported as much code as possible, e.g. if there's any TypeScript remaining in touched files and that TypeScript is more than just a shim, that's a red flag. If new TypeScript that's not just a super thin shim is being added, that's a red flag. Look for any callers of TypeScript shims to see whether those callers can instead be ported to Rust, pushing the boundary as far as reasonably possible. Our goal is to soon get to 100% Rust in the runtime layer.
-- Validate that no E2E tests have been deleted or changed. Such changes are an indication of a porting bug.
-
-If a review surfaces issues, validate them, and then if there are any to fix, fix them, and iterate to do another full review. Continue iterating with reviewing/fixing until all reviews come back clean. After every set of changes in response to review feedback, commit and push so that CI validation runs concurrently with subsequent reviews.
-
-Don't bother running full test suites; that'll be handled in CI. Try to minimize CPU-consuming efforts to the bare minimum, as we'll likely have many operations happening concurrently." tabindex="0" role="button"><svg aria-hidden="true" height="16" viewbox="0 0 16 16" version="1.1" width="16" class="octicon octicon-copy js-clipboard-copy-icon"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z" /><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z" /></svg></clipboard-copy></div>
+</div>
 
 
 <p class="wp-block-paragraph">With the frequent rebasing, it’s easy for incoming changes to get lost accidentally. But we found an unexpected benefit to the in-place atomic swap: by deleting the TypeScript at the same time as we were adding the corresponding Rust, we were implicitly creating conflicts with rebase-induced incoming changes to that TypeScript: one branch changing it and the other deleting it. This guaranteed we’d notice changes to already ported code, rather than needing to rationalize for every incoming line whether it was something that might have been touching previously ported code.</p>

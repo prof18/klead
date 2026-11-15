@@ -13,6 +13,40 @@ import kotlin.test.assertTrue
 
 class RemovalPipelineTest {
     @Test
+    fun `icon-only share and script links are removed while labelled and navigating icon links stay`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <div class="ind-social-ul">
+                <span><a href="https://api.whatsapp.com/send?text=Story"><svg viewBox="0 0 52 52"><path d="M0 0" /></svg></a></span>
+                <span><a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fexample.com"><svg viewBox="0 0 24 24"><path d="M0 0" /></svg></a></span>
+                <span><a href="javascript:void(0)" aria-label="link"><svg viewBox="0 0 425 425"><path d="M0 0" /></svg></a></span>
+                <span><a aria-label="Copy link"><svg viewBox="0 0 425 425"><path d="M0 0" /></svg></a></span>
+                <div role="button" aria-label="Copy"><svg viewBox="0 0 16 16"><path d="M0 0" /></svg></div>
+              </div>
+              <p>The court said the age limit needs review. Read the <a href="https://twitter.com/intent/tweet?text=Quote">quote on X</a> for context.</p>
+              <p><a href="https://example.com/chart"><svg viewBox="0 0 100 100"><path d="M0 0" /></svg></a></p>
+              <div role="button" aria-label="Enlarge chart" class="chart"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" /></svg></div>
+              <a href="javascript:void(0)" class="lightbox"><svg viewBox="0 0 100 100"><rect width="10" height="40" /></svg></a>
+              <p>The case is posted to November 24 for further consideration.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertTrue(article.select("""a[href*="whatsapp.com/send"]""").isEmpty())
+        assertTrue(article.select("""a[href^="javascript:"][aria-label], [aria-label*="Copy"]""").isEmpty())
+        assertTrue(article.select("""a[href*="intent/tweet?url"]""").isEmpty())
+        assertNotNull(article.selectFirst("""a[href*="intent/tweet?text=Quote"]"""))
+        assertNotNull(article.selectFirst("""a[href="https://example.com/chart"] svg"""))
+        assertNotNull(article.selectFirst("""[aria-label="Enlarge chart"] circle"""))
+        assertNotNull(article.selectFirst("a.lightbox rect"))
+        assertTrue(article.text().contains("The case is posted to November 24 for further consideration."))
+    }
+
+    @Test
     fun `favorite post widget is removed without matching article text or similar classes`() {
         val document = Ksoup.parse(
             """

@@ -93,6 +93,11 @@ internal object RemovalPipeline {
                 removeContentPatterns(content, debug, measure, checkCancelled)
             }
         }
+        if (policy.removePartialSelectors) {
+            measure("removeIconOnlyLinks") {
+                removeIconOnlyLinks(content, debug, checkCancelled)
+            }
+        }
         measure("imageRemoval") {
             ImageRemovalPipeline.apply(content, metadataImage, debug, ::partialHaystack, checkCancelled)
         }
@@ -181,7 +186,8 @@ internal object RemovalPipeline {
                 if (selector == SKIP_LINK_SELECTOR && !SKIP_LINK_TEXT_PATTERN.containsMatchIn(element.text().trim())) {
                     continue
                 }
-                if (selector == BUTTON_ROLE_SELECTOR && !element.isTextOnlyControl()) continue
+                val isRemovableControl = element.isTextOnlyControl() || element.isActionIconControl()
+                if (selector == BUTTON_ROLE_SELECTOR && !isRemovableControl) continue
                 if (selector == PREFERRED_SOURCE_LINK_SELECTOR && element.isInsideProseBlock()) continue
                 if (selector == "button" || selector == BUTTON_ROLE_SELECTOR) {
                     if (element.isInlineTextButton()) continue
@@ -212,6 +218,25 @@ internal object RemovalPipeline {
             // The removal shortens every enclosing block's text.
             element.parents().forEach { blockTextLengths.remove(it) }
             recordAndRemove(element, debug, "removePartialSelectors", null, "partial clutter attribute")
+        }
+    }
+
+    // Runs after the block passes, which recognize share bars and article headers by the share
+    // links they still hold; what those passes leave is a bare icon drawn at full width.
+    private fun removeIconOnlyLinks(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
+        for (link in content.select("a").toList()) {
+            checkCancelled()
+            if (!link.isAttachedTo(content) || !link.isIconOnlyControl()) continue
+            val reason = when {
+                link.isShareIntentLink() -> "icon-only share link"
+
+                (!link.hasAttr("href") || link.attr("href").isScriptUrl()) && link.isActionIconControl() ->
+                    "icon-only script control"
+
+                else -> continue
+            }
+            if (isProtected(link)) continue
+            recordAndRemove(link, debug, "removeIconOnlyLinks", null, reason)
         }
     }
 
@@ -770,6 +795,36 @@ private fun Element.isTextOnlyControl(): Boolean {
 }
 
 private const val MAX_TEXT_CONTROL_LENGTH = 40
+
+// A label-less control drawn only with an inline SVG icon ("Copy link", "Print") does nothing in a
+// reader, and its icon, drawn without the page's CSS, fills the whole width.
+private fun Element.isIconOnlyControl(): Boolean = text().isBlank() &&
+    selectFirst("svg") != null &&
+    select("img, picture, video, audio, iframe, figure, canvas").isEmpty()
+
+// A label-less SVG may also be a chart behind a lightbox, so a control is only dropped when its
+// labels or classes name an action.
+private fun Element.isActionIconControl(): Boolean = isIconOnlyControl() &&
+    (sequenceOf(this) + select("svg")).any { element ->
+        ACTION_ICON_HINT_PATTERN.containsMatchIn(elementHintHaystack(element, includeUrls = false))
+    }
+
+private val ACTION_ICON_HINT_PATTERN = Regex(
+    """\b(?:copy|clipboard|link|share|print|bookmark|email|mail|social|tweet|whatsapp|facebook|telegram|linkedin|reddit|pinterest)\b""",
+)
+
+// A link without a target, or with a script one ("Copy link"), goes nowhere outside the page.
+private fun String.isScriptUrl(): Boolean = trim().startsWith("javascript:", ignoreCase = true)
+
+// Share buttons whose endpoint carries no "share" word: WhatsApp's send, X's tweet intent,
+// Telegram, Reddit and Pinterest.
+private fun Element.isShareIntentLink(): Boolean = SHARE_INTENT_URL_PATTERN.containsMatchIn(attr("href"))
+
+private val SHARE_INTENT_URL_PATTERN = Regex(
+    """^(?:https?://)?(?:[a-z0-9-]+\.)?(?:whatsapp\.com/send|wa\.me/\?text=|(?:twitter|x)\.com/intent/(?:tweet|post)|""" +
+        """(?:t|telegram)\.me/share|reddit\.com/submit|pinterest\.[a-z.]+/pin/create)|^whatsapp://send""",
+    RegexOption.IGNORE_CASE,
+)
 
 private fun Element.isInsideProseBlock(): Boolean = parents().any { it.normalName() in PROSE_LINK_BLOCK_TAGS }
 
