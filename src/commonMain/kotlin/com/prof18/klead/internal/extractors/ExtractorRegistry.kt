@@ -51,6 +51,7 @@ import com.prof18.klead.internal.extractors.site.GuardianProfile
 import com.prof18.klead.internal.extractors.site.HackerNewsProfile
 import com.prof18.klead.internal.extractors.site.HashnodeProfile
 import com.prof18.klead.internal.extractors.site.HdMotoriProfile
+import com.prof18.klead.internal.extractors.site.HearstProfile
 import com.prof18.klead.internal.extractors.site.IPhoneItaliaProfile
 import com.prof18.klead.internal.extractors.site.ISpazioProfile
 import com.prof18.klead.internal.extractors.site.IlFattoQuotidianoProfile
@@ -184,6 +185,7 @@ internal object DefaultExtractors {
         PopCultureProfile,
         ValnetProfile,
         VarietyProfile,
+        HearstProfile,
         GameSpotProfile,
         GamingOnLinuxProfile,
         AxiosProfile,

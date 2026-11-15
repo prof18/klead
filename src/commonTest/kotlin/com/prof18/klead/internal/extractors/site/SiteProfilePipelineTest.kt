@@ -3018,6 +3018,18 @@ It sounds far-fetched but Google is already rolling out the technology to make i
                 profileId = "variety",
             ),
             ProfileIsolationCase(
+                url = "https://www.menshealth.com/grooming/g1/example/",
+                selectorHtml = """<div data-theme-key="embedded-product-details"><h2 data-theme-key="embedded-product-title">Hearst repeated product title</h2></div>""",
+                removedText = "Hearst repeated product title",
+                profileId = "hearst",
+            ),
+            ProfileIsolationCase(
+                url = "https://www.esquire.com/entertainment/a1/example/",
+                selectorHtml = """<div data-gpt-wrapper="true"><div class="ad-disclaimer">Hearst advertisement breaker</div></div>""",
+                removedText = "Hearst advertisement breaker",
+                profileId = "hearst",
+            ),
+            ProfileIsolationCase(
                 url = "https://www.reuters.com/world/example",
                 selectorHtml = """<ul role="tablist"><li role="tab">Reuters context tabs</li></ul>""",
                 removedText = "Reuters context tabs",

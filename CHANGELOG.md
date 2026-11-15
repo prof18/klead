@@ -6,6 +6,7 @@
 - Extractor matching, retries and word counting do less work on every page.
 - `KleadContent` and `KleadResult` print content lengths and debug keys from `toString()` instead of the whole article.
 - Gitweb commit and commitdiff pages keep the commit message and diffs as code blocks with their indentation, without the gitweb navigation and footer.
+- Hearst magazine sites such as Men's Health and Esquire no longer show advertisement breaks, Pinterest buttons, Watch Next videos, Readers Also Read lists, or a second copy of each product title.
 
 ## 1.0.1 — 2026-11-09
 
