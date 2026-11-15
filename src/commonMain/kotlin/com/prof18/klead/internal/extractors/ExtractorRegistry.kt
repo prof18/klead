@@ -86,6 +86,7 @@ import com.prof18.klead.internal.extractors.site.PhysOrgProfile
 import com.prof18.klead.internal.extractors.site.PianetaBasketProfile
 import com.prof18.klead.internal.extractors.site.PinterestProfile
 import com.prof18.klead.internal.extractors.site.PopCultureProfile
+import com.prof18.klead.internal.extractors.site.ProthomAloProfile
 import com.prof18.klead.internal.extractors.site.RealtorProfile
 import com.prof18.klead.internal.extractors.site.RedditProfile
 import com.prof18.klead.internal.extractors.site.ReutersProfile
@@ -266,6 +267,7 @@ internal object DefaultExtractors {
         HdMotoriProfile,
         DDayProfile,
         DiyPhotographyProfile,
+        ProthomAloProfile,
         DagelijkseStandaardProfile,
         TechCrunchProfile,
         TheHinduProfile,
