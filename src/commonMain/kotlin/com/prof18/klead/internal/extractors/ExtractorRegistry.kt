@@ -28,6 +28,7 @@ import com.prof18.klead.internal.extractors.site.DDayProfile
 import com.prof18.klead.internal.extractors.site.DagelijkseStandaardProfile
 import com.prof18.klead.internal.extractors.site.DaringFireballProfile
 import com.prof18.klead.internal.extractors.site.DexertoProfile
+import com.prof18.klead.internal.extractors.site.DiyPhotographyProfile
 import com.prof18.klead.internal.extractors.site.DwProfile
 import com.prof18.klead.internal.extractors.site.ElementorArchiveProfile
 import com.prof18.klead.internal.extractors.site.EntrepreneurProfile
@@ -260,6 +261,7 @@ internal object DefaultExtractors {
         ISpazioProfile,
         HdMotoriProfile,
         DDayProfile,
+        DiyPhotographyProfile,
         DagelijkseStandaardProfile,
         TechCrunchProfile,
         TheHinduProfile,
