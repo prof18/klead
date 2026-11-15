@@ -89,6 +89,7 @@ import com.prof18.klead.internal.extractors.site.PopCultureProfile
 import com.prof18.klead.internal.extractors.site.RealtorProfile
 import com.prof18.klead.internal.extractors.site.RedditProfile
 import com.prof18.klead.internal.extractors.site.ReutersProfile
+import com.prof18.klead.internal.extractors.site.RockstarGamesProfile
 import com.prof18.klead.internal.extractors.site.RollingStoneProfile
 import com.prof18.klead.internal.extractors.site.ScpWikiProfile
 import com.prof18.klead.internal.extractors.site.SimonWillisonProfile
@@ -211,6 +212,7 @@ internal object DefaultExtractors {
         GolemProfile,
         GrawlixComicProfile,
         MinecraftProfile,
+        RockstarGamesProfile,
         NintendoEverythingProfile,
         NixersNewsletterProfile,
         GuardianProfile,

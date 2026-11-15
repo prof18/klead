@@ -53,8 +53,8 @@ class SiteProfileMetadataTest {
     }
 
     @Test
-    fun `short reddit and github tag pages are reported as site profiles`() {
-        for (name in listOf("reddit-short-text-post", "github-tag-page")) {
+    fun `short reddit posts github tag pages and rockstar video pages are reported as site profiles`() {
+        for (name in listOf("reddit-short-text-post", "github-tag-page", "rockstargames-gta6-launch-trailer")) {
             val input = CommonTestResources.read("fixtures/regressions/input-html/$name.html")
             val result = parseHtmlForTest(input, FixtureLoader.extractUrl(name, input), testOptions())
 
