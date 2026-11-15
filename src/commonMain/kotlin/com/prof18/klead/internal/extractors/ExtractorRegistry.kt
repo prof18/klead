@@ -41,6 +41,7 @@ import com.prof18.klead.internal.extractors.site.GamingOnLinuxProfile
 import com.prof18.klead.internal.extractors.site.GeopopProfile
 import com.prof18.klead.internal.extractors.site.GitHubBlogProfile
 import com.prof18.klead.internal.extractors.site.GitHubProfile
+import com.prof18.klead.internal.extractors.site.GitwebProfile
 import com.prof18.klead.internal.extractors.site.GolemProfile
 import com.prof18.klead.internal.extractors.site.GrawlixComicProfile
 import com.prof18.klead.internal.extractors.site.GsmArenaProfile
@@ -202,6 +203,7 @@ internal object DefaultExtractors {
         DexertoProfile,
         GitHubBlogProfile,
         GitHubProfile,
+        GitwebProfile,
         GamingBoltProfile,
         GolemProfile,
         GrawlixComicProfile,

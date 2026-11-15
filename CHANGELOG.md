@@ -5,6 +5,7 @@
 - Fixed exceptions from `parseHtml` on a few small malformed pages, and parses that could take seconds to hours on hostile markup: long CSS values, nested links, crafted Reddit comment ids, many comments, cells, footnotes, images, tables, line breaks or sibling elements. Long-running loops now check for cancellation, so a cancelled parse stops promptly.
 - Extractor matching, retries and word counting do less work on every page.
 - `KleadContent` and `KleadResult` print content lengths and debug keys from `toString()` instead of the whole article.
+- Gitweb commit and commitdiff pages keep the commit message and diffs as code blocks with their indentation, without the gitweb navigation and footer.
 
 ## 1.0.1 — 2026-11-09
 
