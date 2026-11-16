@@ -1,6 +1,7 @@
 package com.prof18.klead.internal.standardize
 
 import com.fleeksoft.ksoup.nodes.Element
+import com.fleeksoft.ksoup.nodes.TextNode
 import com.fleeksoft.ksoup.select.QueryParser
 import com.prof18.klead.internal.dom.removeAllBatched
 
@@ -30,6 +31,46 @@ internal object HtmlChromeNormalizer {
             }
         }
     }
+
+    // Removes dividers that end the document, and a final heading followed by an empty block (an empty section,
+    // list or form): the title of a reactions or comments widget whose body was removed as clutter. A final
+    // heading with nothing after it, or only a line break, is kept, and so is a document that is all tail.
+    // One backward pass over the trailing nodes, stopping at the first text or media.
+    fun removeEmptyDocumentTail(content: Element) {
+        val removed = mutableListOf<Element>()
+        if (content.collectEmptyTail(removed, followedByEmptyBlock = false)) return
+        removeAllBatched(removed)
+    }
+
+    // Collects the removable tail of this element, from the end; true when nothing in it is content.
+    private fun Element.collectEmptyTail(removed: MutableList<Element>, followedByEmptyBlock: Boolean): Boolean {
+        var afterEmptyBlock = followedByEmptyBlock
+        for (node in childNodes().asReversed()) {
+            when {
+                node is TextNode -> if (!node.isBlank()) return false
+
+                node !is Element -> Unit
+
+                node.normalName() == "hr" -> removed.add(node)
+
+                node.normalName() in TAIL_CONTAINER_TAGS -> {
+                    if (!node.collectEmptyTail(removed, afterEmptyBlock)) return false
+                    afterEmptyBlock = true
+                }
+
+                !node.hasTailContent() -> if (node.normalName() in EMPTY_BLOCK_TAGS) afterEmptyBlock = true
+
+                node.isHeading() && afterEmptyBlock && !node.hasTailMedia() -> removed.add(node)
+
+                else -> return false
+            }
+        }
+        return true
+    }
+
+    private fun Element.hasTailContent(): Boolean = text().isNotBlank() || hasTailMedia()
+
+    private fun Element.hasTailMedia(): Boolean = selectFirst(TAIL_MEDIA_SELECTOR) != null
 
     // What follows each child of a parent, from one backward pass per parent: scanning the following
     // siblings once per heading was quadratic for pages with many trailing-section headings.
@@ -266,6 +307,11 @@ internal object HtmlChromeNormalizer {
     )
     private val TRAILING_REMOVABLE_SECTION_HEADING = Regex("""(?i)^(further reading|next steps|see also|references)$""")
     private const val FURTHER_READING_HEADING = "Further Reading"
+    private val TAIL_CONTAINER_TAGS = setOf("article", "main", "section", "div", "body")
+
+    // Empty elements that read as a stripped widget body; empty inline elements and line breaks do not.
+    private val EMPTY_BLOCK_TAGS = setOf("aside", "nav", "form", "footer", "header", "ul", "ol", "figure", "p", "table")
+    private const val TAIL_MEDIA_SELECTOR = "img, picture, video, audio, iframe, svg, math, canvas, object, embed"
 
     // Checked for every short span, p, div and heading; parse once and stop at the first match.
     // Tag and attribute evaluators keep no per-match state, so sharing one instance is safe.

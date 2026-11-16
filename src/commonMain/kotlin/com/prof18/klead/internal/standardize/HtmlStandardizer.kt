@@ -29,6 +29,8 @@ internal object HtmlStandardizer {
             // Footnote lists are wrapped again (section, list, item), which can also pass the cap.
             { content.limitDepth() },
             { HtmlChromeNormalizer.removeTrailingSectionHeadings(content) },
+            { convertSeparatorSvgsToRules(content) },
+            { HtmlChromeNormalizer.removeEmptyDocumentTail(content) },
             { normalizeTables(content) },
             { removeEmptySvgElements(content) },
             { removeEmptyWrappers(content) },
@@ -68,6 +70,14 @@ internal object HtmlStandardizer {
         }
         return rows.flatMap { row ->
             row.children().filter { it.normalName() == "td" || it.normalName() == "th" }
+        }
+    }
+
+    // An inline SVG with role="separator" is a drawn section break (a dinkus); as an image it renders at full
+    // width, so it becomes the rule it stands for.
+    private fun convertSeparatorSvgsToRules(content: Element) {
+        content.select("svg[role=separator]").forEach { svg ->
+            if (!svg.isInsidePreformattedCode() && svg.text().isBlank()) svg.replaceWith(Element("hr"))
         }
     }
 

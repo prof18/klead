@@ -21,5 +21,3 @@ Despite its lightweight design, Krafton claims that it has ensured that the game
 Additionally, cross-play compatibility stands as one of the most exciting highlights of the upcoming release. Krafton confirmed that players utilizing BGMI Air will be able to form squads and matchmake seamlessly alongside users on the standard BGMI client. This ensures that the player base remains unified rather than fragmented, allowing friends with different phone specifications to play together in the same lobbies. The inclusion of optimized anti-cheat systems from day one also reassures the competitive community of a fair and secure environment.
 
 Following an overwhelmingly successful pre-registration phase and limited testing periods, anticipation is at an all-time high among gamers as the December rollout approaches. The Android version is slated to drop first on the Google Play Store, with an iOS variant expected to follow shortly after to cater to Apple users on older device models. As Krafton puts the final touches on server stability and regional optimizations, BGMI Air is well-positioned to redefine accessible competitive mobile gaming in the country.
-
-### Related

@@ -737,6 +737,115 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `separator svg between sections becomes a rule`() {
+        val article = article(
+            """
+            <article>
+              <p>First part.</p>
+              <svg role="separator" aria-label="Section break" viewBox="0 0 32 24"><path d="M0,-4V4"></path></svg>
+              <p>Second part.</p>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertTrue(article.select("svg").isEmpty())
+        assertEquals(listOf("p", "hr", "p"), article.children().map { it.normalName() })
+    }
+
+    @Test
+    fun `heading and divider labelling an emptied trailing widget are removed`() {
+        val article = article(
+            """
+            <article>
+              <section><h2>My Review</h2><div><p>Oldie but goodie.</p></div></section>
+              <svg role="separator" aria-label="End of article" viewBox="0 0 32 24"><path d="M0,-4V4"></path></svg>
+              <h2 id="signal-heading">Signal</h2>
+              <section aria-labelledby="signal-heading" class="reactions"></section>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(listOf("My Review"), article.select("h2").map { it.text() })
+        assertTrue(article.select("hr, svg").isEmpty())
+        assertTrue(article.text().contains("Oldie but goodie."))
+    }
+
+    @Test
+    fun `trailing heading followed by media or nested content is preserved`() {
+        val article = article(
+            """
+            <article>
+              <p>Body.</p>
+              <h2>Gallery</h2>
+              <figure><img src="https://example.com/a.jpg" alt=""></figure>
+              <section><h3>Notes</h3><div><p>Last words.</p></div></section>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(listOf("Gallery", "Notes"), article.select("h2, h3").map { it.text() })
+        assertTrue(article.text().contains("Last words."))
+    }
+
+    @Test
+    fun `final heading followed by bare text is preserved`() {
+        val article = article("<article><p>Introduction.</p><h2>Conclusion</h2>Final thoughts.<br></article>")
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("Conclusion", article.selectFirst("h2")?.text())
+        assertTrue(article.text().contains("Final thoughts."))
+    }
+
+    @Test
+    fun `final heading holding media is preserved before an empty block`() {
+        val article = article(
+            "<article><p>Body.</p><h2><img src=\"https://example.com/chart.png\" alt=\"Chart\"></h2><div></div></article>",
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertNotNull(article.selectFirst("h2 img"))
+    }
+
+    @Test
+    fun `final heading followed by a line break or empty inline element is preserved`() {
+        for (tail in listOf("<br>", "<span></span>")) {
+            val article = article("<article><p>Body.</p><h2>The end</h2>$tail</article>")
+
+            HtmlStandardizer.apply(article, title = null)
+
+            assertEquals("The end", article.selectFirst("h2")?.text())
+        }
+    }
+
+    @Test
+    fun `long run of emptied trailing widgets is removed in one pass`() {
+        val widgets = (1..5_000).joinToString("") { "<h2>Widget $it</h2><section class=\"reactions\"></section>" }
+        val article = article("<article><p>Body.</p>$widgets</article>")
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertTrue(article.select("h2").isEmpty())
+        assertEquals("Body.", article.text())
+    }
+
+    @Test
+    fun `heading that is the only content is preserved`() {
+        val article = article("<article><h2>Only heading</h2><section class=\"comments\"></section></article>")
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals("Only heading", article.selectFirst("h2")?.text())
+    }
+
+    @Test
     fun `leading compact author metadata block is removed before body`() {
         val article = article(
             """
