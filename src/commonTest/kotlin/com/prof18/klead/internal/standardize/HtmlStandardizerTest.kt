@@ -826,6 +826,64 @@ class HtmlStandardizerTest {
     }
 
     @Test
+    fun `label and value spans laid out side by side are separated`() {
+        val article = article(
+            """
+            <article>
+              <p>Body.</p>
+              <div class="scoreboard">
+                <div class="score"><span class="score-src">TMDB</span><span class="score-val">66%</span></div>
+                <div class="score">
+                  <span class="score-src">IMDb</span><span class="score-val">6.5</span>
+                </div>
+              </div>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertEquals(listOf("TMDB 66%", "IMDb 6.5"), article.select("div.score").map { it.text() })
+    }
+
+    @Test
+    fun `styled word fragments and drop caps are not split`() {
+        val article = article(
+            """
+            <article>
+              <div class="logo"><span class="a">Feed</span><span class="b">Flow</span></div>
+              <div><span class="dropcap">T</span><span class="rest">he 2026 season started early.</span></div>
+              <ul>
+                <li class="ver"><span class="v">v</span><span class="n">2</span></li>
+                <li class="ver"><span class="v">v</span><span class="n">3</span></li>
+              </ul>
+              <div class="dist"><span class="n">10</span><span class="u">km</span></div>
+              <div class="dist"><span class="n">20</span><span class="u">km</span></div>
+              <div class="stat"><span class="k">Rating</span><span class="v">9</span></div>
+              <ul>
+                <li class="date"><span class="era">令和</span><span class="year">6年</span></li>
+                <li class="date"><span class="era">令和</span><span class="year">7年</span></li>
+              </ul>
+              <code>
+                <div class="line"><span class="name">foo</span><span class="suffix">2()</span></div>
+                <div class="line"><span class="name">bar</span><span class="suffix">3()</span></div>
+              </code>
+            </article>
+            """.trimIndent(),
+        )
+
+        HtmlStandardizer.apply(article, title = null)
+
+        assertTrue(article.text().contains("FeedFlow"))
+        assertTrue(article.text().contains("The 2026 season started early."))
+        assertEquals(listOf("v2", "v3"), article.select("li.ver").map { it.text() })
+        assertEquals(listOf("10km", "20km"), article.select("div.dist").map { it.text() })
+        assertEquals("Rating9", article.selectFirst("div.stat")?.text())
+        assertEquals(listOf("令和6年", "令和7年"), article.select("li.date").map { it.text() })
+        assertEquals(listOf("foo2()", "bar3()"), article.select("div.line").map { it.text() })
+    }
+
+    @Test
     fun `long run of emptied trailing widgets is removed in one pass`() {
         val widgets = (1..5_000).joinToString("") { "<h2>Widget $it</h2><section class=\"reactions\"></section>" }
         val article = article("<article><p>Body.</p>$widgets</article>")

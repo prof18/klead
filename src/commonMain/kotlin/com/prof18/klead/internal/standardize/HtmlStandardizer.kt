@@ -32,6 +32,7 @@ internal object HtmlStandardizer {
             { convertSeparatorSvgsToRules(content) },
             { HtmlChromeNormalizer.removeEmptyDocumentTail(content) },
             { normalizeTables(content) },
+            { separateLabelValueSpans(content) },
             { removeEmptySvgElements(content) },
             { removeEmptyWrappers(content) },
         )
@@ -80,6 +81,43 @@ internal object HtmlStandardizer {
             if (!svg.isInsidePreformattedCode() && svg.text().isBlank()) svg.replaceWith(Element("hr"))
         }
     }
+
+    // Score and stat widgets lay out a label span and a value span side by side with CSS and no text between
+    // them ("TMDB" "66%"), which would read as "TMDB66%". Only a widget repeated across sibling blocks with
+    // the same classes qualifies, and only where a word label meets a number, so split words, units and
+    // version strings stay intact.
+    private fun separateLabelValueSpans(content: Element) {
+        content.select("div, li")
+            .filter { it.isLabelValueWidget() }
+            .groupBy { it.parent() to it.widgetShape() }
+            .values
+            .filter { it.size >= 2 }
+            .flatten()
+            .forEach { block ->
+                block.children().zipWithNext().forEach { (label, value) ->
+                    if (label.nextSibling() == value && label.text().isWordLabelBefore(value.text())) {
+                        label.after(TextNode(" "))
+                    }
+                }
+            }
+    }
+
+    private fun Element.isLabelValueWidget(): Boolean = hasAttr("class") && !isInsidePreformattedCode() &&
+        childrenSize() in 2..MAX_LABEL_VALUE_SPANS &&
+        textNodes().all { it.isBlank() } &&
+        children().all { it.isShortStyledLeafSpan() }
+
+    private fun Element.widgetShape(): List<String> = listOf(className()) + children().map { it.className() }
+
+    private fun String.isWordLabelBefore(next: String): Boolean {
+        val label = trim()
+        val end = label.last()
+        return label.count { it.isLetter() } >= 2 && end.isLetter() && end.code < CJK_START &&
+            next.trimStart().first().isDigit()
+    }
+
+    private fun Element.isShortStyledLeafSpan(): Boolean = normalName() == "span" && hasAttr("class") &&
+        childrenSize() == 0 && text().isNotBlank() && text().length <= MAX_LABEL_VALUE_TEXT_LENGTH
 
     private fun removeEmptySvgElements(content: Element) {
         content.select("svg").toList().asReversed().forEach { svg ->
@@ -152,4 +190,10 @@ internal object HtmlStandardizer {
             current = current.parent()?.takeIf { it.normalName() == "span" } ?: return false
         }
     }
+
+    private const val MAX_LABEL_VALUE_SPANS = 6
+    private const val MAX_LABEL_VALUE_TEXT_LENGTH = 32
+
+    // CJK scripts write a label and its number without a space (令和6年).
+    private const val CJK_START = 0x2E80
 }

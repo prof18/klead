@@ -17,13 +17,13 @@ Won 1 BAFTA Award
 
 the crowd
 
-TMDB66%
+TMDB 66%
 
-IMDb6.5
+IMDb 6.5
 
-RT46%
+RT 46%
 
-Metacritic47
+Metacritic 47
 
 ratings via [![TMDB](https://michaelharley.net/assets/images/tmdb-logo.svg)](https://www.themoviedb.org/movie/435) · [OMDb](https://www.omdbapi.com/)
 
