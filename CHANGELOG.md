@@ -1,12 +1,16 @@
 # Changelog
 
-## Unreleased
+## 1.0.2 — 2026-11-20
 
 - Fixed exceptions from `parseHtml` on a few small malformed pages, and parses that could take seconds to hours on hostile markup: long CSS values, nested links, crafted Reddit comment ids, many comments, cells, footnotes, images, tables, line breaks or sibling elements. Long-running loops now check for cancellation, so a cancelled parse stops promptly.
 - Extractor matching, retries and word counting do less work on every page.
 - `KleadContent` and `KleadResult` print content lengths and debug keys from `toString()` instead of the whole article.
 - Gitweb commit and commitdiff pages keep the commit message and diffs as code blocks with their indentation, without the gitweb navigation and footer.
 - Hearst magazine sites such as Men's Health and Esquire no longer show advertisement breaks, Pinterest buttons, Watch Next videos, Readers Also Read lists, or a second copy of each product title.
+- Extracted content no longer includes icon-only share links, script links, separator SVGs, or the headings of trailing widgets left empty after cleanup. Label and value spans laid out side by side are kept apart.
+- Link lists introduced by article prose, and the last link list of labeled index pages, are kept.
+- Pages whose main landmark wraps only the site navigation now find the post body. Absolutely positioned image wrappers return to normal flow.
+- Improved extraction for X posts and articles, Framer CMS pages, Sportskeeda, DIYPhotography, Rockstar Games video pages and Prothom Alo.
 
 ## 1.0.1 — 2026-11-09
 
