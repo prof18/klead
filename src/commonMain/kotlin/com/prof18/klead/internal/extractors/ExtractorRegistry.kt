@@ -23,6 +23,7 @@ import com.prof18.klead.internal.extractors.site.BuzzFeedProfile
 import com.prof18.klead.internal.extractors.site.ChatGptExtractor
 import com.prof18.klead.internal.extractors.site.ChipProfile
 import com.prof18.klead.internal.extractors.site.CitynewsProfile
+import com.prof18.klead.internal.extractors.site.CnBetaProfile
 import com.prof18.klead.internal.extractors.site.CorriereProfile
 import com.prof18.klead.internal.extractors.site.DDayProfile
 import com.prof18.klead.internal.extractors.site.DagelijkseStandaardProfile
@@ -202,6 +203,7 @@ internal object DefaultExtractors {
         FortuneProfile,
         EntrepreneurProfile,
         FinanzenProfile,
+        CnBetaProfile,
         FutureProfile,
         ArsTechnicaProfile,
         ChatGptExtractor,
