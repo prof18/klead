@@ -354,6 +354,24 @@ class SiteRegressionTest {
         assertFalse(markdown.contains("Jake has been playing games"))
         assertFalse(markdown.contains("Latest News"))
     }
+
+    @Test
+    fun `Business Insider video page keeps metadata poster and one description without toggles`() {
+        val name = "businessinsider--how-sysco-feeds-america"
+        val input = CommonTestResources.read("fixtures/regressions/input-html/$name.html")
+        val result = parseHtmlForTest(input, FixtureLoader.extractUrl(name, input), testOptions())
+        val markdown = result.content.requireMarkdown()
+
+        assertTrue(result.metadata.title.orEmpty().startsWith("Inside Sysco"), result.metadata.title)
+        assertTrue(result.metadata.fromSiteProfile)
+        assertTrue(markdown.startsWith("[![A kitchen worker pours orange sauce"))
+        assertTrue(markdown.contains("(https://www.businessinsider.com/how-sysco-feeds-america-2026-11)"))
+        assertEquals(1, Regex("From massive warehouses").findAll(markdown).count())
+        assertTrue(markdown.contains("the cost of eating out."))
+        listOf("Description", "Show more", "<svg", "Angle down icon", "The rise and fall of Route 66").forEach {
+            assertFalse(markdown.contains(it), "Unexpected chrome: $it")
+        }
+    }
 }
 
 internal data class SiteRegressionCase(
