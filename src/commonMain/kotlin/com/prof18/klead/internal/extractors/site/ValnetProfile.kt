@@ -4,7 +4,7 @@ import com.prof18.klead.extractors.Extractor
 
 internal object ValnetProfile : Extractor {
     override val id: String = "valnet"
-    override val domains: Set<String> = setOf("screenrant.com", "androidpolice.com", "polygon.com")
+    override val domains: Set<String> = setOf("screenrant.com", "androidpolice.com", "polygon.com", "gamerant.com")
     override val postContentRemoveSelectors: List<String> = listOf(
         ".display-card.article-card",
         ".display-card[data-include-community-rating]",
