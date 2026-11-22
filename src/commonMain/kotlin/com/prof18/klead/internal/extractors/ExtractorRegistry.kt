@@ -97,6 +97,7 @@ import com.prof18.klead.internal.extractors.site.SimonWillisonProfile
 import com.prof18.klead.internal.extractors.site.SkyTg24Profile
 import com.prof18.klead.internal.extractors.site.SmartWorldProfile
 import com.prof18.klead.internal.extractors.site.SocketProfile
+import com.prof18.klead.internal.extractors.site.SportskeedaProfile
 import com.prof18.klead.internal.extractors.site.StatistaProfile
 import com.prof18.klead.internal.extractors.site.SteamPartnerEventExtractor
 import com.prof18.klead.internal.extractors.site.StripeDocsProfile
@@ -236,6 +237,7 @@ internal object DefaultExtractors {
         ObsidianPublishProfile,
         OpenNetProfile,
         SocketProfile,
+        SportskeedaProfile,
         ElementorArchiveProfile,
         FramerProfile,
         ScpWikiProfile,
