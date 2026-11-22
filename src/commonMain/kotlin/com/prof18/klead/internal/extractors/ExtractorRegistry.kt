@@ -60,6 +60,7 @@ import com.prof18.klead.internal.extractors.site.IlPostProfile
 import com.prof18.klead.internal.extractors.site.IlSole24OreProfile
 import com.prof18.klead.internal.extractors.site.IurySouzaProfile
 import com.prof18.klead.internal.extractors.site.JetBrainsBlogProfile
+import com.prof18.klead.internal.extractors.site.JianshuProfile
 import com.prof18.klead.internal.extractors.site.KarakartalProfile
 import com.prof18.klead.internal.extractors.site.KurucInfoProfile
 import com.prof18.klead.internal.extractors.site.LessWrongProfile
@@ -204,6 +205,7 @@ internal object DefaultExtractors {
         EntrepreneurProfile,
         FinanzenProfile,
         CnBetaProfile,
+        JianshuProfile,
         FutureProfile,
         ArsTechnicaProfile,
         ChatGptExtractor,
