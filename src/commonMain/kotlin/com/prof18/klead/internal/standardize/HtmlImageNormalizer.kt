@@ -42,6 +42,7 @@ internal object HtmlImageNormalizer {
                 "data-lazy-src",
                 "data-url",
                 "data-image-loader",
+                "data-splide-lazy",
             )
             if (pictureSourceSrcset != null) {
                 image.attr("srcset", pictureSourceSrcset)

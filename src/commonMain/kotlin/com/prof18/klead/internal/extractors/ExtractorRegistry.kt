@@ -71,6 +71,7 @@ import com.prof18.klead.internal.extractors.site.MaggieAppletonProfile
 import com.prof18.klead.internal.extractors.site.MashableProfile
 import com.prof18.klead.internal.extractors.site.MastodonProfile
 import com.prof18.klead.internal.extractors.site.MediumProfile
+import com.prof18.klead.internal.extractors.site.MetropolesProfile
 import com.prof18.klead.internal.extractors.site.MinecraftProfile
 import com.prof18.klead.internal.extractors.site.MinuteMediaSiProfile
 import com.prof18.klead.internal.extractors.site.Motor1Profile
@@ -206,6 +207,7 @@ internal object DefaultExtractors {
         FinanzenProfile,
         CnBetaProfile,
         JianshuProfile,
+        MetropolesProfile,
         FutureProfile,
         ArsTechnicaProfile,
         ChatGptExtractor,
