@@ -100,7 +100,14 @@ internal object MainContentDetector {
         refineBroadContainerToFocusedDescendant(selected, sorted, scoreOf)?.let { selected = it }
         refineBroadContainerToNestedArticle(selected, sorted, scoreOf)?.let { selected = it }
         if (selected.element.tagName() == "body") {
-            refineBodyToFocusedCandidate(selected, sorted, scoreOf)?.let { selected = it }
+            refineBodyToFocusedCandidate(selected, sorted, scoreOf)?.let { refined ->
+                // A body that falls back to <main> narrows to its lone article when the article's
+                // siblings are only short widget text (a hidden gift or login modal). A lead image,
+                // heading or paragraph beside the article keeps the whole <main>.
+                selected = refined.takeIf { it.element.hasOnlyWidgetSiblingsOfLoneArticle() }
+                    ?.let { refineBroadContainerToDirectArticle(it, sorted, scoreOf) }
+                    ?: refined
+            }
         }
         if (selected.element.tagName() == "body") {
             refineBodyToTitledPost(selected, scoreOf)?.let { selected = it }
@@ -264,6 +271,12 @@ internal object MainContentDetector {
             return null
         }
         return article
+    }
+
+    private fun Element.hasOnlyWidgetSiblingsOfLoneArticle(): Boolean {
+        val siblings = children().filterNot { it.normalName() == "article" || it.attr("role") == "article" }
+        return siblings.none { it.selectFirst(EDITORIAL_SIBLING_SELECTOR) != null } &&
+            siblings.sumOf { it.text().joinedWordCount() } < BROAD_REFINEMENT_MIN_WORDS
     }
 
     private fun Element.hasSiteNavigationHeader(): Boolean = children().any { child ->
@@ -511,6 +524,8 @@ internal object MainContentDetector {
     private const val NAVIGATION_SELECTOR = "nav, [role=navigation]"
     private const val NAVIGATION_WIDGET_MIN_LINK_DENSITY = 0.5
     private const val MEDIA_SELECTOR = "video, audio, iframe, img, picture, figure, object, embed"
+    private const val EDITORIAL_SIBLING_SELECTOR =
+        "$MEDIA_SELECTOR, p, h1, h2, h3, h4, h5, h6, [role=heading], blockquote, ul, ol, table"
     private const val BODY_REFINEMENT_MIN_SCORE_RATIO = 0.55
     private const val BODY_REFINEMENT_MIN_WORDS = 80
     private const val SHORT_ARTICLE_MIN_WORDS = 15

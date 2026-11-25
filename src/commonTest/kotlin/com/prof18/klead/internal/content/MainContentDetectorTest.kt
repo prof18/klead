@@ -53,6 +53,64 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `body fallback to main narrows to its lone article and drops a sibling modal`() {
+        val document = Ksoup.parse(
+            mainBesideLongPaywall(article = "<article id=\"story\"><h1>Story</h1><p>$STORY</p></article>"),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("story", detected.element.id())
+        assertTrue("gifted" !in detected.element.text())
+    }
+
+    @Test
+    fun `body fallback to main keeps main when it holds several articles`() {
+        val document = Ksoup.parse(
+            mainBesideLongPaywall("<article><p>$STORY</p></article><article><p>$STORY</p></article>"),
+        )
+
+        assertEquals("main", MainContentDetector.detect(document).selectedSelector)
+    }
+
+    @Test
+    fun `body fallback to main keeps a lead figure and opening paragraph beside the lone article`() {
+        val document = Ksoup.parse(
+            mainBesideLongPaywall(
+                article = "<article><p>$STORY</p></article>",
+                siblings = "<figure><img src=\"https://example.com/lead.jpg\"></figure><p>The opening paragraph.</p>",
+            ),
+        )
+
+        val detected = MainContentDetector.detect(document)
+
+        assertEquals("main", detected.selectedSelector)
+        assertTrue(detected.element.text().contains("The opening paragraph."))
+    }
+
+    @Test
+    fun `body fallback to main keeps an ARIA heading beside the lone article`() {
+        val document = Ksoup.parse(
+            mainBesideLongPaywall(
+                article = "<article><p>$STORY</p></article>",
+                siblings = "<div role=\"heading\" aria-level=\"1\">Story headline</div>",
+            ),
+        )
+
+        assertEquals("main", MainContentDetector.detect(document).selectedSelector)
+    }
+
+    private fun mainBesideLongPaywall(
+        article: String,
+        siblings: String = "<div class=\"gift-modal\"><div>This article has been gifted to you. Log in to read it.</div></div>",
+    ): String =
+        """
+        <main id="main">$siblings
+        $article</main>
+        <section class="capping"><p>$PAYWALL</p></section>
+        """.trimIndent()
+
+    @Test
     fun `nearly empty main landmark yields no content instead of the body`() {
         val chrome = (1..40).joinToString("") { "<li><a href=\"/s$it\">Section link $it</a></li>" }
         val document = Ksoup.parse(
@@ -723,5 +781,10 @@ class MainContentDetectorTest {
 
         assertEquals("article-block", detected.element.id())
         assertEquals("schema-text", detected.selectedSelector)
+    }
+
+    private companion object {
+        val STORY = "The story paragraph carries the reporting the reader came for. ".repeat(10)
+        val PAYWALL = "Subscribe now to read every story without limits on all devices. ".repeat(60)
     }
 }
