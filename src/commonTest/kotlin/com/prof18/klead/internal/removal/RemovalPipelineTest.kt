@@ -1985,6 +1985,46 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `content patterns keep prose that uses the verb commenting`() {
+        val result = parseHtmlForTest(
+            html = """
+                <article>
+                  <p>The article opening should stay because it is normal prose with useful information. It includes enough words, punctuation, and context for the parser to keep the story stable while the interview lines are checked.</p>
+                  <p><strong>Morgan (on the edit):</strong> You edited your post. I am not commenting on edited posts.</p>
+                  <p>She checked the source before commenting on the report.</p>
+                  <p>The journalist published an article commenting on the court ruling.</p>
+                  <p>I was commenting features out one by one to isolate the crash.</p>
+                  <p>The editor cited our commenting on the proposal as a conflict of interest.</p>
+                  <p>She was commenting section by section as she reviewed the manuscript.</p>
+                  <p>The reviewer was commenting rules out of the configuration to isolate the failure.</p>
+                  <p>The article conclusion should stay as well. It contains normal prose, useful punctuation, and enough words to keep the article body stable for this check.</p>
+                  <p>Join our commenting forum to share your thoughts.</p>
+                  <p>Sign in to enable commenting.</p>
+                  <p>Commenting is closed.</p>
+                  <p>Article commenting</p>
+                  <p>Please log in before commenting.</p>
+                </article>
+            """.trimIndent(),
+            url = "https://example.com/interview",
+        )
+
+        val markdown = result.content.requireMarkdown()
+        assertTrue(markdown.contains("I am not commenting on edited posts"))
+        assertTrue(markdown.contains("The article conclusion should stay"))
+        assertTrue(markdown.contains("before commenting on the report"))
+        assertTrue(markdown.contains("an article commenting on the court ruling"))
+        assertTrue(markdown.contains("commenting features out"))
+        assertTrue(markdown.contains("our commenting on the proposal"))
+        assertTrue(markdown.contains("commenting section by section"))
+        assertTrue(markdown.contains("commenting rules out"))
+        assertFalse(markdown.contains("commenting forum"))
+        assertFalse(markdown.contains("enable commenting"))
+        assertFalse(markdown.contains("Commenting is closed"))
+        assertFalse(markdown.contains("Article commenting"))
+        assertFalse(markdown.contains("log in before commenting"))
+    }
+
+    @Test
     fun `content cleanup removes top comments and trailing product recommendation lists`() {
         val result = parseHtmlForTest(
             html = """

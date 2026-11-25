@@ -184,7 +184,7 @@ internal val BACK_TO_TOP_PATTERN = Regex(
 )
 
 internal val COMMENT_PROMPT_PATTERN = Regex(
-    """\b(commenting|join the conversation|display name before commenting)\b""",
+    """\b(?:join the conversation|with\s+article\s+commenting|^article\s+commenting(?=\.?$)|commenting\s+(?:platform|forum|policy|rules|guidelines|system|section)\b(?!\s+(?:by|out)\b)|^commenting\s+(?:is|has\s+been)\s+(?:closed|disabled)|display name before commenting|(?:sign|log)\s+in\s+(?:to\s+(?:enable|start|continue)|before)\s+commenting)\b""",
     RegexOption.IGNORE_CASE,
 )
 
