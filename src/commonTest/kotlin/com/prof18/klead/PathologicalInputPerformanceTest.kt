@@ -31,6 +31,14 @@ class PathologicalInputPerformanceTest {
         assertFast(page("<div><h2>Heading</h2>" + "<p hidden>x</p>".repeat(5_000) + "<p>$DEEP_TEXT</p></div>"))
 
     @Test
+    fun `many sibling reply articles beside a post`() {
+        val replies = (1..5_000).joinToString("") { index ->
+            "<article class=\"comment\" id=\"comment-$index\"><p>Reply</p></article>"
+        }
+        assertFast(page("<div id=\"content\"><article><p>$DEEP_TEXT</p></article>$replies</div>"))
+    }
+
+    @Test
     fun `many empty sibling wrappers`() =
         assertFast(page("<div>" + "<div></div>".repeat(5_000) + "<p>$DEEP_TEXT</p></div>"))
 

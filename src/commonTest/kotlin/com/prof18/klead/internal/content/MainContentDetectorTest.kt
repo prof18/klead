@@ -573,6 +573,212 @@ class MainContentDetectorTest {
     }
 
     @Test
+    fun `comment articles beside a post do not turn its container into a listing`() {
+        val story = "The post body is a long essay with enough natural language to be the reading surface. ".repeat(8)
+        val reply = "A reader reply to the essay. ".repeat(6)
+        val comments = (1..3).joinToString("") { index ->
+            """
+            <article class="comment even thread-even depth-1" id="comment-$index">
+              <div class="comment"><p class="commentcredit">Reader $index</p><p>$reply</p></div>
+            </article>
+            """.trimIndent()
+        }
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <div id="content">
+                  <p id="breadcrumbs"><a href="/">Home</a><a href="/blog/">Blog</a></p>
+                  <article id="story" class="post type-post hentry"><h2 class="entry">Essay title</h2><p>$story</p></article>
+                  <h3 id="comments">3 Comments</h3>
+                  $comments
+                  <div id="respond"><h2>Leave a comment</h2><form><textarea></textarea></form></div>
+                </div>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+    }
+
+    @Test
+    fun `listing with article and role article entries beside a reply keeps both entries`() {
+        val entry = "A listing entry with enough natural prose to be a substantial candidate. ".repeat(7)
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <main id="listing">
+                  <article id="first"><h2>First</h2><p>$entry $entry $entry</p></article>
+                  <div role="article" id="second"><h2>Second</h2><p>A short second entry.</p></div>
+                  <article class="comment" id="comment-1"><p>A reader reply.</p></article>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("listing", detected.element.id())
+    }
+
+    @Test
+    fun `author update between a post and its replies is kept`() {
+        val post = "The post body is a long essay with enough natural language to be the reading surface. ".repeat(8)
+        val update = "Update from the author: a correction added after publication, in plain prose. ".repeat(3)
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <main id="container">
+                  <article id="story" class="post"><p>$post</p></article>
+                  <section class="update"><p>$update</p></section>
+                  <article class="comment" id="comment-1"><p>A reader reply.</p></article>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertTrue(detected.element.text().contains("Update from the author"), detected.selectedSelector)
+    }
+
+    @Test
+    fun `long reader reply does not replace a short post`() {
+        val post = "A short post with a few sentences of its own. ".repeat(4)
+        val reply = "A long reader reply that rambles on about the post at great length. ".repeat(20)
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <div id="content">
+                  <article id="story" class="post"><h2>Short post</h2><p>$post</p></article>
+                  <article id="comment-1" class="comment"><p>$reply</p></article>
+                </div>
+                """.trimIndent(),
+            ),
+        )
+
+        assertTrue(detected.element.id() != "comment-1", "Selected the reader reply: ${detected.selectedSelector}")
+        assertTrue(detected.element.text().contains("A short post with a few sentences"))
+    }
+
+    @Test
+    fun `long reader reply that also matches a content selector does not replace a short post`() {
+        val post = "A short post with a few sentences of its own. ".repeat(4)
+        val reply = "A long reader reply that rambles on about the post at great length. ".repeat(20)
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <div id="content">
+                  <article id="story" class="post"><h2>Short post</h2><p>$post</p></article>
+                  <article id="comment-1" class="comment entry-content"><p>$reply</p></article>
+                </div>
+                """.trimIndent(),
+            ),
+        )
+
+        assertTrue(detected.element.id() != "comment-1", "Selected the reader reply: ${detected.selectedSelector}")
+        assertTrue(detected.element.text().contains("A short post with a few sentences"))
+    }
+
+    @Test
+    fun `lone comment-marked article is kept when a teaser article sits elsewhere`() {
+        val story = "An opinion column the publisher files under its comment section with plenty of prose. ".repeat(8)
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <main id="container">
+                  <section><article id="story" class="comment"><h1>Column</h1><p>$story</p></article></section>
+                  <aside><article><a href="/other">Another short teaser here</a></article></aside>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertTrue(detected.element.text().contains("An opinion column the publisher files"))
+    }
+
+    @Test
+    fun `opinion column marked as comment is not mistaken for a reply beside a teaser`() {
+        val story = "An opinion column the publisher files under its comment section with plenty of prose. ".repeat(8)
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <main id="container">
+                  <article id="story" class="comment"><h1>Column</h1><p>$story</p></article>
+                  <div role="article"><a href="/other">Another short teaser here</a></div>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+    }
+
+    @Test
+    fun `lead figure and introduction before a post with replies are kept`() {
+        val sidebar = "Archive link and sidebar promotion text for the site. ".repeat(40)
+        val intro = "An introduction the author placed above the post body, written as real prose. ".repeat(2)
+        val post = "The post body is a long essay with enough natural language to be the reading surface. ".repeat(8)
+        val replies = (1..3).joinToString("") { index ->
+            "<article class=\"comment\" id=\"comment-$index\"><p>${"A reader reply. ".repeat(10)}</p></article>"
+        }
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <div class="sidebar"><p>$sidebar</p></div>
+                <main id="container">
+                  <figure><img src="/lead.jpg"><figcaption>Lead image</figcaption></figure>
+                  <p>$intro</p>
+                  <article id="story" class="post"><p>$post</p></article>
+                  $replies
+                </main>
+                <div class="sidebar"><p>$sidebar</p></div>
+                """.trimIndent(),
+            ),
+        )
+
+        assertTrue(detected.element.select("img").isNotEmpty(), "Dropped the lead: ${detected.selectedSelector}")
+        assertTrue(detected.element.text().contains("An introduction the author placed"))
+    }
+
+    @Test
+    fun `introduction split over short paragraphs before a post with replies is kept`() {
+        val sidebar = "Archive link and sidebar promotion text for the site. ".repeat(40)
+        val post = "The post body is a long essay with enough natural language to be the reading surface. ".repeat(8)
+        val replies = (1..3).joinToString("") { index ->
+            "<article class=\"comment\" id=\"comment-$index\"><p>${"A reader reply. ".repeat(10)}</p></article>"
+        }
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <div class="sidebar"><p>$sidebar</p></div>
+                <main id="container">
+                  <p>The first short paragraph of an introduction above the post sets the scene.</p>
+                  <p>The second short paragraph of that introduction carries on with the context.</p>
+                  <article id="story" class="post"><p>$post</p></article>
+                  $replies
+                </main>
+                <div class="sidebar"><p>$sidebar</p></div>
+                """.trimIndent(),
+            ),
+        )
+
+        assertTrue(detected.element.text().contains("The first short paragraph of an introduction"))
+    }
+
+    @Test
+    fun `lone article marked as comment still beats its broad container`() {
+        val story = "An opinion column the publisher files under its comment section with plenty of prose. ".repeat(8)
+        val detected = MainContentDetector.detect(
+            Ksoup.parse(
+                """
+                <main id="container">
+                  <nav><a href="/">Home</a><a href="/opinion">Opinion</a></nav>
+                  <article id="story" class="comment"><h1>Column</h1><p>$story</p></article>
+                </main>
+                """.trimIndent(),
+            ),
+        )
+
+        assertEquals("story", detected.element.id())
+    }
+
+    @Test
     fun `nested substantial article beats main with site chrome and teaser articles`() {
         val detected = MainContentDetector.detect(
             Ksoup.parse(

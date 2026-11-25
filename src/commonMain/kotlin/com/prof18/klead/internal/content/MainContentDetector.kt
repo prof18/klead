@@ -87,7 +87,7 @@ internal object MainContentDetector {
                     score = score(element, index, scoreOf),
                 )
             }
-        }.distinctByIdentity()
+        }.distinctByIdentity().withoutReplyArticles()
 
         if (candidates.isEmpty()) {
             val body = document.body()
@@ -95,16 +95,18 @@ internal object MainContentDetector {
         }
 
         val sorted = candidates.sortedByDescending { it.score }
-        var selected = refineListingParent(sorted.first(), sorted)
+        var selected = refineListingParent(sorted.first(), sorted, scoreOf)
         refineBroadContainerToDirectArticle(selected, sorted, scoreOf)?.let { selected = it }
         refineBroadContainerToFocusedDescendant(selected, sorted, scoreOf)?.let { selected = it }
         refineBroadContainerToNestedArticle(selected, sorted, scoreOf)?.let { selected = it }
         if (selected.element.tagName() == "body") {
             refineBodyToFocusedCandidate(selected, sorted, scoreOf)?.let { refined ->
                 // A body that falls back to <main> narrows to its lone article when the article's
-                // siblings are only short widget text (a hidden gift or login modal). A lead image,
-                // heading or paragraph beside the article keeps the whole <main>.
-                selected = refined.takeIf { it.element.hasOnlyWidgetSiblingsOfLoneArticle() }
+                // siblings are only short widget text (a hidden gift or login modal), or when the other
+                // articles beside it are reader replies. A lead image, heading or paragraph beside the
+                // article keeps the whole <main>.
+                selected = refined
+                    .takeIf { it.element.hasOnlyWidgetSiblingsOfLoneArticle() || it.element.hasCommentArticleChild() }
                     ?.let { refineBroadContainerToDirectArticle(it, sorted, scoreOf) }
                     ?: refined
             }
@@ -191,14 +193,23 @@ internal object MainContentDetector {
             linkDensity <= PREFERRED_SELECTOR_MAX_LINK_DENSITY
     }
 
-    private fun refineListingParent(selected: Candidate, candidates: List<Candidate>): Candidate {
+    private fun refineListingParent(
+        selected: Candidate,
+        candidates: List<Candidate>,
+        scoreOf: (Element) -> ContentScore,
+    ): Candidate {
         val parentCandidate = candidates.firstOrNull { candidate ->
-            candidate.element !== selected.element &&
-                candidate.element.children().count { it.tagName() == "article" } > 1 &&
-                candidate.element.children().any { it === selected.element }
+            val container = candidate.element
+            container !== selected.element &&
+                container.children().any { it === selected.element } &&
+                (container.listingEntryCount() > 1 || container.keepsPostWithReplies(selected.element, scoreOf))
         }
         return parentCandidate ?: selected
     }
+
+    // Beside its replies, a post with a lead or an author update around it keeps the container that holds them all.
+    private fun Element.keepsPostWithReplies(post: Element, scoreOf: (Element) -> ContentScore): Boolean =
+        hasCommentArticleChild() && !post.isCommentArticle() && post.hasCompanionContent(scoreOf)
 
     private fun refineBroadContainerToDirectArticle(
         selected: Candidate,
@@ -206,17 +217,25 @@ internal object MainContentDetector {
         scoreOf: (Element) -> ContentScore,
     ): Candidate? {
         if (selected.selector !in BROAD_CONTAINER_SELECTORS) return null
-        val directArticles = selected.element.children()
-            .filter { it.normalName() == "article" || it.attr("role").equals("article", ignoreCase = true) }
+        val articles = selected.element.children().filter { it.isArticleElement() }
+        val (commentArticles, postArticles) = articles.partition { it.isCommentArticle() }
+        // Only set comments aside next to a post: a lone article an opinion section marks "comment" is still the post.
+        val directArticles = postArticles.ifEmpty { articles }
         if (directArticles.size != 1) return null
 
         val article = directArticles.single()
         val selectedScore = scoreOf(selected.element)
         val articleScore = scoreOf(article)
-        if (articleScore.wordCount < BROAD_REFINEMENT_MIN_WORDS) return null
+        // Setting replies aside must not also drop content the author placed around the post in the same container.
+        val dropsCompanionContent =
+            commentArticles.isNotEmpty() && postArticles.isNotEmpty() && article.hasCompanionContent(scoreOf)
+        if (articleScore.wordCount < BROAD_REFINEMENT_MIN_WORDS || dropsCompanionContent) return null
+        // Reader comments are clutter that removal drops anyway, so they must not make the post look small.
+        val commentWords = if (postArticles.isEmpty()) 0 else commentArticles.sumOf { scoreOf(it).wordCount }
+        val selectedWordsWithoutComments = (selectedScore.wordCount - commentWords).coerceAtLeast(0)
         if (
             articleScore.total < selectedScore.total * BROAD_REFINEMENT_MIN_SCORE_RATIO &&
-            articleScore.wordCount < selectedScore.wordCount * BROAD_REFINEMENT_MIN_WORD_RATIO
+            articleScore.wordCount < selectedWordsWithoutComments * BROAD_REFINEMENT_MIN_WORD_RATIO
         ) {
             return null
         }
@@ -349,6 +368,58 @@ internal object MainContentDetector {
     }
 
     private fun Element.isDescendantOf(ancestor: Element): Boolean = parents().any { it === ancestor }
+
+    // WordPress themes render each reader comment as <article class="comment" id="comment-N"> next to the post's own
+    // article. Those are replies to the post, not entries of a listing. Both markers are required: a "comment" class
+    // alone also marks opinion columns.
+    private fun Element.isCommentArticle(): Boolean = hasClass("comment") && COMMENT_ID_PATTERN.matches(id())
+
+    // A lead figure or introduction before the post, or an author update between the post and its replies.
+    private fun Element.hasCompanionContent(scoreOf: (Element) -> ContentScore): Boolean =
+        hasCompanionContent(generateSequence(previousElementSibling()) { it.previousElementSibling() }, scoreOf) ||
+            hasCompanionContent(
+                generateSequence(nextElementSibling()) { it.nextElementSibling() }
+                    .takeWhile { !(it.isArticleElement() && it.isCommentArticle()) },
+                scoreOf,
+            )
+
+    private fun hasCompanionContent(siblings: Sequence<Element>, scoreOf: (Element) -> ContentScore): Boolean {
+        var words = 0
+        for (sibling in siblings) {
+            if (sibling.selectFirstSafe(MEDIA_SELECTOR) != null) return true
+            words += scoreOf(sibling).wordCount
+            if (words >= COMPANION_MIN_WORDS) return true
+        }
+        return false
+    }
+
+    // Beside reader replies, count every non-reply entry the same way refineBroadContainerToDirectArticle does;
+    // without replies keep the original <article>-only count.
+    private fun Element.listingEntryCount(): Int = if (hasCommentArticleChild()) {
+        children().count { it.isArticleElement() && !it.isCommentArticle() }
+    } else {
+        children().count { it.tagName() == "article" }
+    }
+
+    private fun Element.hasCommentArticleChild(): Boolean =
+        children().any { it.isArticleElement() && it.isCommentArticle() }
+
+    private fun Element.isArticleElement(): Boolean =
+        normalName() == "article" || attr("role").equals("article", ignoreCase = true)
+
+    // A long reader reply can outscore a short post; while the page has a post article, replies are never the content.
+    // Cached per parent: a thread of thousands of sibling replies must not rescan its siblings once per reply.
+    private fun List<Candidate>.withoutReplyArticles(): List<Candidate> {
+        val parentHoldsPost = mutableMapOf<Element, Boolean>()
+        return filterNot { candidate ->
+            val reply = (sequenceOf(candidate.element) + candidate.element.parents().asSequence())
+                .firstOrNull { it.isArticleElement() && it.isCommentArticle() }
+            val parent = reply?.parent()
+            parent != null && parentHoldsPost.getOrPut(parent) {
+                parent.children().any { it.isArticleElement() && !it.isCommentArticle() }
+            }
+        }
+    }
 
     private fun detectTableLayout(body: Element, scoreOf: (Element) -> ContentScore): Candidate? {
         val bodyWords = scoreOf(body).wordCount
@@ -514,6 +585,8 @@ internal object MainContentDetector {
         ".post-body",
     )
 
+    private val COMMENT_ID_PATTERN = Regex("""(?:div-)?comment-\d+""")
+    private const val COMPANION_MIN_WORDS = 25
     private const val BROAD_REFINEMENT_MIN_SCORE_RATIO = 0.45
     private const val BROAD_REFINEMENT_MIN_WORD_RATIO = 0.35
     private const val BROAD_REFINEMENT_MIN_WORDS = 50
