@@ -173,6 +173,7 @@ internal object RemovalPipeline {
 
     private fun removeExactSelectors(content: Element, debug: MutableList<RemovalRecord>, checkCancelled: () -> Unit) {
         val buckets = EXACT_SELECTOR_INDEX.collect(content)
+        val labelsByControlId by lazy { content.select("label[for]").groupBy { it.attr("for") } }
         for (selector in EXACT_SELECTORS) {
             checkCancelled()
             // Filtering at bucket start replicates the per-selector query this replaces: elements
@@ -196,10 +197,33 @@ internal object RemovalPipeline {
                     element.liftButtonMedia()
                 }
                 if (isProtected(element) && selector !in PROTECTED_EXACT_SELECTOR_OVERRIDES) continue
+                if (selector == "input" && element.isToggleSwitch()) {
+                    removeSwitchLabels(element, content, labelsByControlId, debug)
+                }
                 recordAndRemove(element, debug, "removeExactSelectors", selector, "exact clutter selector")
             }
         }
     }
+
+    // A toggle switch ("Display dialogue text", "Dark mode") flips page state the reader does not have, so
+    // its caption would read as a stray line of text once the switch is gone.
+    private fun removeSwitchLabels(
+        input: Element,
+        content: Element,
+        labelsByControlId: Map<String, List<Element>>,
+        debug: MutableList<RemovalRecord>,
+    ) {
+        val id = input.id()
+        val labels = buildList {
+            input.parents().firstOrNull { it.normalName() == "label" }?.let(::add)
+            if (id.isNotEmpty()) addAll(labelsByControlId[id].orEmpty())
+        }
+        labels.distinct()
+            .filter { it.isAttachedTo(content) && it.isTextOnlyControl() && !isProtected(it) }
+            .forEach { recordAndRemove(it, debug, "removeExactSelectors", "input", "toggle switch label") }
+    }
+
+    private fun Element.isToggleSwitch(): Boolean = attr("role").equals("switch", ignoreCase = true)
 
     private fun removePartialSelectors(
         content: Element,

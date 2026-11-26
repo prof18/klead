@@ -47,6 +47,35 @@ class RemovalPipelineTest {
     }
 
     @Test
+    fun `toggle switch labels are removed with their switch while other control labels stay`() {
+        val document = Ksoup.parse(
+            """
+            <article>
+              <div class="transcript-toggle">
+                <label for="transcript-toggle">Display dialogue text</label>
+                <input id="transcript-toggle" type="checkbox" role="switch">
+              </div>
+              <label class="theme">Dark mode <input type="checkbox" role="switch"></label>
+              <p>Lions wrote a commentary on the Unix kernel source.<label for="sn-1" class="margin-toggle">1</label><input type="checkbox" id="sn-1" class="margin-toggle"></p>
+              <label for="missing-control">Volume 2</label>
+              <p>Sixth Edition source<label for="fr-1" class="footref">2</label><input type="checkbox" role="switch" id="fr-1"></p>
+              <p>The notes circulated among universities for two decades.</p>
+            </article>
+            """.trimIndent(),
+        )
+        val article = document.selectFirst("article") ?: error("missing article")
+
+        RemovalPipeline.apply(article, mutableListOf())
+
+        assertFalse(article.text().contains("Display dialogue text"))
+        assertFalse(article.text().contains("Dark mode"))
+        assertNotNull(article.selectFirst("""label[for="sn-1"]"""))
+        assertNotNull(article.selectFirst("""label[for="missing-control"]"""))
+        assertNotNull(article.selectFirst("""label[for="fr-1"]"""))
+        assertTrue(article.text().contains("The notes circulated among universities for two decades."))
+    }
+
+    @Test
     fun `favorite post widget is removed without matching article text or similar classes`() {
         val document = Ksoup.parse(
             """
