@@ -110,6 +110,7 @@ import com.prof18.klead.internal.extractors.site.TechCrunchProfile
 import com.prof18.klead.internal.extractors.site.TheHinduProfile
 import com.prof18.klead.internal.extractors.site.TimesOfIndiaProfile
 import com.prof18.klead.internal.extractors.site.TomshwProfile
+import com.prof18.klead.internal.extractors.site.TrtHaberProfile
 import com.prof18.klead.internal.extractors.site.TunjidProfile
 import com.prof18.klead.internal.extractors.site.ValnetProfile
 import com.prof18.klead.internal.extractors.site.VarietyProfile
@@ -281,6 +282,7 @@ internal object DefaultExtractors {
         TheHinduProfile,
         TimesOfIndiaProfile,
         TomshwProfile,
+        TrtHaberProfile,
         VoxProfile,
         PianetaBasketProfile,
         PinterestProfile,
